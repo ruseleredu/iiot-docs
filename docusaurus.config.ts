@@ -41,6 +41,15 @@ const config: Config = {
     locales: ["pt-BR"],
   },
 
+  markdown: {
+    mermaid: true, // Diagrams can be rendered using Mermaid in a code block.
+    hooks: {
+      onBrokenMarkdownLinks: "warn", // or 'throw'
+    },
+  },
+
+  themes: ["@docusaurus/theme-mermaid"],
+
   stylesheets: [
     {
       href: '/katex/katex.min.css', // No need for integrity/crossorigin when local
