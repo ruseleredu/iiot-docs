@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkiiot_docs=self.webpackChunkiiot_docs||[]).push([["3220"],{1912(o){o.exports=JSON.parse('{"blogBasePath":"/iiot-docs/blog","blogTitle":"Blog","authorsListPath":"/iiot-docs/blog/authors"}')}}]);
