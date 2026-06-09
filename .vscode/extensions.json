@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "tomasdahlqvist.markdown-admonitions",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-footnotes",
+    "bierner.markdown-mermaid",
+    "pkief.material-icon-theme",
+    "esbenp.prettier-vscode"
+    // Add other relevant extensions
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/.docusaurus": true,
+    "**/build": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.docusaurus": true,
+    "**/build": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+  },
+  // Settings for pasteImage extension: Paste with Ctrl+Alt+V
+  "pasteImage.forceUnixStyleSeparator": true,
+  "pasteImage.basePath": "${projectRoot}/static",
+  "pasteImage.path": "${projectRoot}/static/img/${currentFileNameWithoutExt}",
+  "pasteImage.prefix": "/",
+  "pasteImage.showFilePathConfirmInputBox": false
+}
