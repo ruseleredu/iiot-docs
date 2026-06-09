@@ -33,3 +33,5 @@
 .footer__link-item svg {
   display: none;
 }
+
+@import url("/katex/katex.min.css");
