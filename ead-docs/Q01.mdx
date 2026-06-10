@@ -1,0 +1,32 @@
+import QuizTable from '@site/src/components/QuizTable';
+
+# Questionário 01
+
+
+{/* Tabela com link para atividade, inicio, fim e descrição do Quiz! */}
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <QuizTable index={1} internal={true} />
+</div>
+
+---
+
+
+ ## Fixed Point Math
+
+ Fixed-point math libraries provide a way to perform fast, non-integer math using integer-only operations, which is especially useful on platforms without a Floating-Point Unit (FPU) like many microcontrollers and embedded systems. They offer a trade-off between range and precision compared to floating-point arithmetic.
+
+Several libraries exist for different programming languages and platforms: 
+C/C++ Libraries
+
+- libfixmath: A popular, platform-independent library offering an interface similar to the standard math.h for Q16.16 fixed-point numbers. It is used in environments like game development for deterministic results.
+- fpm: A header-only C++ library designed as a drop-in replacement for floating-point types, supporting a wide range of mathematical functions including trigonometry, power, and logarithms. It is highly tested and aims for type safety.
+- FixedPoints (Arduino): A portable, templated C++ library for Arduino and other constrained CPUs, allowing for various fixed-point formats `(e.g., UFixed<I, F>, SFixed<I, F>)`.
+- FixedMath: A comprehensive C++23 (C++17 branch available) header-only library with trigonometric and other advanced functions, emphasizing performance and precision.
+- Microchip Libraries: Microchip provides free fixed-point math libraries, such as the LibQ family, built into their MPLAB C compilers for PIC24 and dsPIC microcontrollers, supporting Q15, Q16, and Q31 formats.
+- TI IQmath Library: Texas Instruments offers a highly optimized, high-precision library (often in assembly) for C programmers using MSP430 and MSP432 devices, designed for computationally intensive real-time applications. 
+
+--- 
+
+- https://software-dl.ti.com/msp430/esd/MSPM0-SDK/1_00_01_03/docs/english/middleware/iqmath/doc_guide/doc_guide-srcs/Users_Guide.html
+- https://www.mathworks.com/help/ti-c2000/ug/using-the-iqmath-library.html
+  

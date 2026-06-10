@@ -20,4 +20,5 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem; /* Adjust the value as needed (e.g., 0.5rem, 16px, etc.) */
 }

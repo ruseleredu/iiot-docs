@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
@@ -9,7 +9,7 @@ import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
@@ -20,8 +20,39 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
+            href="https://moodle.utfpr.edu.br/course/view.php?id=27864"
+          >
+            EaD 🌎
+          </Link>
+          <Link
+            className="button button--secondary button--lg"
+            href="https://moodle.utfpr.edu.br/course/view.php?id=28604"
+          >
+            LABs 🌎
+          </Link>
+          <Link
+            className="button button--secondary button--lg"
+            to="/docs/intro"
+          >
+            Docs 📝
+          </Link>
+          <Link
+            className="button button--secondary button--lg"
+            to="/lab/intro"
+          >
+            LABs 📝
+          </Link>
+          <Link
+            className="button button--secondary button--lg"
+            to="/ead/intro"
+          >
+            EaD 📝
+          </Link>
+          <Link
+            className="button button--secondary button--lg"
+            to="/pjts/intro"
+          >
+            Pjts 📝
           </Link>
         </div>
       </div>
@@ -30,11 +61,11 @@ function HomepageHeader() {
 }
 
 export default function Home(): ReactNode {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`${siteConfig.title}`}
+      description="Documentação da disciplina de IIoT com docusaurus.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

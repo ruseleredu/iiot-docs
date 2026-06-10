@@ -92,6 +92,63 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "lab", // Unique ID for this docs instance
+        path: "lab-docs", // Path to your LAB docs folder
+        routeBasePath: "lab", // Base URL for these docs (e.g., yoursite.com/lab/...)
+        sidebarPath: require.resolve("./labsidebars.ts"), // Separate sidebar for LAB docs
+        // ... other options specific to your LAB docs
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "ead", // Unique ID for this docs instance
+        path: "ead-docs", // Path to your EaD docs folder
+        routeBasePath: "ead", // Base URL for these docs (e.g., yoursite.com/ead/...)
+        sidebarPath: require.resolve("./eadsidebars.ts"), // Separate sidebar for EaD docs
+        // ... other options specific to your EaD docs
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "utfpr", // Unique ID for this docs instance
+        path: "utfpr", // Path to your API docs folder
+        routeBasePath: "utfpr", // Base URL for these docs (e.g., yoursite.com/api/...)
+        sidebarPath: require.resolve("./sidebarsutfpr.ts"), // Separate sidebar for API docs
+        // 👇 Add this line for the last update time
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+        // ... other options specific to your API docs
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "pjts", // Unique ID for this docs instance
+        path: "pjts-docs", // Path to your API docs folder
+        routeBasePath: "pjts", // Base URL for these docs (e.g., yoursite.com/api/...)
+        sidebarPath: require.resolve("./sidebarspjts.ts"), // Separate sidebar for API docs
+        // 👇 Add this line for the last update time
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+        // ... other options specific to your API docs
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',

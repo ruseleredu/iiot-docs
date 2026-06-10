@@ -1,48 +1,82 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
+import Link from "@docusaurus/Link";
 
 type FeatureItem = {
-  title: string;
+  title: React.ReactNode; // Changed to ReactNode to allow links
   Svg: React.ComponentType<React.ComponentProps<'svg'>>;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
+  /* {
+     title: (
+       <Link to="/utfpr/ELT72B/intro">
+         Sistemas Digitais
+       </Link>
+     ),
+     Svg: require('@site/static/img/office-svgrepo-com.svg').default,
+     description: (
+       <>
+         A disciplina de sistemas digitais é gerenciada via {" "}
+         <a href="https://moodle.utfpr.edu.br/course/view.php?id=27864" target="_blank">
+           Moodle
+         </a>, o <Link to="/ead/intro">EaD</Link> com videoaulas e questionários. O conteúdo é disponibilizado no{" "}<a href="https://moodle.utfpr.edu.br/course/view.php?id=27864" target="_blank">
+           Moodle
+         </a>{" "}e as atividades são realizadas de forma assíncrona, permitindo que os alunos possam acessar o conteúdo e realizar as atividades no seu próprio ritmo.
+ 
+         Ministrada via{" "}
+         <a href="https://moodle.utfpr.edu.br/course/view.php?id=27864" target="_blank">
+           Moodle
+         </a>{" "}!
+       </>
+     ),
+   }, */
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: (
+      <Link to="/ead/intro">
+        Ensino a Distância
+      </Link>
+    ),
+    Svg: require('@site/static/img/online-seminar-svgrepo-com.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        As atividades de <Link to="/ead/intro">ensino a distância</Link> constituem em uma sequencia de videoaulas explicativas acompanhadas de questionários. As atividades são realizadas de forma assíncrona, permitindo que os alunos possam acessar o conteúdo e realizar as atividades no seu próprio ritmo.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: (
+      <Link to="/lab/intro">
+        Laboratório
+      </Link>
+    ),
+    Svg: require('@site/static/img/lab-medical-test-svgrepo-com.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        As atividades de <Link to="/lab/intro">laboratório</Link> constituem da aplicação prática dos conteúdos vistos no <Link to="/ead/intro">ensino a distância</Link>. As atividades são realizadas de forma síncrona, com encontros semanais para a realização das atividades práticas, promovendo a interação entre os alunos e a aplicação dos conceitos vistos.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: (
+      <Link to="/pjts/intro">
+        Projeto Final
+      </Link>
+    ),
+    Svg: require('@site/static/img/project-svgrepo-com.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        O <Link to="/pjts/intro">projeto final</Link> constitue em aplicar os conhecimentos adquiridos ao longo do curso para desenvolver um protótipo utilizando o  <a href="https://www.arduino.cc/" target="_blank">Arduino</a>. O projeto é desenvolvido em grupos, promovendo a colaboração entre os alunos e a aplicação prática dos conceitos aprendidos.
       </>
     ),
   },
+
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
