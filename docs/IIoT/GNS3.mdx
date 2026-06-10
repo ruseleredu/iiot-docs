@@ -1,0 +1,63 @@
+---
+title: GNS3
+description: GNS3 - Introdução as atividades de laboratório.
+sidebar_position: 4
+---
+
+## Getting Started with GNS3
+
+GNS3 is used by hundreds of thousands of network engineers worldwide to emulate, configure, test and troubleshoot virtual and real networks. GNS3 allows you to run a small topology consisting of only a few devices on your laptop, to those that have many devices hosted on multiple servers or even hosted in the cloud.
+
+GNS3 is open source, free software that you can download from https://gns3.com/.
+
+## Quais são as diferenças entre Packet Tracer, GNS3
+
+- https://www.hardwaremagazine.com.br/2024/10/quais-sao-as-diferencas-entre-packet.html
+
+Tanto o **Cisco Packet Tracer** como o **GNS3** são ferramentas excelentes e amplamente utilizadas no mundo das redes de computadores, mas foram criadas para propósitos, públicos e cenários de utilização totalmente diferentes.
+
+A principal diferença resume-se a isto: o **Packet Tracer é um simulador**, enquanto o **GNS3 é um emulador**.
+
+Abaixo, detalho as diferenças estruturais, vantagens e os casos de uso ideais para cada um.
+
+---
+
+### 1. Cisco Packet Tracer: O Simulador
+
+O Packet Tracer foi desenvolvido pela Cisco principalmente para fins educacionais (como o programa Cisco Networking Academy). Por ser um **simulador**, ele não executa o software real do sistema operativo dos equipamentos (o Cisco IOS). Em vez disso, a Cisco escreveu um software que _imita_ (simula) o comportamento e os comandos dos routers e switches.
+
+- **Como funciona:** Ele tenta reproduzir a lógica de uma rede. Se introduzir um comando que a Cisco programou no Packet Tracer, ele funciona; se tentar usar um comando avançado ou mais obscuro, o programa simplesmente dirá que o comando é inválido.
+- **Consumo de Recursos:** Extremamente leve. Pode correr laboratórios com dezenas de computadores, routers e switches num computador portátil básico sem que a ventoinha comece a fazer barulho.
+- **Instalação e Uso:** Muito simples. É um ambiente "drag-and-drop" (arrastar e largar) pronto a usar. Já vem com vários modelos de routers, switches, computadores e até dispositivos de IoT (Internet das Coisas).
+- **Limitações:** Está limitado ao ecossistema Cisco (não suporta nativamente outras marcas como Juniper ou Aruba) e faltam-lhe muitas funcionalidades avançadas de roteamento e segurança. Não permite ligar a rede simulada à sua rede real ou à Internet.
+
+### 2. GNS3 (Graphical Network Simulator-3): O Emulador
+
+O GNS3 é uma ferramenta profissional de código aberto (Open Source). Por ser um **emulador**, ele não finge o comportamento dos dispositivos: ele permite-lhe correr o software e os sistemas operativos _reais_ dos equipamentos de rede (através de máquinas virtuais, Docker, QEMU/KVM ou imagens IOS reais).
+
+- **Como funciona:** O GNS3 atua como o "hardware virtual". Se carregar uma imagem real do Cisco IOS, o router dentro do GNS3 vai comportar-se **exatamente** como um router físico real, suportando todos os comandos e bugs que o hardware real teria.
+- **Consumo de Recursos:** Muito elevado. Como cada router ou switch está a correr o seu próprio sistema operativo real de forma independente, o consumo de memória RAM e de CPU escala rapidamente. Para laboratórios grandes, é comum precisar de um servidor dedicado ou de um computador de alto desempenho.
+- **Instalação e Uso:** Curva de aprendizagem acentuada. O GNS3 requer a configuração de uma máquina virtual (GNS3 VM) e, crucialmente, **não traz os sistemas operativos dos routers**. O utilizador tem de fornecer as suas próprias imagens de software (adquiridas legalmente através de contas de parceiros dos fabricantes).
+- **Multivendor (Vários Fabricantes):** É uma das suas maiores vantagens. No GNS3 pode interligar um router Cisco a um switch Juniper, a uma firewall da Fortinet, a um servidor Ubuntu e a uma máquina Windows.
+- **Integração Real:** Permite capturar pacotes de dados reais utilizando o **Wireshark** diretamente nos cabos virtuais. Também permite ligar a sua rede emulada à placa de rede física do seu computador, ligando os routers virtuais à Internet real.
+
+---
+
+### Tabela Comparativa Direta
+
+| Característica            | Cisco Packet Tracer                       | GNS3                                            |
+| ------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **Tipo de Software**      | Simulador (Imita o comportamento)         | Emulador (Corre o sistema operativo real)       |
+| **Público-Alvo**          | Estudantes (CCNA, Escolas, Universidades) | Engenheiros de Redes, Administradores, CCIE     |
+| **Fabricantes**           | Quase exclusivamente Cisco                | Multivendor (Cisco, Juniper, VyOS, Linux, etc.) |
+| **Análise de Tráfego**    | Modo de simulação visual integrado        | Integração nativa com o **Wireshark** (real)    |
+| **Consumo de CPU/RAM**    | Muito baixo                               | Alto a Muito Alto                               |
+| **Complexidade**          | Muito fácil (Instalar e usar)             | Média/Alta (Requer imagens de SO e VM)          |
+| **Ligação ao mundo real** | Não                                       | Sim (Pode ligar à rede física e à Internet)     |
+
+---
+
+### Qual escolher?
+
+- **Escolha o Packet Tracer se:** Está a começar agora os seus estudos em redes, está a preparar-se para o exame **Cisco CCNA**, ou precisa de criar rapidamente diagramas de rede simples e testar conceitos básicos de routing (RIP, OSPF, EIGRP) e switching (VLANs, STP) sem complicações técnicas de instalação.
+- **Escolha o GNS3 se:** Já passou da fase básica, está a estudar para certificações de nível profissional/especialista (**CCNP, CCIE**), precisa de testar cenários complexos com equipamentos de múltiplos fabricantes, necessita de simular ambientes de produção reais, ou quer integrar servidores e automação de redes (Python, Ansible) com sistemas operativos reais.

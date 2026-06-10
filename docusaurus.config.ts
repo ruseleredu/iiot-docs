@@ -147,6 +147,20 @@ const config: Config = {
         // ... other options specific to your API docs
       },
     ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "esp32", // Unique ID for this docs instance
+        path: "esp32-docs", // Path to your ESP32 docs folder
+        routeBasePath: "esp32", // Base URL for these docs (e.g., yoursite.com/esp32/...)
+        sidebarPath: require.resolve("./sidebarsesp32.ts"), // Separate sidebar for ESP32 docs
+        // 👇 Add this line for the last update time
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+        // ... other options specific to your API docs
+      },
+    ],
   ],
 
   themeConfig: {

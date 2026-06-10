@@ -46,6 +46,22 @@ const navbarItems: NavbarItem[] = [
         ],
     },
     {
+        label: "ESP32",
+        to: "/esp32/intro", // Link to a page in your ESP32 docs
+        type: "dropdown",
+        position: "left",
+        items: [
+            {
+                href: "https://www.espressif.com/en/products/socs/esp32", // External link to ESP32 official page
+                label: "ESP32 Official Page",
+            },
+            {
+                href: "https://docs.wokwi.com/guides/esp32", // External link to ESP32 official page
+                label: "ESP32 Simulation Guide",
+            },
+        ],
+    },
+    {
         to: "/ead/intro", // Link to a page in your EaD docs
         label: "EaD",
         type: "dropdown",
