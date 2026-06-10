@@ -1,47 +1,166 @@
 ---
+title: Internet das Coisas Industrial (IIoT)
+description: Disciplina de Internet das Coisas Industrial (IIoT) para Engenharia de Controle e Automação.
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+A **Internet das Coisas Industrial (IIoT)** representa a interseção entre os sistemas operacionais da fábrica (Automação Industrial) e a tecnologia da informação (TI), permitindo que dados de sensores, atuadores e máquinas se transformem em insights estratégicos em tempo real.
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Para apresentar esse conceito aos alunos de forma estruturada, podemos dividir o estudo em três pilares: os **Conceitos Fundamentais**, a **Arquitetura em Camadas (com aspectos técnicos)** e as **Aplicações Práticas**.
 
-## Getting Started
+---
 
-Get started by **creating a new site**.
+## 1. Conceitos Fundamentais de IIoT
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+Antes de entrar na arquitetura, é crucial diferenciar a IoT convencional (doméstica/comercial) da IIoT:
 
-### What you'll need
+- **IoT vs. IIoT:** Enquanto a IoT foca em conveniência e experiência do usuário (ex: casas inteligentes, wearables), a IIoT foca em **disponibilidade, robustez, precisão e segurança crítica**. Uma falha na IoT resulta em inconveniência; uma falha na IIoT pode paralisar uma linha de produção ou causar acidentes ambientais e humanos.
+- **A Convergência TI/TO:** Historicamente, a Tecnologia da Informação (TI) e a Tecnologia da Operação (TO - chão de fábrica) operavam em silos isolados. A IIoT é a ponte que une esses dois mundos, permitindo que dados de CLPs (Controladores Lógicos Programáveis) alimentem sistemas de ERP (Enterprise Resource Planning) e plataformas de Nuvem.
+- **Dados como Ativos:** O núcleo da IIoT é a transição da automação reativa (fazer a máquina funcionar) para a preditiva (analisar os dados históricos e em tempo real da máquina para otimizar o processo).
 
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+---
 
-## Generate a new site
+## 2. Arquitetura IIoT em Camadas
 
-Generate a new Docusaurus site using the **classic template**.
+Uma das formas mais didáticas e tecnicamente precisas de apresentar a IIoT é através de uma **arquitetura de 4 camadas**. Ela expande a tradicional Pirâmide da Automação (ISA-95) para um modelo mais flexível e conectado.
 
-The classic template will automatically be added to your project after you run the command:
+### Camada 1: Dispositivos e Percepção (Chão de Fábrica / TO)
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+É onde o mundo físico se conecta ao digital. Consiste em sensores, atuadores, inversores de frequência, robôs e os próprios CLPs.
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+- **Aspectos Técnicos e Configuração:** Os dispositivos coletam grandezas analógicas (temperatura, pressão, vibração) ou digitais. Eles se comunicam localmente via barramentos de campo industriais (Fieldbuses) como **Modbus RTU/TCP, Profibus/Profinet, EtherCAT** ou links diretos como **IO-Link**.
+- **Operação:** Coleta contínua de dados em alta velocidade, muitas vezes exigindo determinismo (garantia de tempo de resposta).
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+### Camada 2: Borda e Conectividade Local (Edge/Gateway)
 
-## Start your site
+Os dados brutos do chão de fábrica raramente podem ir direto para a nuvem devido ao volume, formato ou latência. É aqui que entram os _Edge Gateways_.
 
-Run the development server:
+- **Aspectos Técnicos e Configuração:** Dispositivos baseados em sistemas embarcados robustos ou PCs industriais (IPC). Executam softwares de orquestração (como Docker para isolamento de serviços) e ferramentas de processamento local (Node-RED, Python).
+- **Operação (A "Tradução"):** O gateway realiza a conversão de protocolos industriais legados (ex: Modbus) para protocolos amigáveis à rede/nuvem (ex: **MQTT, OPC UA, HTTP**). Ele também faz a filtragem inicial dos dados (Edge Computing) para evitar sobrecarregar a banda da rede.
 
-```bash
-cd my-website
-npm run start
-```
+### Camada 3: Rede e Transporte (Infraestrutura)
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+A infraestrutura que garante o tráfego seguro dos dados da fábrica para os centros de processamento.
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+- **Aspectos Técnicos e Configuração:** Uso de redes industriais Ethernet (geralmente cabeadas para evitar interferência eletromagnética), redes sem fio industriais (**WirelessHART, ISA100.11a**), redes celulares (**4G/5G Privado** para grandes plantas ou mineração) e redes de longo alcance e baixo consumo (**LoRaWAN** para sensores de utilidades dispersos).
+- **Operação (Segurança):** Configuração de redes virtuais privadas (VPNs/WireGuard), segmentação de rede (VLANs) e implementação de firewalls industriais seguindo a norma **IEC 62443** para evitar que uma vulnerabilidade na TI afete a TO.
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+### Camada 4: Aplicação, Análise e Nuvem (TI)
+
+Onde os dados são consolidados, processados por algoritmos complexos e transformados em telas visuais.
+
+- **Aspectos Técnicos e Configuração:** Plataformas de nuvem (AWS IoT Core, Azure IoT Hub) ou servidores locais (_On-Premise_). Armazenamento em bancos de dados de séries temporais (**Time-Series Databases** como InfluxDB) ideais para dados de sensores cronometrados. Ferramentas de visualização como **Grafana** ou sistemas de supervisão avançados (SCADA na nuvem).
+- **Operação:** Execução de algoritmos de Machine Learning, geração de relatórios de OEE (Efetividade Global do Equipamento) e dashboards para tomada de decisão gerencial.
+
+---
+
+## 3. Aplicações Industriais Reais
+
+Para consolidar o aprendizado, apresente aos alunos como essa arquitetura se traduz em valor de mercado:
+
+- **Manutenção Preditiva:** Em vez de trocar uma peça por tempo (preventiva) ou esperar quebrar (corretiva), sensores de vibração e temperatura coletam dados de um motor síncrono. Na camada de nuvem, um algoritmo detecta anomalias no padrão de vibração e avisa a equipe de manutenção semanas antes de uma falha catastrófica ocorrer.
+- **Gêmeos Digitais (Digital Twins):** Criação de uma réplica virtual de um ativo físico (ex: uma turbina). Os dados em tempo real da IIoT alimentam o modelo matemático do gêmeo, permitindo simular o comportamento da máquina sob condições extremas sem colocá-la em risco.
+- **Rastreabilidade e Cadeia de Suprimentos:** Sensores ambientais (umidade/temperatura) acompanham lotes de produtos químicos ou alimentícios desde a fabricação até o transporte logístico, garantindo conformidade com normas regulatórias de forma automatizada.
+- **Eficiência Energética:** Monitoramento granular do consumo elétrico e de insumos (água, ar comprimido, gás) por máquina ou linha de produção, permitindo identificar gargalos e correlacionar o consumo de energia diretamente com o volume de produção.
+
+---
+
+### Dica Pedagógica para Aula Prática
+
+Para os aspectos práticos de laboratório, uma excelente abordagem _hands-on_ com os alunos envolve:
+
+1. **Simular a Camada 1:** Usar um microcontrolador (ou simulador de CLP) gerando dados de leitura de um sensor de temperatura via Modbus.
+2. **Construir a Camada 2:** Configurar um _Gateway_ (pode ser uma Raspberry Pi ou máquina virtual) rodando um container Docker com Node-RED para ler esse Modbus e publicar em um _Broker_ MQTT.
+3. **Visualizar na Camada 4:** Consumir esses dados de uma instância de banco de dados (ex: InfluxDB) e plotar os gráficos em tempo real em um painel do Grafana.
+
+Esse fluxo completo desmistifica a IIoT e fixa os conceitos de arquitetura de forma visual e prática.
+
+Aqui estão algumas opções de _taglines_ para a disciplina de **IIoT**, divididas pelo foco que você deseja dar à abordagem do curso:
+
+### Foco em Transformação e Futuro (Inspirador)
+
+- **"Conectando o chão de fábrica ao futuro da indústria."**
+- **"A evolução da automação: onde a operação se transforma em dado."**
+- **"Construindo a Indústria 4.0, da raiz ao bit."**
+
+### Foco em Convergência e Arquitetura (Técnico/Prático)
+
+- **"A engenharia que integra TO e TI em uma arquitetura inteligente."**
+- **"Do sensor à nuvem: integrando sistemas, otimizando processos."**
+- **"Dominando a conectividade industrial de ponta a ponta."**
+
+### Foco em Tomada de Decisão e Valor (Gerencial/Engenharia)
+
+- **"Transformando variáveis físicas em insights estratégicos."**
+- **"Onde o dado industrial se transforma em eficiência real."**
+- **"Inteligência conectada para a máxima performance industrial."**
+
+### Opções Curtas e Diretas (Estilo Código/Moderno)
+
+- **"IIoT: Inteligência na Borda, Decisão na Nuvem."**
+- **"Automação Conectada. Indústria Inteligente."**
+
+**Dica:** Se a disciplina for eminentemente prática (com laboratórios e projetos _hands-on_), **"Do sensor à nuvem: integrando sistemas, otimizando processos"** costuma resumir perfeitamente a ementa aos olhos dos alunos.
+
+---
+
+## 🎯 Objetivo da Disciplina
+
+### Objetivo Geral
+
+Capacitar os alunos a projetar, configurar, operar e analisar arquiteturas de Internet das Coisas Industrial (IIoT), integrando os sistemas físicos do chão de fábrica (Tecnologia da Operação - TO) às plataformas digitais de processamento e análise de dados (Tecnologia da Informação - TI), visando a otimização, eficiência e segurança dos processos industriais.
+
+### Objetivos Específicos
+
+Ao final da disciplina, o aluno deverá ser capaz de:
+
+- Diferenciar os requisitos críticos de uma rede IIoT em relação à IoT convencional.
+- Mapear e configurar protocolos de comunicação industriais legados e modernos.
+- Desenvolver e implementar soluções de _Edge Computing_ para triagem e conversão de dados.
+- Estruturar o fluxo de dados do sensor físico até bancos de dados e dashboards na nuvem.
+- Aplicar conceitos de cibersegurança industrial para proteção de ativos conectados.
+
+---
+
+## 📜 Ementa
+
+Introdução à Indústria 4.0 e os conceitos fundamentais de IIoT. Convergência entre TI (Tecnologia da Informação) e TO (Tecnologia da Operação). Arquiteturas de referência em camadas para IIoT. Camada de percepção: sensores inteligentes e redes de campo. Protocolos de comunicação industrial e de TI (Modbus, OPC UA, MQTT, HTTP). Computação de Borda (_Edge Computing_) e gateways industriais. Infraestrutura de rede, conectividade sem fio e cibersegurança industrial (IEC 62443). Armazenamento, processamento e visualização de dados industriais (_Time-Series Databases_ e Dashboards). Aplicações práticas: Manutenção preditiva, gêmeos digitais (_Digital Twins_) e eficiência energética.
+
+---
+
+## 📚 Conteúdo Programático
+
+### Unidade 1: Fundamentos e Ecossistema da IIoT
+
+- **1.1** Evolução Industrial: Da Automação Clássica à Indústria 4.0.
+- **1.2** O papel da IIoT no ecossistema industrial.
+- **1.3** O desafio da convergência TI/TO: Diferenças de prioridades (Disponibilidade vs. Confidencialidade).
+- **1.4** Anatomia de um ecossistema IIoT: Restrições de tempo real, robustez e ciclo de vida dos ativos.
+
+### Unidade 2: A Camada de Percepção e Conectividade Local
+
+- **2.1** Sensores inteligentes, atuadores e instrumentação industrial conectada.
+- **2.2** Redes de Campo (_Fieldbuses_) e protocolos legados: Modbus RTU/TCP e Profinet.
+- **2.3** Integração no nível de campo com a tecnologia **IO-Link**.
+- **2.4** Padronização e interoperabilidade sem barreiras com **OPC UA** (Arquitetura Unificada).
+
+### Unidade 3: A Camada de Borda (Edge Computing) e Gateways
+
+- **3.1** O papel do _Edge Computing_: Redução de latência, filtragem e segurança de dados.
+- **3.2** Arquitetura técnica de Gateways Industriais (Hardware Robusto e PCs Industriais).
+- **3.3** Orquestração e isolamento de serviços de borda utilizando **Docker/Containers**.
+- **3.4** Ferramentas de fluxo de dados de borda de código aberto: Programação visual com **Node-RED** e automação com **Python**.
+
+### Unidade 4: Protocolos de Transporte e Infraestrutura de Rede
+
+- **4.1** Protocolos leves de mensageria: **MQTT** (Arquitetura Publish/Subscribe, broker, QoS) e HTTP/REST.
+- **4.2** Redes de comunicação industriais sem fio: WirelessHART, ISA100.11a e redes celulares (4G/5G Privado).
+- **4.3** Redes de longo alcance e baixo consumo (**LoRaWAN**) aplicadas a utilidades industriais.
+- **4.4** Cibersegurança em Ambientes Industriais: Segmentação de rede (VLANs), zonas e condutos segundo a norma **IEC 62443**, e uso de redes privadas seguras (VPNs/WireGuard).
+
+### Unidade 5: Armazenamento, Visualização e Aplicações Industriais
+
+- **5.1** Bancos de dados para dados temporais industriais (**Time-Series Databases** - ex: InfluxDB).
+- **5.2** Criação de interfaces de operação e gerenciais: Dashboards em tempo real utilizando **Grafana**.
+- **5.3** Estudo de Caso 1: Implementação de Manutenção Preditiva baseada em condição.
+- **5.4** Estudo de Caso 2: Introdução aos Gêmeos Digitais (_Digital Twins_) e monitoramento de eficiência de ativos (OEE).
