@@ -20,21 +20,9 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            href="https://moodle.utfpr.edu.br/course/view.php?id=27864"
+            href="https://moodle.utfpr.edu.br/course/view.php?id=35058"
           >
-            EaD 🌎
-          </Link>
-          <Link
-            className="button button--secondary button--lg"
-            href="https://moodle.utfpr.edu.br/course/view.php?id=28604"
-          >
-            LABs 🌎
-          </Link>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro"
-          >
-            Docs 📝
+            Moodle 🌎
           </Link>
           <Link
             className="button button--secondary button--lg"
