@@ -40,8 +40,8 @@ const navbarItems: NavbarItem[] = [
         position: "left",
         items: [
             {
-                to: "/utfpr/ELT72B/folder", // Link to a page in your UTFPR docs
-                label: "ELT72B - Sistemas Digitais",
+                to: "/utfpr/ELT85B/folder", // Link to a page in your UTFPR docs
+                label: "ELT85B - IIoT",
             },
         ],
     },
@@ -68,8 +68,8 @@ const navbarItems: NavbarItem[] = [
         position: "left",
         items: [
             {
-                to: "/pjts/2026.1", // Link to a page in your PJTS docs
-                label: "Semestre 2026.1",
+                to: "/pjts/2026.2", // Link to a page in your PJTS docs
+                label: "Semestre 2026.2",
             },
         ],
     },
