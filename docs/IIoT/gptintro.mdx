@@ -1,0 +1,334 @@
+---
+title: Internet das Coisas (IoT)
+description: Disciplina de Internet das Coisas (IoT) para Engenharia de Controle e Automação.
+sidebar_position: 1
+---
+
+A **Internet das Coisas (IoT – Internet of Things)** é um conceito que conecta objetos físicos à Internet, permitindo que dispositivos coletem, processem e troquem dados de forma automática. Esses dispositivos podem incluir sensores, atuadores, máquinas industriais, veículos, eletrodomésticos, sistemas de monitoramento e diversos outros equipamentos capazes de interagir com o ambiente e com outros sistemas.
+
+## Principais Conceitos de IoT
+
+### 1. Dispositivos Inteligentes
+
+São os elementos físicos da IoT, equipados com sensores e/ou atuadores capazes de coletar informações do ambiente e executar ações.
+
+**Exemplos:**
+
+- Sensores de temperatura, pressão e umidade;
+- Medidores inteligentes de energia;
+- Câmeras de monitoramento;
+- Controladores industriais.
+
+### 2. Conectividade
+
+Permite a comunicação entre dispositivos e sistemas.
+
+**Tecnologias utilizadas:**
+
+- Wi-Fi;
+- Ethernet;
+- Bluetooth;
+- ZigBee;
+- LoRaWAN;
+- NB-IoT;
+- Redes 4G e 5G.
+
+### 3. Processamento de Dados
+
+Os dados coletados podem ser processados:
+
+- Localmente (Edge Computing);
+- Em gateways;
+- Na nuvem (Cloud Computing).
+
+### 4. Aplicações e Serviços
+
+As informações processadas são utilizadas para:
+
+- Monitoramento;
+- Controle remoto;
+- Automação;
+- Manutenção preditiva;
+- Tomada de decisão baseada em dados.
+
+---
+
+# Arquiteturas em Camadas da IoT
+
+A arquitetura em camadas organiza os componentes da IoT de forma hierárquica para facilitar o desenvolvimento, gerenciamento e escalabilidade.
+
+## Arquitetura de 3 Camadas
+
+### 1. Camada de Percepção (Perception Layer)
+
+Responsável pela coleta de dados do ambiente.
+
+**Componentes:**
+
+- Sensores;
+- Atuadores;
+- RFID;
+- Câmeras.
+
+**Funções:**
+
+- Medição de variáveis físicas;
+- Identificação de objetos;
+- Aquisição de dados.
+
+### 2. Camada de Rede (Network Layer)
+
+Responsável pela transmissão dos dados.
+
+**Componentes:**
+
+- Roteadores;
+- Gateways IoT;
+- Redes sem fio e cabeadas.
+
+**Protocolos comuns:**
+
+- TCP/IP;
+- MQTT;
+- CoAP;
+- HTTP/HTTPS.
+
+### 3. Camada de Aplicação (Application Layer)
+
+Fornece serviços ao usuário final.
+
+**Exemplos:**
+
+- Sistemas supervisórios;
+- Aplicativos móveis;
+- Dashboards industriais;
+- Sistemas ERP e MES.
+
+---
+
+## Arquitetura de 5 Camadas
+
+Uma evolução da arquitetura tradicional, amplamente utilizada em aplicações industriais.
+
+### Camada 1 – Percepção
+
+Responsável pela aquisição dos dados.
+
+**Exemplos:**
+
+- Sensores de temperatura;
+- Sensores de vibração;
+- Encoders;
+- RFID.
+
+### Camada 2 – Transporte
+
+Transfere os dados entre dispositivos e sistemas.
+
+**Tecnologias:**
+
+- Ethernet Industrial;
+- Wi-Fi;
+- 5G;
+- LoRaWAN;
+- ZigBee.
+
+### Camada 3 – Processamento
+
+Responsável pelo armazenamento e análise.
+
+**Tecnologias:**
+
+- Bancos de dados;
+- Cloud Computing;
+- Edge Computing;
+- Inteligência Artificial.
+
+### Camada 4 – Aplicação
+
+Transforma os dados em informações úteis.
+
+**Exemplos:**
+
+- Monitoramento de produção;
+- Controle energético;
+- Gestão de ativos.
+
+### Camada 5 – Negócios
+
+Relacionada à gestão e tomada de decisão.
+
+**Funções:**
+
+- Indicadores de desempenho (KPIs);
+- Planejamento estratégico;
+- Relatórios gerenciais;
+- Otimização de processos.
+
+---
+
+# Aspectos Técnicos da Configuração
+
+## Hardware
+
+Os dispositivos IoT geralmente possuem:
+
+- Microcontroladores (STM32, ESP32, Arduino);
+- Sensores;
+- Interfaces de comunicação;
+- Fontes de alimentação.
+
+## Software
+
+Inclui:
+
+- Firmware embarcado;
+- Sistemas operacionais de tempo real (RTOS);
+- Protocolos de comunicação;
+- Plataformas de gerenciamento.
+
+## Protocolos de Comunicação
+
+### MQTT
+
+- Leve e eficiente;
+- Baseado em publicação e assinatura;
+- Muito utilizado em aplicações industriais.
+
+### CoAP
+
+- Desenvolvido para dispositivos com recursos limitados;
+- Baseado em UDP.
+
+### HTTP/HTTPS
+
+- Amplamente utilizado na integração com aplicações web.
+
+### OPC UA
+
+- Muito empregado em automação industrial;
+- Permite interoperabilidade entre sistemas.
+
+---
+
+# Aspectos Operacionais
+
+## Segurança
+
+Desafios importantes:
+
+- Autenticação de dispositivos;
+- Criptografia de dados;
+- Controle de acesso;
+- Atualizações seguras de firmware.
+
+## Escalabilidade
+
+A arquitetura deve suportar:
+
+- Crescimento do número de dispositivos;
+- Aumento do volume de dados;
+- Novas funcionalidades.
+
+## Disponibilidade
+
+Sistemas industriais exigem:
+
+- Alta confiabilidade;
+- Redundância;
+- Monitoramento contínuo.
+
+## Manutenção
+
+Inclui:
+
+- Atualização remota (OTA);
+- Diagnóstico remoto;
+- Monitoramento da saúde dos dispositivos.
+
+---
+
+# Aplicações Industriais da IoT
+
+## Manufatura Inteligente (Indústria 4.0)
+
+Monitoramento em tempo real de:
+
+- Máquinas;
+- Linhas de produção;
+- Qualidade dos produtos.
+
+**Benefícios:**
+
+- Redução de custos;
+- Aumento da produtividade;
+- Menor tempo de parada.
+
+---
+
+## Manutenção Preditiva
+
+Sensores monitoram:
+
+- Vibração;
+- Temperatura;
+- Corrente elétrica.
+
+Os dados são analisados para prever falhas antes que ocorram.
+
+**Benefícios:**
+
+- Menos paradas não programadas;
+- Maior vida útil dos equipamentos.
+
+---
+
+## Gestão Energética
+
+Monitoramento do consumo de:
+
+- Energia elétrica;
+- Água;
+- Gás.
+
+**Benefícios:**
+
+- Eficiência energética;
+- Redução de desperdícios.
+
+---
+
+## Logística e Rastreamento
+
+Utilização de:
+
+- RFID;
+- GPS;
+- Sensores de localização.
+
+**Aplicações:**
+
+- Controle de estoque;
+- Rastreamento de cargas;
+- Gestão da cadeia de suprimentos.
+
+---
+
+## Agricultura Inteligente
+
+Monitoramento de:
+
+- Umidade do solo;
+- Temperatura;
+- Condições climáticas.
+
+**Benefícios:**
+
+- Uso eficiente de recursos;
+- Aumento da produtividade agrícola.
+
+---
+
+# Conclusão
+
+A IoT representa uma das principais tecnologias da transformação digital, permitindo a integração entre dispositivos físicos e sistemas computacionais. As arquiteturas em camadas organizam os componentes da solução, facilitando sua implementação, manutenção e expansão. No ambiente industrial, a IoT é um dos pilares da Indústria 4.0, possibilitando monitoramento em tempo real, manutenção preditiva, automação avançada e tomada de decisão baseada em dados, resultando em maior eficiência, produtividade e competitividade das organizações.
