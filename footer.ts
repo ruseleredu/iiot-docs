@@ -181,7 +181,7 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://ruseleredu.github.io/ea-docs/",
                 },
                 {
-                    label: "IIoT",
+                    label: "IIoT Industrial",
                     href: "https://ruseleredu.github.io/iiot-docs/",
                 },
                 {
