@@ -1,0 +1,164 @@
+# SQL for Data & IoT: Introduction and Use Cases
+
+SQL (Structured Query Language) is the standard language for managing and manipulating relational databases like **SQLite**, **PostgreSQL**, and **MySQL**.
+
+---
+
+## 1. Core SQL Commands (The "Big Four")
+
+Most IoT applications rely on **CRUD** operations: Create, Read, Update, and Delete.
+
+| Operation  | SQL Command | IoT Context                                       |
+| :--------- | :---------- | :------------------------------------------------ |
+| **Create** | `INSERT`    | Saving a new sensor reading.                      |
+| **Read**   | `SELECT`    | Retrieving history for a chart.                   |
+| **Update** | `UPDATE`    | Changing a device's status (e.g., LED ON to OFF). |
+| **Delete** | `DELETE`    | Clearing logs older than 30 days.                 |
+
+---
+
+## 2. Common Use Cases
+
+### A. Logging Telemetry (Time-Series)
+
+Storing periodic data from ADCs, DHT22 sensors, or power meters.
+
+- **Query:** `INSERT INTO sensors (temp, humidity) VALUES (22.5, 45);`
+
+### B. Device Configuration & State
+
+Storing the last known state of a physical device so it persists after a power failure.
+
+- **Query:** `SELECT state FROM devices WHERE device_id = 'living_room_lamp';`
+
+### C. Data Aggregation (Analytics)
+
+Finding averages or peaks over a specific timeframe.
+
+- **Query:** `SELECT AVG(voltage) FROM power_logs WHERE timestamp > DATETIME('now', '-1 hour');`
+
+---
+
+## 3. SQL Syntax Cheat Sheet
+
+### Creating a Table
+
+Before inserting data, you must define the "container."
+
+```sql
+CREATE TABLE IF NOT EXISTS sensor_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    sensor_name TEXT,
+    reading REAL
+);
+```
+
+To create a guide for SQL use cases, we can structure this as a Markdown (MD) file. This covers the basic "Intro to SQL" concepts, common IoT/Data scenarios, and the specific syntax you'll likely use in Node-RED or similar environments.
+
+### `SQL_Intro_Use_Cases.md`
+
+````markdown
+# SQL for Data & IoT: Introduction and Use Cases
+
+SQL (Structured Query Language) is the standard language for managing and manipulating relational databases like **SQLite**, **PostgreSQL**, and **MySQL**.
+
+---
+
+## 1. Core SQL Commands (The "Big Four")
+
+Most IoT applications rely on **CRUD** operations: Create, Read, Update, and Delete.
+
+| Operation  | SQL Command | IoT Context                                       |
+| :--------- | :---------- | :------------------------------------------------ |
+| **Create** | `INSERT`    | Saving a new sensor reading.                      |
+| **Read**   | `SELECT`    | Retrieving history for a chart.                   |
+| **Update** | `UPDATE`    | Changing a device's status (e.g., LED ON to OFF). |
+| **Delete** | `DELETE`    | Clearing logs older than 30 days.                 |
+
+---
+
+## 2. Common Use Cases
+
+### A. Logging Telemetry (Time-Series)
+
+Storing periodic data from ADCs, DHT22 sensors, or power meters.
+
+- **Query:** `INSERT INTO sensors (temp, humidity) VALUES (22.5, 45);`
+
+### B. Device Configuration & State
+
+Storing the last known state of a physical device so it persists after a power failure.
+
+- **Query:** `SELECT state FROM devices WHERE device_id = 'living_room_lamp';`
+
+### C. Data Aggregation (Analytics)
+
+Finding averages or peaks over a specific timeframe.
+
+- **Query:** `SELECT AVG(voltage) FROM power_logs WHERE timestamp > DATETIME('now', '-1 hour');`
+
+---
+
+## 3. SQL Syntax Cheat Sheet
+
+### Creating a Table
+
+Before inserting data, you must define the "container."
+
+```sql
+CREATE TABLE IF NOT EXISTS sensor_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    sensor_name TEXT,
+    reading REAL
+);
+```
+````
+
+### Advanced Selection (Filtering)
+
+To get the latest "Critical" alerts:
+
+```sql
+SELECT * FROM alerts
+WHERE severity = 'CRITICAL'
+ORDER BY timestamp DESC
+LIMIT 5;
+
+```
+
+### Updating Records
+
+Updating a setting in a "Settings" table:
+
+```sql
+UPDATE system_settings
+SET value = 'enabled'
+WHERE parameter = 'night_mode';
+
+```
+
+---
+
+## 4. Integration Tips for Node-RED
+
+1. **Dynamic Values:** Use `msg.topic` to pass your SQL string and `msg.params` for variables to prevent SQL injection.
+2. **Data Types:**
+
+- `INTEGER`: For counts and binary states (0/1).
+- `REAL`: For decimals (Voltage, Temperature).
+- `TEXT`: For strings (Sensor names, IDs).
+
+3. **Storage:** Keep your `.db` file path absolute (e.g., `/home/pi/.node-red/iot.db`) to avoid "file not found" errors during auto-starts.
+
+```
+
+### How to use this file:
+1. Copy the code block above.
+2. Create a new file on your computer named `SQL_Intro.md`.
+3. Paste the content and save.
+
+This serves as a great reference for your Node-RED project! Would you like me to add a section on how to join two different tables together?
+
+```

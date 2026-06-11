@@ -1,0 +1,58 @@
+---
+id: sqlite-intro
+title: Intro
+sidebar_position: 1
+description: SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
+slug: /sqlite-intro
+---
+
+# SQLite
+
+[SQLite](https://www.sqlite.org/) is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
+
+- https://databaseschool.com/series/high-performance-sqlite
+- https://noderedguide.com/tutorial-sqlite-and-node-red/
+
+## Built-In Scalar SQL Functions
+
+- https://www.sqlite.org/lang_corefunc.html
+
+## SQL Tutorial
+
+- https://www.w3schools.com/sql/default.asp
+
+## DB Browser for SQLite
+
+- https://sqlitebrowser.org/
+- https://sqliteonline.com/
+
+```bash
+docker run -d --name=sqlitebrowser -e PUID=1000 -e PGID=1000 -p 3000:3000 -p 3001:3001 --shm-size="1gb" --restart unless-stopped lscr.io/linuxserver/sqlitebrowser:latest
+```
+
+## SQLite Viewer Web App
+
+- https://inloop.github.io/sqlite-viewer/
+- https://beta.sqliteviewer.app/
+
+## SQLite Viewer for VS Code
+
+- https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer
+
+.sqlite is the default file extension for SQLite database files.
+
+## SQLite compiled to JavaScript
+
+A javascript library to run SQLite on the web.
+
+- https://github.com/sql-js/sql.js
+- https://sql.js.org
+- https://sql.js.org/examples/GUI/
+
+## A lightweight Database GUI in your browser. It supports connecting to Postgres, MySQL, and SQLite.
+
+- https://github.com/outerbase/studio
+
+## SQL generation
+
+- https://dbeaver.com/docs/dbeaver/SQL-Generation/

@@ -1,0 +1,169 @@
+---
+id: platformio-cli
+title: PlatformIO Core (CLI)
+sidebar_position: 2
+description: PlatformIO Core (CLI tool) is the heart of the entire PlatformIO ecosystem.
+slug: /platformio-cli
+---
+
+- https://docs.platformio.org/en/latest/core/index.html
+- https://platformio.org/install/cli
+- https://docs.platformio.org/en/latest/core/installation/index.html
+
+## CLI Guide
+
+- https://docs.platformio.org/en/latest/core/userguide/index.html#piocore-userguide
+
+%USERPROFILE%
+
+```json
+{
+  "terminal.integrated.defaultProfile.windows": "PlatformIO CLI",
+
+  "terminal.integrated.profiles.windows": {
+    "PlatformIO CLI": {
+      "path": "cmd.exe",
+      "args": [
+        "/k",
+        "${env:USERPROFILE}\\.platformio\\penv\\Scripts\\activate.bat && pio --version"
+      ],
+      "icon": "python",
+      "overrideName": true
+    }
+  }
+}
+```
+
+## Get started
+
+### Configuration
+
+- https://docs.platformio.org/en/latest/projectconf/index.html?utm_source=vscode&utm_medium=walkthrough&utm_campaign=get-started
+
+```ini
+; Common configuration
+[env]
+platform = espressif32@^5
+framework = arduino
+board = esp32doit-devkit-v1
+monitor_speed = 921600
+monitor_filter = esp32_exception_decoder
+lib_deps =
+    nanopb/Nanopb @ ^0.4.6
+    infineon/TLV493D-Magnetic-Sensor @ ^1.0.3
+build_flags =
+    -D ARDUINO_LOOP_STACK_SIZE=2048
+    -D CORE_DEBUG_LEVEL=ARDUHAL_LOG_LEVEL_DEBUG
+    -Wno-nonnull-compare
+
+; Production environment
+[env:release]
+build_flags =
+    ${env.build_flags}
+    -D PRODUCTION=1
+
+; Development environment
+[env:develop]
+build_type = debug
+lib_deps =
+    ${env.lib_deps}
+    bakercp/PacketSerial @ 1.4.0
+debug_extra_cmds =
+    set remote hardware-watchpoint-limit 2
+```
+
+### pio boards
+
+- https://docs.platformio.org/en/latest/core/userguide/cmd_boards.html#cmd-boards
+
+```bash
+pio boards --installed
+```
+
+```bash
+pio boards ststm32
+```
+
+```bash
+pio boards pio boards STM32F411CEU6
+```
+
+```bash
+Platform: ststm32
+=========================================================================================================
+ID                  MCU            Frequency    Flash    RAM    Name
+------------------  -------------  -----------  -------  -----  -----------------------------------------
+pybstick26_std      STM32F411CEU6  100MHz       512KB    128KB  PYBStick Standard 26
+genericSTM32F411CE  STM32F411CEU6  100MHz       512KB    128KB  STM32F411CE (128k RAM. 512k Flash)
+thunder_pack_f411   STM32F411CEU6  100MHz       512KB    128KB  ThunderPack v1.1+
+blackpill_f411ce    STM32F411CEU6  100MHz       512KB    128KB  WeAct Studio BlackPill V2.0 (STM32F411CE)
+```
+
+```bash
+pio boards pio boards STM32F411CEU6 --json-output
+```
+
+```json
+[
+  {
+    "id": "pybstick26_std",
+    "name": "PYBStick Standard 26",
+    "platform": "ststm32",
+    "mcu": "STM32F411CEU6",
+    "fcpu": 100000000,
+    "ram": 131072,
+    "rom": 524288,
+    "frameworks": ["arduino", "cmsis", "stm32cube", "libopencm3"],
+    "vendor": "PYBStick",
+    "url": "https://shop.mchobby.be/fr/micropython/1844-pybstick-standard-26-micropython-et-arduino-3232100018440-garatronic.html",
+    "connectivity": ["can"],
+    "debug": {
+      "tools": { "blackmagic": {}, "jlink": {}, "stlink": {}, "cmsis-dap": {} }
+    }
+  },
+  {
+    "id": "genericSTM32F411CE",
+    "name": "STM32F411CE (128k RAM. 512k Flash)",
+    "platform": "ststm32",
+    "mcu": "STM32F411CEU6",
+    "fcpu": 100000000,
+    "ram": 131072,
+    "rom": 524288,
+    "frameworks": ["arduino", "cmsis", "stm32cube", "libopencm3"],
+    "vendor": "Generic",
+    "url": "https://www.st.com/en/microcontrollers-microprocessors/stm32f411ce.html",
+    "debug": { "tools": { "blackmagic": {}, "jlink": {}, "stlink": {} } }
+  },
+  {
+    "id": "thunder_pack_f411",
+    "name": "ThunderPack v1.1+",
+    "platform": "ststm32",
+    "mcu": "STM32F411CEU6",
+    "fcpu": 100000000,
+    "ram": 131072,
+    "rom": 524288,
+    "frameworks": ["arduino", "cmsis", "stm32cube", "libopencm3"],
+    "vendor": "ThunderPack",
+    "url": "https://github.com/jgillick/ThunderPack/tree/STM32F4",
+    "connectivity": ["can"],
+    "debug": {
+      "tools": { "blackmagic": {}, "jlink": {}, "stlink": {}, "cmsis-dap": {} }
+    }
+  },
+  {
+    "id": "blackpill_f411ce",
+    "name": "WeAct Studio BlackPill V2.0 (STM32F411CE)",
+    "platform": "ststm32",
+    "mcu": "STM32F411CEU6",
+    "fcpu": 100000000,
+    "ram": 131072,
+    "rom": 524288,
+    "frameworks": ["arduino", "cmsis", "stm32cube", "libopencm3", "zephyr"],
+    "vendor": "WeAct Studio",
+    "url": "https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1",
+    "debug": {
+      "tools": { "blackmagic": {}, "jlink": {}, "stlink": {}, "cmsis-dap": {} }
+    }
+  }
+]
+```
