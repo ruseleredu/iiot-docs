@@ -1,0 +1,111 @@
+---
+title: Esptool
+description: Serial utility for flashing, provisioning, and interacting with Espressif SoCs.
+sidebar_position: 2
+---
+
+esptool is a popular, open-source Python utility used to flash, provision, and interact with Espressif Systems microcontrollers (like the ESP32 and ESP8266). It communicates directly with the chip's ROM bootloader to upload firmware binaries, read device information, and back up memory.
+
+- https://docs.espressif.com/projects/esptool/en/latest/esp32/
+
+Getting started is easy:
+
+```bash
+pip install esptool
+```
+
+You can check if it is working by running:
+
+```bash
+esptool chip-id
+```
+
+```bash
+esptool v5.3.0
+Connected to ESP32 on COM5:
+Chip type:          ESP32-D0WD-V3 (revision v3.1)
+Features:           Wi-Fi, BT, Dual Core + LP Core, 240MHz, Vref calibration in eFuse, Coding Scheme None
+Crystal frequency:  40MHz
+MAC:                f4:2d:c9:71:c6:e4
+
+Stub flasher running.
+
+Warning: ESP32 has no chip ID. Reading MAC address instead.
+MAC:                f4:2d:c9:71:c6:e4
+
+Hard resetting via RTS pin...
+```
+
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 read_mac
+```
+
+Then you can use it to flash your ESP32:
+
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 esp32-20210902-v1.17.0.bin
+```
+
+```bash
+esptool -h
+```
+
+```bash
+ Usage: esptool [OPTIONS] COMMAND [ARGS]...
+
+ esptool v5.3.0 - serial utility for flashing, provisioning, and interacting with Espressif SoCs.
+
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --chip              -c  [auto|esp8266|esp32|esp32s2|esp32s3|esp32c3|  Target chip type.                              │
+│                         esp32c2|esp32c6|esp32c61|esp32c5|esp32e22|es                                                 │
+│                         p32h2|esp32h21|esp32p4|esp32h4|esp32s31]                                                     │
+│ --port              -p  SERIAL-PORT                                   Serial port device.                            │
+│ --baud              -b  BAUD-RATE                                     Serial port baud rate used when                │
+│                                                                       flashing/reading.                              │
+│ --port-filter           [TEXT]                                        Serial port device filter, can be vid=NUMBER,  │
+│                                                                       pid=NUMBER, name=SUBSTRING, serial=SUBSTRING.  │
+│ --before                [default-reset|usb-reset|no-reset|no-reset-n  Which reset to perform before connecting to    │
+│                         o-sync]                                       the chip.                                      │
+│ --after             -a  [hard-reset|soft-reset|no-reset|no-reset-stu  Which reset to perform after operation is      │
+│                         b|watchdog-reset]                             finished.                                      │
+│ --no-stub                                                             Disable launching the flasher stub, only talk  │
+│                                                                       to ROM bootloader. Some features will not be   │
+│                                                                       available.                                     │
+│ --trace             -t                                                Enable trace-level output of esptool           │
+│                                                                       interactions.                                  │
+│ --verbose           -v                                                Print all output, disable collapsing output    │
+│                                                                       stages.                                        │
+│ --silent            -s                                                Silence all output except for errors.          │
+│ --override-vddsdio      [1.8V|1.9V|OFF]                               Override ESP32 VDDSDIO internal voltage        │
+│                                                                       regulator (use with care).                     │
+│ --connect-attempts      INTEGER                                       Number of attempts to connect, negative or 0   │
+│                                                                       for infinite. Default: 7.                      │
+│ --help              -h                                                Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Basic commands ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ write-flash                   Write a binary blob to flash. The address is followed by binary filename, separated by │
+│                               space.                                                                                 │
+│ read-flash                    Read SPI flash memory content.                                                         │
+│ erase-flash                   Erase the SPI flash memory.                                                            │
+│ erase-region                  Erase a region of the SPI flash memory.                                                │
+│ read-mac                      Print the device MAC address.                                                          │
+│ flash-id                      Print the SPI flash memory manufacturer and device ID.                                 │
+│ elf2image                     Create an application image from ELF file                                              │
+│ image-info                    Print information about a firmware image (bootloader or application).                  │
+│ merge-bin                     Merge multiple raw binary files into a single flashable file.                          │
+│ version                       Print esptool version.                                                                 │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Advanced commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ verify-flash                  Verify a binary blob against the flash memory content.                                 │
+│ load-ram                      Download an image to RAM and execute.                                                  │
+│ dump-mem                      Dump arbitrary memory to a file.                                                       │
+│ read-mem                      Read arbitrary memory location.                                                        │
+│ write-mem                     Modify or write to arbitrary memory location.                                          │
+│ read-flash-status             Read SPI flash memory status register.                                                 │
+│ write-flash-status            Write SPI flash memory status register.                                                │
+│ read-flash-sfdp               Read SPI flash SFDP (Serial Flash Discoverable Parameters).                            │
+│ get-security-info             Print security information report.                                                     │
+│ chip-id                       Print the device chip ID.                                                              │
+│ run                           Run application code loaded in flash.                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
