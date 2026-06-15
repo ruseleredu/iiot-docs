@@ -40,7 +40,7 @@ const FeatureList: FeatureItem[] = [
         Ensino a Distância
       </Link>
     ),
-    Svg: require('@site/static/img/online-seminar-svgrepo-com.svg').default,
+    Svg: require('@site/static/img/microchip-svgrepo-com.svg').default,
     description: (
       <>
         As atividades de <Link to="/ead/intro">ensino a distância</Link> constituem em uma sequencia de videoaulas explicativas acompanhadas de questionários. As atividades são realizadas de forma assíncrona, permitindo que os alunos possam acessar o conteúdo e realizar as atividades no seu próprio ritmo.
@@ -53,7 +53,7 @@ const FeatureList: FeatureItem[] = [
         Laboratório
       </Link>
     ),
-    Svg: require('@site/static/img/lab-medical-test-svgrepo-com.svg').default,
+    Svg: require('@site/static/img/factory-svgrepo-com.svg').default,
     description: (
       <>
         As atividades de <Link to="/lab/intro">laboratório</Link> constituem da aplicação prática dos conteúdos vistos no <Link to="/ead/intro">ensino a distância</Link>. As atividades são realizadas de forma síncrona, com encontros semanais para a realização das atividades práticas, promovendo a interação entre os alunos e a aplicação dos conceitos vistos.
@@ -66,7 +66,7 @@ const FeatureList: FeatureItem[] = [
         Projeto Final
       </Link>
     ),
-    Svg: require('@site/static/img/project-svgrepo-com.svg').default,
+    Svg: require('@site/static/img/industrial-robot-robot-svgrepo-com.svg').default,
     description: (
       <>
         O <Link to="/pjts/intro">projeto final</Link> constitue em aplicar os conhecimentos adquiridos ao longo do curso para desenvolver um protótipo utilizando o  <a href="https://www.arduino.cc/" target="_blank">Arduino</a>. O projeto é desenvolvido em grupos, promovendo a colaboração entre os alunos e a aplicação prática dos conceitos aprendidos.
