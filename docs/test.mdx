@@ -445,6 +445,63 @@ void loop() {
 }
 ```
 
+- `armasm`
+- ARM Assembly
+
+```armasm
+.syntax unified
+.cpu cortex-m4
+.thumb
+
+.global main
+
+main:
+    # --- 1. Enable Clock for GPIOA ---
+    # RCC Base Address = 0x40023800
+    # RCC_AHB1ENR Address = RCC Base + 0x30 = 0x40023830
+    ldr r0, =0x40023830
+    ldr r1, [r0]            # Read current AHB1ENR register
+    orr r1, r1, #1          # Set Bit 0 to enable GPIOA clock
+    str r1, [r0]            # Store back to AHB1ENR
+
+    # --- 2. Configure PA5 as Output ---
+    # GPIOA Base Address = 0x40020000
+    # GPIOA_MODER Address = GPIOA Base + 0x00 = 0x40020000
+    ldr r2, =0x40020000
+    ldr r3, [r2]            # Read current MODER
+    bic r3, r3, #(3 << 10)  # Clear bits 11:10 (PA5)
+    orr r3, r3, #(1 << 10)  # Set bit 10 to configure as General Purpose Output
+    str r3, [r2]            # Store back to MODER
+
+loop:
+    # --- 3. Turn LED ON (Set PA5) ---
+    # GPIOA_BSRR Address = GPIOA Base + 0x18 = 0x40020018
+    # PA5 Set bit is bit 5
+    # highlight-next-line
+    ldr r4, =0x40020018
+    mov r5, #(1 << 5)
+    str r5, [r4]
+
+    bl delay                # Call delay subroutine
+
+    # --- 4. Turn LED OFF (Reset PA5) ---
+    # PA5 Reset bit is bit (5 + 16) = 21
+    mov r5, #(1 << 21)
+    str r5, [r4]
+
+    bl delay                # Call delay subroutine
+    b loop                  # Infinite loop
+
+delay:
+    ldr r6, =0x500000       # Load delay counter
+delay_loop:
+    subs r6, r6, #1         # Decrement counter and update flags
+    bne delay_loop          # If not zero, repeat
+    bx lr                   # Return from subroutine
+
+.end
+```
+
 ## All Prism.js Supported Languages
 
 Prism.js itself supports a massive number of languages, far more than Docusaurus includes by default. To use any of these, you must explicitly add them to your `docusaurus.config.js` file.

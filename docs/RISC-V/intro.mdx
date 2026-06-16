@@ -1,0 +1,138 @@
+---
+title: Informações gerais
+sidebar_position: 1
+description: Design with AI, simulate your circuit, and export diagrams or firmware from one browser-based workspace.
+---
+
+## RISC-V
+
+RISC-V is an open standard instruction set architecture (ISA) based on established reduced instruction set computing (RISC) principles. Unlike most other ISA designs, the RISC-V ISA is provided under open source licenses that do not require fees to use. This has made it popular for academic research and for commercial implementations.
+
+- https://riscv.org/
+
+### RISC-V Reference
+
+- https://riscv.org/specifications/
+- https://github.com/jameslzhu/riscv-card
+- https://github.com/mikeroyal/RISC-V-Guide
+
+Dê uma olhada:
+
+- https://forum.arduino.cc/t/architecture-of-lx6-processor-and-the-organization-of-dual-core-30-pin-esp32s-board/1150702
+
+### RISC-V Instruction Set
+
+- https://github.com/riscv/riscv-isa-manual
+- [Open-Source RISC-V Architecture IDs](https://github.com/riscv/riscv-isa-manual/blob/main/marchid.md)
+- [RISC-V Instruction Set Specifications](https://msyksphinz-self.github.io/riscv-isadoc/)
+
+## RISC-V Assembler Cheat Sheet
+
+- https://projectf.io/posts/riscv-cheat-sheet/
+- https://projectf.io/posts/riscv-compiler-explorer/
+
+## A web-based RISC-V simulator
+
+- https://github.com/Haoziwan/Interactive-RISC-V-Simulator
+- https://riscv-simulator-five.vercel.app/
+- https://www.riscvschool.com/risc-v-simulators/
+- https://riscv.vercel.app/
+- https://sc-nas.fit.vutbr.cz:11443/
+
+### Spike RISC-V ISA Simulator
+
+Spike is the golden reference functional RISC-V ISA C++ sofware simulator. It is used for testing and validating RISC-V implementations, and for software development and debugging.
+
+- https://github.com/riscv-software-src/riscv-isa-sim
+- https://chipyard.readthedocs.io/en/latest/Software/Spike.html
+
+## BRISC-V Toolbox
+
+The BRISC-V toobox is the Boston RISC-V architecture design exploration suite. BRISC-V is comprised of a number of different processor architectures, a simulator, and a visual verilog file generation tool, for education and research projects.
+
+- https://ascslab.org/research/briscv/index.html
+- https://www.youtube.com/watch?v=Iew0gYdcdyQ
+
+## Simulators and Emulators
+
+- https://www.unicorn-engine.org/
+- https://riscv.vercel.app/
+- https://riscv-simulator-five.vercel.app/
+- https://ascslab.org/research/briscv/simulator/simulator.html
+
+### RISC-V Assembly Example
+
+- https://ascslab.org/research/briscv/simulator/manual.html
+
+```assembly
+	.file	"gcd.c"
+	.option nopic
+	.text
+	.align	2
+	.globl	gcd
+	.type	gcd, @function
+gcd:
+	addi	sp,sp,-48
+	sw	ra,44(sp)
+	sw	s0,40(sp)
+	addi	s0,sp,48
+	sw	a0,-36(s0)
+	sw	a1,-40(s0)
+	lw	a4,-36(s0)
+	lw	a5,-40(s0)
+	bne	a4,a5,.L2
+	lw	a5,-36(s0)
+	sw	a5,-20(s0)
+	j	.L3
+.L2:
+	lw	a4,-36(s0)
+	lw	a5,-40(s0)
+	ble	a4,a5,.L4
+	lw	a4,-36(s0)
+	lw	a5,-40(s0)
+	sub	a5,a4,a5
+	sw	a5,-36(s0)
+	j	.L5
+.L4:
+	lw	a4,-40(s0)
+	lw	a5,-36(s0)
+	sub	a5,a4,a5
+	sw	a5,-40(s0)
+.L5:
+	lw	a1,-40(s0)
+	lw	a0,-36(s0)
+	call	gcd
+	sw	a0,-20(s0)
+.L3:
+	lw	a5,-20(s0)
+	mv	a0,a5
+	lw	ra,44(sp)
+	lw	s0,40(sp)
+	addi	sp,sp,48
+	jr	ra
+	.size	gcd, .-gcd
+	.align	2
+	.globl	main
+	.type	main, @function
+main:
+	addi	sp,sp,-32
+	sw	ra,28(sp)
+	sw	s0,24(sp)
+	addi	s0,sp,32
+	li	a5,64
+	sw	a5,-20(s0)
+	li	a5,48
+	sw	a5,-24(s0)
+	lw	a1,-24(s0)
+	lw	a0,-20(s0)
+	call	gcd
+	sw	a0,-28(s0)
+	lw	a5,-28(s0)
+	mv	a0,a5
+	lw	ra,28(sp)
+	lw	s0,24(sp)
+	addi	sp,sp,32
+	jr	ra
+	.size	main, .-main
+	.ident	"GCC: (GNU) 7.2.0"
+```
