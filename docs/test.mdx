@@ -223,7 +223,7 @@ console.log(person.firstName); // Accessing object properties
 function identity<T>(arg: T): T {
   return arg;
 }
-
+// highlight-next-line
 let output1 = identity<string>("myString");
 let output2 = identity<number>(123);
 
@@ -239,6 +239,7 @@ public class Main {
   public static void main(String[] args) {
     /* The code below will print the words Hello World
     to the screen, and it is amazing */
+    // highlight-next-line
     System.out.println("Hello World");
   }
 }
@@ -262,6 +263,7 @@ def factorial(n):
 
 # Example usage:
 number = 5
+# highlight-next-line
 print(f"The factorial of {number} is: {factorial(number)}")
 ```
 
@@ -270,6 +272,7 @@ print(f"The factorial of {number} is: {factorial(number)}")
 
 ```sql
 CREATE TABLE Employees (
+-- highlight-next-line
     EmployeeID INT PRIMARY KEY,
     FirstName VARCHAR(50),
     LastName VARCHAR(50),
@@ -285,6 +288,8 @@ CREATE TABLE Employees (
   "name": "John Doe",
   "age": 30,
   "isStudent": false,
+  <!-- comment -->
+  <!-- highlight-next-line -->
   "hobbies": ["reading", "hiking", "gaming"],
   "address": {
     "street": "123 Main St",
@@ -303,6 +308,8 @@ CREATE TABLE Employees (
   <to>Tove</to>
   <from>Jani</from>
   <heading>Reminder</heading>
+  <!-- This is a single-line or multi-line XML comment -->
+  <!-- highlight-next-line -->
   <body>Don't forget me this weekend!</body>
 </note>
 ```
@@ -335,6 +342,7 @@ address:
   zip_code: "90210" # String value for zip code
 
 # Another list with nested mappings
+# highlight-next-line
 courses:
   - title: Introduction to Programming
     instructor: Dr. Smith
@@ -370,6 +378,7 @@ summary: >
 	B & 4{4C}; \\
 	C & 8{2C}; \\
 	D & 16{C}; \\
+  % highlight-next-line
 	Y & HXLHXHXHXLHHHXXH \\
 	\extracode
 	\begin{scope}[on background layer]
@@ -395,6 +404,7 @@ numbers = [4, 12, 19, 3, 25, 8];
 sum_result = 0;
 
 %% 2. For Loop & Conditional Logic
+% highlight-next-line
 fprintf('Evaluating array elements:\n');
 for i = 1:length(numbers)
     current_val = numbers(i);
@@ -412,6 +422,27 @@ end
 %% 3. Output Results
 disp('--- Execution Summary ---');
 fprintf('Total sum of elements: %d\n', sum_result);
+```
+
+- `arduino`
+- Arduino — arduino, ino
+
+```arduino
+#define LED 2
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  Serial.begin(115200);
+  // highlight-next-line
+  Serial.println("Hello, ESP32!");
+}
+
+void loop() {
+  digitalWrite(LED, HIGH);
+  delay(500);
+  digitalWrite(LED, LOW);
+  delay(500);
+}
 ```
 
 ## All Prism.js Supported Languages
