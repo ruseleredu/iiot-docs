@@ -181,6 +181,20 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: [
+        // https://prismjs.com/#supported-languages
+        "autohotkey",
+        "arduino",
+        "apacheconf",
+        "nginx",
+        "bash",
+        "matlab",
+        "powershell",
+        "ini",
+        "latex",
+        "php",
+        "java",
+      ],
     },
   } satisfies Preset.ThemeConfig,
 };
