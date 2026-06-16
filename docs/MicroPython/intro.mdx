@@ -1,0 +1,39 @@
+---
+title: Informações gerais
+sidebar_position: 1
+description: Design with AI, simulate your circuit, and export diagrams or firmware from one browser-based workspace.
+---
+
+## MicroPython
+
+MicroPython is a lean and efficient implementation of the Python 3 programming language that includes a small subset of the Python standard library and is optimized to run on microcontrollers and in constrained environments.
+
+- https://micropython.org/
+
+## MicroPython on Unicorn
+
+Unicorn is a lightweight multi-platform, multi-architecture CPU emulator framework. It provides a simple API to emulate various CPU architectures, making it easier for developers to test and debug their code in a virtual environment.
+
+- https://www.unicorn-engine.org/
+- https://github.com/micropython/micropython-unicorn
+- https://micropython.org/unicorn
+
+Use Wokwi to simulate embedded MicroPython projects and test your hardware projects.
+
+- https://wokwi.com/micropython
+
+MicroPython Blink ESP32
+
+```python
+from machine import Pin
+from utime import sleep
+
+print("Hello, ESP32!")
+
+led = Pin(15, Pin.OUT)
+while True:
+  led.on()
+  sleep(0.5)
+  led.off()
+  sleep(0.5)
+```
