@@ -161,6 +161,20 @@ const config: Config = {
         // ... other options specific to your API docs
       },
     ],
+    [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "iot", // Unique ID for this docs instance
+        path: "iot-docs", // Path to your iot docs folder
+        routeBasePath: "iot", // Base URL for these docs (e.g., yoursite.com/iot/...)
+        sidebarPath: require.resolve("./sidebarsiot.ts"), // Separate sidebar for iot docs
+        // 👇 Add this line for the last update time
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+        // ... other options specific to your API docs
+      },
+    ],
   ],
 
   themeConfig: {

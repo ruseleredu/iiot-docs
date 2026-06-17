@@ -62,6 +62,42 @@ const navbarItems: NavbarItem[] = [
         ],
     },
     {
+        label: "IoT",
+        to: "/iot/intro", // Link to a page in your ESP32 docs
+        type: "dropdown",
+        position: "left",
+        items: [
+            {
+                to: "/iot/intro", // Link to a page in your iot docs
+                label: "Open-Source IoT Platform",
+            },
+            {
+                to: "/iot/category/openremote", // Link to a page in your iot docs
+                label: "OpenRemote",
+            },
+            {
+                to: "/iot/category/thingsboard", // Link to a page in your iot docs
+                label: "ThingsBoard",
+            },
+            {
+                to: "/iot/category/node-red", // Link to a page in your iot docs
+                label: "Node-RED",
+            },
+            {
+                to: "/iot/category/eclipse-iot", // Link to a page in your iot docs
+                label: "Eclipse IoT",
+            },
+            {
+                to: "/iot/category/balena", // Link to a page in your iot docs
+                label: "Balena",
+            },
+            {
+                to: "/iot/category/mainflux", // Link to a page in your iot docs
+                label: "Mainflux",
+            },
+        ],
+    },
+    {
         to: "/ead/intro", // Link to a page in your EaD docs
         label: "EaD",
         type: "dropdown",
