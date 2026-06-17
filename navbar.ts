@@ -72,16 +72,16 @@ const navbarItems: NavbarItem[] = [
                 label: "Open-Source IoT Platform",
             },
             {
-                to: "/iot/category/openremote", // Link to a page in your iot docs
-                label: "OpenRemote",
+                to: "/iot/category/node-red", // Link to a page in your iot docs
+                label: "Node-RED",
             },
             {
                 to: "/iot/category/thingsboard", // Link to a page in your iot docs
                 label: "ThingsBoard",
             },
             {
-                to: "/iot/category/node-red", // Link to a page in your iot docs
-                label: "Node-RED",
+                to: "/iot/category/openremote", // Link to a page in your iot docs
+                label: "OpenRemote",
             },
             {
                 to: "/iot/category/eclipse-iot", // Link to a page in your iot docs
