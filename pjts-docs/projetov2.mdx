@@ -1,0 +1,225 @@
+**✅ ENUNCIADO ATUALIZADO DO PROJETO FINAL**
+
+### **Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações
+
+### **Título do Projeto:**
+
+**Sistema de Monitoramento Industrial IIoT com ESP32, Node-RED e Grafana**
+
+---
+
+### **Enunciado Completo**
+
+**Objetivo**  
+Desenvolver uma solução completa de Internet das Coisas Industrial (IIoT) para monitoramento e controle de um processo industrial simulado, utilizando a stack: **ESP32 + PlatformIO + Wokwi + Node-RED + InfluxDB + Grafana**.
+
+**Descrição**  
+O aluno (individual ou em grupo de até 3 alunos) deve construir um sistema que realize a aquisição de dados de sensores, processamento edge, transmissão via MQTT, armazenamento em banco de séries temporais e visualização avançada, com automação e alertas.
+
+**Requisitos Obrigatórios (Mínimos):**
+
+- **Hardware / Simulação:**
+  - ESP32 (simulado no **Wokwi** e/ou hardware real).
+  - **Mínimo de 3 sensores** diferentes (exemplos: DHT22 – temperatura/umidade, MPU6050 – vibração/aceleração, sensor de corrente, nível ultrassônico, etc.).
+  - **Mínimo de 1 atuador** (LED, buzzer, relé, servomotor, etc.).
+
+- **Desenvolvimento:**
+  - Programação do ESP32 utilizando **PlatformIO** no VS Code.
+  - Uso obrigatório do simulador **Wokwi** durante o desenvolvimento.
+
+- **Comunicação:**
+  - Protocolo **MQTT** (broker Mosquitto recomendado).
+  - Envio de telemetria em formato JSON.
+
+- **Processamento e Armazenamento:**
+  - **Node-RED**: responsável por receber os dados via MQTT, realizar processamento intermediário, validação e escrita no banco.
+  - **InfluxDB**: armazenamento de todos os dados históricos.
+
+- **Visualização e Automação:**
+  - **Grafana**: criação de dashboard profissional com múltiplos painéis.
+  - Regras de alerta no Grafana (ou no Node-RED).
+
+**Funcionalidades Obrigatórias:**
+
+1. Aquisição periódica de dados dos sensores no ESP32.
+2. Processamento edge (ex: filtro, detecção de anomalia) antes do envio.
+3. Transmissão confiável via MQTT.
+4. Fluxo completo no Node-RED (recebimento, processamento, escrita no InfluxDB).
+5. Dashboard no Grafana contendo **pelo menos 5 painéis diferentes** (Time Series, Gauge, Stat, Table, Alert List, etc.).
+6. Controle remoto de pelo menos um atuador via dashboard (MQTT command).
+7. Configuração de alertas (ex: temperatura acima do limite, vibração excessiva).
+
+**Documentação (entrega obrigatória):**
+
+- Relatório técnico (máximo 15 páginas) contendo:
+  - Introdução e objetivos do projeto.
+  - Arquitetura completa do sistema (diagrama).
+  - Diagrama elétrico / print do projeto no Wokwi.
+  - Código completo do ESP32 (PlatformIO).
+  - Fluxos exportados do Node-RED.
+  - Dashboard Grafana exportado (JSON).
+  - Explicação das regras de alerta e automação.
+  - Análise crítica dos resultados e melhorias sugeridas.
+- Vídeo demonstração (4 a 7 minutos) mostrando o sistema funcionando (simulação no Wokwi + Grafana ao vivo).
+
+**Tema Sugerido (pode ser escolhido pelo aluno):**
+
+- Monitoramento de máquina industrial (vibração + temperatura + corrente).
+- Controle ambiental industrial (temperatura, umidade, qualidade do ar).
+- Monitoramento de tanque ou reservatório.
+- Sistema de manutenção preditiva simples.
+
+**Prazo:**
+
+- **Semana 11:** Entrega da proposta do projeto (1 página).
+- **Semana 15:** Entrega completa + apresentação oral.
+
+---
+
+### **Critérios de Avaliação (Resumo)**
+
+- Funcionamento técnico completo (ESP32 + MQTT + Node-RED + InfluxDB + Grafana): **30%**
+- Qualidade do Dashboard Grafana e alertas: **25%**
+- Documentação e organização do código: **20%**
+- Apresentação e demonstração: **15%**
+- Criatividade, complexidade e boas práticas (edge computing, segurança MQTT, etc.): **10%**
+
+---
+
+Este enunciado está totalmente alinhado com a stack definida (**ESP32 + PlatformIO + Wokwi + Node-RED + Grafana**).
+
+Gostaria de alguma alteração?  
+Exemplos:
+
+- Tornar o projeto mais simples ou mais desafiador;
+- Incluir rubrica de avaliação detalhada em tabela;
+- Adicionar checklist de entrega;
+- Fornecer template de `docker-compose.yml` para subir os serviços.
+
+**✅ TEMPLATE `docker-compose.yml`**  
+**Stack:** Node-RED + Mosquitto (MQTT) + InfluxDB + Grafana
+
+Este template é **pronto para uso** no contexto do curso de IIoT.
+
+### 1. Crie o arquivo `docker-compose.yml`
+
+```yaml
+version: "3.8"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT
+      - "9001:9001" # WebSocket (opcional)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+
+  nodered:
+    image: nodered/node-red:latest
+    container_name: nodered
+    restart: unless-stopped
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered/data:/data
+    depends_on:
+      - mosquitto
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123456
+      - DOCKER_INFLUXDB_INIT_ORG=iiot-lab
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensors
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=supersecretadmintoken123
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+volumes:
+  mosquitto_data:
+  nodered_data:
+  influxdb_data:
+  grafana_data:
+```
+
+---
+
+### 2. Como usar
+
+1. Crie a estrutura de pastas:
+
+```bash
+mkdir -p mosquitto/config mosquitto/data mosquitto/log \
+         nodered/data \
+         influxdb/data influxdb/config \
+         grafana/data grafana/provisioning/dashboards grafana/provisioning/datasources
+```
+
+2. Crie o arquivo de configuração do Mosquitto (`mosquitto/config/mosquitto.conf`):
+
+```conf
+listener 1883
+allow_anonymous true
+
+listener 9001
+protocol websockets
+```
+
+3. Suba os serviços:
+
+```bash
+docker compose up -d
+```
+
+4. Acessos iniciais:
+
+| Serviço   | URL                   | Usuário | Senha       |
+| --------- | --------------------- | ------- | ----------- |
+| Node-RED  | http://localhost:1880 | -       | -           |
+| InfluxDB  | http://localhost:8086 | admin   | admin123456 |
+| Grafana   | http://localhost:3000 | admin   | admin       |
+| Mosquitto | localhost:1883 (MQTT) | -       | - (anônimo) |
+
+---
+
+**Dicas para o Curso:**
+
+- Este compose é **ideal para laboratório** e desenvolvimento local.
+- Para produção ou mais segurança, remova `allow_anonymous true` e configure usuários no Mosquitto.
+- Você pode adicionar o **ThingsBoard** posteriormente se quiser oferecer as duas opções aos alunos.
+
+Quer que eu forneça também:
+
+- Arquivo de provisionamento do Grafana (datasource InfluxDB automático)?
+- Versão com **ThingsBoard** incluído?
+- Comandos úteis (`docker compose` logs, restart, etc.)?
+
+É só pedir!

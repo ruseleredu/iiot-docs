@@ -1,0 +1,248 @@
+**OpenRemote + ChirpStack Integration Guide** (LoRaWAN)
+
+OpenRemote integrates with **ChirpStack** (open-source LoRaWAN Network Server) primarily through two approaches:
+
+1. **MQTT Agent** (manual, flexible – recommended for most users).
+2. **Dedicated ChirpStack Agent** (more automated, with device discovery via gRPC + MQTT).
+
+### 1. Recommended: MQTT Agent Method (Manual but Reliable)
+
+This is the most documented and commonly used approach.
+
+#### ChirpStack Side Setup (Summary)
+
+- Install ChirpStack (official Docker compose is easiest).
+- Create **Service Profile**, **Gateway**, **Application**, **Device Profile** (with JavaScript decoder for your sensor payload).
+- Register your LoRaWAN device (OTAA recommended) with Device EUI and App Key.
+
+#### OpenRemote Side
+
+**Step 1: Create MQTT Agent**
+
+- In OpenRemote → **Assets** → Add **MQTT Agent**.
+- Name: e.g., `ChirpStack MQTT Agent`.
+- Configure:
+  - **Host**: IP/hostname of your ChirpStack server.
+  - **Port**: `1883` (default; use 8883 + TLS if secured).
+  - Save.
+
+**Step 2: Create Device Asset in OpenRemote**
+
+- Add a new asset (e.g., **Thing** or custom type like `DraginoLHT65`).
+- Add attributes for your sensor values (e.g., `Temperature`, `Humidity`, `Battery` – Number or appropriate type).
+
+**Step 3: Configure Agent Link on Each Attribute**
+For each attribute:
+
+- Add **Agent Link** configuration item → Select your MQTT Agent.
+- Add **Subscription Topic** parameter:
+
+  ```
+  application/{application_id}/device/{devEUI}/event/up
+  ```
+
+  Example: `application/1/device/a841452101b04161/event/up`
+
+- Add **Value Filters** → JSON Path:
+  - Path: `$.object.YourFieldName` (e.g., `$.object.TempC_DS` for Dragino LHT65).
+  - Return First: Enabled.
+
+This pulls decoded payload values from ChirpStack’s MQTT integration.
+
+**Example Payload from ChirpStack (for reference):**
+
+```json
+{
+  "object": {
+    "BatV": 3.04,
+    "TempC_DS": 17.12,
+    "Hum_SHT": 34.5
+  }
+  // ... other fields
+}
+```
+
+### 2. Dedicated ChirpStack Agent (Automated)
+
+OpenRemote also offers a native **ChirpStack Agent** that uses:
+
+- **gRPC API** for device discovery and management.
+- **MQTT** for real-time uplinks/downlinks.
+
+**Key Configuration Attributes** (on the ChirpStack Agent asset):
+
+- `MQTTHost`, `MQTTPort`
+- `host` + `port` (gRPC)
+- `applicationId` (UUID from ChirpStack)
+- `apiKey` (generate in ChirpStack)
+- `clientId`, `secureMode`, etc.
+
+It supports **auto-provisioning** of assets using tags in ChirpStack Device Profiles (`openremote-asset-type`) or CSV import.
+
+This is more powerful for managing many devices but has a steeper setup.
+
+### Downlinks (Commands from OpenRemote → Devices)
+
+- Configure a **Publish Topic** in the Agent Link.
+- ChirpStack expects Base64-encoded payload.
+- Use `writeValueConverter` in advanced asset types to map OpenRemote values (e.g., `true` → specific Base64 command).
+
+### Node-RED Role (Optional but Powerful)
+
+You can place Node-RED between ChirpStack and OpenRemote:
+
+- Subscribe to ChirpStack MQTT topics.
+- Process/decode/enrich data.
+- Publish to OpenRemote’s internal MQTT broker (using the `writeattributevalue` topic structure).
+
+Or use Node-RED purely for complex flows while OpenRemote handles the asset model and UI.
+
+### Tips & Best Practices
+
+- Always set up a proper **JavaScript decoder** in your ChirpStack Device Profile.
+- Test MQTT topics first with tools like MQTT Explorer or `mosquitto_sub`.
+- For production: Use TLS on MQTT and secure API keys.
+- Payload decoding happens in ChirpStack → OpenRemote receives clean JSON in the `object` field.
+- Monitor logs in both systems for connection or JSON path issues.
+
+**Official OpenRemote Tutorial (Highly Recommended)**:  
+[ChirpStack LoRaWAN Integration](https://docs.openremote.io/docs/tutorials/receive-lorawan-sensor-data-from-chirpstack/) — Follow this for the Dragino LHT65 example with screenshots.
+
+Would you like:
+
+- Specific configuration for a particular sensor (e.g., Dragino, Milesight, Seeed)?
+- Downlink / command examples?
+- ChirpStack Agent (automated) details?
+- Node-RED flow examples for this integration?
+
+Provide your sensor model or specific requirement for more tailored steps.
+
+**OpenRemote + ChirpStack + Dragino LHT65 Full Configuration Guide**
+
+This is the most common and well-documented integration path using OpenRemote’s **MQTT Agent**.
+
+### 1. ChirpStack Side – Prerequisites
+
+1. **Run ChirpStack** (easiest with official Docker):
+
+   ```bash
+   git clone https://github.com/brocaar/chirpstack-docker.git
+   cd chirpstack-docker
+   docker compose up -d
+   ```
+
+   Access UI: `http://localhost:8080` (default: admin/admin).
+
+2. **Create Service Profile** (enable gateway metadata).
+
+3. **Add Gateway** (use your actual Gateway ID).
+
+4. **Create Application** (note the Application ID — usually starts as `1` or similar).
+
+5. **Create Device Profile for LHT65**:
+   - LoRaWAN MAC version: **1.0.3**
+   - Regional Parameters revision: **A** (for EU868)
+   - Max EIRP: **14** (Europe)
+   - Uplink interval: **1200** seconds (20 min default)
+   - OTAA: Enabled
+   - **Codec**: Paste a custom JavaScript decoder.
+
+   **Download the official Dragino decoder**:
+   Go to → https://www.dragino.com/downloads/index.php?dir=LHT65/payload_decode/  
+   Use `LHT65chirpstack decoder.txt` or the latest version.
+
+6. **Create the Device**:
+   - Enter **DevEUI** (from the LHT65 sticker or AT command).
+   - Enter **AppKey** (from the device).
+   - Assign the LHT65 device profile.
+
+After joining, you should see uplinks in ChirpStack with decoded fields in the `object` section.
+
+### 2. OpenRemote Side – MQTT Agent Configuration
+
+1. **Create MQTT Agent**:
+   - Assets → **+** → **MQTT Agent**
+   - Name: `ChirpStack MQTT Agent`
+   - Configure:
+     - **Host**: IP or hostname of your ChirpStack server
+     - **Port**: `1883` (or `8883` + TLS if you enabled it)
+     - Save
+
+2. **Create Device Asset in OpenRemote**:
+   - Assets → **+** → **Thing** (or create a custom `DraginoLHT65` asset type for reuse)
+   - Name: `Dragino LHT65 - Room1` (or similar)
+
+3. **Add Attributes** (typical for LHT65):
+
+   | Attribute Name | Value Type | Unit |
+   | -------------- | ---------- | ---- |
+   | BatV           | Number     | V    |
+   | TempC_DS       | Number     | °C   |
+   | TempC_SHT      | Number     | °C   |
+   | Hum_SHT        | Number     | %    |
+   | Ext_sensor     | Text       | -    |
+
+4. **Configure Agent Link on Each Attribute** (critical step):
+   - Edit the attribute → **Add Configuration Item** → **Agent Link**
+   - **Agent ID**: Select your `ChirpStack MQTT Agent`
+   - **Add Parameter** → **Subscription Topic**:
+
+     ```
+     application/{application_id}/device/{devEUI}/event/up
+     ```
+
+     Example: `application/1/device/a841452101b04161/event/up`
+
+   - **Add Parameter** → **Value Filters**
+     - Add Item → **JSON Path**
+     - **Path**: `$.object.TempC_DS` (example for internal DS18B20 probe)
+     - **Return First**: Enabled
+     - Save
+
+   **Common JSON Paths for LHT65** (based on Dragino decoder):
+   - `$.object.TempC_DS` → External DS18B20 temperature
+   - `$.object.TempC_SHT` → Internal SHT temperature
+   - `$.object.Hum_SHT` → Humidity
+   - `$.object.BatV` → Battery voltage
+   - `$.object.Ext_sensor` → External sensor type
+
+5. **Save everything** and wait for the next uplink (every ~20 min by default).
+
+### 3. Verification
+
+- In OpenRemote, go to the asset and check the attribute values.
+- Use MQTT Explorer to subscribe to the topic and confirm the full JSON payload.
+- Check OpenRemote Manager logs if data doesn't appear.
+
+### Example Full Payload from ChirpStack (for reference)
+
+```json
+{
+  "object": {
+    "BatV": 3.04,
+    "Ext_sensor": "Temperature Sensor",
+    "Hum_SHT": "34.5",
+    "TempC_DS": "17.12",
+    "TempC_SHT": "17.67"
+  }
+}
+```
+
+### Tips & Common Issues
+
+- **No data arriving?** Double-check Subscription Topic (especially Application ID and DevEUI — must be lowercase).
+- **Decoder not working?** Verify the JavaScript codec is correctly pasted in the Device Profile.
+- **Multiple sensors?** Create a reusable custom asset type with all attributes pre-configured.
+- **Downlinks (commands)**: Add a **Publish Topic** in the Agent Link and use proper Base64 payload format (more advanced).
+- **Scaling**: For many devices, consider the dedicated **ChirpStack Agent** in OpenRemote for auto-provisioning.
+
+This setup gives you clean sensor data in OpenRemote’s asset model, ready for dashboards, rules, alarms, and maps.
+
+Would you like:
+
+- Steps to create a reusable custom asset type?
+- Downlink/command examples?
+- Node-RED in the middle for extra processing?
+- Screenshots-style detailed JSON Path for other fields?
+
+Let me know your exact setup (region, number of devices, etc.) for further tailoring.

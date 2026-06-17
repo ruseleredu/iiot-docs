@@ -1,0 +1,58 @@
+**Eclipse Kura** is an open-source IoT **edge framework** (Java/OSGi-based) specifically designed for building and managing IoT gateways. It runs on edge hardware (Raspberry Pi, industrial gateways, etc.) and excels at device connectivity, local data processing, protocol translation, and reliable cloud forwarding — especially in industrial or harsh environments.
+
+It complements or serves as an alternative to the platforms in your previous query, particularly as the **edge layer** feeding into cloud/central platforms like ThingsBoard or OpenRemote.
+
+### Core Features
+
+- **Modular OSGi architecture** — Dynamic, extensible bundles for custom applications.
+- **Hardware abstraction** — Easy access to serial ports, GPIOs, I2C, USB, GPS, watchdog, etc.
+- **Kura Wires** — Visual, drag-and-drop data flow programming (similar to Node-RED but integrated into the gateway). Build pipelines for data collection, filtering, aggregation (SQL), processing, and publishing. Marketplace for additional components (protocol drivers, AI, scripting).
+- **Asset/Driver Model** — Unified way to model field devices (Modbus, OPC-UA, S7, CAN, etc.). Creates digital twins/mirrors of devices for easy read/write.
+- **Connectivity** — MQTT (Paho), store-and-forward, multi-cloud support (AWS IoT, Azure, Eclipse Kapua, custom), industrial protocols.
+- **Remote management** — Configuration, app deployment/updates, networking (Ethernet, WiFi, cellular).
+- **Deployment** — Native on Linux, Docker containers available. Runs on resource-constrained to powerful gateways.
+- **Commercial extension** — Eurotech’s **Everyware Software Framework (ESF)** adds enterprise features like advanced security, remote access, diagnostics, and tighter integration with Everyware Cloud.
+
+### Comparison Update: Node-RED + Grafana vs ThingsBoard vs OpenRemote + Kura
+
+| Aspect                   | Node-RED (+ Grafana)                         | ThingsBoard                | OpenRemote             | Eclipse Kura (Edge)                                          |
+| ------------------------ | -------------------------------------------- | -------------------------- | ---------------------- | ------------------------------------------------------------ |
+| **Primary Focus**        | Flows & integrations (often central or edge) | Full platform (cloud/edge) | Asset-centric platform | **Industrial edge gateway**                                  |
+| **Edge Strength**        | Good (runs on Pi, lightweight)               | Edge rules (limited)       | Edge capabilities      | **Excellent** (OSGi, protocols, reliability)                 |
+| **Visual Programming**   | Node-RED flows (very flexible)               | Rule chains                | Rules/flows/scripts    | **Kura Wires** (asset-focused)                               |
+| **Industrial Protocols** | Via nodes                                    | Good                       | Strong                 | **Very strong** (Modbus, OPC-UA, etc.)                       |
+| **Hardware Access**      | Via nodes                                    | Limited                    | Good                   | **Native APIs** (GPIO, serial, etc.)                         |
+| **Deployment**           | Flexible (Docker, etc.)                      | Gateway agents             | Edge agents            | **Gateway-native** (robust container)                        |
+| **Best Paired With**     | Any cloud platform                           | Self or with edge          | Central platform       | **ThingsBoard/OpenRemote/Kapua**                             |
+| **Use Case**             | Rapid prototyping, custom logic              | Dashboards & device mgmt   | Buildings/energy/OEM   | **Field gateways**, protocol translation, offline resilience |
+
+### When to Use Eclipse Kura
+
+- **Choose Kura** for robust **edge gateways** in industrial settings (factories, utilities, remote sites) where you need:
+  - Reliable local processing and store-and-forward.
+  - Direct hardware/protocol integration (Modbus, OPC-UA, etc.).
+  - Long-term stability and remote manageability.
+  - Java/OSGi ecosystem for custom enterprise apps.
+
+- **Hybrid setups are common**:
+  - Kura gateway → MQTT → **ThingsBoard** (for dashboards, alarms, scalability).
+  - Kura + **Node-RED** (Node-RED for complex logic, Kura for robust gateway services).
+  - Kura → **OpenRemote** (asset modeling alignment).
+  - Or with Eclipse Kapua for a full open-source edge-to-cloud stack.
+
+**Pros**:
+
+- Mature, stable, enterprise-proven (used in solar, utilities, etc.).
+- Strong offline/edge resilience.
+- Visual Wires + deep Java extensibility.
+- Active Eclipse IoT backing.
+
+**Cons**:
+
+- Steeper learning curve if you're not familiar with OSGi/Java (compared to Node-RED).
+- Smaller community than Node-RED.
+- More "heavyweight" than pure Node-RED for simple hobby projects.
+
+**Getting Started**: Docker quickstart or native install on Raspberry Pi. Excellent docs with Wires tutorials. Marketplace for add-ons.
+
+**Recommendation**: If your project involves real field devices and needs a solid industrial edge layer, **add Kura (or ESF)** to your stack. For pure flexibility and quick dashboards, stick with or combine Node-RED + one of the central platforms. Test with the Docker image to see how Wires compares to Node-RED flows. Let me know your specific use case (e.g., protocols, scale, industry) for more tailored advice!

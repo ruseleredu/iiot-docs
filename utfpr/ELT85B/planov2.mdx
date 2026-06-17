@@ -1,0 +1,313 @@
+**✅ DETALHAMENTO ATUALIZADO DAS ATIVIDADES PRÁTICAS**
+
+**Stack adotada:**  
+**ESP32 + PlatformIO (VS Code) + Wokwi (simulador) + Node-RED + InfluxDB + Grafana**
+
+Esta configuração é excelente para IIoT: leve, altamente customizável e focada em visualizações avançadas de séries temporais.
+
+---
+
+### **Semana 1 – Item 1: Visão Geral sobre IoT**
+
+- **Objetivo:** Configurar todo o ambiente de desenvolvimento.
+- **Atividades:**
+  1. Instalar VS Code + extensão **PlatformIO**.
+  2. Criar projeto ESP32 no PlatformIO.
+  3. Configurar e testar simulação no **Wokwi** (blink LED + integração com VS Code).
+  4. Instalar via Docker: Node-RED, InfluxDB, Grafana e Mosquitto (MQTT broker).
+- **Entrega:** Print do Wokwi rodando + containers Docker ativos (`docker ps`).
+
+### **Semana 2 – Item 2: A Internet na IoT**
+
+- **Objetivo:** Configuração de rede e conectividade.
+- **Atividades:**
+  1. Criar projeto PlatformIO com suporte Wi-Fi.
+  2. Programar conexão Wi-Fi (`WiFi.h`) e exibir IP/MAC/RSSI.
+  3. Simular no Wokwi com configuração de rede.
+  4. Testar ping e conexão com o broker Mosquitto local.
+- **Entrega:** Código `main.cpp` comentado + screenshot do Serial Monitor.
+
+### **Semana 3 – Item 3: Sensores e Atuadores em IoT**
+
+- **Objetivo:** Leitura de sensores e controle de atuadores.
+- **Atividades:**
+  1. Montar no Wokwi: ESP32 + DHT22 + MPU6050 (ou sensor de vibração) + LED/Relé.
+  2. Programar no PlatformIO a leitura dos sensores.
+  3. Controlar atuador (ex: LED ou buzzer).
+  4. Exibir dados no Serial Monitor.
+- **Entrega:** Diagrama Wokwi + código + valores lidos.
+
+### **Semana 4 – Item 4: Atributos de Protocolos IoT**
+
+- **Objetivo:** Comparar protocolos.
+- **Atividades:**
+  1. Implementar envio via HTTP (`HTTPClient`).
+  2. Implementar envio via MQTT (`PubSubClient`).
+  3. Simular ambos no Wokwi e comparar latência, overhead e confiabilidade.
+  4. Registrar resultados.
+- **Entrega:** Código comparativo + tabela de análise.
+
+### **Semana 5 – Item 5: Pilha de Protocolos IoT**
+
+- **Objetivo:** Dominar MQTT.
+- **Atividades:**
+  1. Configurar cliente MQTT no PlatformIO.
+  2. Publicar telemetria em JSON para tópicos estruturados.
+  3. Subscrever tópicos de comando.
+  4. Testar com Mosquitto local via Wokwi.
+- **Entrega:** Código MQTT funcional.
+
+### **Semana 6 – Item 6: Computação em Nevoeiro (Fog Computing)**
+
+- **Objetivo:** Processamento na borda.
+- **Atividades:**
+  1. Adicionar sensor de vibração no Wokwi.
+  2. Implementar filtro de média móvel e detecção de anomalia local no ESP32.
+  3. Enviar apenas dados relevantes via MQTT.
+  4. Comparar volume de tráfego.
+- **Entrega:** Código com edge processing + relatório.
+
+### **Semana 7 – Item 7: Plataforma de Serviços IoT**
+
+- **Objetivo:** Introdução ao Node-RED.
+- **Atividades:**
+  1. Criar fluxos no Node-RED (MQTT In → debug → JSON parser).
+  2. Receber dados do ESP32 (Wokwi) via MQTT.
+  3. Processar e formatar dados.
+  4. Exportar fluxo.
+- **Entrega:** Fluxo Node-RED (.json).
+
+### **Semana 8 – Item 7: Plataforma de Serviços IoT (continuação)**
+
+- **Objetivo:** Integração com banco de dados.
+- **Atividades:**
+  1. Configurar Node-RED para escrever no **InfluxDB** (usar node `influxdb`).
+  2. Enviar telemetria do ESP32 → MQTT → Node-RED → InfluxDB.
+  3. Criar bucket e medição no InfluxDB.
+  4. Testar com simulação no Wokwi.
+- **Entrega:** Fluxo completo + dados visíveis no InfluxDB.
+
+### **Semana 9 – Item 7: Mercados de IoT e Ecosistemas Conectados**
+
+- **Objetivo:** Visualizações avançadas.
+- **Atividades:**
+  1. Conectar Grafana ao InfluxDB.
+  2. Criar dashboard no Grafana (Gauge, Time Series, Stat, Table).
+  3. Simular cenário industrial (temperatura, vibração, etc.).
+  4. Adicionar variáveis e painéis comparativos.
+- **Entrega:** Dashboard Grafana completo (print + export JSON).
+
+### **Semana 10 – Item 8: Padrões de IoT**
+
+- **Objetivo:** Automação e alertas.
+- **Atividades:**
+  1. Criar alertas no Grafana (baseados em thresholds).
+  2. Implementar controle remoto via MQTT (Node-RED → ESP32).
+  3. Integrar regras simples no Node-RED.
+  4. Testar notificações.
+- **Entrega:** Dashboard com alertas + controle remoto documentado.
+
+### **Semana 11 – Revisão e Integração**
+
+- **Objetivo:** Sistema completo.
+- **Atividades:**
+  1. Montagem integrada no Wokwi: sensores → ESP32 → MQTT → Node-RED → InfluxDB → Grafana + atuador.
+  2. Teste de ponta a ponta.
+  3. Aprovação do tema do Projeto Final.
+- **Entrega:** **Proposta do Projeto Final** (1 página).
+
+### **Semanas 12 a 14 – Desenvolvimento do Projeto Final**
+
+- **Semana 12:** Aquisição multi-sensor + envio MQTT estável (PlatformIO + Wokwi).
+- **Semana 13:** Fluxos Node-RED + escrita no InfluxDB.
+- **Semana 14:** Dashboard avançado no Grafana + alertas + segurança básica (autenticação MQTT).
+
+### **Semana 15 – Apresentação**
+
+- Demonstração ao vivo (Wokwi ou hardware real).
+- Defesa do projeto.
+- Entrega: Relatório técnico + vídeo demonstração.
+
+---
+
+**Vantagens desta stack:**
+
+- **PlatformIO + Wokwi**: Desenvolvimento e simulação profissionais.
+- **Node-RED**: Lógica de fluxo visual poderosa.
+- **InfluxDB + Grafana**: Excelente para dashboards industriais de séries temporais (mais flexível que muitas plataformas IoT prontas).
+
+**Recomendações:**
+
+- Usar Docker Compose para subir todos os serviços (Mosquitto + Node-RED + InfluxDB + Grafana).
+- Template inicial de `docker-compose.yml` pode ser fornecido.
+- Para o Projeto Final, incentivar o uso de múltiplos sensores e painéis Grafana ricos.
+
+Quer que eu forneça:
+
+- **docker-compose.yml** sugerido?
+- **Roteiro passo a passo com trechos de código** para alguma semana?
+- **Lista de bibliotecas PlatformIO** recomendadas?
+- Atualização do enunciado do Projeto Final para esta stack?
+
+**✅ TEMPLATE `docker-compose.yml` ATUALIZADO**  
+**Stack Completa:** ThingsBoard (Community Edition) + Node-RED + Mosquitto + InfluxDB + Grafana
+
+```yaml
+version: "3.8"
+
+services:
+  # ==================== MQTT Broker ====================
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT
+      - "9001:9001" # WebSocket (opcional)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+
+  # ==================== ThingsBoard Community Edition ====================
+  postgres:
+    image: postgres:15-alpine
+    container_name: tb-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: thingsboard
+      POSTGRES_USER: thingsboard
+      POSTGRES_PASSWORD: thingsboard
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+
+  thingsboard:
+    image: thingsboard/tb-postgres:latest
+    container_name: thingsboard
+    restart: unless-stopped
+    ports:
+      - "8080:9090" # Interface web (acesso por http://localhost:8080)
+      - "1883:1883" # MQTT (caso queira usar o broker interno)
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
+      SPRING_DATASOURCE_USERNAME: thingsboard
+      SPRING_DATASOURCE_PASSWORD: thingsboard
+      TB_QUEUE_TYPE: in-memory
+    volumes:
+      - ./thingsboard/data:/data
+      - ./thingsboard/logs:/var/log/thingsboard
+    depends_on:
+      - postgres
+
+  # ==================== Node-RED ====================
+  nodered:
+    image: nodered/node-red:latest
+    container_name: nodered
+    restart: unless-stopped
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered/data:/data
+    depends_on:
+      - mosquitto
+
+  # ==================== InfluxDB ====================
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123456
+      - DOCKER_INFLUXDB_INIT_ORG=iiot-lab
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensors
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=supersecretadmintoken123
+
+  # ==================== Grafana ====================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+volumes:
+  postgres_data:
+  thingsboard_data:
+  nodered_data:
+  influxdb_data:
+  grafana_data:
+```
+
+---
+
+### Como Usar
+
+1. **Crie a estrutura de pastas:**
+
+```bash
+mkdir -p mosquitto/config mosquitto/data mosquitto/log \
+         nodered/data \
+         postgres/data \
+         thingsboard/data thingsboard/logs \
+         influxdb/data influxdb/config \
+         grafana/data grafana/provisioning/dashboards grafana/provisioning/datasources
+```
+
+2. **Arquivo Mosquitto (`mosquitto/config/mosquitto.conf`)**
+
+```conf
+listener 1883
+allow_anonymous true
+
+listener 9001
+protocol websockets
+```
+
+3. **Subir todos os serviços:**
+
+```bash
+docker compose up -d
+```
+
+4. **Acessos:**
+
+| Serviço     | URL                   | Usuário / Senha     |
+| ----------- | --------------------- | ------------------- |
+| ThingsBoard | http://localhost:8080 | sysadmin / sysadmin |
+| Node-RED    | http://localhost:1880 | -                   |
+| InfluxDB    | http://localhost:8086 | admin / admin123456 |
+| Grafana     | http://localhost:3000 | admin / admin       |
+| Mosquitto   | localhost:1883 (MQTT) | Anônimo             |
+
+---
+
+**Dicas para o Curso:**
+
+- Use **ThingsBoard** como plataforma principal de IoT (dashboards, regras, alarmes e gerenciamento de dispositivos).
+- Use **Node-RED** para lógica de integração avançada.
+- Use **InfluxDB + Grafana** para visualizações avançadas de séries temporais (ótimo para IIoT industrial).
+- No Projeto Final, os alunos podem escolher usar ThingsBoard ou Grafana (ou ambos).
+
+Quer que eu forneça também:
+
+- Arquivo de provisionamento do Grafana (datasource InfluxDB automático)?
+- Configuração de integração ThingsBoard → InfluxDB?
+- Versão mais leve (sem InfluxDB/Grafana)?

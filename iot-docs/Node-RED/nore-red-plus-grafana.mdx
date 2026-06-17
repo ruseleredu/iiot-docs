@@ -1,0 +1,143 @@
+---
+title: Node-RED plus Grafana
+sidebar_position: 4
+description: Low-code programming for event-driven applications
+---
+
+**Node-RED + Grafana** is a flexible, modular open-source stack, while **ThingsBoard** and **OpenRemote** are more complete, integrated IoT platforms. The best choice depends on your needs for ease of use, customization, scalability, and specific features like device management or industrial focus.
+
+### Overview of Each Option
+
+- **Node-RED + Grafana** (often paired with InfluxDB/MQTT like Mosquitto):  
+  Node-RED is a low-code, flow-based programming tool for wiring devices, APIs, and services (great for automation, data transformation, and integrations). Grafana excels at beautiful, customizable dashboards and time-series visualization.  
+  This is not a full "platform" but a composable toolkit. You handle data storage (e.g., InfluxDB), MQTT broker, user management, etc., yourself.
+
+- **ThingsBoard**:  
+  An open-source IoT platform (Community Edition free/Apache 2.0) focused on device connectivity, data collection, processing (rule engine), visualization, and management. It supports MQTT, CoAP, HTTP, etc., with strong digital twin/asset modeling, alarms, and dashboards (600+ widgets). Professional Edition adds advanced features (e.g., better white-labeling, analytics). Widely used for scalable deployments.
+
+- **OpenRemote**:  
+  A 100% open-source (AGPLv3) IoT device management platform aimed at manufacturers, integrators, and professional/industrial use cases (energy, buildings, fleet, smart cities). Strong on asset management, auto-provisioning, automation rules/flows/scripts, customizable dashboards, and multi-tenancy. Emphasizes vendor independence and full openness with no paid tiers for core features.
+
+### Key Comparison
+
+| Aspect                | Node-RED + Grafana                                                   | ThingsBoard                            | OpenRemote                                          |
+| --------------------- | -------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------- |
+| **Type**              | Toolkit (glue + viz)                                                 | Full IoT platform                      | Full IoT platform (asset-focused)                   |
+| **Ease of Setup**     | High for basics; more work for production (security, users, scaling) | Good; all-in-one with quick prototypes | Good for self-host; strong for pros                 |
+| **Visualization**     | Grafana: Excellent analytics/dashboards                              | Built-in rich widgets + custom         | Custom dashboards, maps, web components             |
+| **Automation/Logic**  | Node-RED: Very strong, visual flows                                  | Rule engine + AI nodes                 | Rules, flows, scripts (JS/Groovy)                   |
+| **Device Mgmt**       | Manual/custom (via flows)                                            | Strong (provisioning, OTA, relations)  | Excellent (auto-provisioning, digital twins)        |
+| **Scalability**       | Depends on your stack (can be high)                                  | High (clustering, microservices)       | Scalable for enterprise deployments                 |
+| **Open Source**       | Fully (all components)                                               | CE fully open; PE has extras           | 100% open (no feature gating)                       |
+| **Best For**          | Custom integrations, home/prototypes, flexible pipelines             | General IoT, dashboards, rapid dev     | Industrial, OEMs, buildings, long-term independence |
+| **Learning Curve**    | Low for flows; medium for full stack                                 | Medium                                 | Medium (more enterprise-oriented)                   |
+| **Community/Support** | Large (Node-RED very active)                                         | Large, commercial options              | Growing, commercial backing                         |
+
+### Pros and Cons
+
+**Node-RED + Grafana**:
+
+- **Pros**: Extremely flexible and lightweight. Node-RED shines for rapid prototyping and complex logic/integration. Grafana produces professional-looking dashboards. Cost-effective and highly customizable. Popular combo for time-series IoT data.
+- **Cons**: You assemble and maintain the full stack (auth, multi-user, persistence, scaling). Node-RED dashboard is basic (hence Grafana). Less "out-of-the-box" device/asset management.
+
+**ThingsBoard**:
+
+- **Pros**: Integrated solution with strong device/asset management, rule engine, and visualization. Scales well. Good for production use cases like smart metering, fleet, environment monitoring. Active community and migration path to paid tiers.
+- **Cons**: CE has limitations (some advanced features in PE). Can feel opinionated. Some users note potential costs at scale with commercial features.
+
+**OpenRemote**:
+
+- **Pros**: Truly open with no locked features. Strong asset modeling, automation, and customization for professional apps. Good for manufacturers/integrators needing control and white-labeling. Backed by enterprise roots (JBoss/RedHat influence).
+- **Cons**: Smaller community than ThingsBoard. More niche (e.g., building/energy focus) — may require more effort for generic use cases.
+
+### When to Choose Which?
+
+- **Choose Node-RED + Grafana** if you want maximum flexibility, already use Node-RED, or need powerful custom flows + top-tier analytics. Ideal for hobbyists, prototypes, or when integrating with existing systems. Many pair it with ThingsBoard too.
+- **Choose ThingsBoard** for a balanced, feature-rich platform with quick dashboarding and device management. Great for most standard IoT projects needing scalability without heavy custom coding.
+- **Choose OpenRemote** for industrial/professional deployments where full open-source transparency, asset-centric management, and long-term independence matter (e.g., OEMs, smart buildings, energy). Strong if you want to avoid any vendor lock-in or subscription pressures.
+
+**Hybrid note**: These aren't mutually exclusive — Node-RED often integrates with ThingsBoard (e.g., as edge processing/gateway) or feeds data to Grafana alongside either platform.
+
+Test them via self-hosted demos (all have good docs/quickstarts). Consider your scale, team skills (low-code vs. dev), and whether you need deep device provisioning vs. data pipelines. For production, factor in security, multi-tenancy, and maintenance.
+
+**Node-RED + Grafana** (often paired with MQTT broker like Mosquitto and InfluxDB) is a flexible, modular stack. **ThingsBoard** is a more complete, integrated IoT platform. **OpenRemote** is a strong 100% open-source alternative focused on asset/device management. All work well with **ESP32** (via MQTT/HTTP) and **PlatformIO** (Arduino or ESP-IDF framework).
+
+### Quick Comparison Table
+
+| Aspect                 | Node-RED + Grafana                      | ThingsBoard (CE)                               | OpenRemote                                  |
+| ---------------------- | --------------------------------------- | ---------------------------------------------- | ------------------------------------------- |
+| **Core Strength**      | Low-code flows + powerful visualization | Full IoT platform (devices, rules, dashboards) | Asset-centric management, rules, apps       |
+| **ESP32 Integration**  | Excellent (MQTT pub/sub)                | Excellent (official Arduino lib, examples)     | Good (MQTT, wiki guide)                     |
+| **PlatformIO Support** | Full (any MQTT/HTTP lib)                | Excellent (official ThingsBoard lib)           | Good (standard MQTT libs)                   |
+| **Dashboard Quality**  | Grafana: Best-in-class time-series      | Very good built-in widgets + SCADA             | Good customizable + maps                    |
+| **Device Mgmt**        | Manual / custom                         | Strong (provisioning, OTA, attributes)         | Strong (assets, digital twins)              |
+| **Rules/Automation**   | Node-RED: Extremely flexible            | Rule chains (drag-drop)                        | Flow rules + scripts                        |
+| **Learning Curve**     | Low for flows, medium for full stack    | Medium                                         | Medium-High                                 |
+| **Scalability**        | Good (add more nodes/containers)        | High (microservices option)                    | Good for asset-focused deployments          |
+| **Self-Hosting**       | Docker-compose easy                     | Easy (Docker/K8s)                              | Docker-based, fully open                    |
+| **Open Source**        | 100% (all components)                   | Community Edition (Apache 2.0); PE paid        | 100% (AGPLv3, no paid "core" upsell)        |
+| **Best For**           | Custom logic, prototyping, data viz     | Production IoT projects, many devices          | Manufacturers/integrators, buildings/energy |
+
+### 1. Node-RED + Grafana (with MQTT + InfluxDB)
+
+This is a popular DIY stack for ESP32 projects.
+
+- **ESP32 side**: Use PubSubClient or AsyncMqttClient in PlatformIO. Send JSON telemetry via MQTT. Very lightweight.
+- **Server side**: Mosquitto (broker) → Node-RED (parse/transform) → InfluxDB → Grafana dashboards. Node-RED also handles commands back to ESP32.
+- **Pros**:
+  - Highly flexible visual programming.
+  - Grafana excels at beautiful, interactive time-series dashboards/alerts.
+  - Lightweight, runs on Raspberry Pi or low-spec server.
+  - Huge community + nodes for everything.
+- **Cons**:
+  - You glue everything yourself (no built-in device registry, multi-tenancy, or advanced OTA).
+  - Less "out-of-the-box" for large fleets.
+- **When to choose**: Prototyping, home automation, or when you want maximum control/custom logic. Many ESP32 → MQTT → Node-RED + Grafana tutorials exist.
+
+### 2. ThingsBoard
+
+A mature, production-ready open-source IoT platform.
+
+- **ESP32 side**: Official Arduino library (available in PlatformIO registry). Great examples for DevKit, OTA, etc. Supports MQTT/HTTP.
+- **Features**: Device provisioning, attributes/telemetry, rule engine, customizable dashboards, alarms, relations (digital twins), multi-tenancy (in CE).
+- **Pros**:
+  - Most "complete" single platform.
+  - Strong visualization + SCADA widgets.
+  - Built-in OTA, RPC commands, customer portals.
+  - Scales well; microservices deployment option.
+- **Cons**:
+  - Community Edition has limitations vs. paid PE (some advanced widgets/analytics).
+  - Steeper initial setup than pure Node-RED for simple projects.
+- **When to choose**: Most ESP32 projects that need device management, dashboards for multiple users, or production use. Excellent documentation and ESP32 support.
+
+### 3. OpenRemote
+
+A fully open-source (no "Professional" upsell on core) platform emphasizing asset management.
+
+- **ESP32 side**: Standard MQTT integration (publish AttributeEvents to specific topics). Wiki has ESP32/ESP8266 guide.
+- **Features**: Generic asset model, protocol agents, rules/flows, dashboards, geographic maps, strong on energy/building management.
+- **Pros**:
+  - Truly 100% open source with no feature gating.
+  - Good for complex asset hierarchies and custom applications.
+  - Professional services available if needed.
+- **Cons**:
+  - Smaller community than ThingsBoard.
+  - MQTT setup slightly more involved (specific topic/payload format).
+- **When to choose**: Projects needing strong asset modeling (e.g., buildings, fleets, energy systems) or preference for fully open licensing without any commercial tiers.
+
+### Recommendation for ESP32 + PlatformIO
+
+- **Beginner / Prototyping / Custom flows** — Start with **Node-RED + Grafana**. Quick wins, easy to iterate in PlatformIO.
+- **Most balanced / Recommended for most users** — **ThingsBoard**. Best ESP32 support, polished experience, and scales from hobby to production.
+- **Asset-heavy or strict open-source preference** — **OpenRemote**.
+
+**Hybrid note**: Many people use **ThingsBoard** or **OpenRemote** for core platform + **Node-RED** for complex integrations/edge logic.
+
+**Practical tips for all**:
+
+- Use MQTT (QoS 1 or 0) from ESP32 for reliability.
+- In PlatformIO: Add relevant libs (`lib_deps`) and handle WiFi reconnection + buffering.
+- Self-host via Docker for easy setup/maintenance.
+- Secure with TLS + proper credentials.
+
+Test with a simple temperature sensor project on each to see what fits your workflow. ThingsBoard has the strongest ready-made ESP32 path. Let me know your specific use case (e.g., number of devices, alerts, mobile apps) for a more tailored suggestion!
