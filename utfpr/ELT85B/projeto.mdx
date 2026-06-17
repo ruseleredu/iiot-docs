@@ -1,0 +1,118 @@
+---
+title: Projeto Final
+description: Banco de questões da disciplina ELT85B.
+---
+
+**✅ PROJETO FINAL DETALHADO**
+
+### **Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações
+
+### **Título do Projeto:**
+
+**Sistema de Monitoramento e Controle Industrial baseado em IIoT**
+
+---
+
+### **Enunciado Completo do Projeto Final**
+
+**Objetivo**  
+Desenvolver uma solução completa de Internet das Coisas Industrial (IIoT) para monitoramento e/ou controle de um processo industrial simulado ou real, utilizando hardware acessível, protocolos de comunicação padronizados e plataforma open-source.
+
+**Descrição**  
+O aluno (individual ou em grupo de até 3 alunos) deve criar um sistema que:
+
+1. Colete dados de sensores industriais relevantes.
+2. Envie os dados de forma segura e confiável para uma plataforma IoT.
+3. Armazene, processe, visualize e gere alarmes/ações automáticas.
+4. Apresente os resultados de forma clara e profissional.
+
+**Requisitos Obrigatórios (Mínimos):**
+
+- **Hardware:**
+  - 1x ESP32 (ou Raspberry Pi).
+  - Mínimo de **3 sensores** diferentes (exemplos: temperatura, umidade, vibração, corrente, nível, distância, etc.).
+  - Mínimo de **1 atuador** (ex: relé, LED de sinalização, buzzer, servomotor, etc.).
+
+- **Comunicação:**
+  - Uso do protocolo **MQTT** para envio de telemetria.
+  - Configuração de autenticação (username/password ou token).
+
+- **Plataforma:**
+  - **ThingsBoard Community Edition** (self-hosted via Docker recomendado).
+  - Criação de **Dashboard** interativo com pelo menos 4 widgets diferentes (gráficos, gauges, mapa, alarm table, etc.).
+
+- **Funcionalidades Obrigatórias:**
+  - Aquisição de dados em tempo real (intervalo configurável).
+  - Armazenamento de dados históricos.
+  - Regras de automação e alarmes (Rules Engine do ThingsBoard).
+  - Controle remoto de pelo menos um atuador via dashboard.
+  - Interface de visualização responsiva.
+
+- **Documentação (entrega obrigatória):**
+  - Relatório técnico (máximo 15 páginas) contendo:
+    - Introdução e objetivos.
+    - Arquitetura do sistema (diagrama).
+    - Esquema elétrico / circuito (Fritzing ou similar).
+    - Código-fonte completo (ESP32 + fluxos do Node-RED, se utilizado).
+    - Explicação das regras de automação e alarmes.
+    - Resultados obtidos e análise crítica.
+    - Dificuldades encontradas e melhorias futuras.
+  - Vídeo demonstração (3 a 6 minutos) mostrando o sistema funcionando.
+
+**Tema Sugerido (pode ser escolhido pelo aluno):**
+
+- Monitoramento de máquina industrial (vibração + temperatura + corrente).
+- Sistema de controle de ambiente industrial (temperatura + umidade + qualidade do ar).
+- Monitoramento de tanque/reservatório (nível + temperatura + vazão).
+- Sistema de manutenção preditiva simples.
+- Controle de acesso ou segurança industrial.
+
+**Prazo de Entrega:**
+
+- Semana 12: Aprovação do tema e escopo (proposta de 1 página).
+- Semana 15: Entrega completa + apresentação oral.
+
+**Dicas de Boas Práticas:**
+
+- Utilizar Node-RED para fluxos intermediários (opcional, mas recomendado).
+- Implementar segurança básica (TLS/MQTTS se possível).
+- Fazer testes de confiabilidade (perda de conexão, recuperação, etc.).
+
+---
+
+### **RUBRICA DE AVALIAÇÃO** (Total: 40 pontos)
+
+| Critério                             | Descrição                                                              | Peso  | Excelente (A) | Bom (B) | Regular (C) | Insuficiente (D/E) |
+| ------------------------------------ | ---------------------------------------------------------------------- | ----- | ------------- | ------- | ----------- | ------------------ |
+| **Funcionamento Técnico**            | Sistema opera corretamente, coleta e envia dados, controla atuador     | 8 pts | 8             | 6       | 4           | 0-2                |
+| **Qualidade do Dashboard**           | Dashboards claros, intuitivos, com widgets variados e atualizados      | 6 pts | 6             | 4.5     | 3           | 0-1.5              |
+| **Regras e Automação**               | Regras de alarme, notificações e ações automáticas bem implementadas   | 5 pts | 5             | 4       | 2.5         | 0-1                |
+| **Documentação Técnica**             | Relatório completo, bem organizado, com diagramas e análise crítica    | 6 pts | 6             | 4.5     | 3           | 0-1.5              |
+| **Apresentação Oral**                | Clareza, demonstração ao vivo, resposta às perguntas                   | 5 pts | 5             | 4       | 2.5         | 0-1                |
+| **Criatividade e Complexidade**      | Uso de sensores adicionais, integração extra, inovação no projeto      | 4 pts | 4             | 3       | 2           | 0-1                |
+| **Trabalho em Equipe / Organização** | Divisão clara de tarefas, uso de Git (opcional), cumprimento de prazos | 3 pts | 3             | 2.5     | 1.5         | 0                  |
+| **Segurança e Boas Práticas**        | Autenticação, tratamento de erros, código organizado                   | 3 pts | 3             | 2       | 1           | 0                  |
+
+**Pontuação Final:**
+
+- **A (36–40):** Excelente
+- **B (30–35):** Bom
+- **C (24–29):** Regular
+- **D/E (menor que 24):** Insuficiente
+
+**Observações da Avaliação:**
+
+- Todos os membros do grupo devem apresentar e demonstrar conhecimento do projeto completo.
+- Plágio ou cópia de código sem referência resultará em nota zero.
+- Projetos excepcionais podem receber até **2 pontos extras** (ex: integração com IA, Digital Twin básico, ou deploy em Kubernetes).
+
+---
+
+Gostaria de algum ajuste neste material?
+
+- Tornar o projeto mais simples ou mais avançado?
+- Incluir modelo de proposta de tema?
+- Adicionar checklist de entrega?
+- Criar uma versão em formato Word/PDF pronto para uso?
+
+É só falar!

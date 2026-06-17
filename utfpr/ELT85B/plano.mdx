@@ -1,0 +1,313 @@
+---
+title: Plano de aulas semanal
+description: Banco de questões da disciplina ELT85B.
+---
+
+**PLANO DE AULAS SEMANAL**  
+**Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações  
+**Carga Horária Total:** 60 horas (30h teóricas + 30h práticas)  
+**Duração:** 15 semanas (4 horas/semana: 2h teóricas + 2h práticas)
+
+### **Semana 1: Introdução à IoT e IIoT**
+
+- **Teoria (2h):** Conceitos básicos, evolução histórica, diferenças entre IoT, IIoT e IoT consumidora. Impacto na Indústria 4.0.
+- **Prática (2h):** Apresentação do curso, instalação de ferramentas (Node-RED, ThingsBoard local via Docker, Arduino IDE ou ESP-IDF).
+- **Atividades:** Leitura introdutória e discussão de casos de uso.
+- **Módulo:** 1 (conclusão parcial)
+
+### **Semana 2: Arquitetura de Sistemas IoT/IIoT**
+
+- **Teoria (2h):** Arquitetura em camadas (percepção, rede, edge, cloud, aplicação). Modelos de referência (ISA-95, RAMI 4.0).
+- **Prática (2h):** Simulação de arquitetura básica usando simuladores (Wokwi ou Tinkercad).
+- **Atividades:** Mapear arquitetura de um caso real.
+- **Módulo:** 1 (conclusão)
+
+### **Semana 3: Redes com e sem fio**
+
+- **Teoria (2h):** Wi-Fi, Bluetooth/BLE, Zigbee, Z-Wave. Vantagens, limitações e casos de uso industriais.
+- **Prática (2h):** Configuração de comunicação Wi-Fi e BLE com ESP32.
+- **Módulo:** 2
+
+### **Semana 4: Tecnologias LPWAN e Protocolos IoT**
+
+- **Teoria (2h):** LoRaWAN, NB-IoT, Sigfox. Protocolos MQTT, CoAP e HTTP.
+- **Prática (2h):** Implementação de cliente MQTT com ESP32 (publicação de dados).
+- **Módulo:** 2
+
+### **Semana 5: Redes Industriais Tradicionais**
+
+- **Teoria (2h):** Modbus, Profibus, Profinet, EtherCAT, CAN, OPC UA.
+- **Prática (2h):** Simulação de comunicação Modbus TCP e integração com ESP32.
+- **Módulo:** 2 (conclusão)
+
+### **Semana 6: Sensores Industriais**
+
+- **Teoria (2h):** Tipos de sensores (temperatura, pressão, vibração, nível, fluxo, presença). Princípios de funcionamento e seleção.
+- **Prática (2h):** Conexão e leitura de sensores analógicos/digitais com ESP32 (DHT22, MPU6050, etc.).
+- **Módulo:** 3
+
+### **Semana 7: Atuadores e Dispositivos Embarcados**
+
+- **Teoria (2h):** Atuadores (relés, motores, válvulas). Plataformas: ESP32, Raspberry Pi, Arduino, PLCs.
+- **Prática (2h):** Controle de atuadores (LEDs, relés, servomotores) via ESP32.
+- **Módulo:** 3
+
+### **Semana 8: Programação Embarcada e Gateways**
+
+- **Teoria (2h):** MicroPython/C++ no ESP32. Conceitos de Edge Computing e Gateways IoT.
+- **Prática (2h):** Desenvolvimento de firmware para aquisição de múltiplos sensores e envio via MQTT.
+- **Módulo:** 3 (conclusão)
+
+### **Semana 9: Plataformas Open-Source – Node-RED**
+
+- **Teoria (2h):** Introdução ao Node-RED. Fluxos de programação visual.
+- **Prática (2h):** Criação de fluxos básicos de aquisição e processamento de dados.
+- **Módulo:** 4
+
+### **Semana 10: Plataformas Open-Source – ThingsBoard**
+
+- **Teoria (2h):** Arquitetura do ThingsBoard, provisionamento de dispositivos, dashboards.
+- **Prática (2h):** Integração ESP32 + MQTT com ThingsBoard (telemetria e visualização).
+- **Módulo:** 4
+
+### **Semana 11: Dashboards, Regras e Automação**
+
+- **Teoria (2h):** Criação de dashboards, regras de automação e alarmes no ThingsBoard.
+- **Prática (2h):** Desenvolvimento de dashboard interativo + regras de alerta.
+- **Módulo:** 4 (conclusão)
+
+### **Semana 12: Integração com Bancos de Dados e Projetos Iniciais**
+
+- **Teoria (2h):** Integração com InfluxDB / TimescaleDB. Boas práticas de desenvolvimento.
+- **Prática (2h):** Armazenamento de dados históricos e consulta. Início do projeto final.
+- **Módulo:** 5
+
+### **Semana 13: Desenvolvimento de Aplicações Práticas**
+
+- **Teoria (2h):** Estudos de caso de monitoramento industrial (manutenção preditiva, controle de processos).
+- **Prática (2h):** Desenvolvimento em grupo do projeto final (fase de prototipagem).
+- **Módulo:** 5
+
+### **Semana 14: Aspectos Avançados – Segurança e Escalabilidade**
+
+- **Teoria (2h):** Segurança em IIoT (TLS, autenticação, IEC 62443, Zero Trust). Containerização com Docker.
+- **Prática (2h):** Implementação de segurança básica e deploy com Docker.
+- **Módulo:** 6
+
+### **Semana 15: Tendências, Digital Twins e Apresentação de Projetos**
+
+- **Teoria (2h):** Digital Twins, IA aplicada ao IoT, 5G, sustentabilidade.
+- **Prática (2h):** Apresentação e demonstração dos projetos finais. Avaliação e feedback.
+- **Módulo:** 6 (conclusão)
+
+---
+
+### **Observações Gerais**
+
+- **Flexibilidade:** As horas podem ser ajustadas conforme o ritmo da turma. Algumas práticas podem ser estendidas se necessário.
+- **Avaliação Contínua:** Exercícios semanais curtos + entregas de relatórios de laboratório.
+- **Projeto Final:** Iniciado na Semana 12 e apresentado na Semana 15. Sugestão de tema: Sistema de monitoramento industrial (ex: máquina com sensores de vibração/temperatura + dashboard + alertas).
+- **Materiais Necessários:** Kit ESP32 + sensores básicos para cada aluno/grupo, computador com Docker, acesso à internet (ou ambiente offline).
+- **Recursos:** Documentação oficial das ferramentas + vídeos tutoriais.
+
+Deseja que eu refine algum ponto específico deste plano?  
+Exemplos:
+
+- Detalhar o **Projeto Final** (enunciado completo + rubrica de avaliação);
+- Incluir **bibliografia por semana**;
+- Adicionar **objetivos de aprendizagem** por semana;
+- Versão para **carga horária diferente** (ex: 30h ou 45h).
+
+**✅ PLANO DE AULAS SEMANAL ATUALIZADO**  
+**Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações  
+**Carga Horária Total:** 60 horas (30h teóricas + 30h práticas)  
+**Duração:** 15 semanas (4 horas/semana)
+
+O plano foi **realinhado** com a estrutura de conteúdos fornecida por você (itens 1 a 8).
+
+### **Semana 1**
+
+**Item 1 – Visão Geral sobre IoT**
+
+- **Teoria (2h):** O que é IoT, referências históricas, seu uso atual, relação entre Internet e IoT. Diferenças IoT × IIoT.
+- **Prática (2h):** Apresentação do curso, instalação de ferramentas (Docker, ThingsBoard, Node-RED, Arduino IDE / ESP32).
+- **Atividade:** Discussão de casos de uso.
+
+### **Semana 2**
+
+**Item 2 – A Internet na IoT**
+
+- **Teoria (2h):** Modelo OSI, Arquitetura TCP/IP, impacto na IoT.
+- **Prática (2h):** Configuração básica de rede em ESP32 (Wi-Fi) e testes de conectividade.
+- **Módulo:** 2
+
+### **Semana 3**
+
+**Item 3 – Sensores e Atuadores em IoT**
+
+- **Teoria (2h):** Tipos de sensores IoT/IIoT e atuadores. Princípios de funcionamento e seleção.
+- **Prática (2h):** Conexão e leitura de sensores (DHT22, MPU6050, sensor de corrente, etc.) com ESP32.
+- **Módulo:** 3
+
+### **Semana 4**
+
+**Item 4 – Atributos de Protocolos IoT**
+
+- **Teoria (2h):** Suporte, escalabilidade, determinismo, segurança e interoperabilidade de protocolos.
+- **Prática (2h):** Comparação prática entre HTTP e MQTT (latência, overhead).
+- **Módulo:** 4
+
+### **Semana 5**
+
+**Item 5 – Generalidades da Pilha de Protocolos IoT**
+
+- **Teoria (2h):** Camadas de enlace, internet, aplicação e serviços de aplicação.
+- **Prática (2h):** Implementação de cliente MQTT no ESP32 (publicação e assinatura de tópicos).
+- **Módulo:** 5
+
+### **Semana 6**
+
+**Item 6 – Computação em Nevoeiro (Fog Computing)**
+
+- **Teoria (2h):** Definição, drivers, vantagens em relação ao Cloud, tecnologias e casos de uso industrial.
+- **Prática (2h):** Processamento local de dados no ESP32/Raspberry Pi (edge computing).
+- **Módulo:** 6
+
+### **Semana 7**
+
+**Item 7 – Plataforma de Serviços IoT**
+
+- **Teoria (2h):** Funções de uma plataforma IoT (gerenciamento de dispositivos, coleta, processamento, visualização, regras).
+- **Prática (2h):** Introdução ao Node-RED: criação de fluxos básicos.
+- **Módulo:** 7 (primeira parte)
+
+### **Semana 8**
+
+**Item 7 – Plataforma de Serviços IoT (continuação)**
+
+- **Teoria (2h):** Integração com bancos de dados de séries temporais.
+- **Prática (2h):** Integração ESP32 + MQTT + ThingsBoard (telemetria básica).
+- **Módulo:** 7
+
+### **Semana 9**
+
+**Item 7 – Mercados de IoT e Ecosistemas Conectados**
+
+- **Teoria (2h):** Soluções para agricultura, energia, óleo e gás, edifícios inteligentes, saúde, indústria, transporte, etc.
+- **Prática (2h):** Dashboard no ThingsBoard – criação de widgets e visualizações.
+- **Módulo:** 7 (conclusão)
+
+### **Semana 10**
+
+**Item 8 – Padrões de IoT**
+
+- **Teoria (2h):** Padrões IEEE, IETF, ITU, IPSO Alliance, OCF, IIC, ETSI, oneM2M, OPC UA, etc.
+- **Prática (2h):** Dashboards avançados e regras de automação no ThingsBoard.
+- **Módulo:** 8
+
+### **Semana 11**
+
+**Revisão e Integração dos Itens 1–8**
+
+- **Teoria (2h):** Síntese dos conteúdos vistos.
+- **Prática (2h):** Controle remoto de atuadores via dashboard + regras de alarme.
+- **Atividade:** Proposta do Projeto Final (1 página).
+
+### **Semana 12**
+
+**Desenvolvimento do Projeto Final**
+
+- **Teoria (2h):** Boas práticas de integração IIoT.
+- **Prática (4h):** Início da prototipagem do projeto (aquisição + envio de dados).
+
+### **Semana 13**
+
+**Desenvolvimento do Projeto Final**
+
+- **Prática (4h):** Desenvolvimento de dashboard, regras e automação.
+
+### **Semana 14**
+
+**Desenvolvimento do Projeto Final + Aspectos Avançados**
+
+- **Teoria (2h):** Segurança, escalabilidade e integração com sistemas industriais.
+- **Prática (2h):** Finalização do projeto + testes.
+
+### **Semana 15**
+
+**Apresentação dos Projetos Finais**
+
+- **Prática (4h):** Apresentações orais, demonstrações ao vivo e feedback.
+- **Avaliação:** Entrega do relatório técnico + vídeo.
+
+---
+
+### **Observações**
+
+- O plano cobre **todos os 8 itens** da sua estrutura de conteúdo.
+- As semanas 12 a 15 são dedicadas predominantemente ao **Projeto Final** (conforme enunciado e rubrica já enviados anteriormente).
+- Equilíbrio mantido: ≈ 30h teoria + 30h prática.
+- As práticas estão fortemente vinculadas aos temas teóricos de cada item.
+
+---
+
+**Deseja que eu ajuste ou forneça mais algum material?**
+
+- Enunciado atualizado do Projeto Final (alinhado com esta estrutura);
+- Rubrica de avaliação (já enviada anteriormente);
+- Bibliografia detalhada por semana/item;
+- Plano de aulas em formato tabela (mais visual);
+- Slides sugeridos por semana.
+
+É só informar o próximo passo!
+
+**✅ PLANO DE AULAS SEMANAL**  
+**Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações  
+**Carga Horária:** 60 horas (4h/semana × 15 semanas)
+
+### Tabela do Plano de Aulas
+
+| Semana | Item | Tema / Conteúdo Principal                | Teoria (2h)                                                            | Prática (2h)                                                         | Entregas / Atividades                    |
+| ------ | ---- | ---------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------- |
+| **1**  | 1    | Visão Geral sobre IoT                    | O que é IoT, referências, usos, relação Internet × IoT, IoT vs IIoT    | Instalação de ferramentas (ThingsBoard, Node-RED, Docker, ESP32 IDE) | Discussão de casos de uso                |
+| **2**  | 2    | A Internet na IoT                        | Modelo OSI, Arquitetura TCP/IP e seu impacto na IoT                    | Configuração de rede Wi-Fi no ESP32 + testes de conectividade        | Exercício de rede                        |
+| **3**  | 3    | Sensores e Atuadores em IoT              | Tipos de sensores e atuadores IoT/IIoT, princípios e seleção           | Conexão e leitura de sensores (DHT22, MPU6050, etc.) com ESP32       | Relatório de sensores                    |
+| **4**  | 4    | Atributos de Protocolos IoT              | Suporte, escalabilidade, determinismo, segurança e interoperabilidade  | Comparação prática: HTTP vs MQTT (latência e overhead)               | Análise comparativa                      |
+| **5**  | 5    | Pilha de Protocolos IoT                  | Camadas de enlace, internet, aplicação e serviços de aplicação         | Implementação de cliente MQTT no ESP32 (publish/subscribe)           | Código MQTT                              |
+| **6**  | 6    | Computação em Nevoeiro (Fog Computing)   | Definição, drivers, vantagens e tecnologias Edge                       | Processamento local de dados no ESP32 (filtros e decisões locais)    | Exercício Edge                           |
+| **7**  | 7    | Plataforma de Serviços IoT               | Funções das plataformas IoT (gerenciamento, processamento, regras)     | Introdução ao Node-RED – criação de fluxos básicos                   | Fluxo Node-RED                           |
+| **8**  | 7    | Plataforma de Serviços IoT (continuação) | Integração com bancos de dados e visualização                          | Integração ESP32 + MQTT + ThingsBoard (telemetria)                   | Dashboard básico                         |
+| **9**  | 7    | Mercados de IoT e Ecosistemas Conectados | Aplicações em agricultura, energia, indústria, saúde, transporte, etc. | Criação de dashboards interativos no ThingsBoard                     | Dashboard avançado                       |
+| **10** | 8    | Padrões de IoT                           | Padrões IEEE, IETF, ITU, OPC UA, oneM2M, IIC, ETSI, etc.               | Regras de automação e alarmes no ThingsBoard                         | Regras configuradas                      |
+| **11** | -    | Revisão e Integração                     | Síntese dos conteúdos 1 a 8                                            | Controle remoto de atuadores + integração completa                   | **Proposta do Projeto Final** (1 página) |
+| **12** | -    | Desenvolvimento do Projeto Final         | Boas práticas de integração IIoT                                       | Prototipagem: aquisição de dados + envio MQTT                        | Progresso do projeto                     |
+| **13** | -    | Desenvolvimento do Projeto Final         | Estudos de caso industriais                                            | Desenvolvimento de dashboard, regras e automação                     | Versão intermediária                     |
+| **14** | -    | Desenvolvimento + Aspectos Avançados     | Segurança, escalabilidade e integração com sistemas legados            | Finalização, testes e implementação de segurança                     | Projeto quase pronto                     |
+| **15** | -    | Apresentação e Encerramento              | Tendências futuras (IA, 5G, Digital Twins)                             | Apresentações orais + demonstrações ao vivo                          | **Entrega Final** (Relatório + Vídeo)    |
+
+---
+
+### Observações Gerais
+
+- **Carga Horária por Semana:** 2h Teoria + 2h Prática = 4h
+- **Semanas 12 a 15:** Foco intenso no **Projeto Final** (Sistema de Monitoramento e Controle Industrial baseado em IIoT)
+- **Avaliação Contínua:** Exercícios práticos semanais + relatórios curtos
+- **Projeto Final:** Detalhado anteriormente (3 sensores + 1 atuador + ThingsBoard + Dashboard + Documentação)
+
+### Legenda de Cores (visualização sugerida)
+
+- **Azul**: Itens da Ementa Original
+- **Verde**: Foco em Plataformas e Prática
+- **Laranja**: Desenvolvimento do Projeto Final
+
+---
+
+Gostaria que eu gere esse plano em outro formato?  
+Exemplos:
+
+- Tabela em Markdown mais compacta
+- Versão para copiar para Word/Excel
+- Incluir objetivos de aprendizagem por semana
+- Adicionar bibliografia ou materiais por semana
+
+É só dizer!

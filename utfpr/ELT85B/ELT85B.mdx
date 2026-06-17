@@ -6,33 +6,374 @@ description: Informações gerais sobre a disciplina ELT85B.
 slug: /ELT85B/intro
 ---
 
-## Sistemas Digitais {/* #sistemas-digitais */}
+## IIoT
 
-### Objetivo {/* #objetivo */}
+### Objetivo
 
-Possibilitar ao aluno analisar, sintetizar e desenvolver circuitos digitais combinacionais e sequenciais.
+Capacitar o estudante a compreender os fundamentos das redes sem fio e da Internet das Coisas (IoT), bem como aplicar
+tecnologias, dispositivos, sensores e atuadores no desenvolvimento de soluções voltadas para aplicações industriais, com
+ênfase em ambientes de Internet das Coisas Industrial (IIoT).
 
-### Ementa {/* #ementa */}
+**EMENTA / Plano de Aula: Internet das Coisas (IoT) – Conceitos Básicos, Aspectos Técnicos e Redes Industriais**
 
-Sistemas de Numeração e Códigos; Portas Lógicas e Álgebra Booleana; Análise de CircuitosDigitais Combinacionais; Formas padrão de Funções Lógicas; Minimização de Funções Lógicas; Mapas de Karnaugh e Quine-McCluskey; Multiplexadores e Demultiplexadores; Codificadores e Decodificadores; Flip-Flops; Análise de Circuitos Digitais Seqüênciais; Síntese de Circuitos Digitais Seqüênciais; Famílias lógicas e Circuitos Integrados; Contadores; Registradores; Dispositivos de Memórias; Conversores Analógico/Digital – Digital/Analógico.
+### **Objetivo da Aula**
 
-### Conteúdo Programático {/* #conteúdo-programático */}
+Apresentar aos alunos os **conceitos fundamentais da Internet das Coisas (IoT)**, os aspectos técnicos de operação e configuração de sistemas IoT, bem como os principais tipos de redes industriais utilizadas no mercado para o desenvolvimento de aplicações industriais (Indústria 4.0).
 
-| Ordem | Ementa                                            | Conteúdo                                                                                                           |
-| :---: | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-|   1   | Sistemas de Numeração e Códigos                   | Notação posicional Transformação binário decimal e decimal-binário. Sistemas octal e hexadecimal. Códigos binários |
-|   2   | Portas Lógicas e Álgebra Booleana                 | Funções básicas E, OU e NÃO. Funções NE, NOU e XOU. Teoremas                                                       |
-|   3   | Análise de Circuitos Digitais Combinacionais      | Obtenção de equações Realização de circuitos                                                                       |
-|   4   | Formas padrão de Funções Lógicas                  | Teorema de Morgan Realização decircuitos com portas NE                                                             |
-|   5   | Minimização de Funções Lógicas                    | Técnicas de Simplificação                                                                                          |
-|   6   | Mapas de Karnaugh e Quine-McCluskey               | Diagrama de 2 variáveis Diagramade 3 variáveis Diagrama de 4 variáveis Diagrama de 5 variáveis                     |
-|   7   | Multiplexadores e Demultiplexadores               | Multiplexador e Demultiplexador                                                                                    |
-|   8   | Codificadores e Decodificadores                   | Decodificador de 7 segmentos. Decodificador BCD decimal                                                            |
-|   9   | Flip-Flops                                        | Flip-Flop assíncronos RS e D Flip-Flop com controle                                                                |
-|  10   | Análise de Circuitos Digitais Sequênciais         | Análise de Flip-Flop RS e D com e sem controle                                                                     |
-|  11   | Síntese de Circuitos Digitais Sequênciais         | Construção de Flip-Flop RS e D com e sem controle                                                                  |
-|  12   | Famílias lógicas e Circuitos Integrados           | Famílias CMOS 4000 Família TTL 74xx, 74LSxx, 74HCxx                                                                |
-|  13   | Contadores                                        | Contadores Assincronos Contadores Síncronos                                                                        |
-|  14   | Registradores                                     | Registro paralelo (Latch) Registrosérie ( Shift)                                                                   |
-|  15   | Dispositivos de Memórias                          | RAM ROM EPROM FLASH Técnicas de implementação                                                                      |
-|  16   | Conversores Analógico/Digital e Digital/Analógico | Técnicas de conversão Tempo deconversão R e de R-2R                                                                |
+---
+
+### **1. Introdução à Internet das Coisas (IoT)**
+
+**Definição:**
+
+- IoT é a rede de objetos físicos (“coisas”) conectados à internet que coletam e trocam dados por meio de sensores, atuadores, software e tecnologias de comunicação.
+
+**Características principais:**
+
+- **Conectividade**: Dispositivos sempre online ou sob demanda.
+- **Sensoriamento e Atuação**: Coleta de dados do mundo real e ação sobre ele.
+- **Inteligência**: Processamento de dados na borda (edge), nuvem ou híbrido.
+- **Escalabilidade**: De poucos dispositivos até milhões.
+
+**Exemplos de aplicação:**
+
+- Residencial: Lâmpadas inteligentes, termostatos (Nest, Alexa).
+- Industrial: Monitoramento de máquinas, manutenção preditiva.
+- Cidades inteligentes: Iluminação pública, trânsito, gestão de resíduos.
+- Saúde: Wearables, monitoramento remoto de pacientes.
+
+---
+
+### **2. Arquitetura Básica de um Sistema IoT**
+
+Camadas típicas (modelo de referência):
+
+1. **Camada de Percepção (Perception Layer)**
+   - Sensores (temperatura, umidade, pressão, vibração, etc.)
+   - Atuadores (relés, motores, válvulas)
+   - Dispositivos embarcados (ESP32, Arduino, Raspberry Pi, PLCs)
+
+2. **Camada de Rede / Conectividade**
+   - Protocolos de comunicação (ver seção 4)
+
+3. **Camada de Processamento / Edge Computing**
+   - Gateways IoT
+   - Processamento local para reduzir latência e consumo de banda
+
+4. **Camada de Armazenamento e Aplicação (Cloud / Plataformas)**
+   - Plataformas open-source: **ThingsBoard**, OpenRemote, Node-RED, Eclipse Hono/Ditto, Kaa IoT
+   - Nuvens comerciais: AWS IoT, Azure IoT, Google Cloud IoT
+
+5. **Camada de Apresentação**
+   - Dashboards, alertas, relatórios e integração com sistemas corporativos (ERP, MES)
+
+---
+
+### **3. Aspectos Técnicos de Operação e Configuração**
+
+**Principais Protocolos de Comunicação IoT:**
+
+| Protocolo                       | Tipo              | Vantagens                                   | Uso típico             | Alcance / Consumo |
+| ------------------------------- | ----------------- | ------------------------------------------- | ---------------------- | ----------------- |
+| **MQTT**                        | Publish/Subscribe | Leve, confiável, QoS                        | Telemetria, nuvem      | Baixo consumo     |
+| **CoAP**                        | Request/Response  | Leve, UDP, REST-like                        | Dispositivos restritos | Muito baixo       |
+| **HTTP/HTTPS**                  | Request/Response  | Fácil integração, amplo suporte             | Aplicações web         | Médio             |
+| **AMQP**                        | Mensageria        | Robusto, transações                         | Integração empresarial | Médio             |
+| **LoRaWAN**                     | LPWAN             | Longo alcance, baixo consumo                | Agricultura, cidades   | Muito longo       |
+| **Zigbee**                      | Mesh              | Rede em malha, baixo consumo                | Casa inteligente       | Médio             |
+| **Bluetooth LE** / **BLE Mesh** | Curto alcance     | Baixo consumo, amplo em dispositivos móveis | Wearables, beacons     | Curto             |
+
+**Configuração típica de um dispositivo IoT:**
+
+1. Provisionamento (cadastro do dispositivo).
+2. Configuração de credenciais (certificados TLS, tokens).
+3. Definição de telemetria (quais dados enviar e frequência).
+4. Regras de negócio (rules engine) e alarmes.
+5. Atualização remota de firmware (OTA).
+
+**Segurança em IoT (tópico crítico):**
+
+- Criptografia (TLS 1.3)
+- Autenticação e autorização
+- Proteção contra ataques (DDoS, spoofing)
+- Atualizações de segurança
+
+---
+
+### **4. Redes Industriais para Aplicações IoT**
+
+**Redes tradicionais vs. Redes IoT Industriais (IIoT):**
+
+**Principais redes industriais no mercado:**
+
+1. **Modbus** (RTU e TCP)
+   - Simples e amplamente adotado
+   - Mestre-Escravo
+   - Ideal para retrofit de equipamentos antigos
+
+2. **PROFINET** (Siemens)
+   - Ethernet industrial em tempo real
+   - Alta velocidade e determinismo
+
+3. **EtherCAT**
+   - Altíssima velocidade e sincronismo
+   - Muito usado em automação de máquinas e robótica
+
+4. **OPC UA** (Open Platform Communications Unified Architecture)
+   - Padrão moderno, seguro e independente de plataforma
+   - Suporta informação modeling e Pub/Sub
+   - Essencial para Indústria 4.0
+
+5. **BACnet**
+   - Focado em automação predial (HVAC, iluminação, etc.)
+
+6. **Redes sem fio industriais:**
+   - **WirelessHART** e **ISA100**
+   - **5G private networks** (baixa latência, alta confiabilidade)
+   - **LoRaWAN** e **NB-IoT** para aplicações de longo alcance e baixo consumo
+
+**Comparação Resumida:**
+
+| Rede         | Velocidade  | Determinismo | Alcance     | Segurança  | Uso Principal        |
+| ------------ | ----------- | ------------ | ----------- | ---------- | -------------------- |
+| Modbus       | Baixa-Média | Baixo        | Médio       | Baixa      | Retrofit, simples    |
+| PROFINET     | Alta        | Alto         | Local       | Alta       | Automação fabril     |
+| EtherCAT     | Muito Alta  | Muito Alto   | Local       | Média      | Máquinas e robótica  |
+| OPC UA       | Média-Alta  | Médio-Alto   | Local/Nuvem | Muito Alta | Integração IIoT      |
+| LoRaWAN / 5G | Baixa-Alta  | Variável     | Longo       | Alta       | Monitoramento remoto |
+
+---
+
+### **5. Atividades Práticas Sugeridas**
+
+- Configurar um ESP32 enviando dados via MQTT para **ThingsBoard**.
+- Criar um dashboard simples de monitoramento.
+- Simular uma rede industrial com Node-RED + Modbus simulator.
+- Estudo de caso: Manutenção preditiva em uma linha de produção.
+
+---
+
+### **Materiais de Apoio**
+
+- Plataforma recomendada: **ThingsBoard Community Edition** (open-source)
+- Simuladores: MQTT Explorer, Node-RED
+- Documentação: OPC UA, MQTT.org, ThingsBoard Docs
+
+---
+
+**Duração sugerida:** 4 a 8 horas (teoria + prática), dependendo da profundidade.
+
+**EMENTA DO CURSO**  
+**Internet das Coisas Industrial (IIoT) – Fundamentos e Aplicações**
+
+### **Objetivo Geral**
+
+Apresentar aos alunos os conceitos básicos sobre a Internet das Coisas (IoT). Os aspectos técnicos de sua operação e configuração e os tipos de redes industriais existentes no mercado que podem ser utilizadas para o desenvolvimento de aplicações industriais. Capacitar o estudante a compreender os fundamentos das redes sem fio e da Internet das Coisas (IoT), bem como aplicar tecnologias, dispositivos, sensores e atuadores no desenvolvimento de soluções voltadas para aplicações industriais, com ênfase em ambientes de Internet das Coisas Industrial (IIoT).
+
+### **Objetivos Específicos**
+
+- Compreender os conceitos fundamentais de IoT e IIoT.
+- Identificar os principais protocolos de comunicação e redes utilizadas em IoT/IIoT.
+- Conhecer plataformas open-source para desenvolvimento de soluções IoT.
+- Aplicar sensores, atuadores e dispositivos em cenários industriais.
+- Desenvolver soluções práticas utilizando plataformas como ThingsBoard, Node-RED, entre outras.
+- Analisar aspectos de segurança, escalabilidade e integração em ambientes industriais.
+
+### **Conteúdo Programático (Sugestão de Módulos)**
+
+**Módulo 1: Introdução à Internet das Coisas (IoT)**
+
+- Conceitos básicos e evolução da IoT.
+- Diferenças entre IoT, IIoT e IoT Consumidor.
+- Casos de uso em indústria 4.0, agricultura, cidades inteligentes e saúde.
+- Arquitetura geral de sistemas IoT (camadas: dispositivos, rede, edge, cloud, aplicação).
+
+**Módulo 2: Fundamentos de Redes e Comunicação**
+
+- Redes com e sem fio: Wi-Fi, Bluetooth, Zigbee, Z-Wave.
+- Protocolos IoT: MQTT, CoAP, HTTP/HTTPS, AMQP, OPC UA.
+- Redes industriais: Modbus, Profibus, Profinet, EtherCAT, CAN, BACnet.
+- Tecnologias LPWAN: LoRaWAN, NB-IoT, Sigfox.
+
+**Módulo 3: Dispositivos, Sensores e Atuadores**
+
+- Tipos de sensores (temperatura, umidade, pressão, nível, vibração, etc.).
+- Atuadores (relés, motores, válvulas, etc.).
+- Microcontroladores e Single-Board Computers: ESP32, Arduino, Raspberry Pi, NVIDIA Jetson (edge).
+- Gateway IoT e Edge Computing.
+
+**Módulo 4: Plataformas Open-Source para IoT/IIoT**
+
+- **ThingsBoard** (Community Edition) – Principal recomendação.
+- Node-RED (programação visual).
+- OpenRemote.
+- Eclipse IoT (Hono, Ditto, EdgeX Foundry).
+- Home Assistant / openHAB (para casos híbridos).
+- Comparação entre plataformas.
+
+**Módulo 5: Desenvolvimento de Aplicações Práticas**
+
+- Configuração de dispositivos e integração via MQTT.
+- Criação de dashboards e visualização de dados em tempo real.
+- Regras, alarmes e automação (Rules Engine).
+- Integração com bancos de dados (InfluxDB, PostgreSQL, TimescaleDB).
+- Simulações e laboratórios práticos.
+
+**Módulo 6: Aspectos Avançados em IIoT**
+
+- Segurança em IoT (TLS, autenticação, Zero Trust).
+- Escalabilidade, containerização (Docker, Kubernetes).
+- Digital Twins.
+- Integração com sistemas industriais (MES, SCADA, ERP).
+- Normas e padrões (ISA-95, RAMI 4.0).
+
+**Módulo 7: Projetos Finais e Tendências**
+
+- Desenvolvimento de um projeto prático de IIoT.
+- Tendências: IA aplicada ao IoT, 5G/6G, sustentabilidade.
+
+### **Metodologia**
+
+- Aulas teóricas expositivas.
+- Aulas práticas em laboratório (configuração de dispositivos, programação em Python/MicroPython, uso de plataformas).
+- Estudos de caso da indústria.
+- Projetos em grupo ou individuais.
+- Uso de simuladores quando necessário (ex: Wokwi, Tinkercad).
+
+### **Avaliação**
+
+- Participação e exercícios práticos: 30%
+- Trabalhos e relatórios: 30%
+- Projeto final (desenvolvimento + apresentação): 40%
+
+### **Bibliografia Básica (Sugestão)**
+
+- "Internet of Things: A Hands-on Approach" – Arshdeep Bahga e Vijay Madisetti.
+- Documentação oficial do ThingsBoard, Node-RED e ESP32.
+- Artigos e whitepapers da ISA, IEC e IEEE sobre IIoT.
+- "Industrial Internet of Things" – diversos autores.
+
+---
+
+Gostaria que eu elabore algo mais específico? Por exemplo:
+
+- Plano de aula detalhado por semana (15 ou 30 horas);
+- Roteiro de laboratório prático;
+- Lista de materiais e kits recomendados;
+- Slides ou conteúdo programático mais detalhado por módulo;
+- Projeto final sugerido com ThingsBoard + ESP32.
+
+---
+
+**EMENTA REFINADA**
+
+**Disciplina:** Internet das Coisas Industrial (IIoT) – Fundamentos, Tecnologias e Aplicações  
+**Código:** [a definir]  
+**Carga Horária:** 60 horas (Teoria: 30h / Prática: 30h)  
+**Créditos:** 4  
+**Semestre:** [a definir]  
+**Pré-requisitos:** Fundamentos de Redes de Computadores e Programação Básica (recomendado)
+
+### **Objetivo Geral**
+
+Apresentar aos alunos os conceitos fundamentais da Internet das Coisas (IoT) e da Internet das Coisas Industrial (IIoT), abordando seus aspectos técnicos de operação, configuração, protocolos de comunicação e redes industriais. Capacitar os estudantes a compreender as redes sem fio, sensores, atuadores e plataformas open-source, aplicando essas tecnologias no desenvolvimento de soluções reais para ambientes industriais, com ênfase em Indústria 4.0.
+
+### **Objetivos Específicos**
+
+- Compreender os conceitos, arquiteturas e diferenças entre IoT, IIoT e IoT consumidora.
+- Identificar e configurar os principais protocolos e redes de comunicação utilizados em aplicações IoT/IIoT.
+- Selecionar e integrar sensores, atuadores, dispositivos embarcados e gateways em soluções industriais.
+- Utilizar plataformas open-source para coleta, processamento, visualização e automação de dados.
+- Desenvolver projetos práticos de monitoramento, controle e análise de dados em cenários industriais.
+- Analisar questões de segurança, escalabilidade, interoperabilidade e integração com sistemas industriais legados.
+
+### **Conteúdo Programático**
+
+**Módulo 1: Introdução à IoT e IIoT** (6h)
+
+- Conceitos, evolução e impacto da IoT na sociedade e na indústria.
+- Diferenças entre IoT, IIoT e Indústria 4.0.
+- Arquitetura de referência (camadas: percepção, rede, processamento, aplicação).
+- Casos de uso reais em manufatura, energia, logística, agricultura de precisão e manutenção preditiva.
+
+**Módulo 2: Fundamentos de Redes e Comunicação** (10h)
+
+- Redes com e sem fio: Wi-Fi, Bluetooth/BLE, Zigbee, Z-Wave.
+- Tecnologias LPWAN: LoRaWAN, NB-IoT, Sigfox.
+- Protocolos IoT/IIoT: MQTT, CoAP, AMQP, OPC UA, Modbus TCP.
+- Redes industriais tradicionais: Profibus, Profinet, EtherCAT, CAN, BACnet.
+- Edge Computing e Gateways IoT.
+
+**Módulo 3: Dispositivos, Sensores e Atuadores** (10h)
+
+- Tipos de sensores industriais (temperatura, pressão, vibração, nível, fluxo, etc.).
+- Atuadores e interfaces de controle.
+- Plataformas de hardware: ESP32, Arduino, Raspberry Pi, PLCs e dispositivos de borda.
+- Programação embarcada (MicroPython, C++, Arduino IDE).
+
+**Módulo 4: Plataformas Open-Source para IoT/IIoT** (12h)
+
+- ThingsBoard Community Edition (principal plataforma).
+- Node-RED (programação visual de fluxos).
+- OpenRemote, Eclipse EdgeX Foundry, Eclipse Hono e Ditto.
+- Integração com bancos de dados de séries temporais (InfluxDB, TimescaleDB).
+- Criação de dashboards, regras de automação e alarmes.
+
+**Módulo 5: Desenvolvimento de Aplicações e Projetos Práticos** (12h)
+
+- Configuração de dispositivos e comunicação via MQTT.
+- Laboratórios práticos de aquisição e envio de dados.
+- Desenvolvimento de soluções de monitoramento e controle industrial.
+- Integração com sistemas legados (SCADA, MES).
+
+**Módulo 6: Aspectos Avançados e Desafios** (10h)
+
+- Segurança em IIoT (TLS, autenticação, Zero Trust, vulnerabilidades comuns).
+- Escalabilidade, containerização (Docker, Kubernetes) e Digital Twins.
+- Normas e padrões (ISA-95, RAMI 4.0, IEC 62443).
+- Tendências: IA/ML aplicada ao IoT, 5G/6G, sustentabilidade e cibersegurança industrial.
+
+### **Metodologia**
+
+- Aulas expositivas dialogadas com apoio de slides e vídeos.
+- Aulas práticas em laboratório (configuração de hardware, programação e uso de plataformas).
+- Estudos de caso da indústria real.
+- Desenvolvimento de projetos individuais e/ou em grupo.
+- Uso de simuladores (Wokwi, Tinkercad) e ambientes reais de prototipagem.
+
+### **Avaliação**
+
+- Exercícios e atividades práticas: 20%
+- Relatórios de laboratório e estudos de caso: 30%
+- Projeto final (desenvolvimento + documentação + apresentação): 40%
+- Participação e avaliação contínua: 10%
+
+### **Bibliografia**
+
+**Básica:**
+
+- BAHGA, Arshdeep; MADISEETI, Vijay. _Internet of Things: A Hands-on Approach_. Universities Press, 2015.
+- GILCHRIST, Alasdair. _Industry 4.0: The Industrial Internet of Things_. Apress, 2016.
+- Documentação oficial: ThingsBoard, Node-RED, ESP32 e Eclipse IoT.
+
+**Complementar:**
+
+- IEC 62443 – Segurança de redes industriais.
+- Artigos IEEE e whitepapers da ISA sobre IIoT.
+- MOLLER, Dietmar P.F. _Digital Twin: Industry 4.0_. Springer, 2020.
+
+---
+
+**Observações:**
+
+- A ementa foi refinada para maior clareza, coerência acadêmica e equilíbrio entre teoria e prática.
+- Ênfase aumentada em IIoT e aplicações industriais, conforme a solicitação original.
+- Carga horária sugerida pode ser ajustada conforme a grade do curso.
+
+Gostaria de refinar ainda mais algum aspecto?  
+Exemplos:
+
+- Detalhar o plano de aulas semanal (15 semanas);
+- Incluir lista de equipamentos para laboratório;
+- Sugerir rubrica de avaliação do projeto final;
+- Adaptar para uma carga horária diferente.

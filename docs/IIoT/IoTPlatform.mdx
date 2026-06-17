@@ -1,0 +1,609 @@
+---
+title: Open-Source IoT Platform
+description: An open-source platform for building industrial IoT applications.
+sidebar_position: 5
+---
+
+Se você está procurando uma plataforma IoT open source, a melhor escolha depende do objetivo (monitoramento, automação industrial, smart home, análise de dados, edge computing etc.). Algumas das principais opções são:
+
+| Plataforma                                     | Foco                         | Destaques                                                                         |
+| ---------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------- |
+| [ThingsBoard](https://thingsboard.io)          | IoT geral                    | Dashboards, MQTT, CoAP, HTTP, gerenciamento de dispositivos, regras de automação. |
+| [Node-RED](https://nodered.org)                | Integração e automação       | Programação visual por fluxos, excelente integração com ESP32, MQTT e APIs.       |
+| [Eclipse IoT](https://iot.eclipse.org)         | Frameworks IoT               | Conjunto de projetos como Mosquitto, Kura, Ditto e Hono.                          |
+| [OpenRemote](https://openremote.io)            | Smart building e indústria   | Gerenciamento de ativos, dashboards e automação.                                  |
+| [Mainflux](https://mainflux.com)               | Escalabilidade               | Arquitetura baseada em microsserviços, MQTT, HTTP e WebSockets.                   |
+| [Kaa IoT Platform](https://www.kaaproject.org) | IoT corporativo              | Gerenciamento de dispositivos, coleta de telemetria e analytics.                  |
+| [FIWARE](https://www.fiware.org)               | Smart Cities e Indústria 4.0 | Baseado em NGSI, muito utilizado em projetos acadêmicos e governamentais.         |
+
+### Para projetos acadêmicos com ESP32
+
+Se você está desenvolvendo projetos semelhantes aos seus trabalhos recentes de monitoramento de energia ou detecção de quedas com ESP32, eu recomendaria:
+
+1. **ThingsBoard**
+   - Fácil instalação via Docker.
+   - Dashboard web pronto.
+   - MQTT nativo.
+   - Integração simples com ESP32.
+   - Excelente para TCC, pesquisa e protótipos.
+
+2. **Node-RED + Mosquitto + InfluxDB + Grafana**
+   - Totalmente open source.
+   - Grande flexibilidade.
+   - Muito utilizado em ambientes industriais e laboratórios.
+   - Permite criar fluxos complexos sem muito código.
+
+### Arquitetura típica
+
+```text
+ESP32
+  │
+ MQTT
+  │
+Mosquitto Broker
+  │
+ ├── Node-RED
+ │     ├── Regras
+ │     └── Automação
+ │
+ ├── InfluxDB
+ │     └── Armazenamento
+ │
+ └── Grafana
+       └── Dashboards
+```
+
+### Para aplicações industriais
+
+Considere:
+
+- [ThingsBoard](https://thingsboard.io) para monitoramento e automação de ativos.
+- [FIWARE](https://www.fiware.org) para smart cities e indústria 4.0.
+- [Eclipse Kura](https://www.eclipse.org/kura/) para gateways e edge computing.
+
+Essas plataformas oferecem suporte a gateways, edge computing, segurança e integração com protocolos industriais como MQTT, Modbus e OPC-UA.
+
+# Comparação Detalhada entre ThingsBoard, FIWARE, Kaa, Mainflux e OpenRemote
+
+As plataformas IoT open source diferem significativamente em termos de arquitetura, complexidade de implantação, escalabilidade e aplicações-alvo. A seguir é apresentada uma análise comparativa dos principais aspectos técnicos.
+
+## Visão Geral
+
+| Plataforma                                     | Tipo                                  | Licença    | Complexidade | Escalabilidade |
+| ---------------------------------------------- | ------------------------------------- | ---------- | ------------ | -------------- |
+| [ThingsBoard](https://thingsboard.io)          | Plataforma IoT completa               | Apache 2.0 | Baixa        | Alta           |
+| [FIWARE](https://www.fiware.org)               | Framework IoT/Smart City              | Apache 2.0 | Alta         | Muito Alta     |
+| [Kaa IoT Platform](https://www.kaaproject.org) | Middleware IoT                        | Apache 2.0 | Média        | Alta           |
+| [Mainflux](https://mainflux.com)               | Plataforma IoT em microsserviços      | Apache 2.0 | Alta         | Muito Alta     |
+| [OpenRemote](https://openremote.io)            | Plataforma de gerenciamento de ativos | AGPL v3    | Média        | Alta           |
+
+---
+
+# 1. Arquitetura
+
+## ThingsBoard
+
+Arquitetura monolítica ou distribuída baseada em microsserviços.
+
+```text
+Dispositivos
+      │
+ MQTT/HTTP/CoAP
+      │
+ ThingsBoard Server
+      │
+ ├── Rule Engine
+ ├── Device Management
+ ├── Dashboard
+ └── Database
+```
+
+### Características
+
+- Arquitetura simples.
+- Interface web integrada.
+- Motor de regras visual.
+- Fácil implantação via Docker.
+
+### Vantagens
+
+- Curva de aprendizado reduzida.
+- Ideal para projetos acadêmicos e industriais de pequeno e médio porte.
+
+---
+
+## FIWARE
+
+Arquitetura baseada em componentes independentes chamados Generic Enablers.
+
+```text
+Sensores
+   │
+ IoT Agent
+   │
+ Orion Context Broker
+   │
+ ├── Context Data
+ ├── Analytics
+ ├── Big Data
+ ├── AI
+ └── Visualization
+```
+
+### Componentes principais
+
+- Orion Context Broker
+- IoT Agents
+- QuantumLeap
+- Cygnus
+- Keyrock (segurança)
+
+### Vantagens
+
+- Arquitetura extremamente flexível.
+- Forte suporte a Smart Cities.
+
+### Desvantagens
+
+- Implantação complexa.
+- Grande quantidade de componentes.
+
+---
+
+## Kaa
+
+Arquitetura baseada em microsserviços.
+
+```text
+Devices
+   │
+ Kaa Protocol
+   │
+ Endpoint Server
+   │
+ ├── Configuration
+ ├── Telemetry
+ ├── Analytics
+ └── Data Storage
+```
+
+### Características
+
+- Gerenciamento remoto de dispositivos.
+- Atualização OTA.
+- Telemetria.
+
+---
+
+## Mainflux
+
+- Magistrala de mensagens baseada em MQTT, HTTP e WebSockets.
+- https://www.absmach.eu/docs/magistrala/user-guide/architecture/
+
+  Arquitetura cloud-native baseada em microsserviços.
+
+```text
+Devices
+   │
+ MQTT/HTTP/WebSocket
+   │
+ Mainflux Core
+   │
+ ├── Auth Service
+ ├── Message Broker
+ ├── Twins
+ ├── Users
+ └── Storage
+```
+
+### Características
+
+- Desenvolvido em Go.
+- Kubernetes-ready.
+- Orientado para aplicações massivas.
+
+---
+
+## OpenRemote
+
+Arquitetura orientada a ativos.
+
+```text
+Devices
+   │
+ Protocol Agents
+   │
+ Asset Manager
+   │
+ ├── Rules
+ ├── Dashboard
+ ├── Maps
+ └── Analytics
+```
+
+### Características
+
+- Forte foco em edifícios inteligentes.
+- Interface visual avançada.
+
+---
+
+# 2. Protocolos Suportados
+
+| Protocolo | ThingsBoard | FIWARE     | Kaa        | Mainflux    | OpenRemote |
+| --------- | ----------- | ---------- | ---------- | ----------- | ---------- |
+| MQTT      | ✔           | ✔          | ✔          | ✔           | ✔          |
+| HTTP/REST | ✔           | ✔          | ✔          | ✔           | ✔          |
+| CoAP      | ✔           | ✔          | ✔          | ✖           | ✔          |
+| WebSocket | ✔           | ✔          | ✔          | ✔           | ✔          |
+| OPC-UA    | Parcial     | ✔          | Parcial    | Parcial     | ✔          |
+| Modbus    | Via Gateway | ✔          | Via Plugin | Via Gateway | ✔          |
+| LoRaWAN   | Integração  | Integração | Integração | Integração  | Integração |
+
+---
+
+# 3. Banco de Dados
+
+## ThingsBoard
+
+Suporta:
+
+- PostgreSQL
+- Cassandra
+- TimescaleDB
+
+### Recomendação
+
+- PostgreSQL para até 100 mil dispositivos.
+- Cassandra para milhões de dispositivos.
+
+---
+
+## FIWARE
+
+Componentes utilizam:
+
+- MongoDB
+- PostgreSQL
+- CrateDB
+- Elasticsearch
+
+### Destaque
+
+Grande flexibilidade para Big Data.
+
+---
+
+## Kaa
+
+Suporta:
+
+- PostgreSQL
+- Cassandra
+- MongoDB
+
+---
+
+## Mainflux
+
+Suporta:
+
+- PostgreSQL
+- TimescaleDB
+- Redis
+
+---
+
+## OpenRemote
+
+Utiliza principalmente:
+
+- PostgreSQL
+
+---
+
+# 4. Escalabilidade
+
+| Critério                | ThingsBoard | FIWARE | Kaa   | Mainflux | OpenRemote |
+| ----------------------- | ----------- | ------ | ----- | -------- | ---------- |
+| Cluster                 | ✔           | ✔      | ✔     | ✔        | ✔          |
+| Kubernetes              | ✔           | ✔      | ✔     | ✔        | ✔          |
+| Milhões de dispositivos | ✔           | ✔      | ✔     | ✔✔       | ✔          |
+| Edge Computing          | Médio       | Alto   | Médio | Alto     | Alto       |
+
+### Destaque
+
+O Mainflux possui a arquitetura mais adequada para ambientes massivos de IoT.
+
+---
+
+# 5. Gerenciamento de Dispositivos
+
+| Função          | ThingsBoard | FIWARE  | Kaa     | Mainflux | OpenRemote |
+| --------------- | ----------- | ------- | ------- | -------- | ---------- |
+| Provisionamento | ✔           | ✔       | ✔       | ✔        | ✔          |
+| OTA             | ✔           | Parcial | ✔       | Parcial  | ✔          |
+| Monitoramento   | ✔           | ✔       | ✔       | ✔        | ✔          |
+| Dashboards      | ✔           | Parcial | Parcial | Parcial  | ✔          |
+| Alarmes         | ✔           | ✔       | ✔       | ✔        | ✔          |
+
+---
+
+# 6. Casos de Uso
+
+## ThingsBoard
+
+### Aplicações
+
+- Monitoramento energético
+- Agricultura inteligente
+- Indústria 4.0
+- TCCs e pesquisas
+
+### Exemplo
+
+ESP32 → MQTT → ThingsBoard → Dashboard
+
+---
+
+## FIWARE
+
+### Aplicações
+
+- Smart Cities
+- Mobilidade urbana
+- Gestão ambiental
+- Monitoramento municipal
+
+### Exemplo
+
+Sensores urbanos → IoT Agent → Orion → Analytics
+
+---
+
+## Kaa
+
+### Aplicações
+
+- Produtos conectados
+- Telemetria industrial
+- Equipamentos remotos
+
+---
+
+## Mainflux
+
+### Aplicações
+
+- Telecomunicações
+- Redes massivas de sensores
+- Edge Computing
+- IIoT
+
+---
+
+## OpenRemote
+
+### Aplicações
+
+- Smart Buildings
+- Automação predial
+- Gestão de energia
+- Campi universitários
+
+---
+
+# 7. Requisitos de Hardware
+
+## Ambiente de Desenvolvimento
+
+| Plataforma  | CPU    | RAM  | Disco |
+| ----------- | ------ | ---- | ----- |
+| ThingsBoard | 2 vCPU | 4 GB | 20 GB |
+| FIWARE      | 4 vCPU | 8 GB | 50 GB |
+| Kaa         | 2 vCPU | 4 GB | 20 GB |
+| Mainflux    | 4 vCPU | 8 GB | 30 GB |
+| OpenRemote  | 2 vCPU | 4 GB | 20 GB |
+
+---
+
+## Ambiente de Produção
+
+| Plataforma  | CPU      | RAM   | Dispositivos |
+| ----------- | -------- | ----- | ------------ |
+| ThingsBoard | 8+ vCPU  | 16 GB | 100k+        |
+| FIWARE      | 16+ vCPU | 32 GB | Milhões      |
+| Kaa         | 8+ vCPU  | 16 GB | 100k+        |
+| Mainflux    | 16+ vCPU | 32 GB | Milhões      |
+| OpenRemote  | 8+ vCPU  | 16 GB | 100k+        |
+
+---
+
+# Comparação Final
+
+| Critério                     | Melhor Opção        |
+| ---------------------------- | ------------------- |
+| Facilidade de uso            | ThingsBoard         |
+| Dashboards prontos           | ThingsBoard         |
+| Smart Cities                 | FIWARE              |
+| Edge Computing               | Mainflux            |
+| Escalabilidade extrema       | Mainflux            |
+| Smart Buildings              | OpenRemote          |
+| Atualizações OTA             | Kaa                 |
+| Projetos acadêmicos          | ThingsBoard         |
+| Pesquisa em Arquiteturas IoT | FIWARE              |
+| Integração Industrial        | FIWARE / OpenRemote |
+
+# Recomendação para Ensino e Pesquisa
+
+Para uma disciplina de **Internet das Coisas**, uma sequência interessante seria:
+
+1. **ThingsBoard** → introdução rápida ao ecossistema IoT.
+2. **OpenRemote** → gerenciamento de ativos e automação.
+3. **FIWARE** → estudo de arquiteturas em camadas e Smart Cities.
+4. **Mainflux** → microsserviços e escalabilidade.
+5. **Kaa** → gerenciamento avançado de dispositivos e OTA.
+
+Essa progressão permite aos alunos evoluírem desde uma plataforma de fácil utilização até arquiteturas corporativas distribuídas utilizadas em ambientes industriais e cidades inteligentes.
+
+---
+
+Com base na ementa apresentada, o foco da disciplina deve estar nos **fundamentos da IoT**, nos **aspectos técnicos de funcionamento** e nas **redes industriais utilizadas em aplicações de automação e Indústria 4.0**. Uma formulação mais completa e acadêmica da ementa poderia ser:
+
+### Ementa
+
+Introdução aos conceitos fundamentais da Internet das Coisas (IoT). Evolução da Internet e dos sistemas ciberfísicos. Arquiteturas de IoT em camadas e seus componentes. Sensores, atuadores, dispositivos embarcados e gateways IoT. Protocolos de comunicação e modelos de conectividade para aplicações IoT. Aspectos técnicos de configuração, operação e integração de dispositivos conectados. Computação em nuvem, edge computing e plataformas IoT. Segurança, privacidade e gerenciamento de dispositivos. Redes industriais aplicadas à IoT e à Indústria 4.0, incluindo Ethernet Industrial, Modbus, PROFIBUS, PROFINET, EtherNet/IP, CAN, DeviceNet, WirelessHART, ISA100.11a e tecnologias LPWAN. Desenvolvimento de aplicações industriais utilizando plataformas e protocolos IoT. Estudos de caso e aplicações em automação industrial, monitoramento remoto, cidades inteligentes e sistemas de energia.
+
+---
+
+### Objetivo Geral
+
+Compreender os fundamentos da Internet das Coisas (IoT), seus componentes, arquiteturas, protocolos e tecnologias de comunicação, capacitando o aluno a analisar, configurar e integrar dispositivos e redes industriais para o desenvolvimento de aplicações voltadas à Indústria 4.0.
+
+---
+
+### Objetivos Específicos
+
+- Compreender os conceitos fundamentais da Internet das Coisas.
+- Identificar os principais componentes de uma arquitetura IoT.
+- Estudar sensores, atuadores e dispositivos embarcados utilizados em aplicações IoT.
+- Conhecer os protocolos de comunicação empregados em sistemas IoT.
+- Analisar arquiteturas em nuvem, edge e fog computing.
+- Configurar dispositivos e plataformas IoT para coleta e transmissão de dados.
+- Estudar os principais padrões de redes industriais utilizados em automação.
+- Avaliar aspectos de segurança e privacidade em sistemas IoT.
+- Desenvolver aplicações básicas utilizando plataformas IoT open source.
+- Aplicar conceitos de IoT em cenários industriais e de monitoramento remoto.
+
+---
+
+### Conteúdo Programático (60 horas)
+
+#### Unidade 1 – Fundamentos da IoT (10 h)
+
+- Conceitos e evolução da IoT
+- Sistemas ciberfísicos
+- Aplicações da IoT
+- Indústria 4.0 e transformação digital
+
+#### Unidade 2 – Arquiteturas IoT (10 h)
+
+- Arquiteturas em camadas
+- Dispositivos, gateways e middleware
+- Edge Computing e Cloud Computing
+- Plataformas IoT Open Source
+
+#### Unidade 3 – Sensores e Protocolos (10 h)
+
+- Sensores e atuadores
+- MQTT
+- CoAP
+- HTTP/REST
+- WebSockets
+
+#### Unidade 4 – Redes Industriais (12 h)
+
+- Redes de campo (Fieldbus)
+- Modbus RTU/TCP
+- PROFIBUS
+- PROFINET
+- DeviceNet
+- EtherNet/IP
+- CAN Bus
+- OPC UA
+
+#### Unidade 5 – Redes Sem Fio para IoT (8 h)
+
+- Wi-Fi
+- Bluetooth Low Energy (BLE)
+- ZigBee
+- LoRaWAN
+- NB-IoT
+- 5G Industrial
+
+#### Unidade 6 – Segurança e Aplicações Industriais (10 h)
+
+- Segurança em IoT
+- Autenticação e criptografia
+- Monitoramento industrial
+- Smart Grid
+- Manutenção preditiva
+- Estudos de caso
+
+---
+
+### Bibliografia Básica
+
+- Internet das Coisas – Samuel Greengard.
+- Building the Internet of Things – Maciej Kranz.
+- Designing the Internet of Things – Adrian McEwen e Hakim Cassimally.
+
+### Bibliografia Complementar
+
+- Industrial Communication Systems
+- ThingsBoard (documentação e laboratório)
+- Node-RED (desenvolvimento de aplicações)
+- FIWARE (arquiteturas IoT avançadas)
+
+Essa estrutura atende bem cursos de Engenharia Elétrica, Engenharia de Controle e Automação, Engenharia de Computação e cursos superiores de tecnologia com foco em Indústria 4.0.
+
+# Grok
+
+**ThingsBoard** is one of the most popular and widely recommended open-source IoT platforms today.
+
+### Top Open-Source IoT Platforms
+
+Here are some of the leading options based on popularity, features, and community support in 2026:
+
+1. **ThingsBoard** (Community Edition)
+   - **Best for**: Device management, data collection/processing, visualization (custom dashboards), rules engine, alarms, and multi-tenant setups.
+   - Supports MQTT, CoAP, HTTP, and other protocols.
+   - Can be self-hosted or used in the cloud; scalable with microservices/Kubernetes.
+   - Apache 2.0 license — fully open-source and usable commercially.
+   - Strong for both prototyping and production; has an AI Solution Creator for quick starts.
+   - Website: [thingsboard.io](https://thingsboard.io/)
+
+2. **OpenRemote**
+   - **Best for**: Manufacturers, system integrators, and custom automation (asset management, rules, dashboards, energy/building management).
+   - 100% open-source focus with auto-provisioning and white-labeling.
+   - Good for scalable, professional IoT applications.
+
+3. **Home Assistant** (and **openHAB**)
+   - **Best for**: Home automation / smart home projects.
+   - Home Assistant is generally more user-friendly with excellent discovery, mobile apps, and a large community/add-on ecosystem.
+   - openHAB offers strong modeling and stability for complex setups but has a steeper learning curve.
+   - Both are highly customizable and run locally (great for privacy).
+
+4. **Eclipse IoT Projects** (e.g., **Hono**, **Ditto**, **EdgeX Foundry**)
+   - **Hono**: Device-to-cloud connectivity and ingestion.
+   - **Ditto**: Digital twins.
+   - **EdgeX Foundry**: Industrial edge computing and interoperability.
+   - Strong for enterprise/industrial use cases and building modular systems.
+
+5. **Other Notable Options**:
+   - **Node-RED**: Flow-based programming for wiring devices, APIs, and services (great for quick integrations and beginners).
+   - **Kaa IoT**: Flexible middleware for device management and apps.
+   - **FIWARE**: Context management, popular for smart cities.
+   - **Mainflux**, **DeviceHive**, **SiteWhere**: Various protocol support and scalability features.
+
+### Quick Comparison
+
+| Platform             | Best Use Case               | Key Strengths                     | Learning Curve | Deployment        |
+| -------------------- | --------------------------- | --------------------------------- | -------------- | ----------------- |
+| ThingsBoard          | General IoT, dashboards     | Visualization, rules, scalability | Medium         | Self-hosted/Cloud |
+| OpenRemote           | Enterprise/Integrators      | Asset mgmt, automation            | Medium         | Self-hosted       |
+| Home Assistant       | Smart Home                  | Ease of use, integrations         | Low-Medium     | Local             |
+| openHAB              | Advanced Home/Stable setups | Modeling, reliability             | High           | Local             |
+| Eclipse (EdgeX etc.) | Industrial/Edge             | Interoperability, modularity      | High           | Edge/Cloud        |
+| Node-RED             | Prototyping & flows         | Visual, quick wiring              | Low            | Flexible          |
+
+### Recommendations
+
+- **For most users/developers** — Start with **ThingsBoard** (self-hosted Community Edition). It balances features, ease of visualization, and extensibility.
+- **Smart home focus** — **Home Assistant** is usually the winner for beginners and daily use.
+- **Industrial/edge** — Look at EdgeX Foundry or Eclipse projects.
+- **Highly customizable** — OpenRemote or ThingsBoard.
+
+Most of these are self-hostable (Docker/Kubernetes friendly) and support standard protocols like MQTT. Check their GitHub repos for stars, activity, and documentation. Many offer demos or quick-start guides.
+
+If you provide more details (e.g., smart home vs. industrial, scale, specific protocols/hardware, or cloud vs. on-prem), I can refine recommendations or help with setup!

@@ -1,0 +1,152 @@
+---
+title: Atividades Práticas
+description: detalhamento completo das atividades práticas
+---
+
+**✅ DETALHAMENTO DAS ATIVIDADES PRÁTICAS**
+
+A seguir, apresento o **detalhamento completo das atividades práticas** para cada semana do curso, alinhado ao plano de aulas em tabela.
+
+### **Semana 1 – Item 1: Visão Geral sobre IoT**
+
+- **Objetivo:** Familiarizar o aluno com o ambiente de desenvolvimento.
+- **Atividades:**
+  1. Instalação do Docker e ThingsBoard Community Edition (self-hosted).
+  2. Instalação do Node-RED via Docker.
+  3. Instalação do Arduino IDE ou ESP-IDF + configuração do ESP32.
+  4. Teste de conexão do ESP32 na rede Wi-Fi.
+- **Materiais:** Computador, ESP32, cabo USB.
+- **Entrega:** Print da tela do ThingsBoard rodando localmente.
+
+### **Semana 2 – Item 2: A Internet na IoT**
+
+- **Objetivo:** Praticar configuração de rede e conectividade.
+- **Atividades:**
+  1. Configurar o ESP32 como cliente Wi-Fi.
+  2. Obter IP via DHCP e testar ping para o gateway.
+  3. Criar um sketch simples que exibe informações de rede no Serial Monitor.
+  4. Testar conexão com um servidor NTP.
+- **Materiais:** ESP32.
+- **Entrega:** Código comentado + print do Serial Monitor.
+
+### **Semana 3 – Item 3: Sensores e Atuadores em IoT**
+
+- **Objetivo:** Trabalhar com sensores e atuadores básicos.
+- **Atividades:**
+  1. Conectar sensor DHT22 (temperatura e umidade).
+  2. Conectar sensor MPU6050 (aceleração/vibração).
+  3. Ler dados dos sensores e exibir no Serial Monitor.
+  4. Controlar um LED ou relé como atuador.
+- **Materiais:** ESP32, DHT22, MPU6050, relé/LED.
+- **Entrega:** Relatório curto com valores lidos e foto do circuito.
+
+### **Semana 4 – Item 4: Atributos de Protocolos IoT**
+
+- **Objetivo:** Comparar protocolos na prática.
+- **Atividades:**
+  1. Implementar envio de dados via HTTP (POST para um endpoint teste).
+  2. Implementar envio via MQTT (usando broker público como HiveMQ).
+  3. Medir tempo de transmissão e tamanho dos pacotes.
+  4. Registrar consumo de bateria/recurso (se aplicável).
+- **Materiais:** ESP32.
+- **Entrega:** Tabela comparativa (HTTP × MQTT) + código.
+
+### **Semana 5 – Item 5: Pilha de Protocolos IoT**
+
+- **Objetivo:** Dominar o protocolo MQTT.
+- **Atividades:**
+  1. Configurar cliente MQTT no ESP32 (biblioteca PubSubClient).
+  2. Publicar telemetria em tópicos específicos.
+  3. Subscrever a tópicos de comando.
+  4. Testar com o broker do ThingsBoard.
+- **Materiais:** ESP32.
+- **Entrega:** Código MQTT funcional.
+
+### **Semana 6 – Item 6: Computação em Nevoeiro**
+
+- **Objetivo:** Implementar processamento na borda.
+- **Atividades:**
+  1. Implementar filtro de média móvel para dados de vibração.
+  2. Criar lógica local de detecção de anomalia (ex: vibração acima do limiar).
+  3. Enviar apenas dados relevantes para a nuvem.
+  4. Comparar latência com processamento 100% em nuvem.
+- **Materiais:** ESP32 + sensor de vibração.
+- **Entrega:** Código com edge computing + relatório de comparação.
+
+### **Semana 7 – Item 7: Plataforma de Serviços IoT**
+
+- **Objetivo:** Introdução ao Node-RED.
+- **Atividades:**
+  1. Criar fluxos básicos (inject → debug).
+  2. Receber dados via MQTT no Node-RED.
+  3. Processar JSON e fazer conversões.
+  4. Enviar dados para um arquivo ou banco de dados simples.
+- **Materiais:** Node-RED rodando localmente.
+- **Entrega:** Fluxo Node-RED exportado (.json).
+
+### **Semana 8 – Item 7: Plataforma de Serviços IoT (continuação)**
+
+- **Objetivo:** Integração completa com ThingsBoard.
+- **Atividades:**
+  1. Provisionar dispositivo no ThingsBoard.
+  2. Configurar ESP32 para enviar dados via MQTT ao ThingsBoard.
+  3. Visualizar telemetria em tempo real.
+  4. Criar atributos do dispositivo.
+- **Materiais:** ESP32 + ThingsBoard.
+- **Entrega:** Dashboard básico com telemetria.
+
+### **Semana 9 – Item 7: Mercados de IoT e Ecosistemas Conectados**
+
+- **Objetivo:** Criar visualizações profissionais.
+- **Atividades:**
+  1. Criar dashboard completo no ThingsBoard (gauge, line chart, cards).
+  2. Adicionar múltiplos dispositivos virtuais.
+  3. Configurar alarmes básicos.
+  4. Simular cenário industrial (ex: monitoramento de máquina).
+- **Materiais:** ThingsBoard.
+- **Entrega:** Dashboard funcional (print + link de compartilhamento).
+
+### **Semana 10 – Item 8: Padrões de IoT**
+
+- **Objetivo:** Implementar automação e regras.
+- **Atividades:**
+  1. Criar regras no ThingsBoard (Rules Engine).
+  2. Configurar alarmes com notificações (e-mail ou webhook).
+  3. Implementar controle remoto de atuador via dashboard.
+  4. Testar cenários de comando/resposta.
+- **Materiais:** ESP32 + ThingsBoard.
+- **Entrega:** Regras configuradas + teste documentado.
+
+### **Semana 11 – Revisão e Integração**
+
+- **Objetivo:** Integrar todos os conceitos.
+- **Atividades:**
+  1. Montagem completa: sensores + MQTT + ThingsBoard + atuador.
+  2. Teste de ponta a ponta.
+  3. Aprovação do tema do Projeto Final.
+- **Entrega:** **Proposta do Projeto Final** (1 página).
+
+### **Semanas 12 a 14 – Desenvolvimento do Projeto Final**
+
+- **Semana 12:** Aquisição de dados + envio MQTT estável.
+- **Semana 13:** Desenvolvimento do Dashboard + Regras de automação.
+- **Semana 14:** Implementação de segurança, testes de confiabilidade e documentação inicial.
+
+**Materiais por grupo:** Kit completo (ESP32, sensores variados, atuadores, protoboard, jumpers).
+
+### **Semana 15 – Apresentação**
+
+- Demonstração ao vivo do sistema completo.
+- Defesa do projeto (10-15 minutos por grupo).
+- Entrega final: Relatório técnico + vídeo demonstração (3-6 min).
+
+---
+
+**Observações Gerais sobre as Práticas:**
+
+- Todas as atividades são **progressivas** e servem de base para o Projeto Final.
+- Uso intenso de **ESP32** + **ThingsBoard** (principal stack do curso).
+- Os alunos devem manter um repositório (GitHub recomendado) com todos os códigos.
+- Em caso de falta de hardware físico, utilizar simulador **Wokwi**.
+
+Quer que eu detalhe mais alguma semana específica, inclua **roteiro passo a passo** com códigos de exemplo, ou crie uma **lista de materiais** completa para o laboratório?

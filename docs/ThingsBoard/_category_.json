@@ -1,0 +1,8 @@
+{
+  "label": "ThingsBoard",
+  "position": 11,
+  "link": {
+    "type": "generated-index",
+    "description": "ThingsBoard related documentation and resources."
+  }
+}
