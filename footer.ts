@@ -107,6 +107,10 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://code.visualstudio.com/download",
                 },
                 {
+                    label: "PlatformIO",
+                    href: "https://platformio.org//install/ide?install=vscode",
+                },
+                {
                     label: "Git SCM",
                     href: "https://git-scm.com/downloads",
                 },
@@ -119,45 +123,33 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://desktop.github.com/download/",
                 },
                 {
-                    label: "PlatformIO",
-                    href: "https://platformio.org//install/ide?install=vscode",
+                    label: "Docker Desktop",
+                    href: "https://www.docker.com/products/docker-desktop/",
                 },
                 {
-                    label: "Arduino IDE",
-                    href: "https://www.arduino.cc/en/software/",
+                    label: "Node-RED",
+                    href: "https://nodered.org/",
                 },
             ],
         },
         {
-            title: "Ferramentas",
+            title: "Recursos",
             items: [
                 {
-                    label: "K-Map Solver",
-                    href: "https://karnaughmapsolver.com/",
+                    label: "DeepBlue",
+                    href: "https://deepbluembedded.com/",
                 },
                 {
-                    label: "Karnaugh Map Solver",
-                    href: "https://wredan.github.io/Karnaugh-Map-Solver/",
+                    label: "Learn Electronics",
+                    href: "https://lastminuteengineers.com/",
                 },
                 {
-                    label: "Tinkercad Circuits",
-                    href: "https://www.tinkercad.com/circuits",
+                    label: "Wokwi",
+                    href: "https://wokwi.com/",
                 },
                 {
-                    label: "Logic circuit simplification",
-                    href: "http://www.32x8.com/index.html",
-                },
-                {
-                    label: "Quine McCluskey Solver",
-                    href: "https://quinemccluskey.geeekyboy.com/",
-                },
-                {
-                    label: "PlatformIO",
-                    href: "https://platformio.org//install/ide?install=vscode",
-                },
-                {
-                    label: "WinGet",
-                    href: "https://winget.run/",
+                    label: "ESP32",
+                    href: "https://www.espressif.com/en/products/socs/esp32",
                 },
             ],
         },
