@@ -9,3 +9,26 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Pilha de Protocolos IoT: Enlace e Rede
+
+**Ementa:** Camada de enlace · Camada internet · Wi-Fi, BLE, LoRa no ESP32
+
+**Stack da semana:** ESP32 · Wi-Fi · Node-RED · Dashboard · BLE
+
+| Aula | Tipo | Conteúdo                                              | Detalhamento                                                                                  |
+| ---- | ---- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 17   | AT   | Camada de enlace: Wi-Fi (802.11), BLE, Ethernet, LoRa | Características de cada tecnologia, alcance, consumo energético, aplicações típicas           |
+| 18   | AT   | Camada de rede IoT: 6LoWPAN, Thread, Zigbee           | Fragmentação de IPv6 em redes de baixa potência, malha (mesh) para IoT industrial             |
+| 19   | AP   | ESP32 como ponto de acesso (AP) e publicação de dados | `WiFi.softAP()`, servidor HTTP embutido, formulário para configuração remota de parâmetros    |
+| 20   | AP   | Fluxo Node-RED: receber MQTT e exibir dashboard       | `node-red-dashboard`, gauge, chart, text; visualizar dados do sensor em tempo real no browser |
+
+---
+
+- **Objetivo:** Dominar MQTT.
+- **Atividades:**
+  1. Configurar cliente MQTT no PlatformIO.
+  2. Publicar telemetria em JSON para tópicos estruturados.
+  3. Subscrever tópicos de comando.
+  4. Testar com Mosquitto local via Wokwi.
+- **Entrega:** Código MQTT funcional.

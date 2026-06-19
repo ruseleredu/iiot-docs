@@ -1,0 +1,289 @@
+---
+id: iot-industrial-plano-atividades-draft
+title: IoT Industrial — Plano de Atividades (draft)
+sidebar_label: Plano de Atividades (draft)
+draft: true
+description: Detalhamento das atividades teóricas e práticas da disciplina IoT Industrial (ELT85B) — 15 semanas, 4 aulas por semana.
+tags:
+  - IoT
+  - ESP32
+  - Node-RED
+  - InfluxDB
+  - Grafana
+  - PlatformIO
+---
+
+# IoT Industrial — Plano de Atividades
+
+**Disciplina:** IoT Industrial (ELT85B)  
+**Curso:** Tecnologia em Automação Industrial — Matriz 487  
+**Carga horária:** 15 AT · 45 AP · 4 APS · **Total: 64 aulas**  
+**Stack adotada:** ESP32 · PlatformIO (VS Code) · Wokwi · Node-RED · InfluxDB · Grafana
+
+---
+
+## Legenda
+
+| Sigla   | Tipo                   | Descrição                                            |
+| ------- | ---------------------- | ---------------------------------------------------- |
+| **AT**  | Teórica                | Exposição de conceitos, discussão e contextualização |
+| **AP**  | Prática                | Implementação guiada com a stack da disciplina       |
+| **APS** | Prática Supervisionada | Entrega avaliativa com orientação do professor       |
+
+---
+
+## Semana 1 — Visão Geral sobre IoT
+
+**Ementa:** O que é IoT · Referências · Seu uso · Internet e IoT
+
+**Stack da semana:** ESP32 · PlatformIO · VS Code · Wokwi
+
+| Aula | Tipo | Conteúdo                                         | Detalhamento                                                                                  |
+| ---- | ---- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| 1    | AT   | Introdução à IoT: definição, história e evolução | Conceito de "coisa conectada", marcos históricos, impacto econômico e social                  |
+| 2    | AT   | IoT industrial vs. IoT consumidor (IIoT)         | Diferenças de requisitos: confiabilidade, latência, segurança, escala                         |
+| 3    | AP   | Setup do ambiente: VS Code + PlatformIO + Wokwi  | Instalação e configuração do ambiente de desenvolvimento; primeiro projeto ESP32 no simulador |
+| 4    | AP   | Hello World IoT: piscar LED no ESP32 via Wokwi   | Estrutura de um projeto PlatformIO, `platformio.ini`, upload e monitoramento serial           |
+
+---
+
+## Semana 2 — A Internet na IoT
+
+**Ementa:** Modelo de Referência OSI · Arquitetura TCP/IP e camadas
+
+**Stack da semana:** ESP32 · `WiFi.h` · `HTTPClient` · Wokwi
+
+| Aula | Tipo | Conteúdo                                          | Detalhamento                                                                                   |
+| ---- | ---- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 5    | AT   | Modelo OSI: 7 camadas e suas funções              | Encapsulamento de dados, PDUs, papéis de cada camada em redes IoT                              |
+| 6    | AT   | Arquitetura TCP/IP e endereçamento IP (IPv4/IPv6) | Subnetting básico, NAT, por que IPv6 é essencial para IoT em escala                            |
+| 7    | AP   | ESP32 conectado ao Wi-Fi via Wokwi                | Biblioteca `WiFi.h`, scan de redes, conexão, leitura de IP e RSSI via serial                   |
+| 8    | AP   | Requisição HTTP GET com ESP32                     | Biblioteca `HTTPClient`, consumo de API REST pública (ex: `worldtimeapi.org`), parsing simples |
+
+---
+
+## Semana 3 — Sensores e Atuadores em IoT
+
+**Ementa:** Sensores IoT · Atuadores IoT · Integração com microcontroladores
+
+**Stack da semana:** ESP32 · `DHTesp` · Wokwi · PWM · I²C
+
+| Aula | Tipo | Conteúdo                                                                 | Detalhamento                                                                               |
+| ---- | ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| 9    | AT   | Tipos de sensores IoT: temperatura, umidade, pressão, corrente, vibração | Princípio de funcionamento, interfaces (I²C, SPI, 1-Wire, analógico), critérios de seleção |
+| 10   | AT   | Atuadores: relés, motores, válvulas e inversores                         | Controle por PWM, acionamento de cargas, segurança elétrica e isolação                     |
+| 11   | AP   | Sensor DHT22 no Wokwi: leitura de temp. e umidade                        | Biblioteca `DHTesp`, leitura periódica, exibição no monitor serial e no display OLED       |
+| 12   | AP   | Controle de LED por PWM + sensor LDR (fotoresistor)                      | `analogRead`, `analogWrite` (LEDC), controle de brilho proporcional à luminosidade         |
+
+---
+
+## Semana 4 — Atributos de Protocolos IoT
+
+**Ementa:** Suporte · Escalabilidade · Determinismo · Segurança · Interoperabilidade
+
+**Stack da semana:** ESP32 · `PubSubClient` · MQTT · Node-RED · HiveMQ
+
+| Aula | Tipo | Conteúdo                                      | Detalhamento                                                                                    |
+| ---- | ---- | --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 13   | AT   | Escalabilidade e suporte em protocolos IoT    | Topologias de rede, limitações de banda, QoS, trade-offs de latência vs. throughput             |
+| 14   | AT   | Determinismo, segurança e interoperabilidade  | Tempo real em IoT, TLS/DTLS, autenticação de dispositivos, padrões de interoperabilidade        |
+| 15   | AP   | MQTT com ESP32 e broker público (HiveMQ/EMQX) | Biblioteca `PubSubClient`, publish/subscribe, tópicos, QoS 0/1/2 na prática                     |
+| 16   | AP   | Node-RED: instalação e primeiro fluxo MQTT    | Instalar Node-RED, nodes `mqtt-in`/`mqtt-out`, debug, inject; conectar ao mesmo broker do ESP32 |
+
+---
+
+## Semana 5 — Pilha de Protocolos IoT: Enlace e Rede
+
+**Ementa:** Camada de enlace · Camada internet · Wi-Fi, BLE, LoRa no ESP32
+
+**Stack da semana:** ESP32 · Wi-Fi · Node-RED · Dashboard · BLE
+
+| Aula | Tipo | Conteúdo                                              | Detalhamento                                                                                  |
+| ---- | ---- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 17   | AT   | Camada de enlace: Wi-Fi (802.11), BLE, Ethernet, LoRa | Características de cada tecnologia, alcance, consumo energético, aplicações típicas           |
+| 18   | AT   | Camada de rede IoT: 6LoWPAN, Thread, Zigbee           | Fragmentação de IPv6 em redes de baixa potência, malha (mesh) para IoT industrial             |
+| 19   | AP   | ESP32 como ponto de acesso (AP) e publicação de dados | `WiFi.softAP()`, servidor HTTP embutido, formulário para configuração remota de parâmetros    |
+| 20   | AP   | Fluxo Node-RED: receber MQTT e exibir dashboard       | `node-red-dashboard`, gauge, chart, text; visualizar dados do sensor em tempo real no browser |
+
+---
+
+## Semana 6 — Pilha de Protocolos IoT: Aplicação + APS 1
+
+**Ementa:** Camada de aplicação · MQTT · CoAP · HTTP/HTTPS · AMQP
+
+**Stack da semana:** MQTT · CoAP · TLS · Node-RED · InfluxDB
+
+:::note[Entrega — APS 1]
+**Protótipo Sensor + Node-RED:** ESP32 no Wokwi enviando dados de temperatura/umidade via MQTT; fluxo Node-RED exibindo dashboard ao vivo com histórico.
+:::
+
+| Aula | Tipo | Conteúdo                                                    | Detalhamento                                                                                           |
+| ---- | ---- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 21   | AT   | Protocolos de aplicação IoT: MQTT vs CoAP vs AMQP vs HTTP   | Overhead, modelo request/response vs. pub/sub, casos de uso industriais de cada um                     |
+| 22   | APS  | **APS 1 — Protótipo sensor + Node-RED**                     | Entregar: ESP32 no Wokwi enviando dados de temp/umidade via MQTT; fluxo Node-RED com dashboard ao vivo |
+| 23   | AP   | MQTT com autenticação e TLS no Node-RED                     | Configuração de usuário/senha no broker, certificado TLS, testar conexão segura                        |
+| 24   | AP   | Integração Node-RED com InfluxDB: inserir dados de sensores | Node `influxdb-out`, criar bucket e organização, verificar dados no Explore do InfluxDB                |
+
+---
+
+## Semana 7 — Computação em Nevoeiro (Fog Computing)
+
+**Ementa:** Definição de Fog/Edge · Drivers · Tecnologias habilitadoras
+
+**Stack da semana:** Node-RED · InfluxDB · Flux · Docker · Edge
+
+| Aula | Tipo | Conteúdo                                                      | Detalhamento                                                                                 |
+| ---- | ---- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 25   | AT   | Cloud vs. Fog vs. Edge: arquiteturas e trade-offs             | Latência, privacidade de dados, operação offline, exemplos industriais reais                 |
+| 26   | AT   | Tecnologias de Fog Computing: contêineres, virtualização leve | Docker em dispositivos de borda (Raspberry Pi, industrial PC), orquestração mínima           |
+| 27   | AP   | Node-RED como gateway de borda: filtro e pré-processamento    | Nodes `function` para média móvel, detecção de anomalias simples, envio condicional ao banco |
+| 28   | AP   | InfluxDB: queries Flux, downsampling e tarefas agendadas      | Linguagem Flux, aggregate functions, criar task de downsampling automático a cada 5 min      |
+
+---
+
+## Semana 8 — Plataforma de Serviços IoT
+
+**Ementa:** Funções da plataforma de serviços IoT · Gestão de dispositivos · Data Lake
+
+**Stack da semana:** Grafana · InfluxDB · Node-RED · MQTT · OTA
+
+| Aula | Tipo | Conteúdo                                                               | Detalhamento                                                                               |
+| ---- | ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 29   | AT   | Anatomia de uma plataforma IoT: device management, ingestão, analytics | Comparativo: AWS IoT Core, Azure IoT Hub, ThingsBoard, plataformas open-source             |
+| 30   | AT   | Provisionamento, OTA updates e gestão de frota                         | Ciclo de vida do dispositivo, certificate rotation, MQTT over TLS para OTA                 |
+| 31   | AP   | Grafana: instalação e conexão com InfluxDB                             | Data source InfluxDB, criar primeiro painel, variáveis de template, alertas via e-mail     |
+| 32   | AP   | Dashboard Grafana para monitoramento industrial                        | Painéis de temperatura, umidade, estado de atuadores; anotações de eventos; alerting rules |
+
+---
+
+## Semana 9 — Mercados de IoT: Agricultura e Energia
+
+**Ementa:** Soluções para agricultura · Energia · Gás e petróleo
+
+**Stack da semana:** ESP32 · Node-RED · Grafana · InfluxDB · LPWAN
+
+| Aula | Tipo | Conteúdo                                                         | Detalhamento                                                                                    |
+| ---- | ---- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 33   | AT   | IoT na Agricultura (AgriIoT): irrigação, solo, clima             | Sensores de umidade do solo, estações meteorológicas, automação de pivô central, LPWAN no campo |
+| 34   | AT   | IoT em Energia e Oil & Gas: monitoramento de ativos              | Smart meters, medição de vibração em bombas, dutos inteligentes, conformidade regulatória       |
+| 35   | AP   | Simulação agro: sensor de solo + lógica de irrigação no Node-RED | ESP32/Wokwi com sensor analógico de umidade; Node-RED decide abrir/fechar válvula (atuador)     |
+| 36   | AP   | Dashboard Grafana temático: fazenda digital                      | Mapa de talhões (plugin Geomap), gráfico de histórico de irrigações, alerta de seca             |
+
+---
+
+## Semana 10 — Mercados de IoT: Edifícios Inteligentes e Saúde
+
+**Ementa:** Edifícios inteligentes · Saúde · Finanças
+
+**Stack da semana:** ESP32 · Node-RED · `DHTesp` · Grafana · BACnet
+
+| Aula | Tipo | Conteúdo                                                    | Detalhamento                                                                                      |
+| ---- | ---- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 37   | AT   | Building Automation Systems (BAS) e IoT                     | HVAC inteligente, gestão de iluminação, controle de acesso, integração BACnet/Modbus com IoT      |
+| 38   | AT   | IoT na saúde: dispositivos wearables e hospitais conectados | Requisitos de confiabilidade e segurança (HIPAA/LGPD), monitoramento remoto de pacientes          |
+| 39   | AP   | Simulação de HVAC: controle com histerese no ESP32          | Sensor DHT22, lógica de controle liga/desliga com histerese, atuador (ventilador simulado)        |
+| 40   | AP   | Fluxo Node-RED com lógica condicional e notificações        | Node `switch`, função JS, envio de alerta por e-mail (`node-red-node-email`) quando temp > limiar |
+
+---
+
+## Semana 11 — Mercados de IoT: Indústria e Transporte + APS 2
+
+**Ementa:** Indústria 4.0 · Smart manufacturing · Logística e transporte conectado
+
+**Stack da semana:** Modbus · OPC-UA · Node-RED · InfluxDB · Grafana
+
+:::note[Entrega — APS 2]
+**Pipeline completo de dados:** ESP32 → MQTT → Node-RED → InfluxDB → Grafana com histórico de 24h e pelo menos uma alerting rule configurada.
+:::
+
+| Aula | Tipo | Conteúdo                                         | Detalhamento                                                                                     |
+| ---- | ---- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| 41   | AT   | IIoT e Indústria 4.0: manutenção preditiva e OEE | Digitalização de chão de fábrica, integração SCADA/MES com IoT, edge analytics                   |
+| 42   | APS  | **APS 2 — Pipeline completo de dados**           | Entregar: ESP32 → MQTT → Node-RED → InfluxDB → Grafana com histórico de 24h e alerta configurado |
+| 43   | AP   | Protocolo Modbus com ESP32 e Node-RED            | Modbus RTU/TCP, biblioteca `ModbusMaster`, leitura de registros de CLP simulado no Node-RED      |
+| 44   | AP   | OPC-UA: conceitos e integração com Node-RED      | `node-red-contrib-opcua`, navegar no address space, subscrever a tags de um servidor OPC-UA demo |
+
+---
+
+## Semana 12 — Padrões IoT: IEEE, IETF e ITU
+
+**Ementa:** IEEE 802.15.4 · IETF (CoAP, 6LoWPAN) · ITU-T Y.2060
+
+**Stack da semana:** CoAP · ESP32 · Node-RED · 6LoWPAN · IEEE 802.15.4
+
+| Aula | Tipo | Conteúdo                                                | Detalhamento                                                                                  |
+| ---- | ---- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 45   | AT   | Padrões IEEE para IoT: 802.15.4, 802.11ah (Wi-Fi HaLow) | Características, aplicações, coexistência de redes, certificação Wi-Fi Alliance               |
+| 46   | AT   | Padrões IETF: CoAP (RFC 7252), CBOR, 6LoWPAN            | Protocolo CoAP: métodos GET/PUT/POST/DELETE, observe, blockwise transfer, comparação com HTTP |
+| 47   | AP   | Implementar CoAP no ESP32 com biblioteca `libcoap`      | Servidor CoAP no ESP32, recursos `/temp` e `/status`, testar com cliente `coap-client`        |
+| 48   | AP   | Integrar CoAP ao Node-RED via `node-red-contrib-coap`   | Fluxo Node-RED consumindo recursos CoAP do ESP32, persistir no InfluxDB                       |
+
+---
+
+## Semana 13 — Padrões IoT: OCF, IIC, IPSO e ETSI
+
+**Ementa:** Open Connectivity Foundation · IIC · IPSO Alliance · ETSI
+
+**Stack da semana:** IPSO · OCF · MQTT · TLS · Node-RED
+
+| Aula | Tipo | Conteúdo                                                    | Detalhamento                                                                                     |
+| ---- | ---- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 49   | AT   | OCF e IPSO Alliance: modelos de dados para objetos IoT      | Resource model do OCF, Smart Objects IPSO, mapeamento de sensores em tipos padronizados          |
+| 50   | AT   | IIC e ETSI: frameworks de referência e M2M                  | Industrial Internet Reference Architecture (IIRA), ETSI M2M/oneM2M: arquitetura e interfaces     |
+| 51   | AP   | Modelagem de dispositivo com IPSO Smart Objects no Node-RED | Representar sensor de temperatura segundo IPSO `/3303`, publicar JSON padronizado via MQTT       |
+| 52   | AP   | Segurança IoT: certificados X.509 e autenticação mútua TLS  | Gerar CA e certificados com OpenSSL, configurar broker MQTT com mTLS, atualizar ESP32 e Node-RED |
+
+---
+
+## Semana 14 — Projeto Integrador: Desenvolvimento
+
+**Ementa:** Aplicação integrada com toda a stack da disciplina
+
+**Stack da semana:** ESP32 · Wokwi · MQTT · Node-RED · InfluxDB · Grafana
+
+| Aula | Tipo | Conteúdo                                                           | Detalhamento                                                                                              |
+| ---- | ---- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| 53   | AT   | Definição do projeto: requisitos, arquitetura e divisão de tarefas | Escolha do cenário industrial (fábrica, agro, edifício); diagrama de blocos; definição de sensores e KPIs |
+| 54   | AP   | Desenvolvimento: firmware ESP32 e integração MQTT                  | Orientação por grupo; firmware com múltiplos sensores, QoS, reconexão automática                          |
+| 55   | AP   | Desenvolvimento: fluxos Node-RED e persistência InfluxDB           | Orientação: lógica de negócios no Node-RED, estrutura de measurements, tags e fields                      |
+| 56   | AP   | Desenvolvimento: dashboards Grafana e alertas                      | Orientação: painel executivo vs. operacional, alertas Grafana, documentação de endpoints                  |
+
+---
+
+## Semana 15 — Projeto Integrador: Apresentação + APS Final
+
+**Ementa:** Revisão geral · Apresentação de projetos · APS Final
+
+**Stack da semana:** ESP32 · Wokwi · Node-RED · InfluxDB · Grafana
+
+:::note[Entrega — APS Final]
+**Projeto Integrador completo:** firmware ESP32 (Wokwi) + fluxo Node-RED + dashboard Grafana + documentação de arquitetura. Demonstração ao vivo obrigatória.
+:::
+
+| Aula | Tipo | Conteúdo                                                        | Detalhamento                                                                                  |
+| ---- | ---- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 57   | AT   | Revisão geral: principais conceitos do semestre                 | Mapa mental coletivo: protocolos, pilha, mercados, padrões, stack tecnológica utilizada       |
+| 58   | APS  | **APS Final — Apresentação do Projeto Integrador (Grupos 1–3)** | Demonstração ao vivo com Wokwi + Grafana, apresentação da arquitetura e decisões técnicas     |
+| 59   | APS  | **APS Final — Apresentação do Projeto Integrador (Grupos 4–6)** | Demonstração ao vivo, Q&A com a turma, feedback estruturado                                   |
+| 60   | AT   | Retrospectiva e próximos passos em IoT Industrial               | Tendências: Digital Twin, Edge AI (TinyML no ESP32), 5G industrial; oportunidades de carreira |
+
+---
+
+## Resumo de Entregas (APS)
+
+| APS           | Semana                 | Entrega                                               |
+| ------------- | ---------------------- | ----------------------------------------------------- |
+| **APS 1**     | Semana 6, Aula 22      | Protótipo: ESP32 → MQTT → Node-RED Dashboard          |
+| **APS 2**     | Semana 11, Aula 42     | Pipeline: ESP32 → MQTT → InfluxDB → Grafana + alertas |
+| **APS Final** | Semana 15, Aulas 58–59 | Projeto Integrador completo com demonstração ao vivo  |
+
+---
+
+## Distribuição de Carga Horária
+
+| Tipo                  | Aulas previstas | Descrição                                                        |
+| --------------------- | --------------- | ---------------------------------------------------------------- |
+| AT — Teóricas         | 15              | Semanas 1–13: 2 aulas/semana; Semanas 14–15: 1 aula              |
+| AP — Práticas         | 45              | Implementação guiada com a stack ESP32/Node-RED/InfluxDB/Grafana |
+| APS — Supervisionadas | 4               | APS 1 (S6), APS 2 (S11), APS Final ×2 (S15)                      |
+| **Total**             | **64**          |                                                                  |

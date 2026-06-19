@@ -9,3 +9,22 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Pilha de Protocolos IoT: Aplicação + APS 1
+
+**Ementa:** Camada de aplicação · MQTT · CoAP · HTTP/HTTPS · AMQP
+
+**Stack da semana:** MQTT · CoAP · TLS · Node-RED · InfluxDB
+
+:::note[Entrega — APS 1]
+**Protótipo Sensor + Node-RED:** ESP32 no Wokwi enviando dados de temperatura/umidade via MQTT; fluxo Node-RED exibindo dashboard ao vivo com histórico.
+:::
+
+| Aula | Tipo | Conteúdo                                                    | Detalhamento                                                                                           |
+| ---- | ---- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 21   | AT   | Protocolos de aplicação IoT: MQTT vs CoAP vs AMQP vs HTTP   | Overhead, modelo request/response vs. pub/sub, casos de uso industriais de cada um                     |
+| 22   | APS  | **APS 1 — Protótipo sensor + Node-RED**                     | Entregar: ESP32 no Wokwi enviando dados de temp/umidade via MQTT; fluxo Node-RED com dashboard ao vivo |
+| 23   | AP   | MQTT com autenticação e TLS no Node-RED                     | Configuração de usuário/senha no broker, certificado TLS, testar conexão segura                        |
+| 24   | AP   | Integração Node-RED com InfluxDB: inserir dados de sensores | Node `influxdb-out`, criar bucket e organização, verificar dados no Explore do InfluxDB                |
+
+---

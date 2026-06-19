@@ -9,3 +9,26 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Sensores e Atuadores em IoT
+
+**Ementa:** Sensores IoT · Atuadores IoT · Integração com microcontroladores
+
+**Stack da semana:** ESP32 · `DHTesp` · Wokwi · PWM · I²C
+
+| Aula | Tipo | Conteúdo                                                                 | Detalhamento                                                                               |
+| ---- | ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| 9    | AT   | Tipos de sensores IoT: temperatura, umidade, pressão, corrente, vibração | Princípio de funcionamento, interfaces (I²C, SPI, 1-Wire, analógico), critérios de seleção |
+| 10   | AT   | Atuadores: relés, motores, válvulas e inversores                         | Controle por PWM, acionamento de cargas, segurança elétrica e isolação                     |
+| 11   | AP   | Sensor DHT22 no Wokwi: leitura de temp. e umidade                        | Biblioteca `DHTesp`, leitura periódica, exibição no monitor serial e no display OLED       |
+| 12   | AP   | Controle de LED por PWM + sensor LDR (fotoresistor)                      | `analogRead`, `analogWrite` (LEDC), controle de brilho proporcional à luminosidade         |
+
+---
+
+- **Objetivo:** Leitura de sensores e controle de atuadores.
+- **Atividades:**
+  1. Montar no Wokwi: ESP32 + DHT22 + MPU6050 (ou sensor de vibração) + LED/Relé.
+  2. Programar no PlatformIO a leitura dos sensores.
+  3. Controlar atuador (ex: LED ou buzzer).
+  4. Exibir dados no Serial Monitor.
+- **Entrega:** Diagrama Wokwi + código + valores lidos.

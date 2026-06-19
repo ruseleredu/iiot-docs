@@ -9,3 +9,37 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Padrões IoT + APS 2
+
+**Ementa:** IEEE · IETF · ITU · IPSO Alliance · OCF · IIC · ETSI · oneM2M · Protocolos industriais
+
+**Stack da semana:** CoAP · Modbus · OPC-UA · Node-RED · InfluxDB · Grafana
+
+:::note[Entrega — APS 2]
+**Pipeline completo de dados:** ESP32 → MQTT → Node-RED → InfluxDB → Grafana com histórico de 24h e pelo menos uma alerting rule configurada.
+:::
+
+| Aula | Tipo | Conteúdo                                                                                      | Detalhamento                                                                                     |
+| ---- | ---- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 41   | AT   | Padrões IoT: IEEE 802.15.4, IETF (CoAP/6LoWPAN), ITU-T Y.2060                                 | Características de cada padrão, aplicações industriais, CoAP vs. HTTP, fragmentação IPv6         |
+| 42   | AT   | Padrões IoT: OCF, IPSO Alliance, IIC, ETSI e oneM2M · Protocolos industriais: Modbus e OPC-UA | Resource model OCF, Smart Objects IPSO, IIRA, ETSI M2M; Modbus RTU/TCP, OPC-UA address space     |
+| 43   | APS  | **APS 2 — Pipeline completo de dados**                                                        | Entregar: ESP32 → MQTT → Node-RED → InfluxDB → Grafana com histórico de 24h e alerta configurado |
+| 44   | AP   | Segurança IoT: certificados X.509 e autenticação mútua TLS                                    | Gerar CA e certificados com OpenSSL, configurar broker MQTT com mTLS, atualizar ESP32 e Node-RED |
+
+---
+
+- **Objetivo:** Automação e alertas.
+- **Atividades:**
+  1. Criar alertas no Grafana (baseados em thresholds).
+  2. Implementar controle remoto via MQTT (Node-RED → ESP32).
+  3. Integrar regras simples no Node-RED.
+  4. Testar notificações.
+- **Entrega:** Dashboard com alertas + controle remoto documentado.
+
+- **Objetivo:** Sistema completo.
+- **Atividades:**
+  1. Montagem integrada no Wokwi: sensores → ESP32 → MQTT → Node-RED → InfluxDB → Grafana + atuador.
+  2. Teste de ponta a ponta.
+  3. Aprovação do tema do Projeto Final.
+- **Entrega:** **Proposta do Projeto Final** (1 página).

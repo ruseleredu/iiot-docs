@@ -9,3 +9,26 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## A Internet na IoT
+
+**Ementa:** Modelo de Referência OSI · Arquitetura TCP/IP e camadas
+
+**Stack da semana:** ESP32 · `WiFi.h` · `HTTPClient` · Wokwi
+
+| Aula | Tipo | Conteúdo                                          | Detalhamento                                                                                   |
+| ---- | ---- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 5    | AT   | Modelo OSI: 7 camadas e suas funções              | Encapsulamento de dados, PDUs, papéis de cada camada em redes IoT                              |
+| 6    | AT   | Arquitetura TCP/IP e endereçamento IP (IPv4/IPv6) | Subnetting básico, NAT, por que IPv6 é essencial para IoT em escala                            |
+| 7    | AP   | ESP32 conectado ao Wi-Fi via Wokwi                | Biblioteca `WiFi.h`, scan de redes, conexão, leitura de IP e RSSI via serial                   |
+| 8    | AP   | Requisição HTTP GET com ESP32                     | Biblioteca `HTTPClient`, consumo de API REST pública (ex: `worldtimeapi.org`), parsing simples |
+
+---
+
+- **Objetivo:** Configuração de rede e conectividade.
+- **Atividades:**
+  1. Criar projeto PlatformIO com suporte Wi-Fi.
+  2. Programar conexão Wi-Fi (`WiFi.h`) e exibir IP/MAC/RSSI.
+  3. Simular no Wokwi com configuração de rede.
+  4. Testar ping e conexão com o broker Mosquitto local.
+- **Entrega:** Código `main.cpp` comentado + screenshot do Serial Monitor.

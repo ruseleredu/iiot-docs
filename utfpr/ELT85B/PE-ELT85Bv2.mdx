@@ -1,0 +1,201 @@
+---
+id: iot-industrial-plano-ensino
+title: IoT Industrial — Plano de Ensino
+sidebar_label: Plano de Ensino (next)
+draft: true
+description: Plano de Ensino atualizado da disciplina IoT Industrial (ELT85B) — incorporando tendências de 2025–2026 como Edge AI, TinyML, Digital Twins e Indústria 5.0.
+tags:
+  - IoT
+  - IIoT
+  - ESP32
+  - Node-RED
+  - InfluxDB
+  - Grafana
+  - TinyML
+  - Edge AI
+  - Digital Twin
+  - PlatformIO
+---
+
+# IoT Industrial — Plano de Ensino
+
+| **CURSO** | Curso Superior de Tecnologia em Automação Industrial | **MATRIZ** | 487 |
+| --------- | ---------------------------------------------------- | ---------- | --- |
+
+| **DISCIPLINA / UNIDADE CURRICULAR** | **CÓDIGO** |
+| ----------------------------------- | ---------- |
+| IoT Industrial                      | ELT85B     |
+
+| **PRÉ-REQUISITO**                            | **EQUIVALÊNCIA** |
+| -------------------------------------------- | ---------------- |
+| Redes de Computadores ou Sistemas Embarcados | Não possui       |
+
+---
+
+## Carga Horária (aulas)
+
+| AT  | AP  | APS | Total |
+| --- | --- | --- | ----- |
+| 15  | 45  | 4   | 64    |
+
+> **AT:** Atividades Teóricas · **AP:** Atividades Práticas · **APS:** Atividades Práticas Supervisionadas
+
+---
+
+## Objetivo Geral
+
+Capacitar os alunos a projetar, implementar e operar soluções de Internet das Coisas Industrial (IIoT), compreendendo a arquitetura em camadas, os principais protocolos de comunicação e as tendências emergentes — Edge AI, TinyML, Digital Twins e Indústria 5.0 — com aplicação prática sobre a stack ESP32 + PlatformIO + Node-RED + InfluxDB + Grafana.
+
+## Objetivos Específicos
+
+- Compreender os conceitos fundamentais de IoT/IIoT e sua inserção na Indústria 4.0/5.0.
+- Identificar e configurar sensores, atuadores e microcontroladores para aplicações industriais.
+- Implementar e analisar protocolos de comunicação IoT nas camadas de enlace, rede e aplicação.
+- Integrar dispositivos embarcados a plataformas de processamento de dados em tempo real.
+- Aplicar conceitos de Edge Computing e Edge AI (TinyML) para processamento local de dados.
+- Construir protótipos de Digital Twins utilizando Node-RED e MQTT.
+- Desenvolver dashboards industriais com InfluxDB e Grafana para monitoramento e tomada de decisão.
+- Aplicar boas práticas de segurança em redes e dispositivos IoT industriais.
+
+---
+
+## Justificativa de Atualização
+
+:::info[Por que este plano foi atualizado?]
+O mercado de IoT Industrial atingiu **US$ 1,35 trilhão em 2025** e cresce a 15% ao ano. As tendências que redefinem a área em 2025–2026 justificam a inclusão de novos conteúdos:
+
+- **Edge AI e TinyML:** modelos de ML rodando diretamente no ESP32 eliminam dependência de nuvem e reduzem latência para aplicações críticas. O mercado de TinyML cresce a 80% ao ano.
+- **Digital Twins:** mais de 70% dos fabricantes em setores como automotivo, energia e eletrônica já operam com gêmeos digitais em produção. Node-RED e MQTT são protocolos centrais nessa arquitetura.
+- **Indústria 5.0:** reintroduz o fator humano na automação, com foco em colaboração humano-máquina, sustentabilidade e resiliência — além da eficiência pura da Indústria 4.0.
+- **Manutenção Preditiva com IA:** sensores IoT + modelos leves de ML no edge permitem detectar anomalias antes de falhas, com precisão superior a 94% em casos documentados.
+- **Segurança IoT:** com bilhões de dispositivos conectados, mTLS, X.509 e Zero Trust tornaram-se requisitos, não diferenciais.
+  :::
+
+---
+
+## Stack Tecnológica
+
+| Camada             | Tecnologia                           | Função                                                  |
+| ------------------ | ------------------------------------ | ------------------------------------------------------- |
+| **Dispositivo**    | ESP32 + PlatformIO (VS Code)         | Firmware embarcado, sensores, atuadores                 |
+| **Simulação**      | Wokwi                                | Prototipagem virtual sem hardware físico                |
+| **Edge AI**        | Edge Impulse + TensorFlow Lite Micro | TinyML no ESP32 para inferência local                   |
+| **Integração**     | Node-RED                             | Orquestração de fluxos, lógica de negócio, Digital Twin |
+| **Broker**         | Mosquitto / HiveMQ                   | Mensageria MQTT com suporte a TLS                       |
+| **Banco de dados** | InfluxDB 2.x                         | Séries temporais, Flux queries, tasks de downsampling   |
+| **Visualização**   | Grafana                              | Dashboards operacionais e executivos, alertas           |
+| **Segurança**      | OpenSSL / mTLS / X.509               | Autenticação mútua dispositivo-broker                   |
+
+---
+
+## Ementa
+
+### Módulo 1 — Fundamentos de IoT Industrial (Semanas 1–5)
+
+Introdução à IoT e IIoT. Modelo OSI e arquitetura TCP/IP aplicados a redes IoT. Sensores e atuadores industriais. Atributos de protocolos IoT: suporte, escalabilidade, determinismo, segurança e interoperabilidade. Pilha de protocolos IoT nas camadas de enlace e rede.
+
+### Módulo 2 — Protocolos, Plataformas e Segurança (Semanas 6–9)
+
+Protocolos de aplicação IoT: MQTT, CoAP, HTTP, AMQP. Edge Computing e Fog Computing. Plataformas de serviços IoT e gestão de dispositivos. Segurança IoT: TLS, mTLS, X.509, autenticação de dispositivos.
+
+### Módulo 3 — Mercados, Padrões e Tendências (Semanas 10–11)
+
+Mercados verticais de IIoT: agricultura, energia, manufatura, saúde, edifícios inteligentes. Padrões IEEE, IETF, ITU, IPSO, OCF, IIC, ETSI e oneM2M. Edge AI e TinyML no ESP32. Digital Twins com Node-RED e MQTT. Indústria 5.0.
+
+### Módulo 4 — Projeto Final (Semanas 12–15)
+
+Desenvolvimento orientado de um sistema IIoT completo integrando toda a stack. Entrega em repositório com firmware, fluxo Node-RED, dashboard Grafana e documentação. Demonstração ao vivo com defesa técnica.
+
+---
+
+## Conteúdo Programático Detalhado
+
+| Item  | Tópico                                  | Conteúdo                                                                                                                                                                                                             |
+| ----- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Visão Geral sobre IoT                   | O que é IoT/IIoT. Histórico e evolução. Diferenças entre IoT consumidor e industrial. Indústria 4.0 e Indústria 5.0. Mercado e perspectivas 2025–2030.                                                               |
+| 2     | A Internet na IoT                       | Modelo OSI aplicado a IoT. Arquitetura TCP/IP. IPv4 vs. IPv6 (6LoWPAN). Endereçamento e roteamento em redes de dispositivos.                                                                                         |
+| 3     | Sensores e Atuadores em IoT             | Tipos de sensores industriais (temperatura, umidade, vibração, corrente). Interfaces: I²C, SPI, 1-Wire, analógico. Atuadores: relés, motores, válvulas. Controle por PWM.                                            |
+| 4     | Atributos de Protocolos IoT             | Suporte, escalabilidade, determinismo, segurança, interoperabilidade. QoS em MQTT. Trade-offs de latência vs. throughput.                                                                                            |
+| 5     | Pilha de Protocolos IoT — Enlace e Rede | Wi-Fi (802.11), BLE, LoRa, Ethernet. 6LoWPAN, Thread, Zigbee. Topologias mesh. Consumo energético e alcance.                                                                                                         |
+| 6     | Pilha de Protocolos IoT — Aplicação     | MQTT, CoAP (RFC 7252), HTTP/HTTPS, AMQP. Modelo pub/sub vs. request/response. Overhead e casos de uso industriais.                                                                                                   |
+| 7     | Edge Computing e Fog Computing          | Cloud vs. Fog vs. Edge. Latência, privacidade e operação offline. Docker em dispositivos de borda. Node-RED como gateway de borda: filtragem e pré-processamento.                                                    |
+| 8     | Plataformas de Serviços IoT             | Anatomia de uma plataforma IoT: ingestão, device management, analytics. Provisionamento e OTA updates. Comparativo: AWS IoT Core, Azure IoT Hub, ThingsBoard.                                                        |
+| 9     | Segurança IoT                           | TLS/DTLS. Autenticação mútua mTLS com certificados X.509. Broker MQTT seguro. Zero Trust em redes IoT industriais. LGPD e dados de dispositivos.                                                                     |
+| 10    | Mercados Verticais de IIoT              | Agricultura inteligente (AgriIoT). Energia e Oil & Gas. Edifícios inteligentes (BAS, HVAC). Saúde conectada. Manufatura e manutenção preditiva.                                                                      |
+| 11    | Padrões IoT                             | IEEE 802.15.4, 802.11ah. IETF: CoAP, CBOR, 6LoWPAN. ITU-T Y.2060. IPSO Alliance, OCF, IIC, ETSI, oneM2M. Protocolos industriais: Modbus RTU/TCP, OPC-UA.                                                             |
+| 12    | Edge AI, TinyML e Digital Twins         | TinyML no ESP32 com TensorFlow Lite Micro e Edge Impulse. Detecção de anomalias no edge. Digital Twins com Node-RED e MQTT. Arquitetura de gêmeo digital para manufatura. Indústria 5.0: colaboração humano-máquina. |
+| 13–15 | Projeto Final                           | Concepção, desenvolvimento e apresentação de um sistema IIoT completo integrando a stack da disciplina com pelo menos um componente de Edge AI ou Digital Twin.                                                      |
+
+---
+
+## Metodologia
+
+- **Aulas teóricas (AT):** exposição dialogada com estudo de casos reais de IIoT industrial, discussão de artigos e tendências de mercado.
+- **Aulas práticas (AP):** desenvolvimento guiado sobre a stack da disciplina; uso do simulador Wokwi para prototipagem sem dependência de hardware; orientação por grupo nas semanas de projeto.
+- **Atividades práticas supervisionadas (APS):** entregas avaliativas com rubrica clara, orientação do professor e feedback estruturado.
+- **Projeto Final (Semanas 12–15):** integração de todos os conteúdos em um sistema IIoT real; equipes de 2–3 alunos; escolha livre de domínio industrial.
+
+---
+
+## Avaliação
+
+| Instrumento                                           | Peso | Momento   |
+| ----------------------------------------------------- | ---- | --------- |
+| APS 1 — Protótipo ESP32 + Node-RED Dashboard          | 20%  | Semana 6  |
+| APS 2 — Pipeline completo ESP32 → InfluxDB → Grafana  | 25%  | Semana 11 |
+| APS Final — Submissão do repositório do Projeto Final | 25%  | Semana 14 |
+| APS Final — Apresentação e defesa ao vivo             | 30%  | Semana 15 |
+
+### Critérios de avaliação do Projeto Final
+
+- **Funcionalidade (30%):** sistema operando de ponta a ponta com dados reais ou simulados (Wokwi).
+- **Arquitetura (25%):** coerência das decisões técnicas; uso adequado dos protocolos e da stack.
+- **Inovação (20%):** incorporação de pelo menos um elemento das tendências estudadas (TinyML, Digital Twin, mTLS, OPC-UA etc.).
+- **Documentação (15%):** README claro, diagrama de arquitetura e instruções de reprodução.
+- **Apresentação (10%):** clareza na defesa, capacidade de responder perguntas técnicas.
+
+---
+
+## Bibliografia
+
+### Básica
+
+- SHELBY, Z.; BORMANN, C. **6LoWPAN: The Wireless Embedded Internet**. Wiley, 2009.
+- YUAN, M. **Hands-On Industrial Internet of Things**. Packt Publishing, 2019.
+- HANES, D. et al. **IoT Fundamentals: Networking Technologies, Protocols, and Use Cases for the Internet of Things**. Cisco Press, 2017.
+
+### Complementar
+
+- WARDEN, P.; SITUNAYAKE, D. **TinyML: Machine Learning with TensorFlow Lite on Arduino and Ultra-Low-Power Microcontrollers**. O'Reilly, 2020.
+- GRIEVES, M. **Digital Twin: Manufacturing Excellence Through Virtual Factory Replication**. White Paper, 2014.
+- BANKS, A.; BRIGGS, R. **MQTT Version 5.0**. OASIS Standard, 2019. Disponível em: https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html
+- SHELBY, Z. et al. **RFC 7252 — The Constrained Application Protocol (CoAP)**. IETF, 2014. Disponível em: https://datatracker.ietf.org/doc/html/rfc7252
+
+### Documentação Técnica (acesso livre)
+
+- PlatformIO Documentation: https://docs.platformio.org
+- Node-RED Documentation: https://nodered.org/docs
+- InfluxDB 2.x Docs — Flux Language: https://docs.influxdata.com
+- Grafana Documentation: https://grafana.com/docs
+- Edge Impulse Documentation: https://docs.edgeimpulse.com
+- Wokwi ESP32 Simulator: https://wokwi.com/projects/new/esp32
+
+---
+
+## Recursos e Infraestrutura
+
+| Recurso                 | Descrição                                                                                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hardware (opcional)** | Kit ESP32 DevKit + sensores DHT22, LDR, potenciômetro, relé, display OLED — as práticas são projetadas para funcionar integralmente no Wokwi |
+| **Software (gratuito)** | VS Code + PlatformIO extension, Wokwi (browser), Node-RED (local/Docker), InfluxDB OSS 2.x, Grafana OSS, Edge Impulse Studio (browser)       |
+| **Broker MQTT**         | HiveMQ Public Broker (broker.hivemq.com) para práticas iniciais; Mosquitto local para práticas de segurança                                  |
+| **Repositório**         | GitHub/GitLab por equipe — obrigatório a partir da Semana 12                                                                                 |
+
+---
+
+## Observações
+
+- As atividades práticas foram projetadas para serem executadas **integralmente em software**, sem necessidade de compra de hardware, utilizando o simulador Wokwi integrado ao PlatformIO.
+- O uso de **hardware físico** (kit ESP32) é incentivado mas opcional, e enriquece especialmente as atividades de TinyML e comunicação sem fio.
+- Os tópicos de **Edge AI e TinyML** (Item 12) são introdutórios, com foco em conceitos e protótipo funcional simples (detecção de anomalia por threshold adaptativo ou modelo de classificação binária via Edge Impulse), sem exigência de background em machine learning.
+- O Projeto Final pode ser apresentado **100% no Wokwi + Grafana**, sem necessidade de infraestrutura física.

@@ -9,3 +9,34 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Plataforma de Serviços IoT
+
+**Ementa:** Funções da plataforma de serviços IoT · Gestão de dispositivos · Data Lake
+
+**Stack da semana:** Grafana · InfluxDB · Node-RED · MQTT · OTA
+
+| Aula | Tipo | Conteúdo                                                               | Detalhamento                                                                               |
+| ---- | ---- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 29   | AT   | Anatomia de uma plataforma IoT: device management, ingestão, analytics | Comparativo: AWS IoT Core, Azure IoT Hub, ThingsBoard, plataformas open-source             |
+| 30   | AT   | Provisionamento, OTA updates e gestão de frota                         | Ciclo de vida do dispositivo, certificate rotation, MQTT over TLS para OTA                 |
+| 31   | AP   | Grafana: instalação e conexão com InfluxDB                             | Data source InfluxDB, criar primeiro painel, variáveis de template, alertas via e-mail     |
+| 32   | AP   | Dashboard Grafana para monitoramento industrial                        | Painéis de temperatura, umidade, estado de atuadores; anotações de eventos; alerting rules |
+
+---
+
+- **Objetivo:** Introdução ao Node-RED.
+- **Atividades:**
+  1. Criar fluxos no Node-RED (MQTT In → debug → JSON parser).
+  2. Receber dados do ESP32 (Wokwi) via MQTT.
+  3. Processar e formatar dados.
+  4. Exportar fluxo.
+- **Entrega:** Fluxo Node-RED (.json).
+
+- **Objetivo:** Integração com banco de dados.
+- **Atividades:**
+  1. Configurar Node-RED para escrever no **InfluxDB** (usar node `influxdb`).
+  2. Enviar telemetria do ESP32 → MQTT → Node-RED → InfluxDB.
+  3. Criar bucket e medição no InfluxDB.
+  4. Testar com simulação no Wokwi.
+- **Entrega:** Fluxo completo + dados visíveis no InfluxDB.

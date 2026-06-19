@@ -9,3 +9,26 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Computação em Nevoeiro (Fog Computing)
+
+**Ementa:** Definição de Fog/Edge · Drivers · Tecnologias habilitadoras
+
+**Stack da semana:** Node-RED · InfluxDB · Flux · Docker · Edge
+
+| Aula | Tipo | Conteúdo                                                      | Detalhamento                                                                                 |
+| ---- | ---- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 25   | AT   | Cloud vs. Fog vs. Edge: arquiteturas e trade-offs             | Latência, privacidade de dados, operação offline, exemplos industriais reais                 |
+| 26   | AT   | Tecnologias de Fog Computing: contêineres, virtualização leve | Docker em dispositivos de borda (Raspberry Pi, industrial PC), orquestração mínima           |
+| 27   | AP   | Node-RED como gateway de borda: filtro e pré-processamento    | Nodes `function` para média móvel, detecção de anomalias simples, envio condicional ao banco |
+| 28   | AP   | InfluxDB: queries Flux, downsampling e tarefas agendadas      | Linguagem Flux, aggregate functions, criar task de downsampling automático a cada 5 min      |
+
+---
+
+- **Objetivo:** Processamento na borda.
+- **Atividades:**
+  1. Adicionar sensor de vibração no Wokwi.
+  2. Implementar filtro de média móvel e detecção de anomalia local no ESP32.
+  3. Enviar apenas dados relevantes via MQTT.
+  4. Comparar volume de tráfego.
+- **Entrega:** Código com edge processing + relatório.
