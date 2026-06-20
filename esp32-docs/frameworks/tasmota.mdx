@@ -1,0 +1,70 @@
+---
+id: tasmota
+title: Tasmota IoT Development Frameworks
+sidebar_label: Tasmota
+sidebar_position: 8
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - Tasmota
+  - IIoT
+---
+
+# Tasmota IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework   | Linguagem |   Nível   | Multitarefa    | MQTT nativo | OTA nativo | TLS/mTLS | Wokwi |
+| ----------- | --------- | :-------: | -------------- | :---------: | :--------: | :------: | :---: |
+| **Tasmota** | C / C++   | Iniciante | ○ Loop interno |  ● Nativo   |  ● Nativo  |  ● TLS   |   ○   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## Tasmota
+
+> Firmware alternativo open-source para ESP32/ESP8266
+
+Firmware alternativo open-source para ESP32/ESP8266 com interface web integrada, OTA, suporte a centenas de dispositivos e MQTT integrado por padrão. Configuração via browser, sem necessidade de IDE para uso básico.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,0    |
+| Performance                |    6,5    |
+| Ecossistema de bibliotecas |    8,0    |
+| Adequação IIoT             |    5,8    |
+
+**Métricas-chave**
+
+| Parâmetro               | Valor                                        |
+| ----------------------- | -------------------------------------------- |
+| Curva de aprendizado    | Mínima                                       |
+| Multitarefa             | Loop interno (sem FreeRTOS exposto)          |
+| MQTT                    | Nativo — configurado via interface web       |
+| OTA nativo              | Sim — via interface web ou MQTT              |
+| Configuração            | Browser (sem IDE)                            |
+| Suporte Wokwi           | Não suportado                                |
+| Dispositivos suportados | 1.000+ (tomadas, relés, sensores, medidores) |
+
+**Casos de uso típicos**
+
+- Retrofit de tomadas e interruptores Wi-Fi inteligentes existentes
+- Monitoramento de energia com MQTT sem escrita de código
+- Integração rápida com Node-RED, Home Assistant e Grafana
+- Laboratórios onde o foco está na plataforma IoT, não no firmware
+
+**Referências**
+
+- [tasmota.github.io](https://tasmota.github.io)
+- [Repositório no GitHub](https://github.com/arendst/Tasmota)
+- [Tasmota Device Templates](https://templates.blakadder.com)
+
+---

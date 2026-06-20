@@ -1,0 +1,122 @@
+---
+id: esp-idf
+title: ESP-IDF IoT Development Frameworks
+sidebar_label: ESP-IDF
+sidebar_position: 3
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - ESP-IDF
+  - IIoT
+---
+
+# ESP-IDF IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework                                                                                       | Linguagem |  Nível   | Multitarefa | MQTT nativo | OTA nativo | TLS/mTLS  | Wokwi |
+| ----------------------------------------------------------------------------------------------- | --------- | :------: | ----------- | :---------: | :--------: | :-------: | :---: |
+| **[ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)** (Espressif oficial) | C / C++   | Avançado | ● FreeRTOS  | ● esp-mqtt  |  ● Nativo  | ● mbedTLS |   ◐   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## ESP-IDF
+
+> Espressif IoT Development Framework — framework nativo oficial
+
+Framework oficial da Espressif com acesso completo ao hardware e FreeRTOS integrado. Controle granular de tarefas, memória, Wi-Fi e Bluetooth. Referência para produtos em produção e certificação industrial.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    3,0    |
+| Performance                |    9,8    |
+| Ecossistema de bibliotecas |    7,5    |
+| Adequação IIoT             |    9,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                           |
+| -------------------- | ----------------------------------------------- |
+| Curva de aprendizado | Alta                                            |
+| Multitarefa          | FreeRTOS nativo (tasks, queues, semaphores)     |
+| Biblioteca MQTT      | `esp-mqtt` (componente oficial)                 |
+| Flash mínimo         | ~1 MB                                           |
+| Suporte Wokwi        | Parcial (simulação limitada de componentes IDF) |
+| Versão estável atual | ESP-IDF v5.x                                    |
+
+**Casos de uso típicos**
+
+- Firmware de produção industrial com requisitos de tempo real
+- Controle de múltiplas tarefas concorrentes com FreeRTOS
+- Certificação Wi-Fi, Bluetooth e Matter (obrigatório usar IDF)
+- Produtos com requisitos de segurança (Secure Boot, Flash Encryption)
+- TinyML com TensorFlow Lite Micro no ESP32
+
+**Exemplo mínimo de task FreeRTOS**
+
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+
+static const char *TAG = "sensor";
+
+void sensor_task(void *pvParameters) {
+    while (1) {
+        ESP_LOGI(TAG, "Lendo sensor...");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void app_main(void) {
+    xTaskCreate(sensor_task, "sensor_task", 4096, NULL, 5, NULL);
+}
+```
+
+**Referências**
+
+- [Espressif IoT Development Framework](https://developer.espressif.com/tags/esp-idf/)
+- [ESP-IDF Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension)
+- [idf.espressif.com](https://idf.espressif.com)
+- [Repositório ESP-IDF no GitHub](https://github.com/espressif/esp-idf)
+- [Componente esp-mqtt](https://components.espressif.com/components/espressif/esp-mqtt)
+
+---
+
+## Guia de decisão rápida
+
+| Cenário                                       | Framework recomendado    |
+| --------------------------------------------- | ------------------------ |
+| Aprendizado / disciplina de IoT               | Arduino + PlatformIO     |
+| Simulação sem hardware físico                 | Arduino + Wokwi          |
+| Firmware industrial em produção               | ESP-IDF ou Zephyr RTOS   |
+| Dev com background Python                     | MicroPython              |
+| OTA + gestão de frota + nuvem                 | Mongoose OS              |
+| Automação predial / BAS / HVAC                | ESPHome + Home Assistant |
+| Retrofit rápido sem escrita de código         | Tasmota                  |
+| Requisitos de segurança funcional (IEC 61508) | Zephyr RTOS              |
+| Múltiplas tarefas concorrentes (tempo real)   | ESP-IDF ou Zephyr RTOS   |
+| Protótipo Python rápido no Wokwi              | MicroPython              |
+
+---
+
+## Notas de compatibilidade com a stack da disciplina
+
+:::tip[Arduino + PlatformIO é o framework adotado nesta disciplina]
+Todas as atividades práticas das Semanas 1 a 11 e o Projeto Final (Semanas 12–15) utilizam **Arduino framework via PlatformIO**, com simulação no Wokwi. Os demais frameworks são apresentados como referência para o mercado e para o Projeto Final de grupos que optarem por aprofundamento.
+:::
+
+| Framework | Node-RED |      InfluxDB       | Grafana | Wokwi |       PlatformIO       |
+| --------- | :------: | :-----------------: | :-----: | :---: | :--------------------: |
+| Tasmota   | ● nativo | ● via MQTT→Node-RED |    ●    |   ○   | ○ (compilação própria) |
+
+> **Legenda:** ● Suporte completo · ◐ Parcial · ○ Não suportado / não aplicável

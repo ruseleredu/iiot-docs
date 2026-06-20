@@ -1,0 +1,447 @@
+---
+id: iot-frameworks
+title: ESP32 IoT Development Frameworks
+sidebar_label: Visão geral
+sidebar_position: 1
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - Arduino
+  - ESP-IDF
+  - MicroPython
+  - Zephyr
+  - IIoT
+---
+
+# ESP32 IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework                                                    | Linguagem      |   Nível   | Multitarefa    |  MQTT nativo   |  OTA nativo  | TLS/mTLS  | Wokwi |
+| ------------------------------------------------------------ | -------------- | :-------: | -------------- | :------------: | :----------: | :-------: | :---: |
+| **[Arduino](/esp32/frameworks/arduino)** (via PlatformIO)    | C / C++        | Iniciante | Loop único     | ● PubSubClient | ◐ Biblioteca |     ●     |   ●   |
+| **[ESP-IDF](/esp32/frameworks/esp-idf)** (Espressif oficial) | C / C++        | Avançado  | ● FreeRTOS     |   ● esp-mqtt   |   ● Nativo   | ● mbedTLS |   ◐   |
+| **[MicroPython](/esp32/frameworks/micropython)**             | Python 3       | Iniciante | ◐ uasyncio     |    ● umqtt     |   ◐ Manual   |  ● ussl   |   ●   |
+| **[Mongoose OS](/esp32/frameworks/mongoose)**                | C / JavaScript | Avançado  | ● FreeRTOS     |    ● Nativo    |   ● Nativo   |  ● mTLS   |   ○   |
+| **[Zephyr RTOS](/esp32/frameworks/zephyr)**                  | C / C++        | Avançado  | ● Preemptivo   | ● Zephyr MQTT  |  ● MCUboot   | ● Nativo  |   ○   |
+| **[ESPHome](/esp32/frameworks/esphome)**                     | YAML           | Iniciante | ○ Loop assínc. | ● Nativo YAML  |   ● Nativo   |   ● TLS   |   ○   |
+| **[Tasmota](/esp32/frameworks/tasmota)**                     | C / C++        | Iniciante | ○ Loop interno |    ● Nativo    |   ● Nativo   |   ● TLS   |   ○   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## Perfil dos frameworks
+
+### Arduino Framework
+
+> **Stack da disciplina** · Adotado nas Semanas 1–15
+
+A abordagem mais popular para prototipagem com ESP32. API simplificada com `setup()` e `loop()`, ecossistema massivo de bibliotecas e documentação abundante em português.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,2    |
+| Performance                |    6,2    |
+| Ecossistema de bibliotecas |    9,5    |
+| Adequação IIoT             |    7,0    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                      |
+| -------------------- | -------------------------- |
+| Curva de aprendizado | Baixa                      |
+| Multitarefa          | Loop único (`loop()`)      |
+| Biblioteca MQTT      | `PubSubClient` (knolleary) |
+| Flash mínimo         | ~300 KB                    |
+| Suporte Wokwi        | Completo                   |
+
+**Casos de uso típicos**
+
+- Sensores IoT com MQTT (DHT22, LDR, BME280, DS18B20)
+- Protótipos rápidos e provas de conceito
+- Integração com Node-RED, InfluxDB e Grafana via Wokwi
+- Disciplinas e cursos de IoT com foco prático
+
+**Instalação via PlatformIO (`platformio.ini`)**
+
+```ini
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+lib_deps =
+  knolleary/PubSubClient @ ^2.8
+  beegee-tokyo/DHTesp @ ^1.19
+  bblanchon/ArduinoJson @ ^7.0
+```
+
+**Referências**
+
+- [arduino.cc](https://www.arduino.cc)
+- [Documentação PlatformIO — Arduino framework](https://docs.platformio.org/en/latest/frameworks/arduino.html)
+- [Repositório Arduino-ESP32 (Espressif)](https://github.com/espressif/arduino-esp32)
+
+---
+
+### ESP-IDF
+
+> Espressif IoT Development Framework — framework nativo oficial
+
+Framework oficial da Espressif com acesso completo ao hardware e FreeRTOS integrado. Controle granular de tarefas, memória, Wi-Fi e Bluetooth. Referência para produtos em produção e certificação industrial.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    3,0    |
+| Performance                |    9,8    |
+| Ecossistema de bibliotecas |    7,5    |
+| Adequação IIoT             |    9,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                           |
+| -------------------- | ----------------------------------------------- |
+| Curva de aprendizado | Alta                                            |
+| Multitarefa          | FreeRTOS nativo (tasks, queues, semaphores)     |
+| Biblioteca MQTT      | `esp-mqtt` (componente oficial)                 |
+| Flash mínimo         | ~1 MB                                           |
+| Suporte Wokwi        | Parcial (simulação limitada de componentes IDF) |
+| Versão estável atual | ESP-IDF v5.x                                    |
+
+**Casos de uso típicos**
+
+- Firmware de produção industrial com requisitos de tempo real
+- Controle de múltiplas tarefas concorrentes com FreeRTOS
+- Certificação Wi-Fi, Bluetooth e Matter (obrigatório usar IDF)
+- Produtos com requisitos de segurança (Secure Boot, Flash Encryption)
+- TinyML com TensorFlow Lite Micro no ESP32
+
+**Exemplo mínimo de task FreeRTOS**
+
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+
+static const char *TAG = "sensor";
+
+void sensor_task(void *pvParameters) {
+    while (1) {
+        ESP_LOGI(TAG, "Lendo sensor...");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void app_main(void) {
+    xTaskCreate(sensor_task, "sensor_task", 4096, NULL, 5, NULL);
+}
+```
+
+**Referências**
+
+- [idf.espressif.com](https://idf.espressif.com)
+- [Repositório ESP-IDF no GitHub](https://github.com/espressif/esp-idf)
+- [Componente esp-mqtt](https://components.espressif.com/components/espressif/esp-mqtt)
+
+---
+
+### MicroPython
+
+> Python 3 para microcontroladores com recursos restritos
+
+Implementação enxuta do Python 3 para microcontroladores. Execução interativa via REPL, ideal para prototipagem rápida por quem já conhece Python. Menor performance que C, mas produtividade elevada.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    8,8    |
+| Performance                |    4,5    |
+| Ecossistema de bibliotecas |    7,0    |
+| Adequação IIoT             |    6,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                        |
+| -------------------- | -------------------------------------------- |
+| Curva de aprendizado | Baixa                                        |
+| Multitarefa          | `uasyncio` (cooperative)                     |
+| Biblioteca MQTT      | `umqtt.simple` / `umqtt.robust`              |
+| Flash mínimo         | ~1,1 MB (firmware MicroPython)               |
+| Suporte Wokwi        | Completo (MicroPython embutido no simulador) |
+| REPL interativo      | USB Serial / WebREPL                         |
+
+**Casos de uso típicos**
+
+- Prototipagem por desenvolvedores com background Python
+- Scripts de automação e coleta de dados em campo
+- Educação em IoT com sintaxe familiar
+- Dashboards locais com `urequests` para APIs REST
+
+**Exemplo: publicar MQTT com umqtt**
+
+```python
+from umqtt.simple import MQTTClient
+import network, time
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect("SSID", "senha")
+while not wlan.isconnected():
+    time.sleep(0.5)
+
+client = MQTTClient("esp32", "broker.hivemq.com")
+client.connect()
+client.publish(b"fabrica/linha1/temperatura", b"25.3")
+client.disconnect()
+```
+
+**Referências**
+
+- [micropython.org](https://micropython.org)
+- [Quick reference para ESP32](https://docs.micropython.org/en/latest/esp32/quickref.html)
+- [Wokwi MicroPython](https://wokwi.com/projects/new/micropython-esp32)
+
+---
+
+### Mongoose OS
+
+> mOS — firmware orientado à produção com OTA e integração de nuvem
+
+Framework orientado à produção com suporte a OTA (Over-The-Air) nativo, gerenciamento de dispositivos e integração direta com AWS IoT, Google Cloud IoT e Azure. Lógica de negócio em JavaScript via engine mJS.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    5,5    |
+| Performance                |    8,0    |
+| Ecossistema de bibliotecas |    6,0    |
+| Adequação IIoT             |    8,8    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                |
+| -------------------- | ------------------------------------ |
+| Curva de aprendizado | Média                                |
+| Multitarefa          | FreeRTOS                             |
+| Biblioteca MQTT      | Nativo (built-in)                    |
+| OTA nativo           | Sim — via `mos update` ou HTTPS      |
+| TLS/mTLS             | Sim — mTLS com X.509 por dispositivo |
+| Suporte Wokwi        | Não suportado                        |
+| Integração nuvem     | AWS IoT Core, Azure IoT Hub, GCP IoT |
+
+**Casos de uso típicos**
+
+- Frotas de dispositivos com atualizações remotas (OTA) automatizadas
+- Integração nativa com plataformas de nuvem (AWS, Azure, GCP)
+- Produtos IoT comerciais com device management e provisionamento
+- Ambientes que exigem mTLS por dispositivo desde o provisionamento
+
+**Referências**
+
+- [mongoose-os.com](https://mongoose-os.com)
+- [Repositório no GitHub](https://github.com/cesanta/mongoose-os)
+- [Documentação mos tool](https://mongoose-os.com/docs/mongoose-os/quickstart/setup.md)
+
+---
+
+### Zephyr RTOS
+
+> Linux Foundation · tempo real · segurança funcional
+
+RTOS open-source da Linux Foundation com foco em segurança funcional, suporte a múltiplas arquiteturas e conformidade com padrões industriais. Crescente adoção em dispositivos médicos, automotivos e industriais críticos.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    2,2    |
+| Performance                |    9,6    |
+| Ecossistema de bibliotecas |    6,8    |
+| Adequação IIoT             |    9,2    |
+
+**Métricas-chave**
+
+| Parâmetro               | Valor                             |
+| ----------------------- | --------------------------------- |
+| Curva de aprendizado    | Muito alta                        |
+| Multitarefa             | Preemptivo com prioridades e SMP  |
+| Biblioteca MQTT         | Zephyr MQTT (subsys/net/lib/mqtt) |
+| OTA nativo              | Sim — MCUboot bootloader          |
+| Segurança funcional     | IEC 61508 / ISO 26262             |
+| Suporte Wokwi           | Não suportado                     |
+| Arquiteturas suportadas | ARM, RISC-V, x86, ESP32, ARC      |
+
+**Casos de uso típicos**
+
+- Sistemas industriais críticos com requisitos de segurança funcional (IEC 61508)
+- Dispositivos médicos e automotivos conectados (ISO 26262)
+- Ambientes multi-plataforma onde o mesmo código-base roda em ARM e ESP32
+- Aplicações que exigem determinismo real (latência garantida, sem jitter)
+
+**Referências**
+
+- [zephyrproject.org](https://www.zephyrproject.org)
+- [Board ESP32 DevKitC no Zephyr](https://docs.zephyrproject.org/latest/boards/espressif/esp32_devkitc_wroom/doc/index.html)
+- [Repositório no GitHub](https://github.com/zephyrproject-rtos/zephyr)
+
+---
+
+### ESPHome
+
+> Framework declarativo baseado em YAML para automação predial
+
+Framework declarativo baseado em YAML para configurar firmware ESP32 sem escrever código C. Fortemente integrado ao Home Assistant e protocolos de automação predial. Geração de firmware por compilação de YAML.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,5    |
+| Performance                |    6,8    |
+| Ecossistema de bibliotecas |    8,2    |
+| Adequação IIoT             |    5,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                             |
+| -------------------- | --------------------------------- |
+| Curva de aprendizado | Mínima                            |
+| Multitarefa          | Loop assíncrono interno           |
+| Biblioteca MQTT      | Nativo (declarado em YAML)        |
+| OTA nativo           | Sim — via dashboard ESPHome       |
+| Extensível           | Componentes customizados em C++   |
+| Suporte Wokwi        | Não suportado                     |
+| Integração           | Home Assistant, Node-RED, Grafana |
+
+**Exemplo: sensor DHT22 + MQTT em YAML**
+
+```yaml
+esphome:
+  name: sensor-hvac
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "MinhaRede"
+  password: "minha_senha"
+
+mqtt:
+  broker: 192.168.1.100
+  topic_prefix: fabrica/linha1
+
+sensor:
+  - platform: dht
+    pin: GPIO4
+    model: DHT22
+    temperature:
+      name: "Temperatura"
+    humidity:
+      name: "Umidade"
+    update_interval: 10s
+```
+
+**Casos de uso típicos**
+
+- Automação predial e smart home (BAS, HVAC, iluminação, controle de acesso)
+- Integração com Home Assistant para dashboards e automações
+- Sensores de ambiente sem necessidade de programação em C
+- Retrofit de dispositivos existentes com lógica declarativa
+
+**Referências**
+
+- [esphome.io](https://esphome.io)
+- [Repositório no GitHub](https://github.com/esphome/esphome)
+- [Componentes suportados](https://esphome.io/components/index.html)
+
+---
+
+### Tasmota
+
+> Firmware alternativo open-source para ESP32/ESP8266
+
+Firmware alternativo open-source para ESP32/ESP8266 com interface web integrada, OTA, suporte a centenas de dispositivos e MQTT integrado por padrão. Configuração via browser, sem necessidade de IDE para uso básico.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,0    |
+| Performance                |    6,5    |
+| Ecossistema de bibliotecas |    8,0    |
+| Adequação IIoT             |    5,8    |
+
+**Métricas-chave**
+
+| Parâmetro               | Valor                                        |
+| ----------------------- | -------------------------------------------- |
+| Curva de aprendizado    | Mínima                                       |
+| Multitarefa             | Loop interno (sem FreeRTOS exposto)          |
+| MQTT                    | Nativo — configurado via interface web       |
+| OTA nativo              | Sim — via interface web ou MQTT              |
+| Configuração            | Browser (sem IDE)                            |
+| Suporte Wokwi           | Não suportado                                |
+| Dispositivos suportados | 1.000+ (tomadas, relés, sensores, medidores) |
+
+**Casos de uso típicos**
+
+- Retrofit de tomadas e interruptores Wi-Fi inteligentes existentes
+- Monitoramento de energia com MQTT sem escrita de código
+- Integração rápida com Node-RED, Home Assistant e Grafana
+- Laboratórios onde o foco está na plataforma IoT, não no firmware
+
+**Referências**
+
+- [tasmota.github.io](https://tasmota.github.io)
+- [Repositório no GitHub](https://github.com/arendst/Tasmota)
+- [Tasmota Device Templates](https://templates.blakadder.com)
+
+---
+
+## Guia de decisão rápida
+
+| Cenário                                       | Framework recomendado    |
+| --------------------------------------------- | ------------------------ |
+| Aprendizado / disciplina de IoT               | Arduino + PlatformIO     |
+| Simulação sem hardware físico                 | Arduino + Wokwi          |
+| Firmware industrial em produção               | ESP-IDF ou Zephyr RTOS   |
+| Dev com background Python                     | MicroPython              |
+| OTA + gestão de frota + nuvem                 | Mongoose OS              |
+| Automação predial / BAS / HVAC                | ESPHome + Home Assistant |
+| Retrofit rápido sem escrita de código         | Tasmota                  |
+| Requisitos de segurança funcional (IEC 61508) | Zephyr RTOS              |
+| Múltiplas tarefas concorrentes (tempo real)   | ESP-IDF ou Zephyr RTOS   |
+| Protótipo Python rápido no Wokwi              | MicroPython              |
+
+---
+
+## Notas de compatibilidade com a stack da disciplina
+
+:::tip[Arduino + PlatformIO é o framework adotado nesta disciplina]
+Todas as atividades práticas das Semanas 1 a 11 e o Projeto Final (Semanas 12–15) utilizam **Arduino framework via PlatformIO**, com simulação no Wokwi. Os demais frameworks são apresentados como referência para o mercado e para o Projeto Final de grupos que optarem por aprofundamento.
+:::
+
+| Framework   |  Node-RED   |       InfluxDB       | Grafana | Wokwi |       PlatformIO       |
+| ----------- | :---------: | :------------------: | :-----: | :---: | :--------------------: |
+| Arduino     | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ●   |           ●            |
+| ESP-IDF     | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ◐   |           ●            |
+| MicroPython | ● via umqtt | ● via umqtt→Node-RED |    ●    |   ●   |   ○ (thonny/rshell)    |
+| Mongoose OS | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ○   |      ○ (mos tool)      |
+| Zephyr RTOS | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ○   |    ◐ (experimental)    |
+| ESPHome     |  ● nativo   | ● via MQTT→Node-RED  |    ●    |   ○   |    ○ (esphome CLI)     |
+| Tasmota     |  ● nativo   | ● via MQTT→Node-RED  |    ●    |   ○   | ○ (compilação própria) |
+
+> **Legenda:** ● Suporte completo · ◐ Parcial · ○ Não suportado / não aplicável

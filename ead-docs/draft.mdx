@@ -1,0 +1,1150 @@
+---
+id: iot-industrial-questionarios
+title: IoT Industrial — Banco de Questionários
+sidebar_label: Questionários (draft)
+#sidebar_position: 2
+draft: true
+description: 12 questionários de verificação de aprendizagem para a disciplina IoT Industrial (ELT85B), alinhados ao Plano de Atividades semana a semana.
+tags:
+  - IoT
+  - Avaliação
+  - Questionários
+  - ESP32
+  - MQTT
+  - Node-RED
+---
+
+# IoT Industrial — Banco de Questionários
+
+**Disciplina:** IoT Industrial (ELT85B) · **Total:** 12 questionários · **10 questões cada**
+
+Cada questionário cobre o conteúdo teórico e prático da semana correspondente. A aplicação sugerida é ao final da última aula da semana ou como atividade assíncrona no AVA, com tempo de 20–30 minutos.
+
+> **Gabarito:** indicado ao final de cada questionário. Questões dissertativas possuem critérios de correção orientativos.
+
+---
+
+## Questionário 1 — Visão Geral sobre IoT
+
+**Semana:** 1 · **Conteúdo:** Definição de IoT, IoT vs. IIoT, setup do ambiente, Hello World ESP32
+
+---
+
+**Q1.1** _(Múltipla escolha)_ Qual das alternativas descreve corretamente o conceito de Internet das Coisas (IoT)?
+
+- A) Uma rede exclusivamente de computadores pessoais conectados à internet via cabo.
+- B) Um conjunto de dispositivos físicos com sensores, software e conectividade que trocam dados entre si e com sistemas externos.
+- C) Um protocolo de comunicação utilizado apenas em redes industriais de longa distância.
+- D) Uma plataforma de armazenamento em nuvem dedicada a dados industriais.
+
+---
+
+**Q1.2** _(Múltipla escolha)_ Qual é a principal diferença entre IoT para consumidores e IoT Industrial (IIoT)?
+
+- A) O IIoT utiliza exclusivamente redes cabeadas, enquanto o IoT consumidor usa apenas Wi-Fi.
+- B) O IIoT exige maior confiabilidade, menor latência e maior segurança, pois falhas podem impactar processos críticos.
+- C) O IoT consumidor processa dados apenas localmente, sem envio para a nuvem.
+- D) O IIoT é restrito à indústria automotiva, enquanto o IoT consumidor abrange todos os setores.
+
+---
+
+**Q1.3** _(Múltipla escolha)_ No contexto da Indústria 4.0, o IoT Industrial atua principalmente como:
+
+- A) Substituto completo dos sistemas SCADA existentes.
+- B) Meio para conectar máquinas, sensores e sistemas de gestão, gerando dados em tempo real para tomada de decisão.
+- C) Tecnologia de interface gráfica para operadores de chão de fábrica.
+- D) Protocolo de segurança para comunicação entre CLPs.
+
+---
+
+**Q1.4** _(Verdadeiro ou Falso)_ O arquivo `platformio.ini` é responsável por definir a placa-alvo, o framework e as dependências de um projeto PlatformIO.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q1.5** _(Múltipla escolha)_ No simulador Wokwi, para monitorar a saída serial de um ESP32, o aluno deve:
+
+- A) Abrir o Gerenciador de Dispositivos do Windows e selecionar a porta COM correspondente.
+- B) Utilizar o monitor serial integrado ao Wokwi, disponível na própria interface do simulador no navegador.
+- C) Instalar um driver FTDI e abrir um terminal PuTTY configurado a 9600 baud.
+- D) Compilar o projeto com a flag `--serial-monitor` no terminal do PlatformIO.
+
+---
+
+**Q1.6** _(Múltipla escolha)_ Qual função da biblioteca Arduino é utilizada para configurar um pino digital do ESP32 como saída?
+
+- A) `Serial.begin()`
+- B) `digitalWrite()`
+- C) `pinMode(pino, OUTPUT)`
+- D) `analogWrite()`
+
+---
+
+**Q1.7** _(Múltipla escolha)_ Qual das afirmativas sobre o ESP32 é INCORRETA?
+
+- A) O ESP32 possui conectividade Wi-Fi e Bluetooth integrados.
+- B) O ESP32 é baseado em arquitetura dual-core Xtensa LX6 a 240 MHz.
+- C) O ESP32 suporta apenas linguagem Assembly para programação de firmware.
+- D) O ESP32 pode ser programado com o framework Arduino via PlatformIO.
+
+---
+
+**Q1.8** _(Múltipla escolha)_ Em um projeto PlatformIO, a função `loop()` é executada:
+
+- A) Apenas uma vez, logo após a inicialização do microcontrolador.
+- B) Continuamente e de forma repetida enquanto o dispositivo estiver ligado.
+- C) Somente quando um evento externo (interrupção) é disparado.
+- D) Em intervalos fixos de 1 segundo, definidos pelo sistema operacional.
+
+---
+
+**Q1.9** _(Dissertativa — 3 linhas)_ Cite dois exemplos de aplicações de IoT Industrial e dois de IoT para consumidores. Para cada um, indique o requisito mais crítico (latência, segurança, escalabilidade etc.) e justifique.
+
+_Critério de correção: 0,5 ponto por exemplo corretamente justificado (total 2 pontos). Aceitar qualquer aplicação coerente com o domínio indicado._
+
+---
+
+**Q1.10** _(Dissertativa — 3 linhas)_ Explique por que o simulador Wokwi é uma alternativa válida ao hardware físico para o desenvolvimento de projetos com ESP32 em ambiente educacional. Indique também uma limitação relevante do simulador.
+
+_Critério de correção: 1 ponto pela justificativa de validade; 1 ponto pela limitação coerente (ex: não simula consumo de energia real, comportamento de RF, variações de hardware)._
+
+---
+
+**Gabarito Q1:** 1.1-B · 1.2-B · 1.3-B · 1.4-Verdadeiro · 1.5-B · 1.6-C · 1.7-C · 1.8-B · 1.9-Dissertativa · 1.10-Dissertativa
+
+---
+
+## Questionário 2 — A Internet na IoT
+
+**Semana:** 2 · **Conteúdo:** Modelo OSI, TCP/IP, IPv4/IPv6, conexão Wi-Fi e HTTP GET com ESP32
+
+---
+
+**Q2.1** _(Múltipla escolha)_ No Modelo OSI, qual camada é responsável pelo endereçamento lógico e roteamento de pacotes entre redes diferentes?
+
+- A) Camada de Enlace (Camada 2)
+- B) Camada de Rede (Camada 3)
+- C) Camada de Transporte (Camada 4)
+- D) Camada de Sessão (Camada 5)
+
+---
+
+**Q2.2** _(Múltipla escolha)_ No contexto de IoT, qual é a principal razão para a adoção do IPv6 em detrimento do IPv4?
+
+- A) O IPv6 possui menor overhead de cabeçalho, reduzindo o consumo de banda em dispositivos de baixa potência.
+- B) O espaço de endereçamento do IPv4 (aproximadamente 4,3 bilhões de endereços) é insuficiente para acomodar os bilhões de dispositivos IoT projetados.
+- C) O IPv6 é obrigatório por regulamentação da ANATEL para qualquer dispositivo conectado à internet no Brasil.
+- D) O IPv4 não suporta comunicação sem fio, sendo incompatível com redes Wi-Fi e BLE.
+
+---
+
+**Q2.3** _(Múltipla escolha)_ No modelo TCP/IP aplicado a IoT, o protocolo MQTT opera na:
+
+- A) Camada de Acesso à Rede
+- B) Camada de Internet
+- C) Camada de Transporte
+- D) Camada de Aplicação
+
+---
+
+**Q2.4** _(Múltipla escolha)_ Qual biblioteca Arduino/ESP32 é utilizada para conectar o ESP32 a uma rede Wi-Fi?
+
+- A) `HTTPClient.h`
+- B) `WiFi.h`
+- C) `PubSubClient.h`
+- D) `ArduinoJson.h`
+
+---
+
+**Q2.5** _(Verdadeiro ou Falso)_ O NAT (Network Address Translation) foi amplamente adotado como solução para o esgotamento de endereços IPv4, permitindo que múltiplos dispositivos em uma rede local compartilhem um único endereço IP público.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q2.6** _(Múltipla escolha)_ Em uma requisição HTTP GET realizada pelo ESP32 com a biblioteca `HTTPClient`, qual método retorna o código de status HTTP da resposta?
+
+- A) `http.getPayload()`
+- B) `http.responseCode()`
+- C) `http.GET()`
+- D) `http.getStatusCode()`
+
+---
+
+**Q2.7** _(Múltipla escolha)_ O RSSI (Received Signal Strength Indicator), lido via `WiFi.RSSI()` no ESP32, indica:
+
+- A) A velocidade de transmissão de dados da rede Wi-Fi em Mbps.
+- B) A intensidade do sinal de rádio recebido, expressa em dBm (valores mais próximos de zero indicam sinal mais forte).
+- C) O número de dispositivos conectados ao mesmo ponto de acesso Wi-Fi.
+- D) O canal de frequência (2,4 GHz ou 5 GHz) utilizado pela rede Wi-Fi.
+
+---
+
+**Q2.8** _(Múltipla escolha)_ Qual afirmativa sobre o encapsulamento de dados no Modelo OSI é CORRETA?
+
+- A) Cada camada adiciona seu próprio cabeçalho (e eventualmente trailer) aos dados recebidos da camada superior antes de passar para a camada inferior.
+- B) O encapsulamento ocorre apenas nas camadas 1, 2 e 3, sendo as demais camadas responsáveis somente pela decodificação.
+- C) O processo de encapsulamento é realizado exclusivamente no lado servidor, e o cliente apenas desencapsula os dados recebidos.
+- D) As camadas de Sessão, Apresentação e Aplicação do modelo OSI são mapeadas diretamente para a Camada de Acesso à Rede no modelo TCP/IP.
+
+---
+
+**Q2.9** _(Dissertativa — 3 linhas)_ Explique a diferença entre os protocolos TCP e UDP no contexto de IoT. Para cada um, cite um protocolo de aplicação IoT que o utiliza como transporte e justifique a escolha.
+
+_Critério de correção: 1 ponto pela diferença correta (confiabilidade vs. velocidade); 0,5 ponto por exemplo de protocolo com justificativa coerente (ex: MQTT sobre TCP pela garantia de entrega; CoAP sobre UDP pela leveza em redes com perdas)._
+
+---
+
+**Q2.10** _(Dissertativa — 3 linhas)_ Descreva o processo pelo qual o ESP32 obtém um endereço IP ao conectar-se a uma rede Wi-Fi. Qual protocolo é responsável por esse processo? O que ocorre se esse serviço não estiver disponível na rede?
+
+_Critério de correção: 1 ponto pela identificação correta do DHCP; 1 ponto pela descrição do processo (discover, offer, request, ack); 1 ponto pela consequência correta (IP auto-atribuído APIPA/link-local ou falha de conectividade, dependendo da configuração)._
+
+---
+
+**Gabarito Q2:** 2.1-B · 2.2-B · 2.3-D · 2.4-B · 2.5-Verdadeiro · 2.6-C · 2.7-B · 2.8-A · 2.9-Dissertativa · 2.10-Dissertativa
+
+---
+
+## Questionário 3 — Sensores e Atuadores em IoT
+
+**Semana:** 3 · **Conteúdo:** Tipos de sensores, interfaces (I²C, SPI, 1-Wire), atuadores, PWM, DHT22, LDR
+
+---
+
+**Q3.1** _(Múltipla escolha)_ O sensor DHT22 utiliza qual interface de comunicação com o microcontrolador?
+
+- A) I²C (dois fios: SDA e SCL)
+- B) SPI (quatro fios: MOSI, MISO, SCK, CS)
+- C) Protocolo single-wire proprietário (1 fio de dados)
+- D) Saída analógica de tensão variável (0–3,3 V)
+
+---
+
+**Q3.2** _(Múltipla escolha)_ Qual é a principal vantagem do barramento I²C para conexão de múltiplos sensores em um projeto IoT?
+
+- A) Permite transferência de dados em alta velocidade (acima de 1 Gbps), ideal para streaming de vídeo.
+- B) Utiliza apenas dois fios (SDA e SCL) e suporta múltiplos dispositivos no mesmo barramento, cada um identificado por um endereço único.
+- C) É o único protocolo compatível com o ESP32, sendo obrigatório para qualquer sensor digital.
+- D) Elimina a necessidade de resistores de pull-up, simplificando o circuito.
+
+---
+
+**Q3.3** _(Múltipla escolha)_ No ESP32, o PWM (Pulse Width Modulation) é utilizado para:
+
+- A) Medir a frequência de sinais analógicos externos com precisão de 12 bits.
+- B) Controlar a potência entregue a cargas como LEDs e motores por meio da variação do ciclo de trabalho (duty cycle) do sinal digital.
+- C) Converter sinais digitais em analógicos com resolução de 16 bits para acionamento de DACs externos.
+- D) Sincronizar a comunicação serial entre o ESP32 e dispositivos SPI.
+
+---
+
+**Q3.4** _(Verdadeiro ou Falso)_ Um relé é um atuador eletromecânico que permite ao microcontrolador controlar cargas de alta tensão e corrente por meio de um sinal de controle de baixa tensão, garantindo isolação galvânica entre os circuitos de controle e de potência.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q3.5** _(Múltipla escolha)_ O sensor LDR (Light Dependent Resistor) possui qual característica elétrica fundamental?
+
+- A) Sua resistência aumenta com o aumento da luminosidade incidente.
+- B) Sua resistência diminui com o aumento da luminosidade incidente.
+- C) Gera uma tensão proporcional à luminosidade, sem necessidade de circuito divisor.
+- D) Sua capacitância varia com a temperatura, sendo usado como termistor substituto.
+
+---
+
+**Q3.6** _(Múltipla escolha)_ Para ler um sensor analógico conectado ao pino GPIO34 do ESP32, qual função deve ser utilizada no código Arduino?
+
+- A) `digitalRead(34)`
+- B) `analogRead(34)`
+- C) `pulseIn(34, HIGH)`
+- D) `Wire.read()`
+
+---
+
+**Q3.7** _(Múltipla escolha)_ Qual dos critérios abaixo NÃO é relevante na seleção de um sensor para uma aplicação IIoT industrial?
+
+- A) Faixa de medição e resolução adequadas ao processo monitorado.
+- B) Compatibilidade com as interfaces de comunicação do microcontrolador (I²C, SPI, analógico).
+- C) Cor do encapsulamento do sensor para facilitar identificação visual no painel.
+- D) Grau de proteção IP (Ingress Protection) para ambientes com poeira ou umidade.
+
+---
+
+**Q3.8** _(Múltipla escolha)_ No contexto de controle de um motor DC via ESP32, o uso de um driver de potência (como L298N ou DRV8833) é necessário porque:
+
+- A) O motor DC opera em corrente alternada (AC) e o driver converte a saída DC do ESP32.
+- B) As saídas GPIO do ESP32 fornecem corrente máxima de ~12 mA por pino, insuficiente para acionar diretamente a bobina do motor.
+- C) O motor DC exige comunicação I²C para receber comandos de velocidade e direção.
+- D) O driver elimina a necessidade de programação PWM, gerenciando automaticamente a velocidade do motor.
+
+---
+
+**Q3.9** _(Dissertativa — 3 linhas)_ Compare os barramentos de comunicação I²C e SPI em termos de número de fios, velocidade típica e adequação para projetos IoT com múltiplos sensores. Indique um caso em que preferiria cada um.
+
+_Critério: I²C (2 fios, 100kHz–400kHz, múltiplos dispositivos no mesmo barramento, ideal quando o número de pinos é limitado); SPI (4+ fios, até dezenas de MHz, uma linha CS por dispositivo, ideal quando velocidade é prioridade, ex: display ou cartão SD)._
+
+---
+
+**Q3.10** _(Dissertativa — 3 linhas)_ Um sensor de temperatura industrial deve monitorar fornos com temperaturas entre 500°C e 1200°C em um ambiente com vibrações mecânicas intensas. Indique o tipo de sensor mais adequado (termopar, PT100 ou termistor NTC), explique o motivo da escolha e cite a interface de comunicação tipicamente utilizada para leitura deste sensor em um sistema IIoT.
+
+_Critério: Termopar tipo K ou S (faixa até 1300°C+, robusto a vibrações); termistor NTC inadequado (faixa máxima ~150°C); PT100 adequado mas com faixa mais limitada; interface típica: SPI (MAX31855/MAX6675) ou I²C (MCP9600)._
+
+---
+
+**Gabarito Q3:** 3.1-C · 3.2-B · 3.3-B · 3.4-Verdadeiro · 3.5-B · 3.6-B · 3.7-C · 3.8-B · 3.9-Dissertativa · 3.10-Dissertativa
+
+---
+
+## Questionário 4 — Atributos de Protocolos IoT
+
+**Semana:** 4 · **Conteúdo:** Escalabilidade, QoS, determinismo, segurança, interoperabilidade, MQTT, Node-RED
+
+---
+
+**Q4.1** _(Múltipla escolha)_ No protocolo MQTT, o mecanismo de QoS (Quality of Service) nível 1 garante que:
+
+- A) A mensagem é entregue no máximo uma vez, sem confirmação (fire and forget).
+- B) A mensagem é entregue pelo menos uma vez, com confirmação PUBACK, podendo haver duplicatas.
+- C) A mensagem é entregue exatamente uma vez, por meio de um handshake de quatro etapas.
+- D) A mensagem é entregue com prioridade máxima, descartando todas as mensagens de QoS 0 pendentes.
+
+---
+
+**Q4.2** _(Múltipla escolha)_ Em uma rede IoT industrial, "determinismo" refere-se a:
+
+- A) A capacidade de prever e garantir o tempo máximo de entrega de uma mensagem, essencial para sistemas de controle em tempo real.
+- B) A habilidade do protocolo de determinar automaticamente o melhor caminho de roteamento entre broker e dispositivo.
+- C) O número máximo de dispositivos que podem se conectar simultaneamente a um broker MQTT.
+- D) A capacidade do protocolo de criptografar mensagens de forma determinística usando AES-256.
+
+---
+
+**Q4.3** _(Múltipla escolha)_ Qual é a função do broker no modelo publish/subscribe do MQTT?
+
+- A) Armazenar permanentemente todas as mensagens em um banco de dados relacional.
+- B) Intermediar a comunicação entre publishers e subscribers, recebendo mensagens em tópicos e distribuindo-as aos assinantes registrados.
+- C) Converter mensagens MQTT em requisições HTTP REST para integração com APIs externas.
+- D) Autenticar usuários por biometria e criptografar mensagens com chave pública RSA.
+
+---
+
+**Q4.4** _(Verdadeiro ou Falso)_ A interoperabilidade em IoT significa que dispositivos de diferentes fabricantes e que utilizam diferentes protocolos podem trocar informações de forma transparente, desde que implementem padrões abertos comuns.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q4.5** _(Múltipla escolha)_ No Node-RED, o node `mqtt-in` é configurado com um tópico usando curinga `#`. Isso significa que:
+
+- A) O node receberá apenas mensagens do tópico raiz, sem subtópicos.
+- B) O node receberá mensagens de todos os tópicos a partir do nível onde `#` é inserido, incluindo todos os subtópicos.
+- C) O node enviará mensagens para todos os brokers conectados simultaneamente.
+- D) O curinga `#` é reservado para mensagens de QoS 2 e não funciona com QoS 0 ou 1.
+
+---
+
+**Q4.6** _(Múltipla escolha)_ Qual das opções representa uma boa prática na definição de hierarquia de tópicos MQTT para um sistema IIoT com múltiplas fábricas e linhas de produção?
+
+- A) `dados`
+- B) `fabrica/A/linha/1/sensor/temperatura`
+- C) `temperatura#linha1#fabricaA`
+- D) `sensor_temperatura_linha1_fabricaA_dado`
+
+---
+
+**Q4.7** _(Múltipla escolha)_ O recurso "Last Will and Testament" (LWT) do MQTT serve para:
+
+- A) Autenticar o cliente MQTT junto ao broker por meio de um certificado digital.
+- B) Publicar automaticamente uma mensagem predefinida em um tópico quando um cliente se desconecta de forma inesperada, notificando outros assinantes.
+- C) Armazenar a última mensagem publicada em um tópico para entrega a novos assinantes (retained message).
+- D) Definir o tempo máximo de inatividade do broker antes de reinicializar automaticamente.
+
+---
+
+**Q4.8** _(Múltipla escolha)_ Em termos de escalabilidade, qual afirmativa sobre o protocolo MQTT é CORRETA?
+
+- A) O MQTT é limitado a 100 conexões simultâneas por broker, sendo inadequado para grandes deployments.
+- B) O modelo pub/sub do MQTT desacopla produtores e consumidores de dados, permitindo adicionar novos dispositivos sem alterações nos demais clientes.
+- C) Para escalar um sistema MQTT, é necessário reinstalar o broker em cada novo dispositivo adicionado à rede.
+- D) O MQTT escala apenas verticalmente (hardware mais poderoso), não suportando escalabilidade horizontal.
+
+---
+
+**Q4.9** _(Dissertativa — 3 linhas)_ Explique o que é "Retained Message" no MQTT e descreva um cenário industrial onde esse recurso é particularmente útil.
+
+_Critério: mensagem armazenada no broker para o tópico, enviada imediatamente a qualquer novo assinante; cenário válido: ex: status de um atuador (válvula aberta/fechada) — novo cliente recebe o estado atual sem esperar a próxima publicação._
+
+---
+
+**Q4.10** _(Dissertativa — 3 linhas)_ Descreva o fluxo completo de uma mensagem MQTT desde a publicação por um ESP32 até a exibição em um dashboard Node-RED, mencionando todos os componentes envolvidos e o papel de cada um.
+
+_Critério: ESP32 (publisher) → broker MQTT (roteamento por tópico) → Node-RED mqtt-in (subscriber) → node de processamento/função → node de dashboard (gauge/chart). 0,4 ponto por componente corretamente descrito._
+
+---
+
+**Gabarito Q4:** 4.1-B · 4.2-A · 4.3-B · 4.4-Verdadeiro · 4.5-B · 4.6-B · 4.7-B · 4.8-B · 4.9-Dissertativa · 4.10-Dissertativa
+
+---
+
+## Questionário 5 — Pilha de Protocolos IoT: Enlace e Rede
+
+**Semana:** 5 · **Conteúdo:** Wi-Fi 802.11, BLE, LoRa, 6LoWPAN, Thread, Zigbee, ESP32 como AP, dashboard Node-RED
+
+---
+
+**Q5.1** _(Múltipla escolha)_ Qual tecnologia de comunicação sem fio é mais adequada para um sensor IoT instalado a 15 km de distância da central de monitoramento em uma fazenda, que transmite pequenas quantidades de dados a cada hora e opera com bateria?
+
+- A) Wi-Fi 802.11n (2,4 GHz)
+- B) Bluetooth Classic (BR/EDR)
+- C) LoRa (Long Range)
+- D) Ethernet 100BASE-T
+
+---
+
+**Q5.2** _(Múltipla escolha)_ O padrão IEEE 802.15.4 é a base de comunicação para quais tecnologias IoT?
+
+- A) Wi-Fi e Bluetooth Low Energy (BLE)
+- B) Zigbee e Thread
+- C) LoRaWAN e NB-IoT
+- D) Z-Wave e EnOcean
+
+---
+
+**Q5.3** _(Verdadeiro ou Falso)_ O 6LoWPAN (IPv6 over Low-Power Wireless Personal Area Networks) permite que dispositivos com recursos limitados, como sensores IoT, utilizem endereçamento IPv6 diretamente, por meio de compressão e fragmentação de cabeçalhos IP.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q5.4** _(Múltipla escolha)_ No ESP32, a função `WiFi.softAP("MeuSSID", "senha123")` configura o dispositivo como:
+
+- A) Cliente Wi-Fi conectado a um roteador com o SSID "MeuSSID".
+- B) Ponto de Acesso Wi-Fi (Access Point), permitindo que outros dispositivos se conectem a ele.
+- C) Repetidor Wi-Fi que amplifica o sinal da rede "MeuSSID" existente.
+- D) Cliente DHCP que solicita o endereço "senha123" ao servidor da rede "MeuSSID".
+
+---
+
+**Q5.5** _(Múltipla escolha)_ Comparando Wi-Fi e BLE (Bluetooth Low Energy) para aplicações IoT industriais, qual afirmativa é CORRETA?
+
+- A) O BLE consome mais energia que o Wi-Fi, sendo inadequado para dispositivos alimentados por bateria.
+- B) O Wi-Fi oferece maior largura de banda e alcance em ambientes abertos, enquanto o BLE é superior em consumo energético para transmissões esporádicas de pequenos volumes de dados.
+- C) Ambos operam exclusivamente na faixa de 5 GHz, sendo sujeitos às mesmas interferências.
+- D) O BLE suporta velocidades de transferência acima de 1 Gbps, sendo preferível ao Wi-Fi para streaming de dados de sensores.
+
+---
+
+**Q5.6** _(Múltipla escolha)_ Em uma topologia de rede mesh com Zigbee, dispositivos do tipo "Router" têm a função de:
+
+- A) Armazenar todos os dados da rede em um banco de dados local com capacidade de 1 TB.
+- B) Retransmitir mensagens entre dispositivos da rede, expandindo o alcance da malha sem necessidade de infraestrutura adicional.
+- C) Gerenciar autenticação de novos dispositivos por meio de certificados X.509.
+- D) Converter protocolos Zigbee em MQTT para integração com brokers na nuvem.
+
+---
+
+**Q5.7** _(Múltipla escolha)_ O node `node-red-dashboard` permite criar interfaces visuais no Node-RED. O widget `gauge` é mais adequado para exibir:
+
+- A) Séries temporais de dados históricos em um gráfico de linhas.
+- B) O valor atual de uma variável dentro de uma faixa definida (mínimo e máximo), como temperatura ou pressão.
+- C) Mensagens de texto formatadas em HTML com atualização dinâmica.
+- D) Tabelas de dados tabulares com suporte a ordenação e filtragem.
+
+---
+
+**Q5.8** _(Múltipla escolha)_ Qual é a principal limitação do Thread em relação ao Zigbee para aplicações IoT industriais legadas?
+
+- A) O Thread não suporta topologia mesh, limitando seu alcance a ambientes pequenos.
+- B) O Thread utiliza IPv6 nativamente, o que pode exigir atualização de infraestrutura de rede, enquanto o Zigbee opera em sua própria camada de rede, sendo mais compatível com dispositivos legados.
+- C) O Thread é proprietário e não possui especificação aberta, dificultando a interoperabilidade.
+- D) O Thread opera apenas em 5 GHz, sendo incompatível com a maioria dos módulos de rádio de baixo custo.
+
+---
+
+**Q5.9** _(Dissertativa — 3 linhas)_ Um engenheiro precisa monitorar 200 sensores de vibração distribuídos em uma planta industrial de 500m × 300m, com transmissão a cada 5 minutos e vida útil da bateria mínima de 5 anos. Compare LoRa e Wi-Fi para esse cenário e indique qual escolheria, justificando.
+
+_Critério: LoRa é a escolha correta — alcance de km, consumo ultrabaixo em modo sleep, adequado para payloads pequenos e periódicos; Wi-Fi consumiria bateria excessivamente e exigiria infraestrutura densa de APs para cobrir 500×300m._
+
+---
+
+**Q5.10** _(Dissertativa — 3 linhas)_ Descreva como o ESP32 configurado como Access Point (modo softAP) pode ser usado em um cenário industrial onde não há infraestrutura de rede Wi-Fi disponível. Quais são as limitações desse modo de operação?
+
+_Critério: ESP32 cria sua própria rede, dispositivos cliente (tablet de operador, outros ESP32) conectam-se a ele; servidor HTTP local para configuração ou coleta de dados; limitações: sem acesso à internet/nuvem, número limitado de clientes (~4–5 estáveis), alcance limitado ao rádio do ESP32._
+
+---
+
+**Gabarito Q5:** 5.1-C · 5.2-B · 5.3-Verdadeiro · 5.4-B · 5.5-B · 5.6-B · 5.7-B · 5.8-B · 5.9-Dissertativa · 5.10-Dissertativa
+
+---
+
+## Questionário 6 — Protocolos de Aplicação IoT
+
+**Semana:** 6 · **Conteúdo:** MQTT, CoAP, HTTP, AMQP, TLS, integração Node-RED + InfluxDB
+
+---
+
+**Q6.1** _(Múltipla escolha)_ O protocolo CoAP (Constrained Application Protocol) foi projetado para:
+
+- A) Substituir o TCP em redes de alta velocidade, eliminando o overhead de controle de congestionamento.
+- B) Prover comunicação RESTful em dispositivos com recursos limitados, operando sobre UDP com suporte a confirmação opcional.
+- C) Criptografar mensagens MQTT em redes industriais com certificados X.509.
+- D) Gerenciar sessões de comunicação de longa duração entre gateways e servidores de nuvem.
+
+---
+
+**Q6.2** _(Múltipla escolha)_ Qual é a principal diferença entre o modelo request/response (HTTP/CoAP) e o modelo publish/subscribe (MQTT) no contexto de IoT?
+
+- A) No modelo pub/sub, o cliente precisa verificar ativamente (polling) o servidor para receber novas informações.
+- B) No modelo pub/sub, o cliente se inscreve em tópicos e recebe atualizações automaticamente quando novas mensagens são publicadas, sem necessidade de polling.
+- C) O modelo request/response consome menos banda que o pub/sub para dispositivos com alta frequência de atualização de dados.
+- D) O modelo request/response suporta QoS nativo, enquanto o pub/sub não oferece garantias de entrega.
+
+---
+
+**Q6.3** _(Verdadeiro ou Falso)_ O AMQP (Advanced Message Queuing Protocol) é adequado para cenários que exigem roteamento sofisticado de mensagens, confirmação de entrega e interoperabilidade entre sistemas heterogêneos de middleware, sendo amplamente utilizado em integração empresarial (ERP, MES).
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q6.4** _(Múltipla escolha)_ No InfluxDB 2.x, os dados de séries temporais são organizados em:
+
+- A) Tabelas relacionais com chave primária composta por timestamp e ID do dispositivo.
+- B) Measurements (equivalentes a tabelas), com tags (metadados indexados) e fields (valores numéricos ou strings).
+- C) Coleções de documentos JSON sem esquema fixo, similar ao MongoDB.
+- D) Arquivos CSV compactados em buckets S3, acessíveis via API REST.
+
+---
+
+**Q6.5** _(Múltipla escolha)_ O TLS (Transport Layer Security) protege a comunicação MQTT principalmente por meio de:
+
+- A) Compressão das mensagens MQTT para reduzir o uso de banda e impedir inspeção de conteúdo.
+- B) Criptografia do canal de comunicação, autenticação do servidor (e opcionalmente do cliente) e garantia de integridade das mensagens.
+- C) Limitação da taxa de publicação de mensagens para evitar ataques de negação de serviço (DoS).
+- D) Conversão automática de tópicos MQTT em endpoints HTTP para integração com firewalls corporativos.
+
+---
+
+**Q6.6** _(Múltipla escolha)_ No Node-RED, o node `influxdb-out` requer qual informação mínima para inserir dados em um bucket do InfluxDB 2.x?
+
+- A) Apenas o IP do servidor InfluxDB, pois os demais parâmetros são detectados automaticamente.
+- B) URL do servidor, token de autenticação, organização e nome do bucket de destino.
+- C) Usuário, senha e nome do banco de dados no formato InfluxDB 1.x (incompatível com InfluxDB 2.x).
+- D) Apenas o nome do measurement; o bucket e a organização são definidos globalmente nas configurações do Node-RED.
+
+---
+
+**Q6.7** _(Múltipla escolha)_ Comparando HTTP e MQTT para um cenário com 10.000 sensores publicando dados a cada segundo, qual protocolo é mais eficiente e por quê?
+
+- A) HTTP, pois suporta autenticação OAuth 2.0 nativa, reduzindo o overhead de segurança.
+- B) MQTT, pois seu cabeçalho mínimo de 2 bytes e o modelo pub/sub geram significativamente menos overhead de rede do que os cabeçalhos HTTP e o modelo request/response.
+- C) Ambos são equivalentes em eficiência; a escolha depende apenas da linguagem de programação usada no backend.
+- D) HTTP/2, pois suporta multiplexação nativa, eliminando completamente o overhead de conexão por sensor.
+
+---
+
+**Q6.8** _(Múltipla escolha)_ No contexto de segurança IoT, a autenticação por usuário e senha no MQTT sem TLS é considerada insegura porque:
+
+- A) O protocolo MQTT limita senhas a 8 caracteres, tornando-as vulneráveis a ataques de força bruta.
+- B) As credenciais são transmitidas em texto claro no pacote CONNECT, podendo ser interceptadas por qualquer dispositivo na mesma rede.
+- C) O broker MQTT armazena senhas em MD5, algoritmo considerado inseguro desde 2004.
+- D) A autenticação por senha no MQTT é válida apenas para QoS 0, sendo ignorada em QoS 1 e 2.
+
+---
+
+**Q6.9** _(Dissertativa — 3 linhas)_ Explique por que o CoAP utiliza UDP em vez de TCP como protocolo de transporte, e descreva o mecanismo que o CoAP utiliza para garantir entrega confiável de mensagens quando necessário.
+
+_Critério: UDP é mais leve (sem handshake, sem controle de congestionamento), essencial para dispositivos com restrição de memória e energia; confiabilidade garantida por mensagens do tipo CON (Confirmable) com retransmissão e ACK, e mensagens NON (Non-Confirmable) para dados não críticos._
+
+---
+
+**Q6.10** _(Dissertativa — 3 linhas)_ Descreva como o Node-RED pode ser utilizado como camada de integração entre um ESP32 (publicando dados via MQTT) e o InfluxDB (armazenando séries temporais), detalhando o papel de cada node no fluxo e o formato esperado da mensagem pelo node `influxdb-out`.
+
+_Critério: mqtt-in (recebe do broker) → function (formata payload no objeto `{measurement, fields, tags}`) → influxdb-out (insere no bucket); formato: `[{measurement: "temperatura", fields: {valor: 25.3}, tags: {sensor: "S1"}}]`._
+
+---
+
+**Gabarito Q6:** 6.1-B · 6.2-B · 6.3-Verdadeiro · 6.4-B · 6.5-B · 6.6-B · 6.7-B · 6.8-B · 6.9-Dissertativa · 6.10-Dissertativa
+
+---
+
+## Questionário 7 — Computação em Nevoeiro (Fog/Edge Computing)
+
+**Semana:** 7 · **Conteúdo:** Cloud vs. Fog vs. Edge, Docker, Node-RED como gateway, Flux e InfluxDB tasks
+
+---
+
+**Q7.1** _(Múltipla escolha)_ No contexto de IoT Industrial, qual é a principal motivação para o uso de Edge Computing em vez de processar todos os dados na nuvem?
+
+- A) A nuvem não suporta dados de séries temporais, exigindo processamento local antes do envio.
+- B) O processamento na borda reduz a latência, diminui o volume de dados transmitidos e permite operação mesmo sem conectividade com a internet.
+- C) O Edge Computing elimina a necessidade de qualquer infraestrutura de rede, pois os dados ficam permanentemente no dispositivo.
+- D) A legislação brasileira (LGPD) proíbe o envio de dados industriais para servidores fora do país, tornando a nuvem inviável.
+
+---
+
+**Q7.2** _(Múltipla escolha)_ A Fog Computing se diferencia do Edge Computing principalmente porque:
+
+- A) A Fog Computing processa dados exclusivamente em servidores físicos on-premise, enquanto o Edge Computing usa apenas dispositivos móveis.
+- B) A Fog Computing introduz uma camada intermediária entre os dispositivos de campo e a nuvem (ex: gateways, servidores locais), enquanto o Edge Computing processa dados diretamente no dispositivo ou em sua imediata proximidade.
+- C) A Fog Computing é um termo proprietário da Cisco, incompatível com padrões abertos de IoT.
+- D) O Edge Computing suporta apenas protocolos cabeados, enquanto a Fog Computing suporta comunicação sem fio.
+
+---
+
+**Q7.3** _(Verdadeiro ou Falso)_ O Docker permite empacotar Node-RED, InfluxDB e Grafana em contêineres isolados que podem ser implantados em dispositivos de borda como Raspberry Pi ou gateways industriais, facilitando a portabilidade e o gerenciamento dessas aplicações.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q7.4** _(Múltipla escolha)_ No Node-RED, para implementar uma média móvel simples de uma variável de sensor no node `function`, qual abordagem é CORRETA?
+
+- A) Usar o node `average` nativo do Node-RED, configurando a janela de tempo desejada.
+- B) Utilizar variáveis de contexto de fluxo (`flow.get`/`flow.set`) para armazenar os últimos N valores e calcular a média a cada nova mensagem recebida.
+- C) Conectar o node `function` diretamente ao banco InfluxDB e usar uma query SQL para calcular a média.
+- D) Instalar o pacote `node-red-contrib-statistics` e usar o node `mean` com janela deslizante automática.
+
+---
+
+**Q7.5** _(Múltipla escolha)_ Na linguagem Flux do InfluxDB, a função `aggregateWindow(every: 5m, fn: mean)` realiza:
+
+- A) Filtra os dados para retornar apenas registros com intervalo mínimo de 5 minutos entre amostras.
+- B) Agrupa os dados em janelas de 5 minutos e calcula a média dos valores em cada janela, realizando downsampling da série temporal.
+- C) Exclui outliers com desvio superior a 5 minutos da média histórica da série.
+- D) Cria uma task agendada para executar automaticamente a cada 5 minutos e gravar os resultados em um novo bucket.
+
+---
+
+**Q7.6** _(Múltipla escolha)_ Qual é a principal vantagem do downsampling de dados históricos no InfluxDB para um sistema IIoT com muitos sensores?
+
+- A) O downsampling converte dados numéricos em texto, reduzindo o tamanho médio de cada registro.
+- B) Reduz o volume de dados armazenados a longo prazo, mantendo a tendência histórica com menor custo de armazenamento e maior velocidade de consulta.
+- C) Garante que os dados históricos sejam replicados automaticamente para um bucket de backup em nuvem.
+- D) Permite que o InfluxDB aceite dados de múltiplos protocolos (MQTT, HTTP, CoAP) sem configuração adicional.
+
+---
+
+**Q7.7** _(Múltipla escolha)_ No contexto de Edge Computing com ESP32, um exemplo de processamento que deve ser realizado localmente (no dispositivo) em vez de na nuvem é:
+
+- A) Treinamento de modelos de machine learning com dados históricos de 12 meses.
+- B) Detecção de limiar simples (ex: temperatura > 80°C → acionar alarme) para resposta imediata sem depender de conectividade.
+- C) Armazenamento de logs auditáveis por 5 anos com replicação geográfica redundante.
+- D) Geração de relatórios executivos mensais com análise estatística de todos os sensores da planta.
+
+---
+
+**Q7.8** _(Múltipla escolha)_ Qual node do Node-RED é mais adequado para enviar um e-mail de alerta quando a temperatura lida de um sensor superar 75°C?
+
+- A) `http-request` configurado com método GET para a API de e-mail.
+- B) `switch` → `e-mail` (node-red-node-email), onde o switch filtra mensagens com valor > 75 e o node de e-mail envia a notificação.
+- C) `inject` configurado com intervalo de 1 segundo para verificar periodicamente o valor no InfluxDB.
+- D) `mqtt-out` publicando em um tópico especial que o servidor de e-mail assina diretamente.
+
+---
+
+**Q7.9** _(Dissertativa — 3 linhas)_ Descreva um cenário industrial onde a Fog Computing seria indispensável, explicando quais processamentos seriam realizados na camada fog e quais seriam enviados para a nuvem.
+
+_Critério: ex: linha de produção com robôs — fog processa controle em tempo real (detecção de colisão, ajuste de parâmetros), filtra e agrega dados, envia apenas KPIs e eventos à nuvem; nuvem recebe histórico agregado, treina modelos preditivos, armazena logs auditáveis._
+
+---
+
+**Q7.10** _(Dissertativa — 3 linhas)_ Explique o conceito de "Task" no InfluxDB e como ela pode ser usada para implementar uma política de retenção diferenciada: dados brutos armazenados por 7 dias e dados agregados (média horária) retidos por 1 ano.
+
+_Critério: Task é um script Flux agendado que executa periodicamente; cria-se um bucket "raw" com retenção de 7 dias e um bucket "aggregated" com retenção de 1 ano; a task lê do raw, aplica `aggregateWindow(every: 1h, fn: mean)` e escreve no aggregated._
+
+---
+
+**Gabarito Q7:** 7.1-B · 7.2-B · 7.3-Verdadeiro · 7.4-B · 7.5-B · 7.6-B · 7.7-B · 7.8-B · 7.9-Dissertativa · 7.10-Dissertativa
+
+---
+
+## Questionário 8 — Plataformas de Serviços IoT
+
+**Semana:** 8 · **Conteúdo:** Anatomia de plataformas IoT, OTA updates, Grafana, dashboards industriais
+
+---
+
+**Q8.1** _(Múltipla escolha)_ Qual das funções abaixo NÃO é típica de uma plataforma de serviços IoT?
+
+- A) Gerenciamento do ciclo de vida dos dispositivos (provisionamento, atualização, descomissionamento).
+- B) Ingestão e armazenamento de dados de séries temporais provenientes de sensores.
+- C) Compilação e geração de firmware para microcontroladores diretamente na nuvem.
+- D) Análise de dados e geração de alertas baseados em regras configuráveis.
+
+---
+
+**Q8.2** _(Múltipla escolha)_ OTA (Over-The-Air) update em dispositivos ESP32 permite:
+
+- A) Atualizar o firmware do dispositivo remotamente via rede, sem necessidade de acesso físico ao hardware.
+- B) Transmitir dados de sensores via satélite em regiões sem cobertura de celular.
+- C) Realizar backup automático dos dados do ESP32 em um servidor na nuvem a cada 24 horas.
+- D) Sincronizar o relógio interno do ESP32 com servidores NTP via protocolo UDP.
+
+---
+
+**Q8.3** _(Verdadeiro ou Falso)_ No Grafana, as "Alerting Rules" permitem configurar notificações automáticas (por e-mail, Slack, PagerDuty etc.) quando uma métrica cruza um limiar definido, eliminando a necessidade de monitoramento manual contínuo dos dashboards.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q8.4** _(Múltipla escolha)_ No Grafana, "Template Variables" são utilizadas para:
+
+- A) Definir a paleta de cores dos painéis de forma dinâmica com base no horário do dia.
+- B) Criar dashboards reutilizáveis onde o usuário pode filtrar os dados exibidos (ex: por linha de produção, por dispositivo) sem precisar criar um dashboard separado para cada caso.
+- C) Gerar automaticamente queries Flux para o InfluxDB com base nos dados disponíveis no bucket.
+- D) Proteger painéis sensíveis com senha de acesso configurável por variável de ambiente.
+
+---
+
+**Q8.5** _(Múltipla escolha)_ Em um painel Grafana conectado ao InfluxDB, qual tipo de visualização é mais adequado para mostrar o histórico de temperatura de uma caldeira ao longo das últimas 24 horas?
+
+- A) `Stat` (valor único com indicador de tendência)
+- B) `Gauge` (medidor circular com faixas coloridas)
+- C) `Time series` (gráfico de linhas com eixo X temporal)
+- D) `Bar chart` (gráfico de barras com categorias no eixo X)
+
+---
+
+**Q8.6** _(Múltipla escolha)_ O "certificate rotation" em dispositivos IoT refere-se a:
+
+- A) A rotação física do dispositivo para otimizar a captação de sinal de antena.
+- B) O processo de renovação periódica dos certificados digitais utilizados para autenticação, evitando o uso de certificados expirados ou comprometidos.
+- C) A redistribuição de carga entre múltiplos brokers MQTT em uma arquitetura de alta disponibilidade.
+- D) A troca automática do canal de frequência Wi-Fi para evitar interferências.
+
+---
+
+**Q8.7** _(Múltipla escolha)_ Comparando AWS IoT Core e ThingsBoard (open-source), qual afirmativa é CORRETA?
+
+- A) O ThingsBoard é exclusivamente pago e voltado para grandes empresas, enquanto o AWS IoT Core possui versão gratuita sem limitações.
+- B) O AWS IoT Core é um serviço gerenciado na nuvem com cobrança por mensagem/dispositivo, enquanto o ThingsBoard pode ser instalado localmente (on-premise) sem custo de licença, sendo adequado para ambientes com restrições de conectividade ou orçamento.
+- C) Ambos utilizam exclusivamente o protocolo HTTP para comunicação com dispositivos, sem suporte a MQTT.
+- D) O ThingsBoard não suporta dashboards, exigindo integração obrigatória com Grafana para visualização.
+
+---
+
+**Q8.8** _(Múltipla escolha)_ No Grafana, o painel `State Timeline` é especialmente útil para:
+
+- A) Exibir a distribuição estatística de valores de uma variável em forma de histograma.
+- B) Visualizar a evolução de estados discretos ao longo do tempo (ex: válvula aberta/fechada, alarme ativo/inativo, equipamento ligado/desligado).
+- C) Comparar valores médios de múltiplos sensores em um gráfico de barras agrupadas.
+- D) Gerar mapas geográficos com a localização de dispositivos IoT em campo.
+
+---
+
+**Q8.9** _(Dissertativa — 3 linhas)_ Descreva o processo completo de provisionamento de um novo dispositivo ESP32 em uma plataforma IoT industrial, desde o momento em que o hardware sai da linha de montagem até estar operacional em campo, enviando dados ao servidor.
+
+_Critério: geração de certificados únicos por dispositivo → gravação de credenciais no firmware (ou armazenamento seguro) → registro do dispositivo na plataforma (device ID, tipo, localização) → primeira conexão e validação do certificado → início da publicação de dados; mencionar zero-touch provisioning como bônus._
+
+---
+
+**Q8.10** _(Dissertativa — 3 linhas)_ Explique como "Annotations" no Grafana podem ser usadas para correlacionar eventos operacionais (ex: parada de manutenção, troca de turno, falha de equipamento) com as séries temporais exibidas nos painéis, e qual é o benefício dessa prática para equipes de manutenção industrial.
+
+_Critério: annotations são marcadores temporais adicionados manualmente ou via API ao painel; correlacionam visualmente eventos com anomalias nas métricas; benefício: equipes identificam imediatamente se uma variação anormal coincidiu com uma intervenção ou falha, acelerando diagnóstico de causa raiz (RCA)._
+
+---
+
+**Gabarito Q8:** 8.1-C · 8.2-A · 8.3-Verdadeiro · 8.4-B · 8.5-C · 8.6-B · 8.7-B · 8.8-B · 8.9-Dissertativa · 8.10-Dissertativa
+
+---
+
+## Questionário 9 — Mercados de IoT: Agricultura e Energia
+
+**Semana:** 9 · **Conteúdo:** AgriIoT, Oil & Gas, smart meters, simulação de irrigação, dashboard Grafana Geomap
+
+---
+
+**Q9.1** _(Múltipla escolha)_ Em uma aplicação de IoT para agricultura de precisão, qual sensor é mais adequado para monitorar a necessidade de irrigação diretamente no solo?
+
+- A) Sensor de temperatura DHT22 instalado a 2 metros de altura.
+- B) Sensor de umidade volumétrica do solo capacitivo, instalado diretamente na zona radicular das plantas.
+- C) Anemômetro ultrassônico para medição de velocidade e direção do vento.
+- D) Sensor de CO₂ infravermelho para monitoramento da fotossíntese.
+
+---
+
+**Q9.2** _(Verdadeiro ou Falso)_ Em sistemas de monitoramento de dutos de petróleo e gás, sensores IoT de pressão e temperatura com comunicação LoRaWAN são uma alternativa adequada para instalações remotas sem infraestrutura de rede celular, pois oferecem longo alcance com consumo energético reduzido.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q9.3** _(Múltipla escolha)_ No fluxo Node-RED para automação de irrigação implementado na aula prática, qual lógica de decisão foi utilizada para acionar a válvula?
+
+- A) A válvula abre quando a temperatura do ar supera 30°C, independentemente da umidade do solo.
+- B) A válvula abre quando a umidade do solo lida pelo sensor analógico cai abaixo de um limiar configurável, e fecha quando o nível adequado é atingido.
+- C) A válvula segue um calendário fixo programado no Node-RED, independentemente das leituras dos sensores.
+- D) A válvula é controlada remotamente por um operador via dashboard, sem automação local.
+
+---
+
+**Q9.4** _(Múltipla escolha)_ O plugin `Geomap` do Grafana é utilizado para:
+
+- A) Gerar mapas de calor (heatmaps) de frequência de ocorrência de alarmes por hora do dia.
+- B) Exibir a localização geográfica de dispositivos e ativos industriais em um mapa interativo, com dados em tempo real ou históricos.
+- C) Converter coordenadas GPS em endereços postais para relatórios de manutenção.
+- D) Integrar dados de previsão meteorológica de APIs externas diretamente nos painéis Grafana.
+
+---
+
+**Q9.5** _(Múltipla escolha)_ Em um sistema de smart metering (medição inteligente) de energia elétrica, qual grandeza NÃO é tipicamente monitorada por um medidor IoT?
+
+- A) Tensão (V) e corrente (A) em tempo real.
+- B) Energia consumida (kWh) acumulada e por período.
+- C) Fator de potência e harmônicas da rede elétrica.
+- D) Temperatura interna do transformador de distribuição da subestação.
+
+---
+
+**Q9.6** _(Múltipla escolha)_ Qual tecnologia de comunicação é mais comumente utilizada para smart meters em áreas urbanas densas, onde múltiplos medidores precisam transmitir dados à concessionária com baixo custo de comunicação?
+
+- A) LoRa (Long Range)
+- B) NB-IoT (Narrowband IoT) ou LTE-M, operando na infraestrutura celular existente
+- C) Zigbee em topologia ponto-a-ponto com alcance de 100 metros
+- D) Ethernet 10BASE-T com cabo de par trançado
+
+---
+
+**Q9.7** _(Múltipla escolha)_ No contexto de manutenção preditiva em bombas de petróleo, sensores de vibração são instalados para detectar:
+
+- A) Variações de temperatura ambiente que possam causar expansão térmica nas tubulações.
+- B) Padrões anormais de vibração que indicam desgaste de rolamentos, desbalanceamento ou cavitação antes que ocorra falha catastrófica.
+- C) Variações de pressão na linha de sucção causadas por flutuações na viscosidade do óleo.
+- D) Perdas de isolamento elétrico no motor da bomba devido à umidade.
+
+---
+
+**Q9.8** _(Verdadeiro ou Falso)_ O uso de LPWAN (Low Power Wide Area Network), como LoRaWAN, é inadequado para aplicações AgriIoT porque as fazendas geralmente possuem infraestrutura de fibra óptica que torna redundante o uso de redes sem fio de longo alcance.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q9.9** _(Dissertativa — 3 linhas)_ Descreva como uma solução IIoT completa (do sensor ao dashboard) poderia ser usada para implementar manutenção preditiva em compressores de uma plataforma de petróleo. Inclua os tipos de sensores, protocolo de comunicação, forma de processamento e critério de disparo de alerta.
+
+_Critério: sensores de vibração (acelerômetro), temperatura, pressão e corrente → protocolo MQTT via gateway industrial → Node-RED analisa tendência e desvio de baseline → alerta ao cruzar limiar definido; bônus: mencionar análise espectral de vibração no edge._
+
+---
+
+**Q9.10** _(Dissertativa — 3 linhas)_ Explique como o conceito de "digital twin" de uma bomba d'água poderia ser implementado com a stack da disciplina (ESP32 + Node-RED + InfluxDB + Grafana), descrevendo os dados que o gêmeo digital representaria e como ele difere de um simples dashboard de monitoramento.
+
+_Critério: digital twin é um modelo virtual bidirecional — recebe dados reais (temperatura, vibração, pressão) e também pode enviar comandos; o dashboard apenas exibe dados; o gêmeo digital no Node-RED poderia simular o comportamento esperado e comparar com o real, identificando desvios e permitindo simulação de cenários._
+
+---
+
+**Gabarito Q9:** 9.1-B · 9.2-Verdadeiro · 9.3-B · 9.4-B · 9.5-D · 9.6-B · 9.7-B · 9.8-Falso · 9.9-Dissertativa · 9.10-Dissertativa
+
+---
+
+## Questionário 10 — Mercados de IoT: Edifícios Inteligentes e Saúde
+
+**Semana:** 10 · **Conteúdo:** BAS, HVAC, BACnet/Modbus, IoT na saúde, LGPD, controle com histerese, Node-RED alertas
+
+---
+
+**Q10.1** _(Múltipla escolha)_ Em um sistema HVAC (Heating, Ventilation and Air Conditioning) com controle por histerese implementado no ESP32, qual é a lógica de acionamento do ventilador?
+
+- A) O ventilador liga exatamente quando a temperatura atinge o setpoint e desliga imediatamente abaixo dele.
+- B) O ventilador liga quando a temperatura supera o setpoint superior (ex: 25°C) e desliga apenas quando cai abaixo do setpoint inferior (ex: 23°C), evitando acionamentos repetidos.
+- C) O ventilador opera em velocidade proporcional à diferença entre a temperatura atual e o setpoint, sem ligar ou desligar completamente.
+- D) O ventilador é controlado exclusivamente pelo Node-RED via MQTT, sem lógica local no ESP32.
+
+---
+
+**Q10.2** _(Múltipla escolha)_ O protocolo BACnet é amplamente utilizado em Building Automation Systems porque:
+
+- A) É exclusivo de fabricantes americanos e garante máxima eficiência energética em sistemas HVAC.
+- B) É um padrão aberto (ASHRAE 135) para comunicação entre controladores, sensores e atuadores de automação predial, garantindo interoperabilidade entre equipamentos de diferentes fabricantes.
+- C) Substitui completamente o Modbus em todas as aplicações industriais, tendo sido adotado como padrão único pela IEC.
+- D) Opera exclusivamente em redes Ethernet a 1 Gbps, sendo incompatível com redes RS-485 legadas.
+
+---
+
+**Q10.3** _(Verdadeiro ou Falso)_ No contexto de IoT para saúde, a LGPD (Lei Geral de Proteção de Dados) impõe restrições especiais ao tratamento de dados de saúde de pacientes, classificando-os como dados sensíveis e exigindo consentimento explícito e medidas técnicas de segurança reforçadas.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q10.4** _(Múltipla escolha)_ No Node-RED, o node `switch` é utilizado na lógica de automação para:
+
+- A) Trocar automaticamente entre múltiplos brokers MQTT em caso de falha do broker principal.
+- B) Rotear mensagens para diferentes saídas com base no valor ou propriedade do `msg`, permitindo implementar lógica condicional (if/else) no fluxo.
+- C) Gerar mensagens periódicas em intervalos configuráveis, substituindo o node `inject`.
+- D) Converter o payload da mensagem de JSON para string antes de enviar ao broker MQTT.
+
+---
+
+**Q10.5** _(Múltipla escolha)_ Qual é a principal diferença entre Modbus RTU e Modbus TCP?
+
+- A) O Modbus RTU opera sobre Ethernet e suporta até 247 dispositivos, enquanto o Modbus TCP opera sobre RS-485 sem limite de dispositivos.
+- B) O Modbus RTU opera sobre barramento serial (RS-485/RS-232) com endereçamento por ID de escravo, enquanto o Modbus TCP encapsula o protocolo Modbus sobre TCP/IP, permitindo integração com redes Ethernet e internet.
+- C) O Modbus RTU suporta leitura e escrita de registros, enquanto o Modbus TCP é somente leitura.
+- D) Ambos são idênticos em função e implementação; a diferença é apenas no nome comercial usado por diferentes fabricantes.
+
+---
+
+**Q10.6** _(Múltipla escolha)_ Em um hospital conectado, monitores de sinais vitais (ECG, SpO₂, pressão arterial) transmitem dados via IoT. Qual característica é MAIS crítica nesse cenário?
+
+- A) Alta largura de banda para streaming de vídeo dos leitos dos pacientes.
+- B) Confiabilidade e disponibilidade contínua da comunicação, pois uma falha pode impedir a detecção de eventos críticos como arritmias cardíacas.
+- C) Baixo custo de hardware, priorizando sensores de menor precisão para reduzir despesas hospitalares.
+- D) Compatibilidade com redes 5G, sendo incompatível com qualquer infraestrutura Wi-Fi hospitalar existente.
+
+---
+
+**Q10.7** _(Múltipla escolha)_ Um wearable IoT de monitoramento contínuo de frequência cardíaca envia dados a cada 1 segundo para um servidor de saúde. Qual volume de dados esse dispositivo gera em 1 ano, considerando payload de 20 bytes por leitura?
+
+- A) Aproximadamente 630 KB
+- B) Aproximadamente 630 MB
+- C) Aproximadamente 6,3 GB
+- D) Aproximadamente 63 GB
+
+---
+
+**Q10.8** _(Verdadeiro ou Falso)_ O controle de acesso por IoT em edifícios inteligentes (ex: fechaduras conectadas, catracas com NFC) integra-se tipicamente a sistemas BAS por meio de protocolos como BACnet ou MQTT, permitindo que eventos de acesso sejam correlacionados com outros sistemas (iluminação, HVAC, CFTV).
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q10.9** _(Dissertativa — 3 linhas)_ Descreva como implementar no Node-RED um sistema de alerta escalonado para temperatura de um data center: aviso por e-mail ao atingir 28°C, alerta crítico por SMS ao atingir 32°C e desligamento automático de servidores não críticos ao atingir 35°C.
+
+_Critério: node switch com 3 saídas baseadas em faixas de temperatura; saída 1 → node e-mail (28°C); saída 2 → node HTTP para API SMS (32°C); saída 3 → node MQTT publicando comando de desligamento nos tópicos dos servidores (35°C); deve mencionar que as condições são cumulativas ou exclusivas._
+
+---
+
+**Q10.10** _(Dissertativa — 3 linhas)_ Explique o conceito de "interoperabilidade" no contexto de automação predial (BAS), citando um cenário onde a falta de interoperabilidade gera problemas operacionais e como protocolos abertos como BACnet e MQTT podem resolver essa questão.
+
+_Critério: interoperabilidade = dispositivos de fabricantes distintos comunicam-se sem adaptadores proprietários; problema: ar condicionado Marca A não conversa com sistema de acesso Marca B, exigindo softwares separados; solução: gateway BACnet→MQTT integra ambos ao Node-RED, criando automações cross-system (ex: aumentar ventilação ao detectar sala cheia)._
+
+---
+
+**Gabarito Q10:** 10.1-B · 10.2-B · 10.3-Verdadeiro · 10.4-B · 10.5-B · 10.6-B · 10.7-B · 10.8-Verdadeiro · 10.9-Dissertativa · 10.10-Dissertativa
+
+---
+
+## Questionário 11 — Padrões IoT e Segurança
+
+**Semana:** 11 · **Conteúdo:** IEEE 802.15.4, CoAP/6LoWPAN, IETF, ITU, OCF, IPSO, IIC, ETSI, Modbus, OPC-UA, mTLS, X.509
+
+---
+
+**Q11.1** _(Múltipla escolha)_ O padrão IEEE 802.15.4 define:
+
+- A) As especificações de camada física e de enlace para redes sem fio de baixa potência e baixa taxa de dados, servindo de base para Zigbee e Thread.
+- B) O protocolo de comunicação para redes Wi-Fi de longa distância (802.11ah / Wi-Fi HaLow).
+- C) A especificação de camada de aplicação para dispositivos IoT com conectividade IPv6 direta.
+- D) O padrão de segurança para autenticação de dispositivos IoT por certificados digitais X.509.
+
+---
+
+**Q11.2** _(Múltipla escolha)_ O OPC-UA (OPC Unified Architecture) é amplamente adotado em automação industrial porque:
+
+- A) É exclusivo para comunicação entre CLPs Siemens e sistemas SCADA, não suportando outros fabricantes.
+- B) Fornece um modelo de dados padronizado e independente de plataforma, com segurança integrada (autenticação, autorização e criptografia), sendo adequado para integração IT/OT.
+- C) Substitui completamente o MQTT em todas as aplicações IIoT por oferecer menor latência.
+- D) Opera exclusivamente sobre redes seriais RS-232 e RS-485, sendo incompatível com Ethernet.
+
+---
+
+**Q11.3** _(Verdadeiro ou Falso)_ O mTLS (mutual TLS) exige que tanto o servidor (broker MQTT) quanto o cliente (ESP32) apresentem certificados digitais válidos durante o handshake TLS, garantindo autenticação bidirecional e maior segurança do que TLS unidirecional.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q11.4** _(Múltipla escolha)_ Na IPSO Alliance, o conceito de "Smart Object" define:
+
+- A) Um dispositivo IoT com capacidade de processamento de IA para tomada de decisão autônoma.
+- B) Um modelo padronizado para representar recursos de dispositivos IoT (ex: sensor de temperatura = objeto /3303), permitindo interoperabilidade semântica entre diferentes plataformas.
+- C) Um protocolo de comunicação mesh para redes de sensores sem fio de baixo custo.
+- D) Uma certificação de segurança obrigatória para dispositivos IoT comercializados na União Europeia.
+
+---
+
+**Q11.5** _(Múltipla escolha)_ No contexto de segurança IoT, um certificado X.509 contém:
+
+- A) Apenas a chave pública do dispositivo e sua validade, sem informações de identidade.
+- B) A identidade do titular (Common Name, organização), a chave pública, o período de validade e a assinatura digital da Autoridade Certificadora (CA) que emitiu o certificado.
+- C) A chave privada do dispositivo criptografada com AES-256, utilizada para assinar mensagens MQTT.
+- D) As credenciais de acesso (usuário e senha) do dispositivo ao broker MQTT, armazenadas de forma segura.
+
+---
+
+**Q11.6** _(Múltipla escolha)_ O Modbus RTU utiliza como meio físico mais comum:
+
+- A) Ethernet 100BASE-TX com conector RJ-45
+- B) RS-485 (barramento diferencial de 2 fios), com topologia mestre-escravo e até 247 dispositivos escravos no mesmo segmento
+- C) Wi-Fi 802.11n no canal 6 (2,4 GHz) com criptografia WPA3
+- D) CAN bus (Controller Area Network) com velocidade de 1 Mbps
+
+---
+
+**Q11.7** _(Múltipla escolha)_ O oneM2M é um padrão global que define:
+
+- A) O protocolo de comunicação para redes 5G dedicadas a aplicações IoT industriais.
+- B) Uma arquitetura de middleware horizontal para IoT, com uma camada de serviço comum (CSE) que abstrai as especificidades de cada rede e dispositivo, facilitando o desenvolvimento de aplicações IoT independentes de tecnologia.
+- C) As especificações de hardware para gateways IoT certificados para uso em instalações hospitalares.
+  | D) O modelo de licenciamento de software open-source para plataformas IoT sem fins lucrativos.
+
+---
+
+**Q11.8** _(Múltipla escolha)_ Ao gerar um certificado X.509 com OpenSSL para autenticação de um ESP32 em um broker MQTT com mTLS, qual é a sequência CORRETA de operações?
+
+- A) Gerar o certificado do cliente → Criar a CA → Assinar o certificado do broker → Instalar no ESP32.
+- B) Criar a CA (chave privada + certificado autoassinado) → Gerar chave privada do cliente → Criar CSR (Certificate Signing Request) → Assinar o CSR com a CA → Instalar certificado + chave no ESP32 e certificado da CA no broker.
+- C) Baixar um certificado gratuito no Let's Encrypt → Convertê-lo para formato DER → Gravar na memória flash do ESP32 via OTA.
+- D) Gerar o certificado do broker → Compartilhar a chave privada do broker com todos os clientes → Configurar o ESP32 para usar essa chave.
+
+---
+
+**Q11.9** _(Dissertativa — 3 linhas)_ Compare Modbus e OPC-UA em termos de modelo de dados, segurança e adequação para integração IT/OT em uma indústria que está migrando para Indústria 4.0.
+
+_Critério: Modbus: protocolo simples de registros sem tipagem semântica, sem segurança nativa (legado amplamente instalado); OPC-UA: modelo de informação rico e tipado, segurança integrada (TLS + autenticação), adequado para integração com MES/ERP e nuvem; conclusão: OPC-UA é o caminho para I4.0, mas Modbus persiste pela enorme base instalada._
+
+---
+
+**Q11.10** _(Dissertativa — 3 linhas)_ Explique o conceito de "Zero Trust Security" aplicado a redes IoT industriais e descreva como as tecnologias mTLS e certificados X.509 por dispositivo implementam os princípios desse modelo.
+
+_Critério: Zero Trust = nenhum dispositivo é confiável por padrão, mesmo dentro da rede interna; autenticação e autorização são verificadas a cada conexão; mTLS com X.509 por dispositivo implementa identidade única verificável (o certificado prova quem é o dispositivo), sem depender de localização na rede ou senha compartilhada._
+
+---
+
+**Gabarito Q11:** 11.1-A · 11.2-B · 11.3-Verdadeiro · 11.4-B · 11.5-B · 11.6-B · 11.7-B · 11.8-B · 11.9-Dissertativa · 11.10-Dissertativa
+
+---
+
+## Questionário 12 — Revisão Geral e Preparação para o Projeto Final
+
+**Semana:** 11 (pré-projeto) · **Conteúdo:** Revisão integrada de todos os módulos — Semanas 1 a 11
+
+> Este questionário tem caráter diagnóstico e integrador. As questões cruzam conteúdos de múltiplas semanas e propõem situações-problema próximas ao Projeto Final.
+
+---
+
+**Q12.1** _(Múltipla escolha)_ Um engenheiro precisa monitorar 50 tanques de armazenamento de grãos distribuídos em uma fazenda de 2.000 hectares, medindo temperatura e umidade a cada 15 minutos, com vida útil de bateria mínima de 3 anos e custo de comunicação baixo. Qual stack de comunicação é mais adequada?
+
+- A) Wi-Fi 802.11n + broker MQTT local + Ethernet na sede
+- B) LoRaWAN + gateway LoRa na sede + broker MQTT + InfluxDB + Grafana
+- C) BLE Mesh + gateway Bluetooth + HTTP REST para API na nuvem
+- D) Zigbee + coordenador USB conectado ao servidor + WebSocket para dashboard
+
+---
+
+**Q12.2** _(Múltipla escolha)_ No fluxo completo ESP32 → MQTT → Node-RED → InfluxDB → Grafana, se os dados aparecem no monitor serial do ESP32 mas não no dashboard Grafana, qual sequência de diagnóstico é MAIS eficiente?
+
+- A) Reinstalar o Grafana → verificar o InfluxDB → reinstalar o Node-RED → reinstalar o firmware do ESP32.
+- B) Verificar a conexão MQTT (debug no Node-RED) → confirmar inserção no InfluxDB (Data Explorer) → verificar a query e o datasource no Grafana.
+- C) Verificar primeiro a query Flux no Grafana → reverter para a versão anterior do firmware → trocar o broker MQTT.
+- D) Aumentar o QoS do MQTT para 2 → reiniciar todos os serviços → verificar logs do ESP32.
+
+---
+
+**Q12.3** _(Múltipla escolha)_ Qual combinação de tecnologias da stack da disciplina implementa os três níveis da arquitetura IoT industrial (dispositivo de campo → processamento de borda → visualização/análise)?
+
+- A) ESP32 (campo) → Node-RED (borda) → Grafana + InfluxDB (visualização/análise)
+- B) Wokwi (campo) → HiveMQ (borda) → PlatformIO (visualização/análise)
+- C) InfluxDB (campo) → ESP32 (borda) → Node-RED (visualização/análise)
+- D) MQTT (campo) → CoAP (borda) → HTTP (visualização/análise)
+
+---
+
+**Q12.4** _(Verdadeiro ou Falso)_ É possível implementar toda a stack da disciplina (ESP32 no Wokwi + broker MQTT público + Node-RED local + InfluxDB local + Grafana local) sem necessidade de hardware físico, conexão a redes industriais reais ou infraestrutura de nuvem paga.
+
+- ( ) Verdadeiro
+- ( ) Falso
+
+---
+
+**Q12.5** _(Múltipla escolha)_ Em qual camada do modelo OSI o protocolo MQTT opera, e qual protocolo de transporte ele utiliza?
+
+- A) Camada de Rede (3), sobre UDP
+- B) Camada de Aplicação (7), sobre TCP
+- C) Camada de Transporte (4), diretamente sobre IP
+- D) Camada de Apresentação (6), sobre TLS
+
+---
+
+**Q12.6** _(Múltipla escolha)_ Para o Projeto Final, um grupo escolheu monitorar uma linha de produção de alimentos com 3 sensores de temperatura, 1 sensor de umidade e 1 sensor de presença (reed switch). Qual estrutura de tópicos MQTT representa a melhor prática de hierarquia?
+
+- A) `dados/#`
+- B) `fabrica/linha1/sensor/temperatura1`, `fabrica/linha1/sensor/temperatura2`, `fabrica/linha1/sensor/umidade`, `fabrica/linha1/sensor/presenca`
+- C) `t1`, `t2`, `t3`, `u1`, `p1`
+- D) `linha_producao_alimentos_sensor_temperatura_1_valor_atual`
+
+---
+
+**Q12.7** _(Múltipla escolha)_ No InfluxDB, para consultar a média de temperatura da última hora agrupada por sensor, qual query Flux está CORRETA?
+
+- A) `SELECT AVG(temperatura) FROM sensores WHERE time > now() - 1h GROUP BY sensor_id`
+- B) `from(bucket: "iot") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "temperatura") |> group(columns: ["sensor_id"]) |> mean()`
+- C) `GET /query?db=iot&q=SELECT mean(*) FROM temperatura LIMIT 60`
+- D) `influx query "AVG(temperatura) WHERE bucket='iot' AND range=1h GROUP BY sensor"`
+
+---
+
+**Q12.8** _(Múltipla escolha)_ Qual dos seguintes elementos NÃO deve ser incluído no repositório de entrega do Projeto Final?
+
+- A) Arquivo `platformio.ini` com as dependências do firmware ESP32.
+- B) Fluxo Node-RED exportado em formato `.json`.
+- C) Chave privada do certificado X.509 do dispositivo (arquivo `.key`).
+- D) Dashboard Grafana exportado em formato `.json`.
+
+---
+
+**Q12.9** _(Dissertativa — 5 linhas)_ Você foi contratado para propor uma arquitetura IIoT para uma indústria de laticínios que precisa monitorar a temperatura de 20 câmaras frias (−20°C a +5°C) em tempo real, com alertas automáticos quando a temperatura sair da faixa segura e histórico de dados por 2 anos para fins de auditoria. Descreva a arquitetura completa utilizando a stack da disciplina, justificando cada escolha tecnológica.
+
+_Critério de correção (1 ponto por item):_
+_1. Sensor adequado para −20°C (termopar tipo K + MAX31855 ou PT100 + ADS1115, não DHT22 que tem mínimo de −40°C mas saturação em ambientes de frio industrial);_
+_2. ESP32 com firmware publicando via MQTT com QoS 1 (garantia de entrega);_
+_3. Node-RED como gateway com lógica de alerta por e-mail/SMS ao sair da faixa −20°C a +5°C;_
+_4. InfluxDB com bucket "raw" (7 dias) + task de downsampling para bucket "auditoria" (2 anos);_
+_5. Grafana com dashboard por câmara, State Timeline para histórico de conformidade e Alerting Rules._
+
+---
+
+**Q12.10** _(Dissertativa — 5 linhas)_ Reflita sobre o semestre: escolha dois conteúdos que você considera mais relevantes para sua atuação futura como tecnólogo em Automação Industrial e justifique sua escolha relacionando cada conteúdo a um desafio real da indústria brasileira. Em seguida, indique um tópico que gostaria de aprofundar além do conteúdo da disciplina e explique por quê.
+
+_Critério de correção: questão aberta para reflexão — avaliar coerência entre o conteúdo escolhido, a justificativa profissional e a relevância do tópico de aprofundamento. Não há resposta errada desde que a argumentação seja consistente. Peso: 2 pontos (1 por conteúdo justificado + 1 pelo tópico de aprofundamento)._
+
+---
+
+**Gabarito Q12:** 12.1-B · 12.2-B · 12.3-A · 12.4-Verdadeiro · 12.5-B · 12.6-B · 12.7-B · 12.8-C · 12.9-Dissertativa · 12.10-Dissertativa
+
+---
+
+## Resumo do Banco de Questionários
+
+| Questionário |   Semana    | Tema Principal                   | Questões Obj. | Questões Diss. |
+| :----------: | :---------: | -------------------------------- | :-----------: | :------------: |
+|      Q1      |      1      | Visão Geral sobre IoT            |       8       |       2        |
+|      Q2      |      2      | A Internet na IoT                |       8       |       2        |
+|      Q3      |      3      | Sensores e Atuadores             |       8       |       2        |
+|      Q4      |      4      | Atributos de Protocolos IoT      |       8       |       2        |
+|      Q5      |      5      | Pilha: Enlace e Rede             |       8       |       2        |
+|      Q6      |      6      | Protocolos de Aplicação          |       8       |       2        |
+|      Q7      |      7      | Fog/Edge Computing               |       8       |       2        |
+|      Q8      |      8      | Plataformas de Serviços IoT      |       8       |       2        |
+|      Q9      |      9      | Mercados: Agro e Energia         |       8       |       2        |
+|     Q10      |     10      | Mercados: Indústria e Transporte |       8       |       2        |
+|     Q11      |     11      | Padrões IoT e Segurança          |       8       |       2        |
+|     Q12      | Pré-projeto | Revisão Geral Integradora        |       8       |       2        |
+|  **Total**   |             |                                  |    **96**     |     **24**     |

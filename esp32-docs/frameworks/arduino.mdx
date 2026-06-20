@@ -1,0 +1,116 @@
+---
+id: arduino
+title: Arduino IoT Development Frameworks
+sidebar_label: Arduino
+sidebar_position: 2
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - Arduino
+  - IIoT
+---
+
+# Arduino IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework                                               | Linguagem |   Nível   | Multitarefa |  MQTT nativo   |  OTA nativo  | TLS/mTLS | Wokwi |
+| ------------------------------------------------------- | --------- | :-------: | ----------- | :------------: | :----------: | :------: | :---: |
+| **Arduino** (via [PlatformIO](https://platformio.org/)) | C / C++   | Iniciante | Loop único  | ● PubSubClient | ◐ Biblioteca |    ●     |   ●   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## Arduino Framework
+
+> **Stack da disciplina** · Adotado nas Semanas 1–15
+
+A abordagem mais popular para prototipagem com ESP32. API simplificada com `setup()` e `loop()`, ecossistema massivo de bibliotecas e documentação abundante em português.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,2    |
+| Performance                |    6,2    |
+| Ecossistema de bibliotecas |    9,5    |
+| Adequação IIoT             |    7,0    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                      |
+| -------------------- | -------------------------- |
+| Curva de aprendizado | Baixa                      |
+| Multitarefa          | Loop único (`loop()`)      |
+| Biblioteca MQTT      | `PubSubClient` (knolleary) |
+| Flash mínimo         | ~300 KB                    |
+| Suporte Wokwi        | Completo                   |
+
+**Casos de uso típicos**
+
+- Sensores IoT com MQTT (DHT22, LDR, BME280, DS18B20)
+- Protótipos rápidos e provas de conceito
+- Integração com Node-RED, InfluxDB e Grafana via Wokwi
+- Disciplinas e cursos de IoT com foco prático
+
+**Instalação via PlatformIO (`platformio.ini`)**
+
+```ini
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+lib_deps =
+  knolleary/PubSubClient @ ^2.8
+  beegee-tokyo/DHTesp @ ^1.19
+  bblanchon/ArduinoJson @ ^7.0
+```
+
+**Referências**
+
+- [arduino.cc](https://www.arduino.cc)
+- [Documentação PlatformIO — Arduino framework](https://docs.platformio.org/en/latest/frameworks/arduino.html)
+- [Repositório Arduino-ESP32 (Espressif)](https://github.com/espressif/arduino-esp32)
+
+---
+
+## Guia de decisão rápida
+
+| Cenário                                       | Framework recomendado    |
+| --------------------------------------------- | ------------------------ |
+| Aprendizado / disciplina de IoT               | Arduino + PlatformIO     |
+| Simulação sem hardware físico                 | Arduino + Wokwi          |
+| Firmware industrial em produção               | ESP-IDF ou Zephyr RTOS   |
+| Dev com background Python                     | MicroPython              |
+| OTA + gestão de frota + nuvem                 | Mongoose OS              |
+| Automação predial / BAS / HVAC                | ESPHome + Home Assistant |
+| Retrofit rápido sem escrita de código         | Tasmota                  |
+| Requisitos de segurança funcional (IEC 61508) | Zephyr RTOS              |
+| Múltiplas tarefas concorrentes (tempo real)   | ESP-IDF ou Zephyr RTOS   |
+| Protótipo Python rápido no Wokwi              | MicroPython              |
+
+---
+
+## Notas de compatibilidade com a stack da disciplina
+
+:::tip[Arduino + PlatformIO é o framework adotado nesta disciplina]
+Todas as atividades práticas das Semanas 1 a 11 e o Projeto Final (Semanas 12–15) utilizam **Arduino framework via PlatformIO**, com simulação no Wokwi. Os demais frameworks são apresentados como referência para o mercado e para o Projeto Final de grupos que optarem por aprofundamento.
+:::
+
+| Framework   |  Node-RED   |       InfluxDB       | Grafana | Wokwi |       PlatformIO       |
+| ----------- | :---------: | :------------------: | :-----: | :---: | :--------------------: |
+| Arduino     | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ●   |           ●            |
+| ESP-IDF     | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ◐   |           ●            |
+| MicroPython | ● via umqtt | ● via umqtt→Node-RED |    ●    |   ●   |   ○ (thonny/rshell)    |
+| Mongoose OS | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ○   |      ○ (mos tool)      |
+| Zephyr RTOS | ● via MQTT  | ● via MQTT→Node-RED  |    ●    |   ○   |    ◐ (experimental)    |
+| ESPHome     |  ● nativo   | ● via MQTT→Node-RED  |    ●    |   ○   |    ○ (esphome CLI)     |
+| Tasmota     |  ● nativo   | ● via MQTT→Node-RED  |    ●    |   ○   | ○ (compilação própria) |
+
+> **Legenda:** ● Suporte completo · ◐ Parcial · ○ Não suportado / não aplicável

@@ -1,0 +1,70 @@
+---
+id: mongoose
+title: Mongoose OS IoT Development Frameworks
+sidebar_label: Mongoose OS
+sidebar_position: 5
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - Mongoose
+  - IIoT
+---
+
+# Mongoose OS IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework       | Linguagem      |  Nível   | Multitarefa | MQTT nativo | OTA nativo | TLS/mTLS | Wokwi |
+| --------------- | -------------- | :------: | ----------- | :---------: | :--------: | :------: | :---: |
+| **Mongoose OS** | C / JavaScript | Avançado | ● FreeRTOS  |  ● Nativo   |  ● Nativo  |  ● mTLS  |   ○   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## Mongoose OS
+
+> mOS — firmware orientado à produção com OTA e integração de nuvem
+
+Framework orientado à produção com suporte a OTA (Over-The-Air) nativo, gerenciamento de dispositivos e integração direta com AWS IoT, Google Cloud IoT e Azure. Lógica de negócio em JavaScript via engine mJS.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    5,5    |
+| Performance                |    8,0    |
+| Ecossistema de bibliotecas |    6,0    |
+| Adequação IIoT             |    8,8    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                |
+| -------------------- | ------------------------------------ |
+| Curva de aprendizado | Média                                |
+| Multitarefa          | FreeRTOS                             |
+| Biblioteca MQTT      | Nativo (built-in)                    |
+| OTA nativo           | Sim — via `mos update` ou HTTPS      |
+| TLS/mTLS             | Sim — mTLS com X.509 por dispositivo |
+| Suporte Wokwi        | Não suportado                        |
+| Integração nuvem     | AWS IoT Core, Azure IoT Hub, GCP IoT |
+
+**Casos de uso típicos**
+
+- Frotas de dispositivos com atualizações remotas (OTA) automatizadas
+- Integração nativa com plataformas de nuvem (AWS, Azure, GCP)
+- Produtos IoT comerciais com device management e provisionamento
+- Ambientes que exigem mTLS por dispositivo desde o provisionamento
+
+**Referências**
+
+- [mongoose-os.com](https://mongoose-os.com)
+- [Repositório no GitHub](https://github.com/cesanta/mongoose-os)
+- [Documentação mos tool](https://mongoose-os.com/docs/mongoose-os/quickstart/setup.md)
+
+---

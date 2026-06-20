@@ -1,0 +1,70 @@
+---
+id: zephyr
+title: Zephyr RTOS IoT Development Frameworks
+sidebar_label: Zephyr RTOS
+sidebar_position: 6
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - Zephyr
+  - IIoT
+---
+
+# Zephyr RTOS IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework       | Linguagem |  Nível   | Multitarefa  |  MQTT nativo  | OTA nativo | TLS/mTLS | Wokwi |
+| --------------- | --------- | :------: | ------------ | :-----------: | :--------: | :------: | :---: |
+| **Zephyr RTOS** | C / C++   | Avançado | ● Preemptivo | ● Zephyr MQTT | ● MCUboot  | ● Nativo |   ○   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## Zephyr RTOS
+
+> Linux Foundation · tempo real · segurança funcional
+
+RTOS open-source da Linux Foundation com foco em segurança funcional, suporte a múltiplas arquiteturas e conformidade com padrões industriais. Crescente adoção em dispositivos médicos, automotivos e industriais críticos.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    2,2    |
+| Performance                |    9,6    |
+| Ecossistema de bibliotecas |    6,8    |
+| Adequação IIoT             |    9,2    |
+
+**Métricas-chave**
+
+| Parâmetro               | Valor                             |
+| ----------------------- | --------------------------------- |
+| Curva de aprendizado    | Muito alta                        |
+| Multitarefa             | Preemptivo com prioridades e SMP  |
+| Biblioteca MQTT         | Zephyr MQTT (subsys/net/lib/mqtt) |
+| OTA nativo              | Sim — MCUboot bootloader          |
+| Segurança funcional     | IEC 61508 / ISO 26262             |
+| Suporte Wokwi           | Não suportado                     |
+| Arquiteturas suportadas | ARM, RISC-V, x86, ESP32, ARC      |
+
+**Casos de uso típicos**
+
+- Sistemas industriais críticos com requisitos de segurança funcional (IEC 61508)
+- Dispositivos médicos e automotivos conectados (ISO 26262)
+- Ambientes multi-plataforma onde o mesmo código-base roda em ARM e ESP32
+- Aplicações que exigem determinismo real (latência garantida, sem jitter)
+
+**Referências**
+
+- [zephyrproject.org](https://www.zephyrproject.org)
+- [Board ESP32 DevKitC no Zephyr](https://docs.zephyrproject.org/latest/boards/espressif/esp32_devkitc_wroom/doc/index.html)
+- [Repositório no GitHub](https://github.com/zephyrproject-rtos/zephyr)
+
+---

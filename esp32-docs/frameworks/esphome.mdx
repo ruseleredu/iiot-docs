@@ -1,0 +1,100 @@
+---
+id: esphome
+title: ESPHome IoT Development Frameworks
+sidebar_label: ESPHome
+sidebar_position: 7
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - ESPHome
+  - IIoT
+---
+
+# ESPHome IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework   | Linguagem |   Nível   | Multitarefa    |  MQTT nativo  | OTA nativo | TLS/mTLS | Wokwi |
+| ----------- | --------- | :-------: | -------------- | :-----------: | :--------: | :------: | :---: |
+| **ESPHome** | YAML      | Iniciante | ○ Loop assínc. | ● Nativo YAML |  ● Nativo  |  ● TLS   |   ○   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+### ESPHome
+
+> Framework declarativo baseado em YAML para automação predial
+
+Framework declarativo baseado em YAML para configurar firmware ESP32 sem escrever código C. Fortemente integrado ao Home Assistant e protocolos de automação predial. Geração de firmware por compilação de YAML.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    9,5    |
+| Performance                |    6,8    |
+| Ecossistema de bibliotecas |    8,2    |
+| Adequação IIoT             |    5,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                             |
+| -------------------- | --------------------------------- |
+| Curva de aprendizado | Mínima                            |
+| Multitarefa          | Loop assíncrono interno           |
+| Biblioteca MQTT      | Nativo (declarado em YAML)        |
+| OTA nativo           | Sim — via dashboard ESPHome       |
+| Extensível           | Componentes customizados em C++   |
+| Suporte Wokwi        | Não suportado                     |
+| Integração           | Home Assistant, Node-RED, Grafana |
+
+**Exemplo: sensor DHT22 + MQTT em YAML**
+
+```yaml
+esphome:
+  name: sensor-hvac
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "MinhaRede"
+  password: "minha_senha"
+
+mqtt:
+  broker: 192.168.1.100
+  topic_prefix: fabrica/linha1
+
+sensor:
+  - platform: dht
+    pin: GPIO4
+    model: DHT22
+    temperature:
+      name: "Temperatura"
+    humidity:
+      name: "Umidade"
+    update_interval: 10s
+```
+
+**Casos de uso típicos**
+
+- Automação predial e smart home (BAS, HVAC, iluminação, controle de acesso)
+- Integração com Home Assistant para dashboards e automações
+- Sensores de ambiente sem necessidade de programação em C
+- Retrofit de dispositivos existentes com lógica declarativa
+
+**Referências**
+
+- [esphome.io](https://esphome.io)
+- [Repositório no GitHub](https://github.com/esphome/esphome)
+- [Componentes suportados](https://esphome.io/components/index.html)
+
+---

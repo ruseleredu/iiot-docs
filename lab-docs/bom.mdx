@@ -1,0 +1,262 @@
+---
+id: iot-industrial-lista-materiais
+title: IoT Industrial — Lista de Materiais
+sidebar_label: Lista de Materiais (draft)
+#sidebar_position: 3
+draft: true
+description: Bill of Materials (BOM) completa para as atividades práticas da disciplina IoT Industrial (ELT85B) — hardware, software, componentes eletrônicos e serviços online.
+tags:
+  - IoT
+  - BOM
+  - Hardware
+  - ESP32
+  - Materiais
+---
+
+# IoT Industrial — Lista de Materiais (BOM)
+
+**Disciplina:** IoT Industrial (ELT85B) · **Curso:** Tecnologia em Automação Industrial — Matriz 487
+
+:::info[Sobre esta lista]
+Esta BOM foi elaborada para **uma bancada de aluno**. Para montar um laboratório com N alunos, multiplique as quantidades da Seção 1 (hardware) por N. Os itens de software (Seção 2) e serviços online (Seção 3) são gratuitos e compartilhados.
+
+**Todas as atividades práticas das Semanas 1 a 11 funcionam integralmente no simulador Wokwi**, sem necessidade de hardware físico. O kit de hardware é **opcional e recomendado** para enriquecer a experiência, especialmente nas semanas de sensores e atuadores (S3, S9, S10) e para o Projeto Final.
+
+Preços de referência em **BRL (junho/2025)** — consulte fornecedores nacionais para valores atualizados.
+:::
+
+---
+
+## Seção 1 — Hardware (Kit por Aluno/Bancada)
+
+### 1.1 — Microcontrolador e Acessórios Essenciais
+
+| #   | Item                                       | Especificação Técnica                                   | Qtd. | Uso nas Semanas | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Fornecedor Sugerido                          |
+| --- | ------------------------------------------ | ------------------------------------------------------- | :--: | --------------- | :--------------------: | :---------------: | -------------------------------------------- |
+| 1   | ESP32 DevKit V1                            | ESP32-WROOM-32, dual-core 240 MHz, Wi-Fi + BT, 38 pinos |  2   | S1–S15 (todas)  |        R$ 45,00        |     R$ 90,00      | Mercado Livre, FilipeFlop, Baú da Eletrônica |
+| 2   | Cabo USB-A para Micro-USB                  | 1 metro, para programação e alimentação do ESP32        |  2   | S1–S15 (todas)  |        R$ 12,00        |     R$ 24,00      | Qualquer loja de eletrônicos                 |
+| 3   | Protoboard 830 pontos                      | 830 furos, barramentos de alimentação laterais          |  2   | S3–S15          |        R$ 18,00        |     R$ 36,00      | FilipeFlop, RoboCore                         |
+| 4   | Kit jumpers macho-macho                    | 65 peças, 20 cm, diversas cores                         |  1   | S3–S15          |        R$ 14,00        |     R$ 14,00      | FilipeFlop, Baú da Eletrônica                |
+| 5   | Kit jumpers macho-fêmea                    | 40 peças, 20 cm                                         |  1   | S3–S10          |        R$ 12,00        |     R$ 12,00      | FilipeFlop, RoboCore                         |
+| 6   | Fonte de bancada 5V/2A (ou carregador USB) | Tensão estável para alimentação do ESP32 e sensores     |  1   | S3–S15          |        R$ 35,00        |     R$ 35,00      | Mercado Livre                                |
+
+**Subtotal 1.1 — Essenciais:** R$ 211,00
+
+---
+
+### 1.2 — Sensores
+
+| #   | Item                                         | Especificação Técnica                                                | Qtd. | Uso nas Semanas          |  Aulas AP/APS  | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Obs.                                        |
+| --- | -------------------------------------------- | -------------------------------------------------------------------- | :--: | ------------------------ | :------------: | :--------------------: | :---------------: | ------------------------------------------- |
+| 7   | Sensor DHT22 (AM2302)                        | Temp: −40°C a +80°C ±0,5°C; Umidade: 0–100% ±2–5%; Interface: 1-Wire |  2   | S3, S6, S9, S10, S12–S14 | 11, 22, 35, 39 |        R$ 22,00        |     R$ 44,00      | Preferível ao DHT11 pela precisão           |
+| 8   | LDR (fotoresistor) GL5528                    | Resistência 10kΩ no escuro / 1kΩ na luz; diâmetro 5mm                |  3   | S3, S12                  |     12, 47     |        R$ 1,50         |      R$ 4,50      | Usar divisor resistivo com R=10kΩ           |
+| 9   | Sensor de umidade do solo capacitivo         | Saída analógica 0–3,3V; sem corrosão (capacitivo, não resistivo)     |  2   | S9, S12–S14              |     35, 47     |        R$ 15,00        |     R$ 30,00      | Evitar modelo resistivo (corrói)            |
+| 10  | Módulo MPU-6050 (acelerômetro + giroscópio)  | I²C; ±2/4/8/16g; ±250–2000°/s; 3,3V/5V                               |  1   | S9, S11, S12–S14         |     35, 51     |        R$ 18,00        |     R$ 18,00      | Útil para simular sensor de vibração        |
+| 11  | Sensor de temperatura DS18B20 à prova d'água | 1-Wire; −55°C a +125°C ±0,5°C; cabo 1m                               |  2   | S9, S10, S12–S14         |     35, 39     |        R$ 20,00        |     R$ 40,00      | Ideal para simular monitoramento industrial |
+| 12  | Módulo sensor de corrente ACS712 (5A)        | Saída analógica; 185 mV/A; VCC 5V                                    |  1   | S9, S12–S14              |       35       |        R$ 16,00        |     R$ 16,00      | Simula medição de consumo elétrico          |
+| 13  | Sensor de pressão BMP280                     | I²C/SPI; pressão 300–1100 hPa ±1 hPa; temperatura ±0,5°C             |  1   | S3, S12–S14              |     9 (AT)     |        R$ 18,00        |     R$ 18,00      | Demonstração de sensor I²C/SPI              |
+| 14  | Reed switch (sensor magnético)               | NA/NF; corrente máx. 500mA; tensão 100V                              |  3   | S10, S12–S14             |     40, 48     |        R$ 3,00         |      R$ 9,00      | Simula sensor de posição de válvula/porta   |
+
+**Subtotal 1.2 — Sensores:** R$ 179,50
+
+---
+
+### 1.3 — Atuadores
+
+| #   | Item                                              | Especificação Técnica                                               | Qtd. | Uso nas Semanas      |  Aulas AP/APS  | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Obs.                                      |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------- | :--: | -------------------- | :------------: | :--------------------: | :---------------: | ----------------------------------------- |
+| 15  | LED 5mm (sortido: vermelho, verde, amarelo, azul) | VF: 1,8–3,3V; If: 20mA                                              |  20  | S1, S3, S5, S12–S14  |   4, 12, 47    |        R$ 0,30         |      R$ 6,00      | Sempre usar resistor limitador (330Ω–1kΩ) |
+| 16  | Resistor 330Ω (pacote)                            | 1/4W; tolerância 5%                                                 |  20  | S1, S3, S12–S14      |     4, 12      |        R$ 0,10         |      R$ 2,00      | Para limitação de corrente dos LEDs       |
+| 17  | Resistor 10kΩ (pacote)                            | 1/4W; tolerância 5%                                                 |  20  | S3, S5, S12–S14      |     11, 12     |        R$ 0,10         |      R$ 2,00      | Pull-up/pull-down e divisor de tensão     |
+| 18  | Módulo relé 5V 1 canal                            | Optoacoplado; suporta 250V AC / 10A; acionamento com lógica 3,3V/5V |  2   | S3, S9, S10, S12–S14 | 12, 35, 39, 48 |        R$ 12,00        |     R$ 24,00      | Isolar ESP32 de cargas de potência        |
+| 19  | Mini servo motor SG90                             | 180°; torque 1,8 kg·cm; sinal PWM 50Hz; 4,8–6V                      |  1   | S3, S12–S14          |  10 (AT), 48   |        R$ 16,00        |     R$ 16,00      | Simula válvula proporcional               |
+| 20  | Motor DC 3–6V com caixa de redução                | Tipo TT (amarelo); 1:48; corrente ~200mA; com eixo duplo            |  1   | S3, S12–S14          |  10 (AT), 48   |        R$ 14,00        |     R$ 14,00      | Usar com driver L298N ou L9110S           |
+| 21  | Driver de motor L298N                             | Dual H-Bridge; 2A por canal; 5–46V; entrada lógica 5V               |  1   | S3, S12–S14          |       48       |        R$ 18,00        |     R$ 18,00      | Necessário para controlar motor DC        |
+| 22  | Buzzer ativo 5V                                   | Frequência fixa ~2,4 kHz; corrente ~30mA                            |  2   | S10, S12–S14         |     40, 48     |        R$ 4,00         |      R$ 8,00      | Alarme sonoro local                       |
+
+**Subtotal 1.3 — Atuadores:** R$ 90,00
+
+---
+
+### 1.4 — Display e Interface
+
+| #   | Item                             | Especificação Técnica                         | Qtd. | Uso nas Semanas | Aulas AP/APS | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Obs.                              |
+| --- | -------------------------------- | --------------------------------------------- | :--: | --------------- | :----------: | :--------------------: | :---------------: | --------------------------------- |
+| 23  | Display OLED 0,96" I²C (SSD1306) | 128×64 px; I²C; 3,3V/5V; endereço padrão 0x3C |  1   | S3, S12–S14     |    11, 47    |        R$ 22,00        |     R$ 22,00      | Biblioteca: Adafruit SSD1306      |
+| 24  | Potenciômetro 10kΩ (linear)      | WH148; eixo 6mm; PCB com 3 terminais          |  3   | S3, S9, S12–S14 |    12, 35    |        R$ 3,50         |     R$ 10,50      | Simula entrada analógica genérica |
+
+**Subtotal 1.4 — Display e Interface:** R$ 32,50
+
+---
+
+### 1.5 — Comunicação (Hardware Físico Opcional)
+
+> Estes itens são **opcionais** — as práticas de comunicação são realizadas via Wi-Fi integrado do ESP32 e simulação Wokwi. Recomendados para demonstrações avançadas e Projeto Final com foco em protocolos industriais.
+
+| #   | Item                               | Especificação Técnica                        | Qtd. | Uso nas Semanas |   Aulas AP/APS   | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Obs.                                  |
+| --- | ---------------------------------- | -------------------------------------------- | :--: | --------------- | :--------------: | :--------------------: | :---------------: | ------------------------------------- |
+| 25  | Módulo RS-485 MAX485               | Conversor TTL-RS485; 3,3V/5V; até 10Mbps     |  2   | S11             |        43        |        R$ 8,00         |     R$ 16,00      | Para demonstrar Modbus RTU físico     |
+| 26  | Módulo LoRa SX1276 (Ra-02) 433 MHz | SPI; alcance até 3 km (campo aberto); 100mW  |  2   | S5, S9          | 17 (AT), 33 (AT) |        R$ 38,00        |     R$ 76,00      | Demonstração de LPWAN; antena inclusa |
+| 27  | Cabo USB-A para USB-B (Arduino)    | 1 metro; para modelos com conector tipo B    |  1   | S11             |        43        |        R$ 10,00        |     R$ 10,00      | Conexão com adaptador USB-Serial      |
+| 28  | Adaptador USB-Serial CH340 (TTL)   | USB para UART 3,3V/5V; velocidade até 2 Mbps |  1   | S11             |        43        |        R$ 15,00        |     R$ 15,00      | Diagnóstico de comunicação serial     |
+
+**Subtotal 1.5 — Comunicação (opcional):** R$ 117,00
+
+---
+
+### 1.6 — Infraestrutura de Laboratório (por Bancada/Sala)
+
+> Itens compartilhados entre alunos ou adquiridos uma única vez para o laboratório.
+
+| #   | Item                                   | Especificação Técnica                                               | Qtd. | Uso nas Semanas | Preço Ref. Unit. (BRL) | Preço Total (BRL) | Obs.                                                 |
+| --- | -------------------------------------- | ------------------------------------------------------------------- | :--: | --------------- | :--------------------: | :---------------: | ---------------------------------------------------- |
+| 29  | Roteador Wi-Fi                         | Dual band 2,4/5 GHz; WPA2/WPA3; mínimo 20 clientes simultâneos      |  1   | S2–S15          |       R$ 180,00        |     R$ 180,00     | Rede isolada sem filtro de portas (MQTT 1883/8883)   |
+| 30  | Switch de rede 8 portas                | 100/1000 Mbps; não gerenciável                                      |  1   | S7, S8, S11     |        R$ 90,00        |     R$ 90,00      | Para integração Node-RED/InfluxDB em rede local      |
+| 31  | Computador/notebook do professor       | Intel Core i5+, 8 GB RAM, SSD 256 GB, Windows/Linux/macOS           |  1   | S1–S15          |           —            |         —         | Para executar Node-RED, InfluxDB, Grafana localmente |
+| 32  | Multímetro digital básico              | Tensão DC/AC, corrente, resistência, continuidade; categoria CAT II |  2   | S3, S9–S11      |        R$ 65,00        |     R$ 130,00     | Para verificar circuitos antes de energizar          |
+| 33  | Alicates e chave de fenda (kit básico) | Alicate de bico, corte, chave Phillips e fenda P/M                  |  1   | S3–S14          |        R$ 45,00        |     R$ 45,00      | Montagem de circuitos no laboratório                 |
+
+**Subtotal 1.6 — Infraestrutura:** R$ 445,00
+
+---
+
+## Seção 2 — Software (100% Gratuito)
+
+| #   | Software                          | Versão Recomendada | Plataforma                             | Uso nas Semanas | Download / Instalação                                                                |
+| --- | --------------------------------- | ------------------ | -------------------------------------- | --------------- | ------------------------------------------------------------------------------------ |
+| 1   | VS Code (Visual Studio Code)      | ≥ 1.89             | Windows / macOS / Linux                | S1–S15          | [code.visualstudio.com](https://code.visualstudio.com)                               |
+| 2   | PlatformIO IDE (extensão VS Code) | ≥ 6.1              | Via VS Code Marketplace                | S1–S15          | Marketplace: `platformio.ide`                                                        |
+| 3   | Driver USB-Serial CP210x / CH340  | Mais recente       | Windows / macOS                        | S1–S15          | Silicon Labs / WCH website                                                           |
+| 4   | Node-RED                          | ≥ 3.1              | Node.js ≥ 18 LTS                       | S4–S15          | `npm install -g --unsafe-perm node-red`                                              |
+| 5   | Node.js LTS                       | ≥ 18.x             | Windows / macOS / Linux                | S4–S15          | [nodejs.org](https://nodejs.org)                                                     |
+| 6   | InfluxDB OSS                      | 2.7.x              | Windows / macOS / Linux / Docker       | S6–S15          | [influxdata.com/downloads](https://www.influxdata.com/downloads/)                    |
+| 7   | Grafana OSS                       | ≥ 10.x             | Windows / macOS / Linux / Docker       | S8–S15          | [grafana.com/grafana/download](https://grafana.com/grafana/download)                 |
+| 8   | Docker Desktop                    | ≥ 4.x              | Windows (WSL2) / macOS / Linux         | S7, S8, S11     | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) |
+| 9   | Mosquitto MQTT Broker             | ≥ 2.0              | Windows / macOS / Linux                | S4, S6, S11     | [mosquitto.org/download](https://mosquitto.org/download/)                            |
+| 10  | OpenSSL                           | ≥ 3.x              | Windows (via Git Bash) / macOS / Linux | S6, S11         | Incluído no Git for Windows / `brew install openssl`                                 |
+| 11  | Git                               | ≥ 2.40             | Windows / macOS / Linux                | S12–S15         | [git-scm.com](https://git-scm.com)                                                   |
+| 12  | MQTTX (cliente MQTT desktop)      | ≥ 1.9              | Windows / macOS / Linux                | S4–S11          | [mqttx.app](https://mqttx.app)                                                       |
+| 13  | Postman ou Insomnia               | Mais recente       | Windows / macOS / Linux                | S2, S6          | [postman.com](https://www.postman.com)                                               |
+
+### Pacotes Node-RED Necessários
+
+| #   | Pacote npm                  | Instalação via Paleta Node-RED | Uso nas Semanas |
+| --- | --------------------------- | ------------------------------ | --------------- |
+| 1   | `node-red-dashboard`        | Manage Palette → Install       | S5–S15          |
+| 2   | `node-red-contrib-influxdb` | Manage Palette → Install       | S6–S15          |
+| 3   | `node-red-node-email`       | Manage Palette → Install       | S10, S12–S14    |
+| 4   | `node-red-contrib-coap`     | Manage Palette → Install       | S6, S12         |
+| 5   | `node-red-contrib-modbus`   | Manage Palette → Install       | S11             |
+| 6   | `node-red-contrib-opcua`    | Manage Palette → Install       | S11             |
+
+### Bibliotecas PlatformIO (platformio.ini)
+
+| #   | Biblioteca               | ID PlatformIO                     | Uso nas Semanas      | Semanas         |
+| --- | ------------------------ | --------------------------------- | -------------------- | --------------- |
+| 1   | DHTesp                   | `beegee-tokyo/DHTesp`             | Sensor DHT22         | S3, S6, S9, S10 |
+| 2   | PubSubClient             | `knolleary/PubSubClient`          | MQTT client          | S4–S15          |
+| 3   | ArduinoJson              | `bblanchon/ArduinoJson`           | Parse/serialize JSON | S2, S4–S15      |
+| 4   | Adafruit SSD1306         | `adafruit/Adafruit SSD1306`       | Display OLED         | S3              |
+| 5   | Adafruit GFX Library     | `adafruit/Adafruit GFX Library`   | Gráficos OLED        | S3              |
+| 6   | OneWire                  | `paulstoffregen/OneWire`          | Sensor DS18B20       | S9              |
+| 7   | DallasTemperature        | `milesburton/DallasTemperature`   | Sensor DS18B20       | S9              |
+| 8   | ESP32 AnalogWrite (LEDC) | Nativa no framework Arduino ESP32 | PWM/LEDC             | S3              |
+| 9   | HTTPClient               | Nativa no framework Arduino ESP32 | HTTP GET/POST        | S2, S6          |
+| 10  | WiFi                     | Nativa no framework Arduino ESP32 | Wi-Fi cliente/AP     | S2–S15          |
+
+---
+
+## Seção 3 — Serviços Online (Gratuitos)
+
+| #   | Serviço              | URL                                                      | Uso nas Semanas         | Plano Gratuito — Limites                                   |
+| --- | -------------------- | -------------------------------------------------------- | ----------------------- | ---------------------------------------------------------- |
+| 1   | Wokwi Simulator      | [wokwi.com](https://wokwi.com)                           | S1–S11                  | Ilimitado para ESP32; projetos públicos gratuitos          |
+| 2   | HiveMQ Public Broker | `broker.hivemq.com:1883` (MQTT)                          | S4–S6                   | Sem autenticação; sem garantia de SLA; apenas para testes  |
+| 3   | EMQX Public Broker   | `broker.emqx.io:1883`                                    | S4–S6                   | Sem autenticação; sem persistência                         |
+| 4   | GitHub / GitLab      | [github.com](https://github.com)                         | S12–S15                 | Repositórios privados ilimitados (GitHub Free)             |
+| 5   | Edge Impulse Studio  | [studio.edgeimpulse.com](https://studio.edgeimpulse.com) | S12–S14 (Projeto Final) | 1 projeto ativo; deploy para ESP32; gratuito para educação |
+| 6   | worldtimeapi.org     | [worldtimeapi.org/api](http://worldtimeapi.org/api)      | S2                      | API REST pública sem autenticação; uso justo               |
+| 7   | Postman API          | [postman.com](https://www.postman.com)                   | S2, S6                  | Plano gratuito suficiente para as atividades               |
+
+:::caution[Sobre brokers MQTT públicos]
+Os brokers públicos (HiveMQ, EMQX) **não devem ser usados em produção** — não oferecem autenticação, privacidade ou SLA. Use-os apenas nas primeiras práticas (S4–S5). A partir da S6, migre para o Mosquitto local com autenticação e TLS.
+:::
+
+---
+
+## Seção 4 — Consolidado e Estimativas de Custo
+
+### 4.1 — Custo por Aluno (Kit Individual de Hardware)
+
+| Categoria                                   | Itens          |  Custo (BRL)  |
+| ------------------------------------------- | -------------- | :-----------: |
+| Microcontrolador e acessórios essenciais    | 1–6            |   R$ 211,00   |
+| Sensores                                    | 7–14           |   R$ 179,50   |
+| Atuadores                                   | 15–22          |   R$ 90,00    |
+| Display e interface                         | 23–24          |   R$ 32,50    |
+| **Subtotal Kit Básico (obrigatório)**       | **itens 1–24** | **R$ 513,00** |
+| Comunicação adicional (opcional)            | 25–28          |   R$ 117,00   |
+| **Subtotal Kit Completo (com comunicação)** | **itens 1–28** | **R$ 630,00** |
+
+### 4.2 — Custo de Infraestrutura (por Laboratório/Sala)
+
+| Categoria                   | Itens           |  Custo (BRL)  |
+| --------------------------- | --------------- | :-----------: |
+| Roteador Wi-Fi              | 29              |   R$ 180,00   |
+| Switch de rede              | 30              |   R$ 90,00    |
+| Multímetros (2 unidades)    | 32              |   R$ 130,00   |
+| Ferramentas básicas         | 33              |   R$ 45,00    |
+| **Subtotal Infraestrutura** | **itens 29–33** | **R$ 445,00** |
+
+### 4.3 — Custo Total por Turma
+
+| Cenário                               | Descrição                             | Custo Estimado (BRL) |
+| ------------------------------------- | ------------------------------------- | :------------------: |
+| **Turma de 20 alunos — Kit Básico**   | 20 kits básicos + infraestrutura      |     R$ 10.705,00     |
+| **Turma de 20 alunos — Kit Completo** | 20 kits completos + infraestrutura    |     R$ 13.045,00     |
+| **Turma de 30 alunos — Kit Básico**   | 30 kits básicos + infraestrutura      |     R$ 15.835,00     |
+| **Turma de 30 alunos — Kit Completo** | 30 kits completos + infraestrutura    |     R$ 19.345,00     |
+| **Sem hardware (apenas Wokwi)**       | Infraestrutura de rede + computadores |      R$ 445,00       |
+
+:::tip[Economia com Wokwi]
+A adoção do simulador Wokwi elimina a necessidade de kits individuais para as Semanas 1 a 11, reduzindo o custo de implantação em até **97%**. O investimento em hardware pode ser gradual, priorizando o kit básico para o Projeto Final (Semanas 12–15).
+:::
+
+---
+
+## Seção 5 — Mapeamento Hardware × Semana
+
+| Semana | Tema                               | Componentes de Hardware Utilizados                                  |          Modo           |
+| :----: | ---------------------------------- | ------------------------------------------------------------------- | :---------------------: |
+|   1    | Visão Geral sobre IoT              | ESP32, cabo USB, LED (S1 Hello World)                               |     Wokwi + Físico      |
+|   2    | Internet na IoT                    | ESP32 (Wi-Fi integrado)                                             |          Wokwi          |
+|   3    | Sensores e Atuadores               | ESP32, DHT22, LDR, LED, resistores, protoboard, potenciômetro, OLED |     Wokwi + Físico      |
+|   4    | Atributos de Protocolos            | ESP32 (Wi-Fi), acesso à internet (broker público)                   |          Wokwi          |
+|   5    | Pilha: Enlace e Rede               | ESP32 (Wi-Fi/softAP)                                                |          Wokwi          |
+|   6    | Protocolos de Aplicação + APS 1    | ESP32, DHT22 (APS 1)                                                |          Wokwi          |
+|   7    | Fog/Edge Computing                 | Computador (Node-RED + InfluxDB), acesso à internet                 |        Software         |
+|   8    | Plataformas IoT                    | Computador (Grafana + InfluxDB + Node-RED)                          |        Software         |
+|   9    | Mercados: Agro e Energia           | ESP32, sensor de umidade de solo, módulo relé, potenciômetro        |     Wokwi + Físico      |
+|   10   | Mercados: Edifícios e Saúde        | ESP32, DHT22, buzzer, reed switch, LED                              |     Wokwi + Físico      |
+|   11   | Padrões IoT + APS 2                | ESP32, módulo RS-485 (Modbus, opcional)                             | Wokwi + Físico opcional |
+|   12   | Projeto Final: Kickoff             | ESP32, sensores e atuadores conforme cenário escolhido              |     Wokwi + Físico      |
+|   13   | Projeto Final: Node-RED + InfluxDB | Computador + ESP32 (Wokwi ou físico)                                |         Híbrido         |
+|   14   | Projeto Final: Grafana + APS Final | Computador + ESP32 (Wokwi ou físico)                                |         Híbrido         |
+|   15   | Apresentações                      | Stack completa em operação                                          |         Híbrido         |
+
+---
+
+## Seção 6 — Fornecedores Nacionais Recomendados
+
+| Fornecedor        | Especialidade                         | URL                                                                                 | Observação                                                           |
+| ----------------- | ------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| FilipeFlop        | ESP32, sensores, módulos, componentes | [filipeflop.com](https://www.filipeflop.com)                                        | Envio rápido, documentação em PT-BR                                  |
+| RoboCore          | Robótica, IoT, Arduino, ESP32         | [robocore.net](https://www.robocore.net)                                            | Bom suporte técnico                                                  |
+| Baú da Eletrônica | Componentes passivos, módulos         | [baudaeletronica.com.br](https://www.baudaeletronica.com.br)                        | Preços competitivos em componentes                                   |
+| Mercado Livre     | Variedade geral                       | [mercadolivre.com.br](https://www.mercadolivre.com.br)                              | Comparar vendedores; atentar para ESP32 originais                    |
+| AliExpress        | Importados (prazo maior)              | [aliexpress.com](https://www.aliexpress.com)                                        | Preços menores; prazo 15–45 dias; sem garantia de qualidade uniforme |
+| Mouser / Digi-Key | Componentes técnicos e módulos        | [mouser.com](https://www.mouser.com) · [digikey.com.br](https://www.digikey.com.br) | Para projetos que exigem especificação precisa                       |
+
+:::warning[Atenção — ESP32 contrafeito]
+Ao comprar ESP32 no Mercado Livre ou AliExpress, prefira anúncios que especifiquem **ESP32-WROOM-32** (Espressif) e verifique avaliações do vendedor. ESP32 de qualidade duvidosa podem ter Wi-Fi instável ou problemas com o bootloader que dificultam a programação via PlatformIO.
+:::

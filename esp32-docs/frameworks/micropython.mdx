@@ -1,0 +1,87 @@
+---
+id: micropython
+title: MicroPython IoT Development Frameworks
+sidebar_label: MicroPython
+sidebar_position: 4
+description: Guia de referência e comparação dos principais frameworks de desenvolvimento IoT para ESP32 — Arduino, ESP-IDF, MicroPython, Mongoose OS, Zephyr RTOS, ESPHome e Tasmota.
+tags:
+  - ESP32
+  - Frameworks
+  - MicroPython
+  - IIoT
+---
+
+# MicroPython IoT Development Frameworks
+
+Guia de referência para seleção e comparação dos principais frameworks de desenvolvimento embarcado para ESP32 em aplicações industriais (IIoT).
+
+---
+
+## Visão geral
+
+| Framework       | Linguagem |   Nível   | Multitarefa | MQTT nativo | OTA nativo | TLS/mTLS | Wokwi |
+| --------------- | --------- | :-------: | ----------- | :---------: | :--------: | :------: | :---: |
+| **MicroPython** | Python 3  | Iniciante | ◐ uasyncio  |   ● umqtt   |  ◐ Manual  |  ● ussl  |   ●   |
+
+> **Legenda:** ● Suporte nativo · ◐ Parcial / via biblioteca · ○ Não suportado
+
+---
+
+## MicroPython
+
+> Python 3 para microcontroladores com recursos restritos
+
+Implementação enxuta do Python 3 para microcontroladores. Execução interativa via REPL, ideal para prototipagem rápida por quem já conhece Python. Menor performance que C, mas produtividade elevada.
+
+**Pontuações (0–10)**
+
+| Critério                   | Pontuação |
+| -------------------------- | :-------: |
+| Facilidade de uso          |    8,8    |
+| Performance                |    4,5    |
+| Ecossistema de bibliotecas |    7,0    |
+| Adequação IIoT             |    6,5    |
+
+**Métricas-chave**
+
+| Parâmetro            | Valor                                        |
+| -------------------- | -------------------------------------------- |
+| Curva de aprendizado | Baixa                                        |
+| Multitarefa          | `uasyncio` (cooperative)                     |
+| Biblioteca MQTT      | `umqtt.simple` / `umqtt.robust`              |
+| Flash mínimo         | ~1,1 MB (firmware MicroPython)               |
+| Suporte Wokwi        | Completo (MicroPython embutido no simulador) |
+| REPL interativo      | USB Serial / WebREPL                         |
+
+**Casos de uso típicos**
+
+- Prototipagem por desenvolvedores com background Python
+- Scripts de automação e coleta de dados em campo
+- Educação em IoT com sintaxe familiar
+- Dashboards locais com `urequests` para APIs REST
+
+**Exemplo: publicar MQTT com umqtt**
+
+```python
+from umqtt.simple import MQTTClient
+import network, time
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect("SSID", "senha")
+while not wlan.isconnected():
+    time.sleep(0.5)
+
+client = MQTTClient("esp32", "broker.hivemq.com")
+client.connect()
+client.publish(b"fabrica/linha1/temperatura", b"25.3")
+client.disconnect()
+```
+
+**Referências**
+
+- [micropython.org](https://micropython.org)
+- [Quick reference para ESP32](https://docs.micropython.org/en/latest/esp32/quickref.html)
+- [Wokwi MicroPython](https://wokwi.com/projects/new/micropython-esp32)
+
+---
