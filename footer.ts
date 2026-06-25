@@ -140,6 +140,10 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://deepbluembedded.com/",
                 },
                 {
+                    label: "RandomNerdTutorials",
+                    href: "https://randomnerdtutorials.com/projects-esp32/",
+                },
+                {
                     label: "Learn Electronics",
                     href: "https://lastminuteengineers.com/",
                 },

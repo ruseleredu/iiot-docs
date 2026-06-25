@@ -1,0 +1,71 @@
+---
+title: ESP32-C3
+description: ESP32-C3 Documentation
+sidebar_position: 4
+---
+
+## ESP32-C3
+
+- [ESP32 Series Datasheet](https://documentation.espressif.com/esp32_datasheet_en.pdf)
+- [ESP32 Technical Reference Manual](https://documentation.espressif.com/esp32_technical_reference_manual_en.pdf)
+- [ESP Hardware Design Guidelines](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32/index.html)
+- [ESP32-D0WD-V3 Pinout](https://lastminuteengineers.com/esp32-pinout-reference/)
+
+## ESP32-C3 Super Mini RISC-V
+
+- https://www.smartkits.com.br/placa-esp32-c3-super-mini-risc-v?parceiro=9390
+
+## ESP32-C3 Super Mini
+
+- https://docs.zephyrproject.org/latest/boards/others/esp32c3_supermini/doc/index.html
+- https://randomnerdtutorials.com/getting-started-esp32-c3-super-mini/
+- https://dl.artronshop.co.th/ESP32-C3%20SuperMini%20datasheet.pdf
+
+## Comparativo
+
+- https://blog.smartkits.com.br/esp32-super-mini-comparativo/
+
+## **Board Specifications**
+
+| **Feature**           | **Details**                                             |
+| --------------------- | ------------------------------------------------------- |
+| **Microcontroller**   | ESP32-C3 FN4 (RISC-V single-core processor @160 MHz)    |
+| **Connectivity**      | Wi-Fi (2.4 GHz 802.11 b/g/n), BLE 5.0                   |
+| **GPIO Pins**         | 10 Digital I/O, 2 Analog inputs                         |
+| **ADC**               | 6 channels of 12-bit SAR ADC                            |
+| **Flash Memory**      | 4MB                                                     |
+| **Power Supply**      | 5V via USB-C, onboard 3.3V regulator                    |
+| **Operating Voltage** | 3.3V                                                    |
+| **Dimensions**        | Ultra-compact, ideal for space-constrained applications |
+
+---
+
+### **Pin Mappings**
+
+| **Pin Name** | **GPIO** | **Function**                         |
+| ------------ | -------- | ------------------------------------ |
+| 0            | GPIO0    | ADC1, PWM                            |
+| 1            | GPIO1    | ADC1, PWM                            |
+| 2            | GPIO2    | ADC1, Strapping Pin (Boot Mode)      |
+| 3            | GPIO3    | ADC1, PWM                            |
+| 4            | GPIO4    | JTAG, ADC1                           |
+| 5            | GPIO5    | JTAG                                 |
+| 8            | GPIO8    | Status LED (inverted), Strapping Pin |
+| 9            | GPIO9    | BOOT Button, Strapping Pin           |
+| 10           | GPIO10   | PWM                                  |
+| 20           | GPIO20   | General-purpose I/O                  |
+| 21           | GPIO21   | General-purpose I/O                  |
+
+### **Key Notes**:
+
+- **GPIO8**: Connected to an inverted blue status LED.
+- **GPIO9**: Connected to the BOOT button.
+- **JTAG Support**: GPIO4–GPIO7 pins are reserved for debugging.
+
+## RISC-V
+
+- https://riscv.org/
+
+## JTAG Debugging (TODO)
+
+- https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/jtag-debugging/index.html

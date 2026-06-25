@@ -1,0 +1,27 @@
+---
+title: ESP-Prog Board
+description: ESP-Prog Board Documentation
+sidebar_position: 5
+---
+
+## ESP-Prog Board
+
+- [Introduction to the ESP-Prog Board](https://docs.espressif.com/projects/esp-iot-solution/en/latest/hw-reference/ESP-Prog_guide.html)
+
+## Traditional ESP32 vs. Built-in JTAG (S3 / C-Series)
+
+- Standard ESP32: Requires an external JTAG adapter (like an ESP-Prog) connected to specific JTAG pins: TDI, TDO, TCK, TMS, and GND.
+- ESP32-S3 / ESP32-C3 / ESP32-C6: These chips feature a built-in USB-to-JTAG converter. You only need to wire your board's GPIO 19 (D+) and GPIO 18 (D-) directly to a computer USB port. You do not need additional hardware like an ESP-Prog or FTDI board.
+
+### Standard ESP32
+
+- [JTAG Debugging](https://docs.espressif.com/projects/esp-idf/en/v6.0.1/esp32/api-guides/jtag-debugging/index.html)
+
+### ESP32-S3
+
+- [JTAG Debugging](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/jtag-debugging/index.html)
+- [Configure ESP32-S3 Built-in JTAG Interface](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/jtag-debugging/configure-builtin-jtag.html)
+
+### ESP32-C3
+
+### ESP32-C6

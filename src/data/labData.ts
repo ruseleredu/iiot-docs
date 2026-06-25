@@ -73,7 +73,6 @@ export const labData: LabRow[] = [
         tarefa: "LAB07",
         hrefi: "/lab/LAB07",
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387993", // external
-
         start: "08-10-2026",
         end: "15-10-2026",
         conteudo: "Plataforma de Serviços IoT;",
