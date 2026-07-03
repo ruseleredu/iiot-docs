@@ -1,0 +1,51 @@
+---
+title: Docker
+description: ESPConnect - The New All-In-One ESP32 Tool You’ll Wish You Had Sooner.
+sidebar_position: 2
+---
+
+## Running ESPConnect Locally
+
+ESPConnect is a **pure in-browser web application** — no backend, no installation required, and all operations happen directly in your browser using Web Serial / WebUSB.
+
+### 1. Run as a Desktop App (Electron)
+
+Follow installation instructions for your platform in the [latest release](https://github.com/thelastoutpostworkshop/ESPConnect/releases/latest)
+
+### 2. Run ESPConnect via Docker
+
+```bash
+docker build -t espconnect .
+docker run --rm -p 8080:80 espconnect
+```
+
+## Build from git
+
+```bash
+git clone --depth 1 https://github.com/thelastoutpostworkshop/ESPConnect.git
+cd ESPConnect
+docker build -t espconnect .
+docker run --rm -p 8080:80 espconnect
+```
+
+### Build for Docker HUB
+
+- https://hub.docker.com/r/ruseler/espconnect
+
+```bash
+git clone --depth 1 https://github.com/thelastoutpostworkshop/ESPConnect.git
+cd ESPConnect
+docker build -t ruseler/espconnect:latest .
+```
+
+Docker compose example:
+
+```yml
+services:
+  espconnect:
+    image: ruseler/espconnect:latest
+    container_name: espconnect
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+```
