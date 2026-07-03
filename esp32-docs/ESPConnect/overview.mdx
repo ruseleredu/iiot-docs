@@ -1,0 +1,118 @@
+---
+id: overview
+title: Overview
+sidebar_label: Overview
+description: Self-hosted, browser-based control center for ESP32 and ESP8266 boards, packaged as a lightweight Docker image.
+keywords:
+  - esp32
+  - esp8266
+  - docker
+  - espconnect
+  - web serial
+  - firmware
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# ESPConnect
+
+**A self-hosted, browser-based control center for ESP32 and ESP8266 boards — packaged as a lightweight Docker image.**
+
+ESPConnect lets you inspect hardware details, browse and manage on-chip file systems (SPIFFS, LittleFS, FATFS), back up and restore flash, view partition layouts, and deploy firmware — all from a modern Chromium browser. This image bundles the pre-built web app and serves it over Nginx, so you can run your own private instance on any Docker host or in Portainer.
+
+:::info[The container only serves files]
+The web app talks to your board directly from the browser using the **Web Serial API**. The container only serves the static files, so no USB passthrough into the container is required — the browser handles the device connection.
+:::
+
+## Features
+
+- **Device info** — chip family, MAC, flash size and timing, PSRAM presence, flash ID
+- **File system manager** — view, read, and write files across SPIFFS, LittleFS, and FATFS
+- **Partition map** — visual layout with per-region or full-flash backup and restore
+- **Flash tools** — read and write firmware images
+- **Serial console + session log** — built-in monitor, no external terminal needed
+- **Self-hosted &amp; private** — runs on your own server; firmware and backups stay local
+
+## Supported tags
+
+- `latest` — most recent build
+
+## Quick start
+
+<Tabs groupId="run-method">
+  <TabItem value="docker-run" label="docker run" default>
+
+```bash
+docker run -d --name espconnect -p 8080:80 ruseler/espconnect:latest
+```
+
+  </TabItem>
+  <TabItem value="compose" label="Docker Compose">
+
+```yaml title="docker-compose.yml"
+services:
+  espconnect:
+    image: ruseler/espconnect:latest
+    container_name: espconnect
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
+```
+
+  </TabItem>
+</Tabs>
+
+Then open [http://localhost:8080](http://localhost:8080) in a Chromium-based browser (Chrome, Edge, Brave, or Arc — version 89 or newer). Click **Connect**, pick your device when prompted, and the tools unlock.
+
+## Configuration
+
+| Setting             | Value  | Notes                                         |
+| ------------------- | ------ | --------------------------------------------- |
+| Internal port       | `80`   | Nginx serves the app here                     |
+| Suggested host port | `8080` | Change the left side of `-p 8080:80` to remap |
+
+There are no required environment variables — the app is a static bundle served as-is.
+
+## Requirements
+
+- A Chromium-based browser (Chrome, Edge, Brave, Arc) **v89+** with Web Serial support
+- An ESP32 / ESP32-C3 / -S2 / -S3 / -C6 / -H2 / -C5 / -P4 or ESP8266 board connected over USB
+- A USB cable **with data lines** (charge-only cables won't work)
+
+:::caution[Browser support]
+Firefox and Safari do not support the Web Serial API and are not compatible.
+:::
+
+## Build from source
+
+```bash
+git clone --depth 1 https://github.com/thelastoutpostworkshop/ESPConnect.git
+cd ESPConnect
+docker build -t ruseler/espconnect:latest .
+docker run --rm -p 8080:80 ruseler/espconnect:latest
+```
+
+## Notes &amp; safety
+
+- Firmware files, backups, and diagnostics stay on your machine and only leave it if you download them yourself.
+- Always flash firmware from trusted sources.
+- ESPConnect is based on the upstream ESPConnect project and Jason2866's WebSerial ESPTool.
+
+## Credits
+
+ESPConnect is created and maintained by **[The Last Outpost Workshop](https://github.com/thelastoutpostworkshop)**.
+
+- **Source project:** https://github.com/thelastoutpostworkshop/ESPConnect.git
+- **Live app:** https://thelastoutpostworkshop.github.io/ESPConnect/
+- Built on Jason2866's WebSerial ESPTool.
+
+This Docker image simply packages and serves the upstream project. All credit for ESPConnect itself goes to the original author. Please support and star the source repository.
+
+## License
+
+ESPConnect is released under the **MIT License**.
