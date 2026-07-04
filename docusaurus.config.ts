@@ -211,6 +211,7 @@ const config: Config = {
         "wasm",
         "armasm",
         "asmatmel",
+        "groovy",
       ],
     },
   } satisfies Preset.ThemeConfig,

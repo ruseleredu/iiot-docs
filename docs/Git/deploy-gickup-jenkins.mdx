@@ -1,0 +1,247 @@
+---
+id: deploy-gickup-jenkins
+title: Deploy the gickup Mirror with Jenkins
+sidebar_label: Deploy with Jenkins
+description: Run the gickup GitHub-org-to-Gitea mirror as a scheduled Jenkins pipeline, with credentials, a dry-run toggle, and per-org filtering.
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+:::warning[Needs to be tested]
+
+This pipeline has **not been verified end to end** against a live Gitea instance yet.
+Do a `DRY_RUN` build first, then a real run against a **throwaway** Gitea org, and confirm
+token scopes and the per-org filtering before pointing it at production.
+
+:::
+
+This page runs the [gickup](https://github.com/cooperspencer/gickup) mirror job as a
+scheduled **Jenkins** pipeline. Jenkins re-runs gickup on a cron trigger to pick up newly
+created repos; Gitea's own mirror interval keeps existing mirrors fresh in between. Secrets
+live in **Jenkins Credentials**, never in the repo.
+
+## Prerequisites
+
+- A Jenkins agent with **Docker** (CLI + daemon access) and `envsubst` (from `gettext-base`).
+  gickup runs from its published container image, so no binary download is needed.
+- **Secret text** credentials in Jenkins:
+  - `gh-mirror-token` — GitHub PAT with repo read + `read:org`.
+  - `gitea-token` — Gitea token with repo + org write.
+- The target Gitea org/user is created automatically (`createorg: true`), but the Gitea
+  instance itself must be reachable from the agent.
+
+## Config template
+
+The pipeline renders this into `conf.yml` at build time. Keep it at the repo root next to
+the `Jenkinsfile`. No `cron:` here on purpose — the Jenkins trigger drives each run.
+
+```yaml title="conf.template.yml"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cooperspencer/gickup/refs/heads/main/gickup_spec.json
+source:
+  github:
+    # first-org: only repos whose name starts with "api-"
+    - token: ${GITHUB_MIRROR_TOKEN}
+      includeorgs:
+        - first-org
+      include:
+        - "api-*"
+      wiki: true
+
+    # second-org: everything except a couple of repos, and skip forks/archived
+    - token: ${GITHUB_MIRROR_TOKEN}
+      includeorgs:
+        - second-org
+      exclude:
+        - sandbox
+        - "*-archive"
+      filter:
+        excludeforks: true
+        excludearchived: true
+      wiki: true
+
+    # third-org: only repos with activity in the last year
+    - token: ${GITHUB_MIRROR_TOKEN}
+      includeorgs:
+        - third-org
+      filter:
+        lastactivity: 1y
+      wiki: true
+
+destination:
+  gitea:
+    - token: ${GITEA_TOKEN}
+      url: ${GITEA_URL}
+      createorg: true
+      lfs: false
+      mirror:
+        enabled: true
+        mirrorinterval: 1h0m0s
+      visibility:
+        repositories: private
+        organizations: private
+```
+
+## Jenkinsfile
+
+```groovy title="Jenkinsfile"
+pipeline {
+  agent any
+
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+    timeout(time: 2, unit: 'HOURS')
+  }
+
+  triggers {
+    cron('H H/6 * * *')                // ~every 6 hours, hashed minute/hour
+  }
+
+  parameters {
+    string(name: 'GITEA_URL', defaultValue: 'https://gitea.example.com',
+           description: 'Base URL of the target Gitea instance')
+    booleanParam(name: 'DRY_RUN', defaultValue: false,
+                 description: 'Render + validate config but do NOT push to Gitea')
+  }
+
+  environment {
+    GITHUB_MIRROR_TOKEN = credentials('gh-mirror-token')
+    GITEA_TOKEN         = credentials('gitea-token')
+    GITEA_URL           = "${params.GITEA_URL}"
+    GICKUP_IMAGE        = 'ghcr.io/cooperspencer/gickup:latest'  // pin to a tag for reproducibility
+  }
+
+  stages {
+    stage('Check tools') {
+      steps {
+        sh '''
+          set -eu
+          for bin in envsubst docker; do
+            command -v "$bin" >/dev/null 2>&1 || {
+              echo "Missing required tool: $bin"; exit 1; }
+          done
+          docker info >/dev/null 2>&1 || { echo "Docker daemon not reachable"; exit 1; }
+        '''
+      }
+    }
+
+    stage('Render config') {
+      steps {
+        sh '''
+          set -eu
+          : "${GITHUB_MIRROR_TOKEN:?empty}" "${GITEA_TOKEN:?empty}" "${GITEA_URL:?empty}"
+          envsubst '${GITHUB_MIRROR_TOKEN} ${GITEA_TOKEN} ${GITEA_URL}' \\
+            < conf.template.yml > conf.yml
+          echo "Rendered conf.yml (secrets masked):"
+          sed -E 's/(token: ).*/\\1***/' conf.yml
+        '''
+      }
+    }
+
+    stage('Pull gickup image') {
+      steps { sh 'docker pull "$GICKUP_IMAGE"' }
+    }
+
+    stage('Run mirror') {
+      when { expression { !params.DRY_RUN } }
+      steps {
+        sh '''
+          set -eu
+          docker run --rm \\
+            -v "$PWD/conf.yml:/gickup/conf.yml:ro" \\
+            "$GICKUP_IMAGE" /gickup/conf.yml
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      sh 'rm -f conf.yml || true'
+      cleanWs()
+    }
+  }
+}
+```
+
+## Create the credentials
+
+Manage Jenkins → Credentials → (store) → Add Credentials, kind **Secret text**. The IDs
+must match the `credentials('...')` calls:
+
+| Credential ID     | Value       | Scope                  |
+| ----------------- | ----------- | ---------------------- |
+| `gh-mirror-token` | GitHub PAT  | repo read + `read:org` |
+| `gitea-token`     | Gitea token | repo + org write       |
+
+`credentials()` binds each secret to its env var and masks it in the console log; the extra
+`sed` step masks tokens where the rendered config is printed.
+
+## Deploy
+
+1. New Item → **Pipeline** (or **Multibranch Pipeline** for a repo).
+2. Pipeline → _Pipeline script from SCM_ → point at the repo with `Jenkinsfile` +
+   `conf.template.yml`.
+3. Save, then **Build Now** once so Jenkins registers the `cron` trigger and the parameters
+   (the first parameterized build must be triggered manually).
+
+:::info[Two schedules, two jobs]
+
+The Jenkins `cron` re-runs gickup to catch **new** repos. Gitea's `mirror.mirrorinterval`
+keeps **existing** mirrors fresh between builds. gickup itself runs once per build — that's
+why there is no `cron:` in the config. The `H` in `H H/6 * * *` hashes the exact time off
+the job name so jobs don't all fire at once; it's Jenkins-specific and preferred over a
+literal `0`.
+
+:::
+
+## Agent tooling
+
+gickup itself runs from its container image, so the agent only needs **Docker** and
+`envsubst`. The `docker info` check in the pipeline fails fast if the daemon isn't reachable.
+
+<Tabs>
+  <TabItem value="daemon" label="Docker on the agent" default>
+
+Ensure the agent has Docker and can reach the daemon, plus `gettext-base` for `envsubst`:
+
+```bash
+sudo apt-get update && sudo apt-get install -y gettext-base
+# Docker must already be installed and the Jenkins user in the `docker` group,
+# or the agent must have the daemon socket mounted.
+docker info    # should succeed
+```
+
+  </TabItem>
+  <TabItem value="pin" label="Pin the image">
+
+`:latest` tracks upstream. For reproducible runs, pin a tag in the `Jenkinsfile`:
+
+```groovy
+environment {
+  GICKUP_IMAGE = 'ghcr.io/cooperspencer/gickup:0.10.x'  // pick a real published tag
+}
+```
+
+Docker Hub also mirrors the image as `buddyspencer/gickup` if you prefer that registry.
+
+  </TabItem>
+</Tabs>
+
+## Caveats
+
+- **Live push.** Even a `DRY_RUN=false` build on `agent any` pushes to your real Gitea.
+  Pin the job to a known node (`agent { label 'linux' }`) for predictable tooling and
+  network access, and test against a throwaway org first.
+- **Secrets on disk.** The rendered `conf.yml` holds real tokens during the build; the
+  `post { always }` block deletes it and runs `cleanWs()` so nothing lingers.
+- **Volume mounts + dockerized Jenkins.** The `-v "$PWD/conf.yml:..."` mount assumes the
+  workspace path is valid on the Docker daemon's host. If Jenkins itself runs in a container
+  with the host socket mounted, `$PWD` may not resolve on the host — run the agent directly
+  on the Docker host, or use a named volume, to avoid an empty mount.
+- **Issues / PRs are not continuously mirrored** — only git content and releases stay in
+  sync, same as Gitea's underlying migration mechanism.
+- **Rate limits.** Reusing the same token across per-org blocks means several passes
+  against the GitHub API; the `filter` settings trim what gets enumerated and cloned.
