@@ -1,0 +1,231 @@
+---
+title: Banners
+description: Lista de banners de alerta para uso em laboratórios.
+draft: true
+---
+
+:::note
+
+This is a simple note.
+
+:::
+
+<div className="alert alert--secondary course-banner">
+
+## note {/* #note */}
+
+</div>
+
+```md
+<div className="alert alert--secondary course-banner">
+
+## note {/_ #note _/}
+
+</div>
+```
+
+| Markdown  | CSS class          | Typical use         |
+| --------- | ------------------ | ------------------- |
+| `:::note` | `alert--secondary` | General information |
+
+---
+
+:::tip
+
+Use Docker Compose to simplify development.
+
+:::
+
+<div className="alert alert--success course-banner">
+  ## success {/* #success */}
+</div>
+
+```md
+<div className="alert alert--success course-banner">
+
+## success {/_ #success _/}
+
+</div>
+```
+
+| Markdown | CSS class        | Typical use           |
+| -------- | ---------------- | --------------------- |
+| `:::tip` | `alert--success` | Tips, recommendations |
+
+### Objetivos
+
+```md
+<div className="alert alert--success course-banner">
+
+## Objetivos {/_ #objetivos _/}
+
+</div>
+```
+
+---
+
+:::info
+
+ESP32 supports Wi-Fi and Bluetooth.
+
+:::
+
+<div className="alert alert--info course-banner">
+
+## info {/* #info */}
+
+</div>
+
+```md
+<div className="alert alert--info course-banner">
+
+## info {/_ #info _/}
+
+</div>
+```
+
+| Markdown  | CSS class     | Typical use           |
+| --------- | ------------- | --------------------- |
+| `:::info` | `alert--info` | Important information |
+
+### Preparação
+
+```md
+<div className="alert alert--info course-banner">
+
+## Preparação {/_ #preparação _/}
+
+</div>
+```
+
+### Conceitos
+
+```md
+<div className="alert alert--info course-banner">
+
+## Conceitos {/_ #conceitos _/}
+
+</div>
+```
+
+### Praticando
+
+```md
+<div className="alert alert--info course-banner">
+
+## Praticando {/_ #praticando _/}
+
+</div>
+```
+
+### Metodologia
+
+```md
+<div className="alert alert--info course-banner">
+
+## Metodologia {/_ #metodologia _/}
+
+</div>
+```
+
+### Relatório Imediato
+
+```md
+<div className="alert alert--info course-banner">
+
+## Relatório Imediato {/_ #relatorio-imediato _/}
+
+</div>
+```
+
+---
+
+:::warning
+
+Do not disconnect power during firmware updates.
+
+:::
+
+:::caution
+
+High voltage may be present on exposed terminals.
+
+:::
+
+<div className="alert alert--warning course-banner">
+
+## warning {/* #warning */}
+
+</div>
+
+```md
+<div className="alert alert--warning course-banner">
+
+## warning {/_ #warning _/}
+
+</div>
+```
+
+| Markdown     | CSS class        | Typical use        |
+| ------------ | ---------------- | ------------------ |
+| `:::warning` | `alert--warning` | Warnings, cautions |
+
+### Metodologia
+
+```md
+<div className="alert alert--warning course-banner">
+
+## Metodologia {/_ #metodologia _/}
+
+</div>
+```
+
+---
+
+:::danger
+
+This command permanently deletes all data.
+
+:::
+
+<div className="alert alert--danger course-banner">
+
+## danger {/* #danger */}
+
+</div>
+
+```md
+<div className="alert alert--danger course-banner">
+
+## danger {/_ #danger _/}
+
+</div>
+```
+
+| Markdown    | CSS class       | Typical use              |
+| ----------- | --------------- | ------------------------ |
+| `:::danger` | `alert--danger` | Critical warnings/errors |
+
+---
+
+| Markdown     | CSS class          | Typical use              |
+| ------------ | ------------------ | ------------------------ |
+| `:::note`    | `alert--secondary` | General information      |
+| `:::tip`     | `alert--success`   | Tips, recommendations    |
+| `:::info`    | `alert--info`      | Important information    |
+| `:::warning` | `alert--warning`   | Warnings, cautions       |
+| `:::danger`  | `alert--danger`    | Critical warnings/errors |
+
+---
+
+```css
+.course-banner {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+.course-banner h2 {
+  margin: 0;
+}
+```

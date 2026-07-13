@@ -33,3 +33,13 @@
 }
 
 @import url("/katex/katex.min.css");
+
+.course-banner {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+.course-banner h2 {
+  margin: 0;
+}
