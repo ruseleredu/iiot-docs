@@ -22,25 +22,25 @@ function HomepageHeader() {
             className="button button--secondary button--lg"
             href="https://moodle.utfpr.edu.br/course/view.php?id=35058"
           >
-            Moodle 🌎
+            🌎 Moodle
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="/lab/intro"
           >
-            LABs 📝
+            📝 LABs
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="/ead/intro"
           >
-            EaD 📝
+            📝 EaD
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="/pjts/intro"
           >
-            Pjts 📝
+            📝 Pjts
           </Link>
         </div>
       </div>
