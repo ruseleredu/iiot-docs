@@ -1,0 +1,912 @@
+---
+title: Stacks adotadas Full (draft)
+description: Stacks adotadas na disciplina ELT85B.
+draft: true
+---
+
+## ESP32 + PlatformIO (VS Code) + Wokwi (simulador) + Node-RED + InfluxDB + Grafana
+
+### ESP32
+
+### PlatformIO (VS Code)
+
+### Wokwi (simulador)
+
+World's most advanced ESP32 simulator
+
+- https://wokwi.com/projects/new#esp32-list
+
+- [ESP32](https://wokwi.com/projects/new/choose-board/esp32): Most popular ESP32 board. Feature-rich MCU with integrated Wi-Fi and Bluetooth connectivity for a wide-range of applications.
+
+- [ESP32-S2](https://wokwi.com/projects/new/choose-board/esp32-s2): A Secure and Powerful Wi-Fi MCU with Numerous I/O Capabilities.
+
+- [ESP32-S3](https://wokwi.com/projects/new/choose-board/esp32-s3): Designed for AIoT applications. 2.4 GHz Wi-Fi and Bluetooth 5 (LE). Powerful AI acceleration. Reliable security features.
+
+AIoT (Artificial Intelligence of Things) combines connected sensors with machine learning to enable real-time, localized decision-making without constant cloud dependency.
+
+- [ESP32-C3](https://wokwi.com/projects/new/choose-board/esp32-c3): A cost-effective RISC-V MCU with Wi-Fi and Bluetooth 5 (LE) connectivity for secure IoT applications.
+
+- [ESP32-C6](https://wokwi.com/projects/new/choose-board/esp32-c6): A low-power and cost-effective 2.4 GHz Wi-Fi 6 + Bluetooth 5 (LE) + Thread/Zigbee SoC, with a 32-bit RISC-V core, for securely connected devices.
+
+- [ESP32-H2](https://wokwi.com/projects/new/choose-board/esp32-h2): Espressif’s IEEE 802.15.4 + Bluetooth 5 (LE) SoC, powered by a 32-bit RISC-V core, designed for low power and secure connectivity
+
+### Node-RED
+
+### InfluxDB
+
+### Grafana
+
+## ESP32 + PlatformIO (VS Code) + Wokwi (simulador) + Node-RED + SQLite + Grafana
+
+Perfeito. Para um **projeto didático de IoT**, eu estruturaria a atividade como um laboratório progressivo, permitindo que o aluno comece no simulador e termine com uma arquitetura IoT completa.
+
+## Projeto: Laboratório IoT com ESP32
+
+**Stack:** ESP32 + PlatformIO + VS Code + Wokwi + MQTT + Node-RED + SQLite + Grafana
+
+### Objetivo geral
+
+Desenvolver uma aplicação IoT completa capaz de **coletar dados de sensores, transmitir os dados por MQTT, processá-los com Node-RED, armazená-los em SQLite e apresentar informações em dashboards Grafana**, utilizando o Wokwi como ambiente de simulação do ESP32.
+
+### Arquitetura
+
+```text
+                    DESENVOLVIMENTO
+              ┌────────────────────────┐
+              │ VS Code + PlatformIO   │
+              │        C/C++           │
+              └───────────┬────────────┘
+                          │
+                          ▼
+              ┌────────────────────────┐
+              │        Wokwi           │
+              │ ESP32 + sensores       │
+              └───────────┬────────────┘
+                          │
+                       MQTT
+                          │
+                          ▼
+              ┌────────────────────────┐
+              │       Node-RED         │
+              │                        │
+              │ MQTT → processamento   │
+              │      → regras          │
+              │      → armazenamento   │
+              └──────┬─────────┬───────┘
+                     │         │
+                  SQL│         │MQTT
+                     ▼         ▼
+              ┌──────────┐  ┌──────────┐
+              │  SQLite  │  │ Alertas  │
+              └────┬─────┘  └──────────┘
+                   │
+                   │ SQL
+                   ▼
+              ┌────────────────────────┐
+              │        Grafana         │
+              │                        │
+              │ 📈 Temperatura         │
+              │ 💧 Umidade             │
+              │ 📊 Histórico           │
+              │ 🚨 Alertas             │
+              └────────────────────────┘
+```
+
+## Organização em módulos
+
+Eu dividiria o laboratório em **8 etapas**:
+
+| Etapa | Conteúdo           | Resultado            |
+| ----- | ------------------ | -------------------- |
+| 01    | Introdução à IoT   | Arquitetura IoT      |
+| 02    | ESP32 + PlatformIO | Primeiro firmware    |
+| 03    | Wokwi              | ESP32 simulado       |
+| 04    | MQTT               | Comunicação IoT      |
+| 05    | Node-RED           | Processamento        |
+| 06    | SQLite             | Persistência         |
+| 07    | Grafana            | Dashboard            |
+| 08    | Projeto final      | Sistema IoT completo |
+
+### 01 — Fundamentos de IoT
+
+Conceitos:
+
+- IoT e IIoT
+- dispositivos e sensores
+- atuadores
+- conectividade
+- protocolos
+- gateways
+- processamento
+- armazenamento
+- visualização
+- arquitetura edge/cloud
+
+O aluno começa entendendo:
+
+```text
+Sensor → Comunicação → Processamento → Banco → Visualização
+```
+
+---
+
+### 02 — ESP32 + PlatformIO
+
+Criar o primeiro projeto:
+
+```text
+esp32-iot/
+├── platformio.ini
+└── src/
+    └── main.cpp
+```
+
+Exemplo de `platformio.ini`:
+
+```ini
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+
+monitor_speed = 115200
+```
+
+Primeiro programa:
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+    Serial.begin(115200);
+}
+
+void loop() {
+    Serial.println("Hello IoT!");
+    delay(1000);
+}
+```
+
+Objetivo pedagógico:
+
+```text
+VS Code
+   ↓
+PlatformIO
+   ↓
+Compilação
+   ↓
+Firmware
+   ↓
+ESP32
+```
+
+---
+
+### 03 — ESP32 + Wokwi
+
+Depois o aluno passa para sensores simulados.
+
+Por exemplo:
+
+```text
+ESP32
+ ├── DHT22
+ ├── LED
+ ├── Push Button
+ └── OLED
+```
+
+O Wokwi permite desenvolver a aplicação mesmo sem possuir o hardware físico.
+
+Um experimento interessante é simular uma estação ambiental:
+
+```text
+             ┌─────────┐
+             │  DHT22  │
+             └────┬────┘
+                  │
+                  ▼
+             ┌─────────┐
+             │  ESP32  │
+             └────┬────┘
+                  │
+         ┌────────┴────────┐
+         ▼                 ▼
+       OLED              MQTT
+```
+
+---
+
+## 04 — MQTT
+
+Aqui entra um conceito fundamental de IoT:
+
+```text
+Publisher             Broker             Subscriber
+
+ESP32 ───────────────► MQTT ◄──────────── Node-RED
+```
+
+Sugestão de tópicos:
+
+```text
+iot/esp32-01/temperature
+iot/esp32-01/humidity
+iot/esp32-01/status
+```
+
+Ou, melhor ainda, uma mensagem única:
+
+```text
+iot/esp32-01/telemetry
+```
+
+Payload:
+
+```json
+{
+  "device": "esp32-01",
+  "temperature": 27.4,
+  "humidity": 68.2
+}
+```
+
+Isso permite ensinar:
+
+- Publisher
+- Subscriber
+- Broker
+- Topic
+- Payload
+- QoS
+- Retained messages
+- Last Will
+- Telemetria
+
+---
+
+# 05 — Node-RED
+
+O Node-RED passa a funcionar como o **middleware IoT**.
+
+Fluxo inicial:
+
+```text
+             MQTT
+               │
+               ▼
+        ┌─────────────┐
+        │ MQTT IN     │
+        └──────┬──────┘
+               ▼
+        ┌─────────────┐
+        │ JSON        │
+        └──────┬──────┘
+               ▼
+        ┌─────────────┐
+        │ Function    │
+        └──────┬──────┘
+               │
+       ┌───────┴────────┐
+       ▼                ▼
+    SQLite           Dashboard
+```
+
+Exemplo de processamento:
+
+```javascript
+const temperature = msg.payload.temperature;
+
+if (temperature > 30) {
+  msg.alert = true;
+  msg.alertMessage = "Temperatura elevada";
+}
+
+return msg;
+```
+
+Assim o aluno começa a perceber que Node-RED não é apenas um visualizador: ele pode atuar como **camada de integração e processamento**.
+
+---
+
+# 06 — SQLite
+
+Banco inicial:
+
+```sql
+CREATE TABLE telemetry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device TEXT NOT NULL,
+    temperature REAL,
+    humidity REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Cada mensagem MQTT pode gerar:
+
+```text
+ESP32
+  ↓
+MQTT
+  ↓
+Node-RED
+  ↓
+INSERT
+  ↓
+SQLite
+```
+
+Exemplo:
+
+```sql
+INSERT INTO telemetry
+(device, temperature, humidity)
+VALUES
+('esp32-01', 27.4, 68.2);
+```
+
+Consultas didáticas:
+
+```sql
+SELECT *
+FROM telemetry
+ORDER BY timestamp DESC;
+```
+
+Temperatura média:
+
+```sql
+SELECT AVG(temperature)
+FROM telemetry;
+```
+
+Máxima:
+
+```sql
+SELECT MAX(temperature)
+FROM telemetry;
+```
+
+---
+
+# 07 — Grafana
+
+O Grafana representa a camada de **observabilidade/visualização**.
+
+Dashboard:
+
+```text
+┌─────────────────────────────────────────────┐
+│             ESP32 IoT MONITOR               │
+├──────────────┬──────────────┬───────────────┤
+│ 🌡 27.4 °C   │ 💧 68.2 %    │ 🟢 ONLINE     │
+├──────────────┴──────────────┴───────────────┤
+│                                             │
+│        Temperatura nas últimas 24h          │
+│       ╭──────╮                              │
+│      ╱      ╲____                           │
+│  ___╱             ╲___                     │
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│          Umidade nas últimas 24h            │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+Painéis interessantes:
+
+1. Temperatura atual
+2. Umidade atual
+3. Temperatura histórica
+4. Umidade histórica
+5. Média de temperatura
+6. Temperatura máxima
+7. Estado do dispositivo
+8. Número de mensagens
+9. Última comunicação
+10. Alertas
+
+---
+
+# 08 — Projeto final
+
+No final, o aluno deverá construir algo semelhante a:
+
+```text
+                 ┌───────────────┐
+                 │     Wokwi     │
+                 │               │
+                 │ ESP32         │
+                 │ DHT22         │
+                 │ LDR           │
+                 │ Button        │
+                 └───────┬───────┘
+                         │
+                         │ MQTT
+                         ▼
+                 ┌───────────────┐
+                 │ MQTT Broker   │
+                 └───────┬───────┘
+                         │
+                         ▼
+                 ┌───────────────┐
+                 │   Node-RED    │
+                 │               │
+                 │ Parse         │
+                 │ Validate      │
+                 │ Transform     │
+                 │ Rules         │
+                 └───┬───────┬───┘
+                     │       │
+                     │       └──────► Alertas
+                     │
+                     ▼
+               ┌───────────┐
+               │  SQLite   │
+               └─────┬─────┘
+                     │
+                     ▼
+               ┌───────────┐
+               │  Grafana  │
+               └───────────┘
+```
+
+## Estrutura Docker
+
+Para os serviços de infraestrutura:
+
+```text
+iot-lab/
+├── docker-compose.yml
+│
+├── nodered/
+│   └── flows.json
+│
+├── sqlite/
+│   └── schema.sql
+│
+├── grafana/
+│   ├── dashboards/
+│   └── provisioning/
+│
+└── esp32/
+    ├── platformio.ini
+    ├── wokwi.toml
+    ├── diagram.json
+    └── src/
+        └── main.cpp
+```
+
+Uma vantagem importante dessa organização é separar:
+
+```text
+HARDWARE/SIMULAÇÃO
+        │
+        ▼
+     ESP32
+        │
+        ▼
+INFRAESTRUTURA IoT
+        │
+   ┌────┴────┐
+   ▼         ▼
+ MQTT     Node-RED
+             │
+             ▼
+          SQLite
+             │
+             ▼
+          Grafana
+```
+
+### Projeto final sugerido
+
+Eu usaria como tema **"Estação IoT de Monitoramento Ambiental"**.
+
+O aluno deverá implementar:
+
+- 🌡️ temperatura
+- 💧 umidade
+- 💡 luminosidade
+- 🔘 botão de controle
+- 🟢 LED de status
+- 📡 MQTT
+- 🔄 processamento no Node-RED
+- 🗄️ SQLite
+- 📊 Grafana
+- 🚨 sistema de alertas
+
+E, como extensão, podemos acrescentar:
+
+```text
+ESP32
+  │
+  ├── MQTT
+  │
+  └── HTTP
+        │
+        ▼
+     Node-RED
+        │
+   ┌────┼─────────┐
+   ▼    ▼         ▼
+SQLite MQTT     n8n
+   │
+   ▼
+Grafana
+```
+
+Isso transforma o laboratório em uma **plataforma didática de IoT/IIoT**, cobrindo desde o firmware embarcado até integração, persistência, processamento e observabilidade.
+
+Yes. For your **didactic IoT project**, these time-series databases are useful alternatives to SQLite. I would actually position them as a second stage of the architecture.
+
+### Time-series databases
+
+| Database       | Best suited for      | IoT role                      | Complexity |
+| -------------- | -------------------- | ----------------------------- | ---------- |
+| **Prometheus** | Metrics + monitoring | Infrastructure/device metrics | ⭐⭐       |
+| **Graphite**   | Metrics over time    | Monitoring                    | ⭐⭐       |
+| **InfluxDB**   | IoT telemetry        | Sensor data / time series     | ⭐⭐⭐     |
+| **OpenTSDB**   | Large-scale metrics  | Distributed time-series data  | ⭐⭐⭐⭐   |
+
+### Recommended architecture
+
+For the laboratory we have been building, I would use **SQLite first**, then introduce **InfluxDB** as the dedicated time-series database:
+
+```text
+                  ┌──────────────────┐
+                  │ ESP32 / Wokwi    │
+                  │                  │
+                  │ Temperature      │
+                  │ Humidity         │
+                  │ Light            │
+                  └────────┬─────────┘
+                           │
+                          MQTT
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │    Mosquitto     │
+                  │   MQTT Broker    │
+                  └────────┬─────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │    Node-RED     │
+                  │                  │
+                  │ Parse            │
+                  │ Transform        │
+                  │ Rules            │
+                  └──────┬─────┬─────┘
+                         │     │
+                  SQL    │     │ Line Protocol
+                         ▼     ▼
+                    ┌──────┐ ┌──────────┐
+                    │SQLite│ │ InfluxDB │
+                    └──────┘ └────┬─────┘
+                                  │
+                                  ▼
+                           ┌────────────┐
+                           │  Grafana   │
+                           └────────────┘
+```
+
+### Why InfluxDB is particularly interesting here
+
+For IoT, the data naturally looks like:
+
+```text
+timestamp + device + measurement + value
+```
+
+For example:
+
+```text
+2026-08-08 14:50:00
+device=esp32-01
+temperature=27.4
+humidity=68.2
+```
+
+This is exactly the type of workload for which a time-series database is designed.
+
+You can therefore teach the students the evolution:
+
+```text
+Level 1
+ESP32 → MQTT → Node-RED → SQLite → Grafana
+
+Level 2
+ESP32 → MQTT → Node-RED → InfluxDB → Grafana
+
+Level 3
+ESP32 → MQTT → Node-RED → InfluxDB
+                         ↓
+                    Processing
+                         ↓
+                       n8n
+                         ↓
+                     Alerts/API
+```
+
+### Suggested curriculum
+
+I would use the databases progressively rather than presenting all four simultaneously:
+
+**Module 1 — SQLite**
+
+Teach:
+
+- relational database
+- tables
+- rows
+- SQL
+- `INSERT`
+- `SELECT`
+- aggregation
+- timestamps
+
+**Module 2 — InfluxDB**
+
+Teach:
+
+- time-series databases
+- measurements
+- tags
+- fields
+- timestamps
+- retention
+- time-window queries
+- aggregation
+
+**Module 3 — Prometheus**
+
+Teach:
+
+- metrics
+- exporters
+- scraping
+- labels
+- PromQL
+- monitoring
+
+**Module 4 — Comparison**
+
+Students compare:
+
+```text
+                    SQLite   InfluxDB   Prometheus
+----------------------------------------------------
+Relational SQL         ✓         ✗          ✗
+Time series            △         ✓          ✓
+IoT telemetry          △         ✓✓         ✓
+Application data       ✓✓        △          ✗
+Monitoring             △         ✓          ✓✓
+Historical metrics     △         ✓✓         ✓✓
+```
+
+For your specific **ESP32 + Wokwi + Node-RED + Grafana** laboratory, my recommendation is:
+
+> **SQLite for teaching relational persistence + InfluxDB for teaching real IoT time-series storage + Grafana for visualization.**
+
+That gives students a very useful comparison between a **general-purpose relational database** and a **purpose-built time-series database**.
+
+Yes. **Node-RED can also provide visualization**, and for your didactic IoT project that is actually very useful.
+
+There are two main approaches:
+
+### 1. Node-RED Dashboard
+
+Node-RED can provide a web-based dashboard directly:
+
+```text
+ESP32 / Wokwi
+      │
+     MQTT
+      ▼
+  Mosquitto
+      │
+      ▼
+  Node-RED
+      │
+      ├──────────► SQLite
+      │
+      └──────────► Node-RED Dashboard
+                         │
+                         ├── 🌡 Temperature
+                         ├── 💧 Humidity
+                         ├── 📈 Charts
+                         ├── Gauges
+                         ├── LEDs
+                         ├── Tables
+                         └── Switches
+```
+
+This is excellent for **teaching the complete IoT data flow in a single tool**.
+
+For example:
+
+```text
+http://localhost:1880/dashboard
+```
+
+depending on the Dashboard version/configuration.
+
+### 2. Grafana
+
+Grafana is better when the objective is **professional time-series visualization**:
+
+```text
+ESP32
+  ↓
+MQTT
+  ↓
+Node-RED
+  ↓
+InfluxDB
+  ↓
+Grafana
+```
+
+You can then compare:
+
+| Visualization            | Node-RED Dashboard | Grafana |
+| ------------------------ | -----------------: | ------: |
+| Gauges                   |                 ✅ |      ✅ |
+| Real-time values         |                 ✅ |      ✅ |
+| Simple charts            |                 ✅ |      ✅ |
+| Historical time series   |                 ✅ |  ⭐⭐⭐ |
+| Complex dashboards       |               ⭐⭐ |  ⭐⭐⭐ |
+| SQL visualization        |                 ✅ |      ✅ |
+| InfluxDB                 |                 ✅ |  ⭐⭐⭐ |
+| Alerts                   |                 ✅ |  ⭐⭐⭐ |
+| IoT control UI           |             ⭐⭐⭐ |    ⭐⭐ |
+| Educational simplicity   |             ⭐⭐⭐ |    ⭐⭐ |
+| Monitoring/observability |               ⭐⭐ |  ⭐⭐⭐ |
+
+### Recommended teaching architecture
+
+I would actually include **both**:
+
+```text
+                       ┌────────────────────┐
+                       │   ESP32 / Wokwi    │
+                       │                    │
+                       │ DHT22 / LDR / etc. │
+                       └─────────┬──────────┘
+                                 │
+                                MQTT
+                                 │
+                                 ▼
+                       ┌────────────────────┐
+                       │     Mosquitto      │
+                       │    MQTT Broker     │
+                       └─────────┬──────────┘
+                                 │
+                                 ▼
+                       ┌────────────────────┐
+                       │      Node-RED      │
+                       │                    │
+                       │ • MQTT             │
+                       │ • Processing       │
+                       │ • Rules            │
+                       │ • Transformation   │
+                       └─────┬───────┬──────┘
+                             │       │
+                    ┌────────┘       └────────┐
+                    ▼                         ▼
+             ┌──────────────┐          ┌──────────────┐
+             │    SQLite    │          │   Dashboard  │
+             │              │          │  Node-RED    │
+             └──────────────┘          └──────────────┘
+                    │
+                    │
+                    ▼
+             ┌──────────────┐
+             │   InfluxDB   │
+             │ Time Series  │
+             └──────┬───────┘
+                    │
+                    ▼
+             ┌──────────────┐
+             │    Grafana   │
+             │              │
+             │ Historical   │
+             │ Analytics    │
+             │ Monitoring   │
+             └──────────────┘
+```
+
+This creates a very nice pedagogical distinction:
+
+**Node-RED Dashboard → operational visualization**
+
+> "What is happening right now?"
+
+**Grafana → analytical visualization**
+
+> "What happened over time?"
+
+For example, the Node-RED dashboard could show:
+
+```text
+┌─────────────────────────────────────┐
+│       ESP32 ENVIRONMENT             │
+│                                     │
+│        🌡 27.4 °C                   │
+│        💧 68.2 %                    │
+│        💡 742 lux                   │
+│                                     │
+│        🟢 DEVICE ONLINE             │
+│                                     │
+│       [ LED ON ] [ LED OFF ]        │
+└─────────────────────────────────────┘
+```
+
+while Grafana shows:
+
+```text
+Temperature
+30 ┤                 ╭─╮
+28 ┤       ╭─────────╯ ╰──╮
+26 ┤───────╯               ╰──
+24 ┤
+   └────────────────────────────
+      08:00  10:00  12:00  14:00
+```
+
+### Updated Docker architecture
+
+For this version, I would add **InfluxDB** and configure Node-RED Dashboard:
+
+```text
+iot-lab/
+├── docker-compose.yml
+│
+├── mosquitto/
+│   ├── config/
+│   │   └── mosquitto.conf
+│   ├── data/
+│   └── log/
+│
+├── nodered/
+│   └── data/
+│
+├── database/
+│   └── iot.db
+│
+├── influxdb/
+│   └── data/
+│
+├── grafana/
+│   ├── data/
+│   ├── dashboards/
+│   └── provisioning/
+│
+└── esp32/
+    ├── platformio.ini
+    ├── wokwi.toml
+    ├── diagram.json
+    └── src/
+        └── main.cpp
+```
+
+**For the course, this gives you a particularly strong progression:**
+
+```text
+ESP32
+  ↓
+MQTT
+  ↓
+Node-RED
+  ├──► Dashboard          ← real-time visualization
+  ├──► SQLite             ← relational database
+  └──► InfluxDB           ← time-series database
+              ↓
+           Grafana        ← advanced visualization
+```
+
+This would make the project much richer pedagogically because students learn that **data acquisition, integration, storage, visualization, and analytics are separate layers**, rather than treating Grafana or Node-RED as the entire IoT platform.

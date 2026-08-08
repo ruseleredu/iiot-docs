@@ -1,0 +1,1433 @@
+---
+title: Stack adotada - Simples (draft)
+description: Stack adotada na disciplina ELT85B.
+draft: true
+---
+
+## ESP32 + PlatformIO (VS Code) + Wokwi (simulador) + Node-RED + SQLite
+
+Sim — essa versão é **mais simples e excelente para um projeto didático introdutório de IoT**. O Grafana/InfluxDB pode ficar como uma etapa avançada posterior.
+
+## Arquitetura proposta
+
+```text
+                    DESENVOLVIMENTO
+        ┌──────────────────────────────┐
+        │       VS Code + PlatformIO   │
+        │                              │
+        │          ESP32 / C++         │
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │      Wokwi      │
+              │   Simulador     │
+              │                 │
+              │ ESP32 + Sensors │
+              └────────┬────────┘
+                       │
+                       │ MQTT
+                       ▼
+              ┌─────────────────┐
+              │    Mosquitto    │
+              │   MQTT Broker   │
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │    Node-RED     │
+              │                 │
+              │ MQTT            │
+              │ Processing      │
+              │ Rules           │
+              │ SQLite          │
+              │ Dashboard       │
+              └──────┬────┬─────┘
+                     │    │
+               SQL   │    │ HTTP/Web
+                     ▼    ▼
+              ┌─────────┐ ┌──────────────┐
+              │ SQLite  │ │   Dashboard  │
+              │         │ │   Node-RED   │
+              └─────────┘ └──────────────┘
+```
+
+### Stack
+
+| Componente             | Responsabilidade                            |
+| ---------------------- | ------------------------------------------- |
+| **VS Code**            | Ambiente de desenvolvimento                 |
+| **PlatformIO**         | Build, bibliotecas e gerenciamento do ESP32 |
+| **Wokwi**              | Simulação do hardware                       |
+| **Mosquitto**          | Broker MQTT                                 |
+| **Node-RED**           | Integração e processamento                  |
+| **Node-RED Dashboard** | Visualização e controle                     |
+| **SQLite**             | Persistência dos dados                      |
+
+### Fluxo de dados
+
+```text
+DHT22
+ │
+ ▼
+ESP32
+ │
+ │ MQTT
+ ▼
+Mosquitto
+ │
+ ▼
+Node-RED
+ │
+ ├──────────────► Dashboard
+ │                 │
+ │                 ├── Temperatura
+ │                 ├── Umidade
+ │                 ├── Gráficos
+ │                 ├── Indicadores
+ │                 └── Controles
+ │
+ └──────────────► SQLite
+                   │
+                   └── Histórico
+```
+
+## Exemplo de aplicação
+
+Eu sugiro usar uma **Estação IoT de Monitoramento Ambiental**.
+
+O ESP32 simulado terá:
+
+```text
+┌─────────────────────────────┐
+│            ESP32            │
+│                             │
+│  DHT22 ───► Temperatura     │
+│        └──► Umidade         │
+│                             │
+│  LDR ─────► Luminosidade    │
+│                             │
+│  Button ──► Entrada digital │
+│                             │
+│  LED ─────► Atuador         │
+│                             │
+└─────────────────────────────┘
+```
+
+Mensagem MQTT:
+
+```json
+{
+  "device": "esp32-01",
+  "temperature": 27.4,
+  "humidity": 68.2,
+  "light": 742
+}
+```
+
+Tópico:
+
+```text
+iot/esp32-01/telemetry
+```
+
+## Node-RED
+
+O fluxo principal:
+
+```text
+[MQTT IN]
+    │
+    ▼
+[JSON]
+    │
+    ▼
+[Function]
+    │
+    ├───────────────► [Dashboard]
+    │
+    ▼
+[SQLite]
+```
+
+E podemos acrescentar regras:
+
+```text
+                    ┌── temperatura > 30 ──► 🔴 ALERTA
+                    │
+MQTT → JSON → Rule ─┼── temperatura ≤ 30 ──► 🟢 NORMAL
+                    │
+                    └──────────────────────► SQLite
+```
+
+## Dashboard
+
+O dashboard pode ser organizado em quatro grupos:
+
+### 🌡️ Ambiente
+
+```text
+┌──────────────────────────────────────┐
+│           AMBIENTE                   │
+├──────────────┬───────────────────────┤
+│ Temperatura  │      27.4 °C           │
+│              │                        │
+│ Umidade      │      68.2 %            │
+└──────────────┴───────────────────────┘
+```
+
+### 📈 Histórico
+
+```text
+Temperatura
+
+30 ┤                    ╭───╮
+28 ┤      ╭─────────────╯   ╰──
+26 ┤──────╯
+24 ┤
+   └──────────────────────────────
+     10h   11h   12h   13h   14h
+```
+
+### 💡 Luminosidade
+
+```text
+┌──────────────────────────────┐
+│        LUMINOSIDADE          │
+│                              │
+│          742 lux             │
+│                              │
+│       ████████████░░         │
+└──────────────────────────────┘
+```
+
+### 🎛️ Controle
+
+```text
+┌──────────────────────────────┐
+│       CONTROLE ESP32         │
+│                              │
+│       LED                    │
+│                              │
+│    [ ON ]     [ OFF ]        │
+└──────────────────────────────┘
+```
+
+Isso também permite ensinar o caminho inverso:
+
+```text
+Dashboard
+    │
+    │ MQTT
+    ▼
+Node-RED
+    │
+    ▼
+Mosquitto
+    │
+    ▼
+ESP32
+    │
+    ▼
+LED / Relay / Actuator
+```
+
+Ou seja, não apenas **telemetria**, mas também **controle remoto de dispositivos IoT**.
+
+## Estrutura do projeto
+
+```text
+iot-esp32-lab/
+│
+├── docker-compose.yml
+│
+├── mosquitto/
+│   ├── config/
+│   │   └── mosquitto.conf
+│   ├── data/
+│   └── log/
+│
+├── nodered/
+│   └── data/
+│       ├── flows.json
+│       └── ...
+│
+├── database/
+│   ├── schema.sql
+│   └── iot.db
+│
+└── esp32/
+    ├── platformio.ini
+    ├── wokwi.toml
+    ├── diagram.json
+    │
+    └── src/
+        └── main.cpp
+```
+
+### Docker Compose
+
+Para essa versão, teremos apenas **três containers**:
+
+```text
+┌──────────────────────────────────────┐
+│             Docker                   │
+│                                      │
+│  ┌────────────┐                      │
+│  │ Mosquitto  │                      │
+│  │    :1883   │                      │
+│  └─────▲──────┘                      │
+│        │                             │
+│        ▼                             │
+│  ┌────────────┐                      │
+│  │ Node-RED   │                      │
+│  │    :1880   │                      │
+│  │            │                      │
+│  │ Dashboard  │                      │
+│  └─────┬──────┘                      │
+│        │                             │
+│        ▼                             │
+│  ┌────────────┐                      │
+│  │   SQLite   │                      │
+│  │ iot.db     │                      │
+│  └────────────┘                      │
+│                                      │
+└──────────────────────────────────────┘
+```
+
+O **SQLite não precisa de container próprio**: o arquivo `iot.db` pode ficar em um volume compartilhado com o Node-RED.
+
+### Endpoints
+
+```text
+Node-RED:
+http://localhost:1880
+
+Dashboard:
+http://localhost:1880/dashboard
+
+MQTT:
+localhost:1883
+```
+
+---
+
+Para esse projeto didático, eu recomendo usar o **ESP32 DevKit V1 baseado no ESP32-WROOM-32**.
+
+### Minha recomendação
+
+**ESP32 DevKit V1 / ESP32-WROOM-32**
+
+É uma ótima escolha para:
+
+- PlatformIO + VS Code
+- Wokwi
+- MQTT
+- Node-RED
+- DHT22
+- LDR
+- LEDs
+- botões
+- OLED I²C
+- sensores analógicos
+- relés
+- Wi-Fi
+- Bluetooth/BLE
+
+No `platformio.ini`:
+
+```ini
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+
+monitor_speed = 115200
+```
+
+Esse `board = esp32dev` é particularmente conveniente porque o PlatformIO já possui suporte para placas ESP32 DevKit genéricas.
+
+### No Wokwi
+
+Para o `diagram.json`, você pode utilizar:
+
+```json
+{
+  "version": 1,
+  "author": "IoT Lab",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    }
+  ]
+}
+```
+
+Assim temos praticamente o mesmo alvo:
+
+```text
+              ┌──────────────────┐
+              │      Wokwi       │
+              │                  │
+              │ ESP32 DevKit V1  │
+              │   WROOM-32       │
+              └────────┬─────────┘
+                       │
+                       │ Wi-Fi
+                       ▼
+                    MQTT
+                       │
+                       ▼
+                  Mosquitto
+                       │
+                       ▼
+                   Node-RED
+                       │
+             ┌─────────┴─────────┐
+             ▼                   ▼
+          SQLite             Dashboard
+```
+
+### Por que não escolher ESP32-C3/C6?
+
+Para **esse primeiro laboratório**, eu evitaria começar com C3, C6 ou S3.
+
+| Modelo                         | Para este projeto          |
+| ------------------------------ | -------------------------- |
+| **ESP32-WROOM-32 / DevKit V1** | ⭐⭐⭐⭐⭐ **Recomendado** |
+| ESP32-S3                       | ⭐⭐⭐⭐                   |
+| ESP32-C3                       | ⭐⭐⭐⭐                   |
+| ESP32-C6                       | ⭐⭐⭐                     |
+| ESP32-H2                       | ⭐⭐                       |
+
+O **ESP32-WROOM-32** tem uma enorme quantidade de exemplos, bibliotecas e projetos educacionais, além de ser muito bem suportado pelo Wokwi e PlatformIO.
+
+### Hardware didático sugerido
+
+Eu montaria o primeiro kit assim:
+
+```text
+ESP32 DevKit V1
+│
+├── DHT22       → temperatura/umidade
+├── LDR         → luminosidade
+├── LED         → atuador
+├── Push Button → entrada
+├── OLED SSD1306 → display local
+└── Buzzer      → alerta
+```
+
+E a evolução seria:
+
+```text
+             ┌──────────────┐
+             │ ESP32-WROOM-32│
+             └───────┬──────┘
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+       Sensores    Atuadores   OLED
+          │          │
+          └─────┬────┘
+                ▼
+              Wi-Fi
+                │
+                ▼
+              MQTT
+                │
+                ▼
+            Node-RED
+           ┌────┴────┐
+           ▼         ▼
+        SQLite    Dashboard
+```
+
+**Portanto, para o projeto que estamos montando, eu padronizaria tudo em `ESP32 DevKit V1 (ESP32-WROOM-32)`**, tanto no hardware físico quanto no Wokwi e no PlatformIO. Isso reduz bastante a complexidade para os alunos e deixa o foco nos conceitos de IoT, MQTT, Node-RED e banco de dados.
+
+---
+
+Claro. Considerando **3h30 por encontro (19h30–23h00)** e o projeto didático que definimos — **ESP32 DevKit V1 + PlatformIO/VS Code + Wokwi + MQTT/Mosquitto + Node-RED Dashboard + SQLite** — eu estruturaria a disciplina em uma progressão de **fundamentos → tecnologias → arquitetura → projeto → integração → apresentação**.
+
+## Cronograma detalhado — IoT
+
+**Turma:** ELT85B-N21
+**Período:** 20/08/2026 a 17/12/2026
+**Carga horária presencial:** 18 encontros × 3h30 = **63 horas**
+
+### Visão geral
+
+|   # | Data  | Tema                        | Foco               | Produto/Atividade             |
+| --: | ----- | --------------------------- | ------------------ | ----------------------------- |
+|  01 | 20/08 | Apresentação e grupos       | Organização        | Grupos + definição preliminar |
+|  02 | 27/08 | Visão Geral sobre IoT       | Fundamentos        | Arquitetura IoT               |
+|  03 | 03/09 | A Internet na IoT           | Internet/TCP-IP    | Comunicação cliente-servidor  |
+|  04 | 10/09 | Sensores e Atuadores        | Hardware           | ESP32 + sensores              |
+|  05 | 17/09 | Protocolos: Enlace e Rede   | Redes              | Wi-Fi, IP, IPv6               |
+|  06 | 24/09 | Protocolos: Aplicação       | MQTT/HTTP          | Primeiro fluxo MQTT           |
+|  07 | 01/10 | Fog Computing               | Edge/Fog           | Arquitetura distribuída       |
+|  08 | 08/10 | Plataforma de Serviços IoT  | Middleware         | Node-RED                      |
+|  09 | 15/10 | IoT: Agricultura e Energia  | Aplicações         | Estudo de casos               |
+|  10 | 22/10 | IoT: Indústria e Transporte | IIoT               | Estudo de casos               |
+|  11 | 29/10 | Padrões IoT                 | Interoperabilidade | Análise de padrões            |
+|  12 | 05/11 | Projeto Final — Kickoff     | Projeto            | Especificação                 |
+|  13 | 12/11 | Node-RED + SQLite           | Integração         | Pipeline funcional            |
+|  14 | 19/11 | Dashboard                   | Visualização       | Dashboard funcional           |
+|  15 | 26/11 | Refinamento + APS           | Validação          | Versão final                  |
+|  16 | 03/12 | Apresentações               | Avaliação          | Apresentações                 |
+|  17 | 10/12 | Apresentações               | Avaliação          | Apresentações                 |
+|  18 | 17/12 | Fechamento                  | Síntese            | Avaliação final               |
+
+---
+
+# 01 — 20/08/2026
+
+## Apresentação da disciplina + formação dos grupos
+
+**19:30–20:00 — Apresentação**
+
+- Objetivos da disciplina
+- Ementa
+- Metodologia
+- Avaliações
+- Projeto final
+- Ferramentas utilizadas
+
+**20:00–20:30 — O que é IoT?**
+
+- Internet of Things
+- IoT × automação
+- IoT × sistemas embarcados
+- IoT × IIoT
+- Exemplos cotidianos
+
+**20:30–21:00 — Apresentação do projeto**
+
+Apresentar a arquitetura que será construída:
+
+```text
+ESP32
+  ↓
+Wi-Fi
+  ↓
+MQTT
+  ↓
+Node-RED
+  ↓
+SQLite
+  ↓
+Dashboard
+```
+
+**21:00–21:15 — Intervalo**
+
+**21:15–22:00 — Formação dos grupos**
+
+Sugestão: **3–4 alunos/grupo**.
+
+Definir:
+
+- integrante
+- líder técnico
+- responsável por software
+- responsável por documentação
+- responsável por hardware/simulação
+
+**22:00–23:00 — Brainstorming**
+
+Cada grupo propõe um possível projeto:
+
+- monitoramento ambiental
+- energia elétrica
+- agricultura
+- indústria
+- transporte
+- segurança
+- automação predial
+
+**Entregável:** formação do grupo + ideia preliminar.
+
+---
+
+# 02 — 27/08/2026
+
+## Visão Geral sobre IoT
+
+### Conteúdo
+
+- Conceito de IoT
+- Dispositivos
+- Sensores
+- Atuadores
+- Gateway
+- Edge
+- Cloud
+- Middleware
+- Banco de dados
+- Dashboard
+
+### Arquiteturas
+
+Apresentar:
+
+```text
+Device
+   ↓
+Network
+   ↓
+Gateway
+   ↓
+Platform
+   ↓
+Application
+```
+
+E uma arquitetura moderna:
+
+```text
+Things
+  ↓
+Connectivity
+  ↓
+Edge/Fog
+  ↓
+IoT Platform
+  ↓
+Data
+  ↓
+Application
+```
+
+### Atividade
+
+Cada grupo desenha a arquitetura de seu projeto.
+
+**Entregável:** diagrama inicial da solução.
+
+---
+
+# 03 — 03/09/2026
+
+## A Internet na IoT
+
+### Conteúdo
+
+- Internet
+- TCP/IP
+- IPv4
+- IPv6
+- MAC
+- ARP
+- DNS
+- DHCP
+- TCP
+- UDP
+- portas
+- cliente/servidor
+
+### Laboratório
+
+Introdução ao ESP32:
+
+```text
+ESP32
+  ↓
+Wi-Fi
+  ↓
+Roteador
+  ↓
+Internet/LAN
+```
+
+### Atividade
+
+Testar:
+
+- conexão Wi-Fi
+- endereço IP
+- ping
+- comunicação TCP/IP
+
+**Entregável:** ESP32 conectado à rede.
+
+---
+
+# 04 — 10/09/2026
+
+## Sensores e Atuadores em IoT
+
+### Hardware didático
+
+Padronizar:
+
+**ESP32 DevKit V1 / ESP32-WROOM-32**
+
+Sensores:
+
+- DHT22
+- LDR
+- botão
+
+Atuadores:
+
+- LED
+- buzzer
+
+Opcional:
+
+- OLED SSD1306
+
+### Wokwi
+
+Criar:
+
+```text
+ESP32
+├── DHT22
+├── LDR
+├── Button
+├── LED
+└── OLED
+```
+
+### PlatformIO
+
+Primeiro projeto:
+
+```text
+esp32/
+├── platformio.ini
+└── src/
+    └── main.cpp
+```
+
+### Entregável
+
+Projeto ESP32 compilando no PlatformIO e executando no Wokwi.
+
+---
+
+# 05 — 17/09/2026
+
+## Pilha de Protocolos IoT — Enlace e Rede
+
+### Conteúdo
+
+- Ethernet
+- Wi-Fi
+- IEEE 802.11
+- MAC
+- IPv4
+- IPv6
+- TCP/IP
+- UDP
+
+### Atividade prática
+
+```text
+ESP32
+   ↓ Wi-Fi
+Network
+   ↓
+IP
+```
+
+Analisar:
+
+- endereço IP
+- gateway
+- DNS
+- comunicação local
+
+### Discussão
+
+Por que IoT utiliza diferentes tecnologias de comunicação?
+
+Comparar:
+
+| Tecnologia   | Alcance | Consumo     |
+| ------------ | ------- | ----------- |
+| Wi-Fi        | Médio   | Médio       |
+| Bluetooth LE | Curto   | Baixo       |
+| Zigbee       | Médio   | Baixo       |
+| LoRaWAN      | Longo   | Muito baixo |
+| Ethernet     | Médio   | Médio       |
+
+---
+
+# 06 — 24/09/2026
+
+## Pilha de Protocolos IoT — Aplicação
+
+Este é um dos encontros mais importantes para o projeto.
+
+### Protocolos
+
+- HTTP
+- HTTPS
+- MQTT
+- CoAP
+- WebSocket
+
+### MQTT
+
+Ensinar:
+
+```text
+Publisher
+     ↓
+   Broker
+     ↓
+ Subscriber
+```
+
+No laboratório:
+
+```text
+ESP32
+   │
+   │ MQTT
+   ▼
+Mosquitto
+   │
+   ▼
+Node-RED
+```
+
+### Tópicos
+
+```text
+iot/esp32-01/temperature
+iot/esp32-01/humidity
+iot/esp32-01/status
+```
+
+### Entregável
+
+ESP32 enviando telemetria MQTT.
+
+---
+
+# 07 — 01/10/2026
+
+## Computação em Nevoeiro — Fog Computing
+
+### Conceitos
+
+- Cloud Computing
+- Edge Computing
+- Fog Computing
+- processamento distribuído
+- latência
+- largura de banda
+- autonomia
+
+### Comparação
+
+```text
+Cloud
+  ↑
+  │
+Internet
+  ↑
+Fog / Gateway
+  ↑
+Edge
+  ↑
+Sensor
+```
+
+### Aplicação ao projeto
+
+Discutir por que o Node-RED pode funcionar como uma camada intermediária:
+
+```text
+ESP32
+ ↓
+MQTT
+ ↓
+Node-RED
+ ↓
+SQLite
+```
+
+### Atividade
+
+Cada grupo identifica:
+
+- o que deve ser processado no ESP32;
+- o que deve ser processado no Node-RED;
+- o que deve ser armazenado;
+- o que deve ser visualizado.
+
+---
+
+# 08 — 08/10/2026
+
+## Plataforma de Serviços IoT
+
+### Node-RED
+
+Introduzir:
+
+- Flow
+- Node
+- Message
+- `msg.payload`
+- MQTT nodes
+- Function
+- Debug
+- Dashboard
+
+### Primeiro fluxo
+
+```text
+[MQTT IN]
+    ↓
+[JSON]
+    ↓
+[FUNCTION]
+    ↓
+[DEBUG]
+```
+
+Depois:
+
+```text
+[MQTT IN]
+    ↓
+[JSON]
+    ↓
+[Dashboard]
+```
+
+### Entregável
+
+Primeiro dashboard Node-RED funcionando.
+
+---
+
+# 09 — 15/10/2026
+
+## Mercado IoT — Agricultura e Energia
+
+### Agricultura
+
+Exemplos:
+
+- umidade do solo
+- temperatura
+- irrigação
+- luminosidade
+- estação meteorológica
+- agricultura de precisão
+
+### Energia
+
+- smart meter
+- consumo
+- tensão
+- corrente
+- potência
+- demanda
+- qualidade de energia
+
+### Atividade
+
+Cada grupo escolhe um **caso de uso real**.
+
+Deve identificar:
+
+```text
+Problema
+   ↓
+Sensores
+   ↓
+Comunicação
+   ↓
+Processamento
+   ↓
+Banco
+   ↓
+Dashboard
+   ↓
+Decisão
+```
+
+---
+
+# 10 — 22/10/2026
+
+## Mercado IoT — Indústria e Transporte
+
+### Indústria
+
+- IIoT
+- máquinas conectadas
+- manutenção preditiva
+- monitoramento
+- OEE
+- alarmes
+
+### Transporte
+
+- rastreamento
+- telemetria
+- GPS
+- manutenção
+- logística
+- gestão de frota
+
+### Atividade
+
+Análise comparativa:
+
+```text
+IoT
+vs.
+IIoT
+```
+
+### Entregável
+
+Descrição do caso de uso escolhido pelo grupo.
+
+---
+
+# 11 — 29/10/2026
+
+## Padrões IoT
+
+### Conteúdo
+
+- interoperabilidade
+- protocolos
+- APIs
+- MQTT
+- HTTP
+- JSON
+- REST
+- padrões industriais
+
+### Atividade
+
+Comparar:
+
+```text
+MQTT
+HTTP
+CoAP
+WebSocket
+```
+
+Critérios:
+
+- modelo de comunicação
+- overhead
+- consumo
+- latência
+- confiabilidade
+- aplicações
+
+### Entregável
+
+Matriz de decisão tecnológica do projeto.
+
+---
+
+# 12 — 05/11/2026
+
+# Projeto Final — Definição e Kickoff
+
+Aqui começa oficialmente o desenvolvimento.
+
+### Arquitetura mínima obrigatória
+
+```text
+ESP32
+   ↓
+Wi-Fi
+   ↓
+MQTT
+   ↓
+Mosquitto
+   ↓
+Node-RED
+   ├── Dashboard
+   └── SQLite
+```
+
+### Especificação
+
+Cada grupo deverá definir:
+
+1. problema
+2. objetivo
+3. sensores
+4. atuadores
+5. ESP32
+6. protocolo
+7. tópicos MQTT
+8. formato das mensagens
+9. banco de dados
+10. dashboard
+
+### Entregável
+
+**Documento de especificação do projeto.**
+
+---
+
+# 13 — 12/11/2026
+
+## Projeto Final — Node-RED + SQLite
+
+### Implementação
+
+Fluxo:
+
+```text
+ESP32
+  ↓
+MQTT
+  ↓
+Mosquitto
+  ↓
+Node-RED
+  ├── Processamento
+  ├── Validação
+  ├── Regras
+  └── SQLite
+```
+
+### Banco
+
+Exemplo:
+
+```sql
+CREATE TABLE telemetry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device TEXT NOT NULL,
+    temperature REAL,
+    humidity REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Entregável
+
+**Pipeline completo de aquisição e persistência.**
+
+---
+
+# 14 — 19/11/2026
+
+## Projeto Final — Dashboard
+
+### Dashboard Node-RED
+
+Cada projeto deve possuir:
+
+- valor atual
+- gráfico histórico
+- indicadores
+- status do dispositivo
+- alarmes
+- controles, quando aplicável
+
+Exemplo:
+
+```text
+┌──────────────────────────────────┐
+│        IoT MONITOR               │
+├────────────┬────────────┬────────┤
+│ Temp.      │ Umidade    │ Status │
+│ 27.4 °C    │ 68.2 %     │ ONLINE │
+├────────────┴────────────┴────────┤
+│                                  │
+│       Gráfico temporal            │
+│                                  │
+├──────────────────────────────────┤
+│             ALERTAS              │
+└──────────────────────────────────┘
+```
+
+### Entregável
+
+**Dashboard funcional.**
+
+---
+
+# 15 — 26/11/2026
+
+## Projeto Final — Refinamento e APS Final
+
+### Validação
+
+Testar:
+
+- conectividade
+- MQTT
+- perda de conexão
+- mensagens inválidas
+- persistência
+- dashboard
+- alarmes
+- recuperação
+
+### Documentação
+
+Cada grupo entrega:
+
+```text
+README.md
+├── Objetivo
+├── Arquitetura
+├── Hardware
+├── Software
+├── MQTT
+├── Node-RED
+├── SQLite
+├── Dashboard
+├── Resultados
+└── Conclusão
+```
+
+### APS Final
+
+Sugestão de avaliação:
+
+| Critério     | Peso |
+| ------------ | ---: |
+| Arquitetura  |  15% |
+| ESP32/Wokwi  |  15% |
+| MQTT         |  15% |
+| Node-RED     |  15% |
+| SQLite       |  10% |
+| Dashboard    |  15% |
+| Documentação |  10% |
+| Apresentação |   5% |
+
+---
+
+# 16 — 03/12/2026
+
+## Projeto Final — Apresentações
+
+Cada grupo:
+
+**15–20 minutos**
+
+Sugestão:
+
+```text
+3 min  → Problema
+3 min  → Arquitetura
+5 min  → Demonstração
+3 min  → Resultados
+2 min  → Conclusão
+```
+
+### Demonstração obrigatória
+
+O grupo deve demonstrar:
+
+```text
+Sensor
+  ↓
+ESP32
+  ↓
+MQTT
+  ↓
+Node-RED
+  ↓
+SQLite
+  ↓
+Dashboard
+```
+
+---
+
+# 17 — 10/12/2026
+
+## Projeto Final — Apresentações
+
+Continuação das apresentações.
+
+Além da demonstração, cada grupo deve responder:
+
+- Por que escolheu MQTT?
+- Como os dados são armazenados?
+- Como tratou falhas?
+- Qual é o papel do Node-RED?
+- Como o sistema poderia escalar?
+- Como migraria para uma solução em nuvem?
+- Qual seria a evolução para IIoT?
+
+---
+
+# 18 — 17/12/2026
+
+# Fechamento da Disciplina
+
+### 19:30–20:30
+
+Retrospectiva:
+
+```text
+IoT
+ │
+ ├── Sensores
+ │
+ ├── Redes
+ │
+ ├── Protocolos
+ │
+ ├── Edge/Fog
+ │
+ ├── Plataformas
+ │
+ ├── Dados
+ │
+ └── Aplicações
+```
+
+### 20:30–21:30
+
+Discussão:
+
+**"Como transformar o protótipo em um sistema IoT real?"**
+
+Questões:
+
+- segurança
+- escalabilidade
+- disponibilidade
+- observabilidade
+- autenticação
+- criptografia
+- OTA
+- cloud
+- manutenção
+
+### 21:30–22:30
+
+Avaliação da disciplina e dos projetos.
+
+### 22:30–23:00
+
+Encerramento.
+
+---
+
+# Projeto transversal da disciplina
+
+A principal vantagem desse cronograma é que **o projeto começa antes do Projeto Final**.
+
+O aluno vai construindo conhecimento progressivamente:
+
+```text
+20/08
+  │
+  ▼
+Conceitos
+  │
+  ▼
+27/08
+IoT
+  │
+  ▼
+03/09
+Internet
+  │
+  ▼
+10/09
+ESP32 + Wokwi
+  │
+  ▼
+17/09
+Redes
+  │
+  ▼
+24/09
+MQTT
+  │
+  ▼
+01/10
+Fog
+  │
+  ▼
+08/10
+Node-RED
+  │
+  ▼
+29/10
+Padrões
+  │
+  ▼
+05/11
+PROJETO
+  │
+  ▼
+12/11
+SQLite
+  │
+  ▼
+19/11
+Dashboard
+  │
+  ▼
+26/11
+Refinamento
+  │
+  ▼
+03/12 ──► Apresentações
+10/12 ──► Apresentações
+17/12 ──► Fechamento
+```
+
+## Stack tecnológica definitiva
+
+Eu padronizaria o laboratório em:
+
+```text
+┌─────────────────────────────────────────────┐
+│              DESENVOLVIMENTO                │
+│                                             │
+│          VS Code + PlatformIO               │
+└───────────────────┬─────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────────┐
+│                 HARDWARE                    │
+│                                             │
+│       ESP32 DevKit V1 / WROOM-32            │
+│                 +                           │
+│              Wokwi                         │
+└───────────────────┬─────────────────────────┘
+                    │
+                  Wi-Fi
+                    │
+                  MQTT
+                    │
+                    ▼
+┌─────────────────────────────────────────────┐
+│                INTEGRAÇÃO                   │
+│                                             │
+│               Mosquitto                    │
+│                   ↓                         │
+│               Node-RED                     │
+└───────────────┬─────────────┬───────────────┘
+                │             │
+                ▼             ▼
+           ┌─────────┐   ┌──────────────┐
+           │ SQLite  │   │  Dashboard   │
+           │         │   │  Node-RED    │
+           └─────────┘   └──────────────┘
+```
+
+Isso mantém a primeira versão **tecnicamente acessível aos alunos**, mas já introduz praticamente todos os conceitos fundamentais de uma arquitetura IoT real. Depois, uma segunda etapa pode substituir o SQLite por **InfluxDB + Grafana** para introduzir bancos de séries temporais e observabilidade.

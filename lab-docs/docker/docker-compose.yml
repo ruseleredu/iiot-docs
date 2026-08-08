@@ -1,0 +1,78 @@
+services:
+  # ============================================================
+  # MQTT BROKER
+  # ============================================================
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: iot-mosquitto
+    restart: unless-stopped
+
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+    networks:
+      - iot-network
+
+  # ============================================================
+  # NODE-RED
+  # ============================================================
+  nodered:
+    image: nodered/node-red:latest
+    container_name: iot-nodered
+    restart: unless-stopped
+
+    ports:
+      - "1880:1880"
+
+    environment:
+      - TZ=America/Sao_Paulo
+
+    volumes:
+      - ./nodered/data:/data
+      - ./database:/database
+
+    depends_on:
+      - mosquitto
+
+    networks:
+      - iot-network
+
+  # ============================================================
+  # GRAFANA
+  # ============================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: iot-grafana
+    restart: unless-stopped
+
+    ports:
+      - "3030:3000"
+
+    environment:
+      - TZ=America/Sao_Paulo
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+    depends_on:
+      - nodered
+
+    networks:
+      - iot-network
+
+# ==============================================================
+# NETWORK
+# ==============================================================
+networks:
+  iot-network:
+    driver: bridge
