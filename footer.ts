@@ -184,6 +184,10 @@ const footer: ThemeConfig["footer"] = {
                     label: "Moodle Docs",
                     href: "https://ruseleredu.github.io/moodle-docs/",
                 },
+                {
+                    label: "Kroki Docs",
+                    href: "https://ruseleredu.github.io/kroki-docs/",
+                },
             ],
         },
         {
