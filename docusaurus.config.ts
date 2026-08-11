@@ -9,7 +9,7 @@ import rehypeKatex from "rehype-katex";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'ELT85B - IIoT Industrial',
+  title: 'ELT85B - IoT Industrial',
   tagline: 'Capacitar o aluno a projetar, integrar e operar arquiteturas de IIoT, conectando de forma segura a área operacional à nuvem para otimização de processos industriais.',
   favicon: 'img/favicon.ico',
 

@@ -52,6 +52,10 @@ const navbarItems: NavbarItem[] = [
         position: "left",
         items: [
             {
+                to: "/esp32/category/esp32-devkitc", // Link to a page in your esp32 docs
+                label: "DevKitC",
+            },
+            {
                 href: "https://www.espressif.com/en/products/socs/esp32", // External link to ESP32 official page
                 label: "ESP32 Official Page",
             },

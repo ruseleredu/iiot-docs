@@ -161,6 +161,10 @@ const footer: ThemeConfig["footer"] = {
             title: "Doku Sites",
             items: [
                 {
+                    label: "IoT Industrial",
+                    href: "https://ruseleredu.github.io/iiot-docs/",
+                },
+                {
                     label: "Main Site",
                     href: "https://adrianoruseler.github.io/site/",
                 },
@@ -177,16 +181,45 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://ruseleredu.github.io/ea-docs/",
                 },
                 {
-                    label: "IIoT Industrial",
-                    href: "https://ruseleredu.github.io/iiot-docs/",
-                },
-                {
                     label: "Moodle Docs",
                     href: "https://ruseleredu.github.io/moodle-docs/",
                 },
                 {
                     label: "Kroki Docs",
                     href: "https://ruseleredu.github.io/kroki-docs/",
+                },
+            ],
+        },
+        {
+            title: "Moodle",
+            items: [
+                {
+                    label: "IoT Industrial",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=35058",
+                },
+                {
+                    label: "Analógica",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=4785",
+                },
+                {
+                    label: "Microcontrolados",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=29540",
+                },
+                {
+                    label: "Digitais - EaD",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=27864",
+                },
+                {
+                    label: "Digitais - LAB",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=28604",
+                },
+                {
+                    label: "PSIM",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=12454",
+                },
+                {
+                    label: "LTspice",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=12399",
                 },
             ],
         },
