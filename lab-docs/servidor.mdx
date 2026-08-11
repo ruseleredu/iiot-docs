@@ -1,0 +1,175 @@
+---
+title: Servidor central do LAB
+description: Introdução as atividades de laboratório.
+---
+
+# Servidor central do LAB — Node-RED + MQTT + SQLite (Docker)
+
+10 instâncias isoladas de Node-RED (uma por grupo) + 1 broker Mosquitto
+compartilhado. Cada grupo tem seu volume próprio, com flows e banco SQLite
+persistentes.
+
+## Requisitos no servidor
+
+- Uma máquina **não congelada** (Linux de preferência; Windows com Docker
+  Desktop também serve) com **Docker** e **Docker Compose** instalados.
+- IP fixo/acessível na rede do LAB para os alunos alcançarem pelo navegador.
+
+## Subir tudo
+
+```bash
+python3 gen_compose.py 10     # (re)gera o compose para 10 grupos
+docker compose up -d --build  # constrói a imagem e sobe os 12 conteineres
+docker compose ps             # confere que tudo está "running"
+```
+
+## Acessos
+
+| Recurso           | Endereço                   |
+| ----------------- | -------------------------- |
+| Node-RED grupo 01 | http://IP_DO_SERVIDOR:1880 |
+| Node-RED grupo 02 | http://IP_DO_SERVIDOR:1881 |
+| ...               | ...                        |
+| Node-RED grupo 10 | http://IP_DO_SERVIDOR:1889 |
+| Broker MQTT       | IP_DO_SERVIDOR:1883        |
+
+## Endereço do broker nos fluxos (importante)
+
+- **Dentro do Node-RED** (nó mqtt): host = `mosquitto`, porta `1883`
+  (nome do serviço na rede interna do Docker).
+- **No ESP32 do Wokwi**: host = `IP_DO_SERVIDOR`, porta `1883`.
+  Ambos falam com o mesmo broker.
+
+## Isolamento de grupos por tópico
+
+Combine uma convenção de tópicos, ex.: `grupo01/#`, `grupo02/#`.
+Se quiser impedir que um grupo leia o tráfego do outro, troque
+`allow_anonymous true` por autenticação + ACL no mosquitto.conf
+(um usuário por grupo, com permissão só no seu prefixo de tópico).
+
+## Proteger o editor de cada grupo (recomendado)
+
+Sem senha, qualquer aluno abre o editor de qualquer grupo. Para evitar,
+ative `adminAuth` no settings.js de cada instância (o arquivo fica no
+volume grupoNN_data, em /data/settings.js) com um usuário/senha por grupo.
+
+## Persistência e Git
+
+- Os flows e o `.db` de cada grupo vivem nos volumes `grupoNN_data` e
+  sobrevivem a reinícios/rebuilds dos conteineres.
+- Para versionar (backup ou entrega), rode o script de commit abaixo,
+  que copia o flows.json de cada grupo para um repositório e faz push.
+
+## Comandos úteis
+
+```bash
+docker compose logs -f grupo01-nodered   # ver logs de um grupo
+docker compose restart grupo03-nodered   # reiniciar um grupo
+docker compose down                      # derrubar tudo (volumes ficam)
+docker compose down -v                   # derrubar E APAGAR os volumes (cuidado)
+```
+
+## Imagem customizada do Node-RED com SQLite
+
+```dockerfile
+# Imagem customizada: Node-RED + nó SQLite já embutido.
+# Assim os alunos NÃO precisam rodar "npm install" a cada sessão —
+# o nó já vem compilado dentro da imagem.
+FROM nodered/node-red:latest
+
+# node-red-node-sqlite depende de um módulo nativo (node-sqlite3).
+# Em Alpine (musl) às vezes precisa compilar; instalamos as build tools.
+USER root
+RUN apk add --no-cache build-base python3
+USER node-red
+
+# Instala o nó SQLite na imagem base
+RUN npm install --unsafe-perm node-red-node-sqlite
+```
+
+## Mosquitto.conf
+
+```conf
+# Broker MQTT compartilhado pelos 10 grupos do LAB
+listener 1883
+
+# Em ambiente de laboratório, o mais simples é liberar acesso anônimo.
+# Para isolar grupos, veja a seção de ACL comentada no README.
+allow_anonymous true
+
+# Mantém mensagens retained / sessões entre reinícios do contêiner
+persistence true
+persistence_location /mosquitto/data/
+
+# Logs no stdout (aparecem em: docker compose logs mosquitto)
+log_dest stdout
+```
+
+## Gera docker-compose.yml para N grupos de Node-RED + 1 Mosquitto
+
+```bash
+python3 gen_compose.py 10     # (re)gera o compose para 10 grupos
+```
+
+```python
+#!/usr/bin/env python3
+"""Gera docker-compose.yml para N grupos de Node-RED + 1 Mosquitto.
+Uso:  python3 gen_compose.py [num_grupos]   (padrao: 10)
+"""
+import sys
+
+N = int(sys.argv[1]) if len(sys.argv) > 1 else 10
+BASE_PORT = 1880  # grupo01 -> 1880, grupo02 -> 1881, ...
+
+header = """# Gerado por gen_compose.py — LAB IoT (Node-RED + MQTT + SQLite)
+# Suba tudo com:  docker compose up -d --build
+# Veja o status:  docker compose ps
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: lab-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    networks:
+      - labnet
+"""
+
+group_tpl = """
+  grupo{n:02d}-nodered:
+    build: .
+    image: lab-nodered:latest
+    container_name: grupo{n:02d}-nodered
+    restart: unless-stopped
+    ports:
+      - "{port}:1880"
+    volumes:
+      - grupo{n:02d}_data:/data
+    environment:
+      - TZ=America/Sao_Paulo
+    depends_on:
+      - mosquitto
+    networks:
+      - labnet
+"""
+
+parts = [header]
+for i in range(1, N + 1):
+    parts.append(group_tpl.format(n=i, port=BASE_PORT + i - 1))
+
+# Seção de volumes nomeados (persistem os flows e o .db de cada grupo)
+parts.append("\nvolumes:\n  mosquitto_data:\n")
+for i in range(1, N + 1):
+    parts.append(f"  grupo{i:02d}_data:\n")
+
+parts.append("\nnetworks:\n  labnet:\n    driver: bridge\n")
+
+with open("docker-compose.yml", "w", encoding="utf-8") as f:
+    f.write("".join(parts))
+
+print(f"docker-compose.yml gerado para {N} grupos "
+      f"(portas {BASE_PORT}..{BASE_PORT + N - 1}).")
+```
