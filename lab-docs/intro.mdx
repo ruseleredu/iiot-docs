@@ -32,3 +32,72 @@ import LabTable from "@site/src/components/LabTable";
   style={{ width: "100%", aspectRatio: "16 / 9", border: 0 }}
   allowFullScreen
 />
+
+---
+
+## 📌 Contexto do Projeto: Laboratório IoT (Node-RED + MQTT + SQLite3 + Docker)
+
+Aqui está um resumo compacto e estruturado da arquitetura e do script gerador (`gen_portal.py`), pronto para você copiar e colar como contexto inicial em um novo chat:
+
+### **Objetivo Geral**
+
+O projeto é um gerador em Python (`gen_portal.py`) que cria automaticamente um ambiente Docker para aulas de IoT. Ele expõe contêineres Node-RED isolados por grupo/turma por trás de um portal Nginx (proxy reverso) e um broker MQTT Mosquitto central.
+
+---
+
+### **Arquitetura & Nomenclatura**
+
+1. **Roteamento & Nomes de Serviços:**
+
+- **Convenção de Nomes:** `{turma}-{identificador}` (ex.: `n21-a`, `n21-b`, `n21-p`, `n21-n`).
+- **Reservas de Letras Especiais:**
+- **`p`** → **Professor** (ex.: `n21-p`).
+- **`n`** → **Painel de Notas / Avaliador** (ex.: `n21-n`).
+
+- **Grupos de Alunos:** Usam sequencialmente o restante do alfabeto (`a`, `b`, `c`... pulando `n` e `p`).
+
+2. **Avaliador Distribuído (Container `{turma}-n`):**
+
+- Possui o volume contendo todas as pastas dos alunos mapeado em modo leitura (`./data:/data_grupos:ro`).
+- Vem pré-configurado com um fluxo Node-RED autogerado que executa análise estática nos arquivos `flows.json` dos alunos (checklist de nodes, tópicos, etc.) e imprime um relatório de correção/notas no Debug.
+
+3. **Portal Nginx:**
+
+- Servido na porta `80`.
+- **Página Inicial (`index.html`):** Mantém visual _dark/neon_ com grid e cards estilizados. Cards de alunos usam cor padrão, o **Professor** recebe destaque em _dourado_ e o **Avaliador de Notas** em _roxo_.
+- **Proxy Reverso:** Redireciona a rota `/{servico}/` (ex: `/n21-a/`) para a porta `1880` do respectivo container.
+
+4. **Autenticação & Segurança:**
+
+- **Node-RED:** Cada container utiliza um `settings.js` customizado com autenticação via `adminAuth` com hashes `bcrypt` ($2b$).
+- São gerados dois usuários por container: `{servico}` (Admin) e `{servico}-view` (Apenas leitura).
+- As senhas geradas são exportadas para um arquivo `credenciais.txt`.
+
+---
+
+### **Comandos Úteis de Operação**
+
+- **Gerar infraestrutura (exemplo com 2 turmas e 10 grupos cada):**
+
+```bash
+python3 gen_portal.py --turma n21 --grupos 10
+```
+
+- **Subir o ambiente:**
+
+```bash
+docker compose up -d --build
+```
+
+- **Desabilitar/Habilitar um grupo pontualmente:**
+
+```bash
+docker compose stop n21-a-nodered   # Desabilita
+docker compose start n21-a-nodered  # Habilita
+```
+
+- **Aplicar alterações com remoção de turmas/grupos antigos:**
+
+```bash
+docker compose up -d --remove-orphans
+```
