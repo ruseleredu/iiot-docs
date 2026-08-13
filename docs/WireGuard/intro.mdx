@@ -1,0 +1,191 @@
+---
+title: Informações gerais
+sidebar_position: 1
+description: The world's leading network protocol analyzer
+---
+
+## WireGuard {/* #wireguard */}
+
+[WireGuard](https://www.wireguard.com/) is a modern, fast, and secure VPN protocol. It provides a simple and efficient way to create secure connections between devices over an untrusted network.
+
+## Setup a WireGuard Gateway on Linux
+
+Configurar um gateway **WireGuard** no mesmo Linux que roda seu IoT Gateway é a forma mais segura e performática de acessar dashboards (Grafana, Node-RED) e gerenciar a infraestrutura remotamente sem expor nenhuma porta do IoT Gateway para a internet pública.
+
+Abaixo está o passo a passo completo para configurar o servidor WireGuard no Linux, habilitar o encaminhamento de rede (_IP Forwarding_) e conectar um dispositivo cliente (como seu notebook ou smartphone).
+
+---
+
+## Arquitetura da Solução
+
+```text
+[ Cliente Remoto ] (Notebook / Celular)
+        │
+        │ (Túnel Encriptado UDP - ex: Porta 51820)
+        ▼
+┌───────────────────────────────────────────────────────────┐
+│              LINUX SERVER (IoT + WireGuard)               │
+│                                                           │
+│   Interface WireGuard: wg0 (ex: 10.8.0.1)                 │
+│                                                           │
+│   ───► Docker / Serviços Locais:                          │
+│        • Grafana   (10.8.0.1:3000 / localhost:3000)       │
+│        • Node-RED  (10.8.0.1:1880 / localhost:1880)       │
+│        • Mosquitto (10.8.0.1:1883 / localhost:1883)       │
+└───────────────────────────────────────────────────────────┘
+
+```
+
+---
+
+1. **Instalar o WireGuard no Servidor Linux:** Pré-requisito para criação do túnel VPN.
+   Atualize os pacotes e instale as ferramentas do WireGuard no servidor:
+
+```bash
+sudo apt update && sudo apt install -y wireguard qrencode
+
+```
+
+2. **Habilitar o Encaminhamento de IP (IP Forwarding):** Permite rotear o tráfego da VPN para a rede interna.
+   Edite o arquivo `/etc/sysctl.conf` para permitir que o Linux atue como roteador:
+
+```bash
+sudo nano /etc/sysctl.conf
+
+```
+
+Descomente ou adicione a seguinte linha:
+
+```text
+net.ipv4.ip_forward=1
+
+```
+
+Aplique as alterações imediatamente:
+
+```bash
+sudo sysctl -p
+
+```
+
+3. **Gerar as Chaves do Servidor e do Cliente:** Garante o modelo de criptografia assimétrica de ponta a ponta.
+   Acesse o diretório do WireGuard e gere os pares de chaves públicas e privadas para o **Servidor** e para o **Cliente**:
+
+```bash
+cd /etc/wireguard
+umask 077
+
+# Chaves do Servidor
+wg genkey | tee server_private.key | wg pubkey > server_public.key
+
+# Chaves do Cliente (ex: notebook)
+wg genkey | tee client_private.key | wg pubkey > client_public.key
+
+```
+
+4. **Configurar a Interface wg0 do Servidor:** Cria a rede privada virtual para os dispositivos conectados.
+   Identifique primeiro o nome da sua interface de rede física (ex: `eth0` ou `enp3s0`):
+
+```bash
+ip route show default | awk '{print $5}'
+
+```
+
+Crie o arquivo `/etc/wireguard/wg0.conf` substituindo `<SERVER_PRIVATE_KEY>`, `<CLIENT_PUBLIC_KEY>` e `<INTERFACE_FISICA>` (ex: `eth0`):
+
+```ini
+[Interface]
+Address = 10.8.0.1/24
+ListenPort = 51820
+PrivateKey = <SERVER_PRIVATE_KEY>
+
+# Regras do Firewall (NAT) ao levantar e baixar a VPN
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o <INTERFACE_FISICA> -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o <INTERFACE_FISICA> -j MASQUERADE
+
+# ---------------------------------------------------
+# Configuração do Cliente 1 (ex: Notebook)
+# ---------------------------------------------------
+[Peer]
+PublicKey = <CLIENT_PUBLIC_KEY>
+AllowedIPs = 10.8.0.2/32
+
+```
+
+5. **Iniciar e Habilitar o Serviço WireGuard:** Garante que a VPN inicie com o sistema.
+   Inicie o serviço da interface `wg0` e habilite a inicialização automática no boot:
+
+```bash
+sudo systemctl enable --now wg-quick@wg0
+
+```
+
+Verifique o status do túnel:
+
+```bash
+sudo wg show
+
+```
+
+6. **Ajustar o Firewall do Servidor (UFW):** Libera a porta UDP da VPN e o tráfego da sub-rede.
+   Se estiver utilizando o UFW (Uncomplicated Firewall), libere a porta 51820/UDP e o tráfego oriundo da interface da VPN:
+
+```bash
+sudo ufw allow 51820/udp
+sudo ufw allow in on wg0 to any
+sudo ufw reload
+
+```
+
+---
+
+## Criar o Arquivo de Configuração do Cliente
+
+No seu computador/cliente, crie um arquivo chamado `iot-gateway-vpn.conf` com a seguinte estrutura:
+
+```ini
+[Interface]
+PrivateKey = <CLIENT_PRIVATE_KEY>
+Address = 10.8.0.2/24
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = <SERVER_PUBLIC_KEY>
+# Endpoint: IP público ou DDNS do seu roteador/servidor e a porta UDP
+Endpoint = SEU_IP_PUBLICO_OU_DDNS:51820
+# Apenas direciona o tráfego da rede VPN (10.8.0.0/24) pelo túnel
+AllowedIPs = 10.8.0.0/24, 192.168.1.0/24
+# Envia keepalive a cada 25s para manter a conexão ativa atrás de NAT
+PersistentKeepalive = 25
+
+```
+
+> **Dica para Smartphones:** Se for usar a VPN no celular, gere um QR Code no terminal do servidor para escaneá-lo direto no aplicativo WireGuard:
+>
+> ```bash
+> qrencode -t ansiutf8 < /caminho/para/o/arquivo_cliente.conf
+>
+> ```
+
+---
+
+## Como Acessar os Serviços Remotamente
+
+Uma vez com a VPN conectada no seu notebook/celular:
+
+1. **Acesso por IP da VPN (`10.8.0.1`):**
+
+- **Grafana:** `[http://10.8.0.1:3000](http://10.8.0.1:3000)`
+- **Node-RED:** `[http://10.8.0.1:1880](http://10.8.0.1:1880)`
+- **Mosquitto MQTT:** `10.8.0.1:1883`
+- **SSH do Servidor:** `ssh usuario@10.8.0.1`
+
+2. **Acesso pelo IP da LAN Local (`192.168.x.x`):**
+   Como adicionamos a subnet da LAN local no campo `AllowedIPs` do cliente e configuramos o `MASQUERADE` nas regras de `PostUp` do servidor, você também conseguirá acessar o servidor pelo IP local original da rede do laboratório/empresa.
+
+---
+
+## WireGuard Config Generator
+
+- [WireGuard Config Generator](https://www.wireguardconfig.com/) - Gera arquivos de configuração para o servidor e clientes WireGuard de forma rápida e prática.
+- https://wireguard.otaviomiranda.com.br/
