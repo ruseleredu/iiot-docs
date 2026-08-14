@@ -1,0 +1,117 @@
+---
+id: lab-win11-setup
+title: Tutorial de Instalação no Windows 11 via `winget`
+sidebar_label: Ambiente via `winget` no WIN11
+description: Intruções para instalação do ambiente dos LABs no WIN11
+---
+
+## Tutorial de Instalação no Windows 11 via `winget`
+
+### Passo 0: Abrir o Terminal como Administrador
+
+1. Clique com o botão direito no ícone do **Menu Iniciar** (ou pressione `Win + X`).
+2. Selecione **Terminal (Administrador)** ou **PowerShell (Administrador)**.
+3. Confirme a permissão de administrador no aviso do Windows.
+
+---
+
+### Passo 1: GitHub Desktop
+
+Execute o comando abaixo para instalar o GitHub Desktop:
+
+```powershell
+winget install --id GitHub.GitHubDesktop -e
+```
+
+---
+
+### Passo 2: Node.js e npm
+
+Para instalar a versão LTS (suporte de longo prazo) recomendada do Node.js (que já inclui o **npm**):
+
+```powershell
+winget install --id OpenJS.NodeJS.LTS -e
+```
+
+> **Nota:** Após a instalação, feche e abra o Terminal novamente para atualizar as variáveis de ambiente. Você pode verificar a instalação digitando:
+>
+> ```powershell
+> node -v
+> npm -v
+> ```
+
+---
+
+### Passo 3: Node-RED
+
+O Node-RED é instalado globalmente via **npm** (gerenciador de pacotes do Node.js, instalado no Passo 2).
+
+1. No Terminal, execute:
+
+```powershell
+npm install -g --unsafe-perm node-red
+```
+
+2. Para testar a execução, basta digitar:
+
+```powershell
+node-red
+```
+
+3. O Node-RED estará acessível no seu navegador pelo endereço `http://localhost:1880`.
+
+---
+
+### Passo 4: Docker Desktop
+
+O Docker Desktop requer que o recurso **WSL2 (Windows Subsystem for Linux)** esteja ativo.
+
+1. Instale o Docker Desktop via `winget`:
+
+```powershell
+winget install --id Docker.DockerDesktop -e
+```
+
+2. Se o WSL2 ainda não estiver ativado na máquina, execute no Terminal:
+
+```powershell
+wsl --install
+```
+
+3. Reinicie o computador para concluir a configuração.
+
+---
+
+### Passo 5: Drivers para placas ESP32 (CP210x / CH340)
+
+#### 1. Driver Silicon Labs CP210x
+
+```powershell
+winget install --id SiliconLabs.CP210xVCPDriver -e
+```
+
+#### 2. Driver WCH CH340 / CH341
+
+```powershell
+winget install --id WCH.CH341SER -e
+```
+
+> **Nota sobre drivers:** Caso prefira os instaladores `.exe` ou `.zip` diretos dos fabricantes para guardar na pasta do Drive:
+>
+> - **CP210x:** Disponível na página oficial da [Silicon Labs](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers).
+> - **CH340:** Disponível no site oficial do fabricante [WCH (CH341SER.EXE)](http://www.wch-ic.com/downloads/CH341SER_EXE.html).
+
+---
+
+## Resumo dos Comandos (`Script` em Bloco Único)
+
+Caso prefira rodar a instalação dos softwares de uma única vez, você pode copiar e colar o bloco abaixo no Terminal (Administrador):
+
+```powershell
+winget install --id GitHub.GitHubDesktop -e
+winget install --id OpenJS.NodeJS.LTS -e
+winget install --id Docker.DockerDesktop -e
+winget install --id SiliconLabs.CP210xVCPDriver -e
+winget install --id WCH.CH341SER -e
+npm install -g --unsafe-perm node-red
+```
