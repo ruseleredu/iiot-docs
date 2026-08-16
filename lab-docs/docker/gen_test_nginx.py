@@ -30,6 +30,16 @@ Alternativa sem DNS: use o hosts.lab gerado (expandido, um nome por linha).
 Variacoes:
   --grupo a,c,e     gera so esses grupos (aceita "a", "n21-a", "p", "n")
   --sem-dns         nao inclui o dnsmasq (so nginx; use o hosts.lab)
+  --modo path       usa <dominio>/<turma>-<grupo>/<servico> (rotas por caminho)
+                    em vez do padrao <servico>.<turma>-<grupo>.<dominio> (subdominio)
+
+Esquemas de mapeamento (--modo):
+  subdominio (padrao):  n8n.n21-a.lab, nodered.n21-a.lab, ...   (um host por servico)
+  path:                 lab/n21-a/n8n, lab/n21-a/nodered, ...   (um dominio, varios caminhos)
+
+No modo path tudo fica no MESMO dominio (mesma origem): nao precisa de wildcard e o
+hosts.lab tem uma unica linha. No modo subdominio cada servico e um host proprio
+(precisa do wildcard do dnsmasq ou de uma linha por host no hosts.lab).
 
 O portal usa Bootstrap: o CSS e baixado para html/ (funciona offline). Se nao
 houver internet na geracao, cai para o CDN (ai o cliente precisa de internet).
@@ -57,11 +67,16 @@ ap.add_argument("--grupo", default=None,
                 help="Gera para grupos especificos (lista por virgula: a,c,e ou n21-a,p,n). Ignora --grupos.")
 ap.add_argument("--sem-dns", action="store_true",
                 help="Nao inclui o dnsmasq no stack (so nginx; use o hosts.lab).")
+ap.add_argument("--modo", choices=["subdominio", "path"], default="subdominio",
+                help="Esquema de mapeamento: 'subdominio' (<servico>.<turma>-<grupo>.<dominio>) "
+                     "ou 'path' (<dominio>/<turma>-<grupo>/<servico>).")
 args = ap.parse_args()
 
 TURMA, N, DOMINIO, IP, PORTA = args.turma, args.grupos, args.dominio, args.ip, args.porta
 DNS1, DNS2 = args.dns1, args.dns2
 SEM_DNS = args.sem_dns
+MODO = args.modo
+MODO_PATH = MODO == "path"
 SERVICOS = [s.strip() for s in args.servicos.split(",") if s.strip()]
 if not SERVICOS:
     sys.exit("Informe ao menos um servico em --servicos.")
@@ -89,10 +104,44 @@ else:
     grupos = [f"{TURMA}-{letras[i]}" for i in range(N)]
     todos = grupos + [prof, notas]
 
-# Todos os hostnames de teste (servico x entidade)
+# Todos os hostnames de teste (servico x entidade), modo subdominio
 def hostname(servico, entidade):
     return f"{servico}.{entidade}.{DOMINIO}"
 
+
+# --- Mapeamento dependente do modo (subdominio vs path) ---
+# Cada "alvo" (servico x entidade) precisa de: uma chave estavel (usada no
+# data-host do portal), a URL da pagina, a URL do /ping e um rotulo de exibicao.
+def alvo_chave(servico, entidade):
+    # Chave estavel usada no atributo data-host / data-for do portal.
+    if MODO_PATH:
+        return f"{entidade}/{servico}"          # ex.: n21-a/n8n
+    return hostname(servico, entidade)          # ex.: n8n.n21-a.lab
+
+
+def alvo_url_pagina(servico, entidade):
+    # Link que o portal abre. No modo path usamos URL relativa (mesma origem,
+    # carrega automaticamente host:porta atual). No subdominio, host absoluto.
+    if MODO_PATH:
+        return f"/{entidade}/{servico}/"
+    return f"http://{hostname(servico, entidade)}/"
+
+
+def alvo_url_ping(servico, entidade):
+    # Endpoint leve consultado pelo auto-teste.
+    if MODO_PATH:
+        return f"/{entidade}/{servico}/ping"
+    return f"http://{hostname(servico, entidade)}/ping"
+
+
+def alvo_rotulo(servico, entidade):
+    # Texto mostrado no card.
+    if MODO_PATH:
+        return f"{DOMINIO}/{entidade}/{servico}"
+    return hostname(servico, entidade)
+
+
+# Lista de alvos (contagem identica nos dois modos: servicos x entidades).
 hosts = [hostname(s, g) for g in todos for s in SERVICOS]
 
 BASE = "test-nginx"
@@ -183,20 +232,22 @@ if not SEM_DNS:
     open(f"{BASE}/dnsmasq.d/lab.conf", "w", encoding="utf-8").write("".join(dnsmasq_conf))
 
 # ---------------- nginx.conf ----------------
-# Pagina de confirmacao servida por cada subdominio (usa a variavel $host do nginx).
-pagina = (
-    "<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'>"
-    "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-    "<title>OK - $host</title></head>"
-    "<body style='font-family:system-ui,-apple-system,sans-serif;background:#071311;"
-    "color:#dcf5ec;display:grid;place-items:center;min-height:100vh;margin:0'>"
-    "<div style='text-align:center'>"
-    "<div style='font-size:64px'>&#9989;</div>"
-    "<h1 style='font-family:ui-monospace,monospace;color:#35e0b0'>$host</h1>"
-    "<p>O nginx respondeu. Este host esta <strong>acessivel</strong>.</p>"
-    "<p style='color:#6f9a8d;font-size:13px'>(no lab real, aqui abriria o servico correspondente)</p>"
-    "</div></body></html>"
-)
+# Pagina de confirmacao. No modo subdominio o titulo e a variavel $host do nginx;
+# no modo path o titulo (dominio/turma-grupo/servico) e embutido em cada location.
+def pagina_html(titulo):
+    return (
+        "<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+        f"<title>OK - {titulo}</title></head>"
+        "<body style='font-family:system-ui,-apple-system,sans-serif;background:#071311;"
+        "color:#dcf5ec;display:grid;place-items:center;min-height:100vh;margin:0'>"
+        "<div style='text-align:center'>"
+        "<div style='font-size:64px'>&#9989;</div>"
+        f"<h1 style='font-family:ui-monospace,monospace;color:#35e0b0'>{titulo}</h1>"
+        "<p>O nginx respondeu. Este host esta <strong>acessivel</strong>.</p>"
+        "<p style='color:#6f9a8d;font-size:13px'>(no lab real, aqui abriria o servico correspondente)</p>"
+        "</div></body></html>"
+    )
 
 n = [
     "worker_processes auto;\n",
@@ -205,36 +256,74 @@ n = [
     "    include       /etc/nginx/mime.types;\n",
     "    default_type  application/octet-stream;\n",
     "    sendfile on;\n\n",
-    "    # ---- Portal (raiz do dominio) ----\n",
-    "    server {\n",
-    "        listen 80 default_server;\n",
-    f"        server_name {DOMINIO};\n",
-    "        root /usr/share/nginx/html;\n",
-    "        index index.html;\n",
-    "        location / { }\n",
-    "    }\n",
 ]
-for g in todos:
-    n.append(f"\n    # ===== {nome_entidade(g)} ({g}) =====\n")
-    for s in SERVICOS:
-        host = hostname(s, g)
-        n += [
-            f"    # {host}\n",
-            "    server {\n",
-            "        listen 80;\n",
-            f"        server_name {host};\n",
-            "        # endpoint leve para o auto-teste do portal (com CORS)\n",
-            "        location = /ping {\n",
-            "            add_header Access-Control-Allow-Origin *;\n",
-            "            default_type text/plain;\n",
-            '            return 200 "$host ok\\n";\n',
-            "        }\n",
-            "        location / {\n",
-            "            default_type text/html;\n",
-            f'            return 200 "{pagina}";\n',
-            "        }\n",
-            "    }\n",
-        ]
+
+if MODO_PATH:
+    # UM unico server: portal na raiz + uma rota por servico/entidade.
+    # Mapeamento: <dominio>/<turma>-<grupo>/<servico>
+    n += [
+        "    # ---- Modo PATH: um dominio, rotas por caminho ----\n",
+        "    server {\n",
+        "        listen 80 default_server;\n",
+        f"        server_name {DOMINIO};\n",
+        "        root /usr/share/nginx/html;\n",
+        "        index index.html;\n\n",
+        "        # portal + assets estaticos (bootstrap.min.css etc.)\n",
+        "        location / { }\n",
+    ]
+    for g in todos:
+        n.append(f"\n        # ===== {nome_entidade(g)} ({g}) =====\n")
+        for s in SERVICOS:
+            base_rota = f"/{g}/{s}"
+            pagina = pagina_html(f"{DOMINIO}/{g}/{s}")
+            n += [
+                f"        # {DOMINIO}{base_rota}/\n",
+                "        # endpoint leve para o auto-teste do portal (mesma origem; CORS por garantia)\n",
+                f"        location = {base_rota}/ping {{\n",
+                "            add_header Access-Control-Allow-Origin *;\n",
+                "            default_type text/plain;\n",
+                f'            return 200 "{g}/{s} ok\\n";\n',
+                "        }\n",
+                f"        location {base_rota}/ {{\n",
+                "            default_type text/html;\n",
+                f'            return 200 "{pagina}";\n',
+                "        }\n",
+            ]
+    n += ["    }\n"]
+else:
+    # Modo SUBDOMINIO: um server por host <servico>.<turma>-<grupo>.<dominio>.
+    pagina = pagina_html("$host")  # nginx substitui $host em cada requisicao
+    n += [
+        "    # ---- Portal (raiz do dominio) ----\n",
+        "    server {\n",
+        "        listen 80 default_server;\n",
+        f"        server_name {DOMINIO};\n",
+        "        root /usr/share/nginx/html;\n",
+        "        index index.html;\n",
+        "        location / { }\n",
+        "    }\n",
+    ]
+    for g in todos:
+        n.append(f"\n    # ===== {nome_entidade(g)} ({g}) =====\n")
+        for s in SERVICOS:
+            host = hostname(s, g)
+            n += [
+                f"    # {host}\n",
+                "    server {\n",
+                "        listen 80;\n",
+                f"        server_name {host};\n",
+                "        # endpoint leve para o auto-teste do portal (com CORS)\n",
+                "        location = /ping {\n",
+                "            add_header Access-Control-Allow-Origin *;\n",
+                "            default_type text/plain;\n",
+                '            return 200 "$host ok\\n";\n',
+                "        }\n",
+                "        location / {\n",
+                "            default_type text/html;\n",
+                f'            return 200 "{pagina}";\n',
+                "        }\n",
+                "    }\n",
+            ]
 n += ["}\n"]
 open(f"{BASE}/nginx.conf", "w", encoding="utf-8").write("".join(n))
 
@@ -253,7 +342,11 @@ try:
 except Exception as e:
     bootstrap_msg = f"Nao baixou o Bootstrap (usando CDN, requer internet no cliente): {e}"
 
-hosts_js = ",".join(f'"{h}"' for h in hosts)
+# Cada alvo vira ["chave", "url_do_ping"] para o auto-teste do portal.
+targets_js = ",".join(
+    f'["{alvo_chave(s, g)}","{alvo_url_ping(s, g)}"]'
+    for g in todos for s in SERVICOS
+)
 
 # Cada entidade vira uma secao Bootstrap (heading + grid de cards de servico)
 secoes = []
@@ -266,17 +359,19 @@ for g in todos:
         badge = ""
     cards = []
     for s in SERVICOS:
-        host = hostname(s, g)
+        chave = alvo_chave(s, g)
+        url_pagina = alvo_url_pagina(s, g)
+        rotulo = alvo_rotulo(s, g)
         cards.append(
-            f'          <div class="col" data-host="{host}">\n'
+            f'          <div class="col" data-host="{chave}">\n'
             f'            <div class="card h-100 border-secondary-subtle status-card">\n'
             f'              <div class="card-body d-flex flex-column">\n'
             f'                <div class="d-flex justify-content-between align-items-start mb-2">\n'
             f'                  <span class="fw-semibold fs-5">{nome_servico(s)}</span>\n'
-            f'                  <span class="badge rounded-pill text-bg-secondary status" data-for="{host}">&hellip;</span>\n'
+            f'                  <span class="badge rounded-pill text-bg-secondary status" data-for="{chave}">&hellip;</span>\n'
             f'                </div>\n'
-            f'                <a href="http://{host}/" target="_blank" rel="noopener"\n'
-            f'                   class="stretched-link text-decoration-none font-monospace small text-body-secondary">{host}</a>\n'
+            f'                <a href="{url_pagina}" target="_blank" rel="noopener"\n'
+            f'                   class="stretched-link text-decoration-none font-monospace small text-body-secondary">{rotulo}</a>\n'
             f'              </div>\n'
             f'            </div>\n'
             f'          </div>\n'
@@ -311,54 +406,62 @@ html = """<!DOCTYPE html>
 <body>
   <div class="container py-5" style="max-width:1100px">
     <p class="eyebrow mb-1">teste de rede &middot; nginx + dns</p>
-    <h1 class="fw-semibold mb-2">Diagnostico de subdominios</h1>
+    <h1 class="fw-semibold mb-2">Diagnostico de __UNIDADE__</h1>
     <p class="text-body-secondary" style="max-width:64ch">Cada carto testa
-      <code>http://host/ping</code> automaticamente. Verde = o nome resolveu e o nginx
+      <code>__PING_EXEMPLO__</code> automaticamente. Verde = resolveu e o nginx
       respondeu. Vermelho = falhou (nome nao resolve, porta bloqueada, ou nginx fora).
-      Clique num carto para abrir a pagina de confirmacao daquele host.</p>
+      Clique num carto para abrir a pagina de confirmacao daquele alvo.</p>
     <div id="summary" class="alert alert-secondary py-2 px-3 d-inline-block font-monospace small">
-      testando __TOTAL__ hosts&hellip;</div>
+      testando __TOTAL__ alvos&hellip;</div>
     <main class="mt-3">
 __SECOES__    </main>
     <footer class="mt-4 pt-3 border-top border-secondary-subtle text-body-secondary font-monospace small">
-      dominio: __DOMINIO__ &middot; __NSERV__ servicos x __NENT__ entidades = __TOTAL__ subdominios
+      dominio: __DOMINIO__ &middot; modo: __MODO__ &middot; __NSERV__ servicos x __NENT__ entidades = __TOTAL__ __UNIDADE__
       &middot; este stack nao sobe os servicos reais<br>
       obs.: mqtt no lab real e TCP (1883); aqui e servido por HTTP so para o teste de resolucao
     </footer>
   </div>
 <script>
-  const hosts=[__HOSTS_JS__];
+  // Cada alvo e um par [chave, urlDoPing]. A chave casa com data-host/data-for.
+  const targets=[__TARGETS_JS__];
   let ok=0, done=0;
   function finish(){
     const el=document.getElementById('summary');
-    el.textContent=ok+" de "+hosts.length+" hosts acessiveis";
+    el.textContent=ok+" de "+targets.length+" alvos acessiveis";
     el.classList.remove('alert-secondary');
-    el.classList.add(ok===hosts.length?'alert-success':(ok===0?'alert-danger':'alert-warning'));
+    el.classList.add(ok===targets.length?'alert-success':(ok===0?'alert-danger':'alert-warning'));
   }
-  hosts.forEach(function(h){
-    fetch("http://"+h+"/ping",{cache:"no-store"})
+  targets.forEach(function(t){
+    const key=t[0], ping=t[1];
+    fetch(ping,{cache:"no-store"})
       .then(function(r){return r.ok?r.text():Promise.reject();})
-      .then(function(){mark(h,true);})
-      .catch(function(){mark(h,false);});
+      .then(function(){mark(key,true);})
+      .catch(function(){mark(key,false);});
   });
-  function mark(h,pass){
-    const col=document.querySelector('[data-host="'+h+'"]');
+  function mark(key,pass){
+    const col=document.querySelector('[data-host="'+key+'"]');
     const card=col?col.querySelector('.card'):null;
-    const st=document.querySelector('[data-for="'+h+'"]');
+    const st=document.querySelector('[data-for="'+key+'"]');
     if(card){card.classList.remove('border-secondary-subtle');
       card.classList.add('border-2',pass?'border-success':'border-danger');}
     if(st){st.classList.remove('text-bg-secondary');
       st.classList.add(pass?'text-bg-success':'text-bg-danger');
       st.textContent=pass?'\\u2713 ok':'\\u2717 falhou';}
-    if(pass)ok++; done++; if(done===hosts.length)finish();
+    if(pass)ok++; done++; if(done===targets.length)finish();
   }
 </script>
 </body>
 </html>
 """
+unidade = "caminhos" if MODO_PATH else "subdominios"
+ping_exemplo = (f"http://{DOMINIO}/<turma>-<grupo>/<servico>/ping"
+                if MODO_PATH else "http://<servico>.<turma>-<grupo>/ping")
 html = (html.replace("__SECOES__", "".join(secoes))
-            .replace("__HOSTS_JS__", hosts_js)
+            .replace("__TARGETS_JS__", targets_js)
             .replace("__BOOTSTRAP__", bootstrap_href)
+            .replace("__PING_EXEMPLO__", ping_exemplo)
+            .replace("__UNIDADE__", unidade)
+            .replace("__MODO__", MODO)
             .replace("__DOMINIO__", DOMINIO)
             .replace("__NSERV__", str(len(SERVICOS)))
             .replace("__NENT__", str(len(todos)))
@@ -373,26 +476,41 @@ with open(f"{BASE}/hosts.lab", "w", encoding="utf-8") as f:
     f.write("#   Windows: C:\\Windows\\System32\\drivers\\etc\\hosts\n")
     f.write("#   Linux/Mac: /etc/hosts\n")
     f.write(f"# Preferivel: usar o dnsmasq do stack (wildcard). Troque {IP} se o IP mudar.\n\n")
-    f.write(f"{IP}\t{DOMINIO}\t# portal\n")
-    for g in todos:
-        f.write(f"\n# {nome_entidade(g)} ({g})\n")
-        for s in SERVICOS:
-            f.write(f"{IP}\t{hostname(s, g)}\n")
+    if MODO_PATH:
+        # Modo path: tudo no mesmo dominio -> uma unica linha basta.
+        f.write(f"# Modo path: todos os servicos ficam em {DOMINIO}/<turma>-<grupo>/<servico>\n")
+        f.write(f"{IP}\t{DOMINIO}\t# dominio unico (portal + todas as rotas)\n")
+    else:
+        # Modo subdominio: hosts NAO aceitam wildcard -> uma linha por host.
+        f.write(f"{IP}\t{DOMINIO}\t# portal\n")
+        for g in todos:
+            f.write(f"\n# {nome_entidade(g)} ({g})\n")
+            for s in SERVICOS:
+                f.write(f"{IP}\t{hostname(s, g)}\n")
 
+unidade_cli = "caminhos" if MODO_PATH else "subdominios"
+n_hosts_file = 1 if MODO_PATH else len(hosts)
 alvo = (f"grupos: {', '.join(todos)}" if args.grupo else f"{len(todos)} entidades")
-print(f"OK: stack de teste gerado em ./{BASE}/  ({alvo})")
+print(f"OK: stack de teste gerado em ./{BASE}/  ({alvo})  |  modo: {MODO}")
 if SEM_DNS:
     print(f"  - {BASE}/docker-compose.yml  (apenas nginx, porta {PORTA})")
 else:
     print(f"  - {BASE}/docker-compose.yml  (dnsmasq + nginx, porta {PORTA})")
-    print(f"  - {BASE}/dnsmasq.d/lab.conf   (wildcard: *.{DOMINIO} -> {IP})")
-print(f"  - {BASE}/nginx.conf          (portal + {len(hosts)} subdominios de teste)")
+    if MODO_PATH:
+        print(f"  - {BASE}/dnsmasq.d/lab.conf   ({DOMINIO} -> {IP}; wildcard cobre tudo)")
+    else:
+        print(f"  - {BASE}/dnsmasq.d/lab.conf   (wildcard: *.{DOMINIO} -> {IP})")
+print(f"  - {BASE}/nginx.conf          (portal + {len(hosts)} {unidade_cli} de teste)")
 print(f"  - {BASE}/html/index.html     (auto-teste verde/vermelho, agrupado)")
 if SEM_DNS:
-    print(f"  - {BASE}/hosts.lab           (necessario p/ resolver: {len(hosts)} hosts)")
+    print(f"  - {BASE}/hosts.lab           (necessario p/ resolver: {n_hosts_file} linha(s))")
 else:
-    print(f"  - {BASE}/hosts.lab           (fallback sem DNS: {len(hosts)} hosts)")
-print(f"\nServicos: {', '.join(SERVICOS)}  |  Entidades: {len(todos)} ({', '.join(todos)})")
+    print(f"  - {BASE}/hosts.lab           (fallback sem DNS: {n_hosts_file} linha(s))")
+if MODO_PATH:
+    print(f"\nMapeamento: {DOMINIO}/<turma>-<grupo>/<servico>  (ex.: {DOMINIO}/{todos[0]}/{SERVICOS[0]})")
+else:
+    print(f"\nMapeamento: <servico>.<turma>-<grupo>.{DOMINIO}  (ex.: {SERVICOS[0]}.{todos[0]}.{DOMINIO})")
+print(f"Servicos: {', '.join(SERVICOS)}  |  Entidades: {len(todos)} ({', '.join(todos)})")
 print(f"Bootstrap: {bootstrap_msg}")
 print("\nComo usar:")
 passo = 1

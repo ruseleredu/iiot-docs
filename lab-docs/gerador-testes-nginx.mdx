@@ -1,0 +1,246 @@
+---
+id: gerador-testes-nginx
+title: Gerador de Stack Mínimo de Testes (Nginx + DNS)
+sidebar_label: Teste de Rede e DNS
+description: Script Python para gerar um ambiente minimalista de validação de subdomínios e DNS sem subir os serviços reais.
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Gerador de Stack Mínimo para Testes de Rede
+
+Este script Python (`gen_test_nginx.py`) tem como objetivo validar se a **resolução de nomes de domínio (DNS)** e o **roteamento HTTP do Nginx** estão funcionando corretamente para múltiplos grupos e serviços em um ambiente de laboratório, **sem a necessidade de implantar as instâncias reais**.
+
+:::info[Finalidade]
+Subir os serviços reais (como n8n, Node-RED, Gitea) consome muita memória e CPU. Este script cria um ambiente leve contendo apenas **Nginx** (com páginas de confirmação estáticas) e **Dnsmasq** (DNS coringa/wildcard) para testar a conectividade da rede rapidamente.
+:::
+
+---
+
+## 🚀 Como Executar
+
+### 1. Pré-requisitos
+
+- **Python 3.x** instalado.
+- **Docker** e **Docker Compose** instalados na máquina do servidor.
+
+### 2. Gerando os Arquivos
+
+Execute o script passando os parâmetros de configuração da sua turma e servidor:
+
+```bash
+python3 gen_test_nginx.py --turma n21 --grupos 10 --ip 192.168.0.102
+```
+
+---
+
+## 🛠️ Parâmetros do CLI
+
+| Parâmetro    | Padrão                   | Descrição                                                            |
+| ------------ | ------------------------ | -------------------------------------------------------------------- |
+| `--turma`    | `n21`                    | Identificador da turma.                                              |
+| `--grupos`   | `10`                     | Quantidade de grupos a serem criados (ex: `n21-a` até `n21-j`).      |
+| `--dominio`  | `lab`                    | Domínio base usado nos testes.                                       |
+| `--servicos` | `n8n,nodered,gitea,mqtt` | Lista de serviços a serem testados.                                  |
+| `--ip`       | `127.0.0.1`              | IP do servidor para onde os domínios deverão apontar.                |
+| `--porta`    | `80`                     | Porta HTTP do Nginx de teste.                                        |
+| `--grupo`    | `None`                   | Permite filtrar grupos específicos (ex: `--grupo a,c,e` ou `n21-a`). |
+| `--sem-dns`  | `False`                  | Se ativado, ignora o container `dnsmasq` e gera apenas o Nginx.      |
+
+---
+
+## 📁 Estrutura do Projeto Gerado
+
+Após a execução, o script criará a pasta `test-nginx/` com a seguinte estrutura:
+
+```
+test-nginx/
+├── docker-compose.yml   # Definição dos containers (Nginx + Dnsmasq)
+├── nginx.conf           # Configuração dos VHosts e rotas de /ping
+├── dnsmasq.d/
+│   └── lab.conf         # Resolução wildcard (*.lab -> IP)
+├── html/
+│   ├── index.html       # Portal com auto-teste automático (JS/Bootstrap)
+│   └── bootstrap.min.css# CSS local para funcionamento 100% offline
+└── hosts.lab            # Arquivo hosts estático (fallback sem DNS)
+```
+
+---
+
+## 🖥️ Inicializando o Ambiente de Teste
+
+:::warning[Liberar a Porta 53]
+No Linux, o serviço `systemd-resolved` geralmente ocupa a porta 53. Desative-o antes de subir o Dnsmasq:
+
+```bash
+sudo sed -i 's/^#\?DNSStubListener=.*/DNSStubListener=no/' /etc/systemd/resolved.conf
+sudo systemctl restart systemd-resolved
+```
+
+:::
+
+1. Navegue até o diretório gerado e suba o stack:
+
+```bash
+cd test-nginx && docker compose up -d
+```
+
+2. **Nos computadores clientes**, configure o IP do DNS preferencial do adaptador de rede para o **IP do Servidor** (`--ip`).
+
+1. Suba o stack gerado com a flag `--sem-dns`:
+
+```bash
+cd test-nginx && docker compose up -d
+```
+
+2. Como arquivos `hosts` de sistemas operacionais **não aceitam wildcard**, copie o conteúdo do arquivo gerado `test-nginx/hosts.lab` e cole no arquivo correspondente do cliente:
+
+- **Windows:** `C:\Windows\System32\drivers\etc\hosts`
+- **Linux/Mac:** `/etc/hosts`
+
+---
+
+## 📊 Portal de Diagnóstico e Auto-Teste
+
+Ao acessar `http://lab/` (ou `http://<IP_DO_SERVIDOR>/`), você verá o painel de controle interativo:
+
+- **Mapeamento:** O portal varre e renderiza cards para cada subdomínio no formato `<servico>.<turma>-<grupo>.<dominio>` (ex: `n8n.n21-a.lab`).
+- **Auto-teste Visual:** O script JS realiza requisições para `http://<host>/ping`.
+- 🟢 **Verde:** O DNS resolveu e o Nginx respondeu corretamente.
+- 🔴 **Vermelho:** Falha na resolução de nome, porta bloqueada ou Nginx inacessível.
+
+:::note[Observação sobre o serviço MQTT]
+No ambiente real de produção, o MQTT roda sobre o protocolo **TCP na porta 1883**. Neste stack de teste, ele é exposto temporariamente via **HTTP na porta 80** apenas para validar a resolução de nome e o roteamento de rede.
+:::
+
+## 🎛️ Parâmetros da CLI (Interface de Linha de Comando)
+
+Abaixo estão todos os argumentos aceitos pelo script `gen_test_nginx.py`, com seus valores padrão e descrições:
+
+| Parâmetro    | Tipo     | Valor Padrão             | Descrição                                                                        |
+| :----------- | :------- | :----------------------- | :------------------------------------------------------------------------------- |
+| `--turma`    | `string` | `n21`                    | Identificador da turma ou módulo (ex: `n21`, `t01`).                             |
+| `--grupos`   | `int`    | `10`                     | Quantidade de grupos (gerados alfabeticamente como `a`, `b`, `c`...).            |
+| `--dominio`  | `string` | `lab`                    | TLD/Domínio base para o laboratório (`<servico>.<turma>-<grupo>.<dominio>`).     |
+| `--servicos` | `string` | `n8n,nodered,gitea,mqtt` | Lista de serviços separados por vírgula a serem mapeados no teste.               |
+| `--ip`       | `string` | `127.0.0.1`              | IP do servidor (usado pelo Dnsmasq e no arquivo `hosts.lab`).                    |
+| `--porta`    | `int`    | `80`                     | Porta local na máquina host para bind do serviço Nginx.                          |
+| `--dns1`     | `string` | `1.1.1.1`                | DNS Upstream 1 do Dnsmasq para resolução de nomes externos.                      |
+| `--dns2`     | `string` | `1.0.0.1`                | DNS Upstream 2 do Dnsmasq para resolução de nomes externos.                      |
+| `--grupo`    | `string` | `None`                   | Gera apenas para grupos específicos (ex: `a,c,e` ou `n21-a`). Ignora `--grupos`. |
+| `--sem-dns`  | `flag`   | `False`                  | Desativa o container do `dnsmasq` no `docker-compose.yml` (usa apenas Nginx).    |
+
+---
+
+## 🧪 Seção de Testes e Casos de Uso
+
+Você pode simular e testar diferentes cenários de implantação utilizando combinações dos argumentos acima:
+
+Gera o stack completo para 10 grupos (`a` a `j`) + entidades especiais (Professor e Notas), apontando para o IP local da rede interna.
+
+```bash
+python3 gen_test_nginx.py --turma n21 --grupos 10 --ip 192.168.0.102
+```
+
+**Resultado Esperado:**
+
+- **Total de Hosts:** 48 subdomínios (12 entidades × 4 serviços) + 1 portal raiz.
+- **DNS:** Dnsmasq ativo escutando na porta `53` e resolvendo `*.lab -> 192.168.0.102`.
+- **Serviços:** Nginx escutando na porta `80`.
+
+Gera o ambiente apenas para grupos selecionados (por exemplo, reposição ou turmas reduzidas), ignorando o parâmetro `--grupos`.
+
+```bash
+python3 gen_test_nginx.py --turma n21 --grupo a,c,f,p --ip 192.168.0.102
+```
+
+:::info[Mapeamento de Atalhos]
+O parâmetro `--grupo` aceita tanto o sufixo direto (`a,c,f`), a identificação completa (`n21-a`), quanto papéis especiais como `p` (Professor) e `n` (Painel de Notas).
+:::
+
+Caso o servidor já possua um Nginx ou Reverse Proxy rodando na porta `80`, utilize `--porta` para evitar conflitos no host.
+
+```bash
+python3 gen_test_nginx.py --turma n21 --porta 8080 --ip 192.168.0.102
+```
+
+Para validar no navegador ou realizar chamadas de teste:
+
+```bash
+curl -I http://n8n.n21-a.lab:8080/ping
+```
+
+Se a porta 53 do servidor não puder ser liberada, você pode desativar a criação do container Dnsmasq gerando a stack apenas com o Nginx.
+
+```bash
+python3 gen_test_nginx.py --turma n21 --sem-dns --ip 192.168.0.102
+```
+
+:::tip[Como Testar nos Clientes]
+Neste formato, você deve utilizar o arquivo gerado em `test-nginx/hosts.lab` e copiar suas entradas diretamente para o arquivo `/etc/hosts` (Linux/Mac) ou `C:\Windows\System32\drivers\etc\hosts` (Windows).
+:::
+
+Personalize a lista de serviços a serem testados e altere os servidores DNS externos primário/secundário utilizados pelo Dnsmasq.
+
+```bash
+python3 gen_test_nginx.py \
+  --turma t02 \
+  --dominio dev.local \
+  --servicos n8n,nodered,gitea,mqtt,grafana,redis \
+  --dns1 8.8.8.8 \
+  --dns2 8.8.4.4 \
+  --ip 172.16.0.10
+```
+
+---
+
+### 🔍 Comandos para Validação Rápida via Terminal
+
+Após subir o ambiente com `cd test-nginx && docker compose up -d`, você pode validar os serviços diretamente pela linha de comando do servidor:
+
+```bash
+# 1. Testar resolução de DNS via Dnsmasq (substitua pelo IP do seu servidor)
+dig @127.0.0.1 n8n.n21-a.lab +short
+
+# 2. Testar o endpoint de healthcheck /ping com suporte a CORS
+curl -i http://gitea.n21-b.lab/ping
+
+# 3. Testar a resposta da página HTML de confirmação
+curl -s http://nodered.n21-c.lab/ | grep "O nginx respondeu"
+```
+
+---
+
+## 📋 Contexto do Script: `gen_test_nginx.py`
+
+Aqui está um resumo compacto e estruturado do script `gen_test_nginx.py`. Você pode copiar este bloco e colá-lo em uma conversa futura com uma IA para contextualizá-la rapidamente.
+
+**Objetivo:**
+
+Gera um stack Docker mínimo em Python (Nginx + Dnsmasq opcional) para testar se os subdomínios de um ambiente de laboratório resolvem via DNS e chegam ao servidor web **sem a necessidade de subir os serviços reais** (como n8n, Node-RED, Gitea).
+
+**O que ele faz:**
+
+1. **Estrutura Nginx (`nginx.conf`):** Cria Virtual Hosts para cada subdomínio no formato `<servico>.<turma>-<grupo>.<dominio>`. Cada host responde com uma página de sucesso simples e um endpoint `/ping` (com CORS).
+
+2. **Serviço de DNS (`dnsmasq`):** Configura uma regra wildcard (`address=/<dominio>/<IP>`) para redirecionar todos os subdomínios para o IP do servidor.
+
+3. **Portal com Auto-Teste (`html/index.html`):** Cria uma interface web Bootstrap offline-friendly que faz _fetch_ automático para o `/ping` de todos os subdomínios, exibindo o status de conectividade em cartões (Verde/Vermelho).
+
+4. **Fallback sem DNS (`hosts.lab`):** Gera um arquivo de hosts estático expandido para ser copiado nos clientes caso não usem o Dnsmasq.
+
+**Entidades e Serviços Padrão:**
+
+- **Turma:** Ex: `n21`
+
+- **Grupos:** `n21-a` até `n21-j` (ou definidos via CLI) + entidades especiais `n21-p` (Professor) e `n21-n` (Notas).
+
+- **Serviços padrão:** `n8n`, `nodered`, `gitea`, `mqtt` (o MQTT é servido via HTTP apenas para validação de rede).
+
+**Uso Rápido da CLI:**
+
+```bash
+python3 gen_test_nginx.py --turma n21 --grupos 10 --ip 192.168.0.102
+cd test-nginx && docker compose up -d
+```
