@@ -1,0 +1,17 @@
+---
+title: "INTERNET DAS COISAS INDUSTRIAL (IIoT)"
+sidebar_label: "ELT85B-N21"
+sidebar_position: 2
+slug: /planejamento/elt85b-n21
+---
+
+import disciplinas from "@site/src/data/disciplinas.json";
+import TabelaPlanejamento from "@site/src/components/TabelaPlanejamento";
+
+export const disciplina = disciplinas.disciplinas.find(
+  (item) => item.slug === "elt85b-n21",
+);
+
+# INTERNET DAS COISAS INDUSTRIAL (IIoT)
+
+<TabelaPlanejamento disciplina={disciplina} />

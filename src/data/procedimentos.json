@@ -1,0 +1,37 @@
+{
+  "tipo": "procedimentos",
+  "geradoEm": "2026-08-17T16:30:23.630Z",
+  "totalRegistros": 5,
+  "totalDisciplinas": 1,
+  "disciplinas": [
+    {
+      "codigo": "ELT85B-N21",
+      "disciplina": "INTERNET DAS COISAS INDUSTRIAL (IIoT)",
+      "professor": "Adriano Ruseler",
+      "arquivo": "20260807_160730.html",
+      "slug": "elt85b-n21",
+      "registros": [
+        {
+          "atividade": "Procedimentos de Ensino - Aulas Teóricas - AT",
+          "descricao": "As aulas teóricas transcorrem em laboratório, o qual utiliza protoboard e componentes discretos próprios da disciplina."
+        },
+        {
+          "atividade": "Procedimentos de Ensino - Aulas Práticas - AP",
+          "descricao": "As aulas práticas transcorrem em laboratório, o qual utiliza protoboard e componentes discretos próprios da disciplina."
+        },
+        {
+          "atividade": "Procedimentos de Avaliação",
+          "descricao": "A Nota Final (NF) será na proporção de 30% EaD (NEaD), 30% LABs (NLAB) e 40% Projeto Final (NPF); NF = 0,3*NEaD+0,3*NLAB+0,4*NPF;"
+        },
+        {
+          "atividade": "Orientações Gerais",
+          "descricao": "Apenas a nota final será lançada no sistema; As notas dos questionários, laboratórios e do projeto final serão gerenciadas no Moodle da disciplina;"
+        },
+        {
+          "atividade": "Link para Aulas Síncronas",
+          "descricao": "https://moodle.utfpr.edu.br/course/view.php?id=35058"
+        }
+      ]
+    }
+  ]
+}

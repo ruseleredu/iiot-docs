@@ -1,0 +1,197 @@
+{
+  "tipo": "sincrona",
+  "geradoEm": "2026-08-17T16:30:23.630Z",
+  "totalRegistros": 18,
+  "totalDisciplinas": 1,
+  "disciplinas": [
+    {
+      "codigo": "ELT85B-N21",
+      "disciplina": "INTERNET DAS COISAS INDUSTRIAL (IIoT)",
+      "professor": "Adriano Ruseler",
+      "arquivo": "20260807_160730.html",
+      "slug": "elt85b-n21",
+      "registros": [
+        {
+          "semana": 1,
+          "semana_inicio": "17/08/2026",
+          "semana_fim": "23/08/2026",
+          "data": "20/08/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Apresentação da Disciplina; Formação dos grupos;"
+        },
+        {
+          "semana": 2,
+          "semana_inicio": "24/08/2026",
+          "semana_fim": "30/08/2026",
+          "data": "27/08/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Visão Geral sobre IoT;"
+        },
+        {
+          "semana": 3,
+          "semana_inicio": "31/08/2026",
+          "semana_fim": "06/09/2026",
+          "data": "03/09/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "A Internet na IoT;"
+        },
+        {
+          "semana": 4,
+          "semana_inicio": "07/09/2026",
+          "semana_fim": "13/09/2026",
+          "data": "10/09/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Sensores e Atuadores em IoT;"
+        },
+        {
+          "semana": 5,
+          "semana_inicio": "14/09/2026",
+          "semana_fim": "20/09/2026",
+          "data": "17/09/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Pilha de Protocolos IoT: Enlace e Rede;"
+        },
+        {
+          "semana": 6,
+          "semana_inicio": "21/09/2026",
+          "semana_fim": "27/09/2026",
+          "data": "24/09/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Pilha de Protocolos IoT: Aplicação;"
+        },
+        {
+          "semana": 7,
+          "semana_inicio": "28/09/2026",
+          "semana_fim": "04/10/2026",
+          "data": "01/10/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Computação em Nevoeiro (Fog Computing);"
+        },
+        {
+          "semana": 8,
+          "semana_inicio": "05/10/2026",
+          "semana_fim": "11/10/2026",
+          "data": "08/10/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Plataforma de Serviços IoT;"
+        },
+        {
+          "semana": 9,
+          "semana_inicio": "12/10/2026",
+          "semana_fim": "18/10/2026",
+          "data": "15/10/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Mercados de IoT: Agricultura e Energia;"
+        },
+        {
+          "semana": 10,
+          "semana_inicio": "19/10/2026",
+          "semana_fim": "25/10/2026",
+          "data": "22/10/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Mercados de IoT: Indústria e Transporte;"
+        },
+        {
+          "semana": 11,
+          "semana_inicio": "26/10/2026",
+          "semana_fim": "01/11/2026",
+          "data": "29/10/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Padrões IoT;"
+        },
+        {
+          "semana": 12,
+          "semana_inicio": "02/11/2026",
+          "semana_fim": "08/11/2026",
+          "data": "05/11/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Definição e Kickoff;"
+        },
+        {
+          "semana": 13,
+          "semana_inicio": "09/11/2026",
+          "semana_fim": "15/11/2026",
+          "data": "12/11/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Integração Node-RED e SQLite;"
+        },
+        {
+          "semana": 14,
+          "semana_inicio": "16/11/2026",
+          "semana_fim": "22/11/2026",
+          "data": "19/11/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Dashboard;"
+        },
+        {
+          "semana": 15,
+          "semana_inicio": "23/11/2026",
+          "semana_fim": "29/11/2026",
+          "data": "26/11/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Refinamento e APS Final;"
+        },
+        {
+          "semana": 16,
+          "semana_inicio": "30/11/2026",
+          "semana_fim": "06/12/2026",
+          "data": "03/12/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Apresentações;"
+        },
+        {
+          "semana": 17,
+          "semana_inicio": "07/12/2026",
+          "semana_fim": "13/12/2026",
+          "data": "10/12/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Projeto Final: Apresentações;"
+        },
+        {
+          "semana": 18,
+          "semana_inicio": "14/12/2026",
+          "semana_fim": "20/12/2026",
+          "data": "17/12/2026",
+          "cht": 4,
+          "ch_planejada": 4,
+          "professor": "Adriano Ruseler",
+          "conteudo_previsto": "Fechamento da Disciplina;"
+        }
+      ]
+    }
+  ]
+}
