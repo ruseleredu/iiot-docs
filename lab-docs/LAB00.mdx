@@ -59,3 +59,275 @@ import LabTable from "@site/src/components/LabTable";
 - [Arduino Framework](https://github.com/grappendorf/arduino-framework)
 
 ### Bibliotecas utilizadas
+
+## ELT85B-N21-2026-2 Teams
+
+- https://github.com/orgs/ELT85B-N21-2026-2/teams
+
+```bash
+for letter in A B C D E F G H I J X; do
+  gh api --method POST orgs/ELT85B-N21-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+for letter in A B C D E F G H I J K L M X; do
+  gh api --method POST orgs/ELT73A-S22-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+for letter in A B C D E F G H I J K L M X; do
+  gh api --method POST --silent orgs/ELT73A-S22-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+Organization: ELT73A-S22-2026-2
+│
+├── Teams
+│   ├── Grupo-A
+│   ├── Grupo-B
+│   ├── Grupo-C
+│   └── ...
+│
+└── Repositories
+    ├── grupo-a-lab00
+    ├── grupo-a-lab01
+    ├── ...
+    ├── grupo-a-lab10
+    ├── grupo-b-lab00
+    ├── grupo-b-lab01
+    └── ...
+```
+
+### Bulk Creation Script (Git Bash)
+
+Here’s a ready-to-use script that creates LAB00 to LAB10 for every group:
+
+```bash
+ORG="ELT73A-S22-2026-2"
+GROUPS="A B C D E F G H I J K L M X"
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+
+  for lab in $(seq -w 0 10); do          # 00, 01, 02 ... 10
+    REPO="grupo-${letter,,}-lab$lab"     # grupo-a-lab00, grupo-b-lab01...
+
+    echo "Creating $REPO for $TEAM..."
+
+    gh repo create "$ORG/$REPO" \
+      --private \
+      --team "$TEAM" \
+      --description "LAB$lab - Grupo $letter" \
+      --add-readme \
+      --silent
+
+    # Give the team write access (instead of just read)
+    gh api --method PUT --silent \
+      "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+      -f permission=push
+  done
+done
+```
+
+### Projeto
+
+```bash
+ORG="ELT73A-S22-2026-2"
+GROUPS="A B C D E F G H I J K L M X"
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  REPO="grupo-${letter,,}-projeto"   # grupo-a-projeto, grupo-b-projeto...
+
+  echo "Creating $REPO for $TEAM..."
+
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --team "$TEAM" \
+    --description "Projeto Final - Grupo $letter" \
+    --add-readme \
+    --silent
+
+  # Give the team write access
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+done
+```
+
+### Here’s the merged complete script with a NLABS variable:
+
+```bash
+#!/bin/bash
+
+ORG="ELT73A-S22-2026-2"
+GROUPS="A B C D E F G H I J K L M P"
+NLABS=10   # Creates LAB00 to LAB10
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  GROUP_LOWER="${letter,,}"   # a, b, c...
+
+  echo "=== Processing Grupo-$letter ==="
+
+  # ---------- Create LAB repositories ----------
+  for lab in $(seq -w 0 $NLABS); do
+    REPO="grupo-${GROUP_LOWER}-lab$lab"
+
+    echo "  Creating $REPO..."
+
+    gh repo create "$ORG/$REPO" \
+      --private \
+      --team "$TEAM" \
+      --description "LAB$lab - Grupo $letter" \
+      --add-readme \
+      --silent
+
+    # Give write access to the team
+    gh api --method PUT --silent \
+      "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+      -f permission=push
+  done
+
+  # ---------- Create Projeto repository ----------
+  REPO="grupo-${GROUP_LOWER}-projeto"
+
+  echo "  Creating $REPO..."
+
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --team "$TEAM" \
+    --description "Projeto Final - Grupo $letter" \
+    --add-readme \
+    --silent
+
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+
+  echo ""
+done
+
+echo "All repositories created successfully!"
+```
+
+```bash
+bash create-repos.sh
+```
+
+### What it creates (example for Grupo-A)
+
+```bash
+grupo-a-lab00
+grupo-a-lab01
+grupo-a-lab02
+...
+grupo-a-lab10
+grupo-a-projeto
+```
+
+### Here’s a focused script that creates repositories for one specific lab using a template:
+
+```bash
+#!/bin/bash
+
+ORG="ELT73A-S22-2026-2"
+TEMPLATE="ELT73A-S22-2026-2/lab-template"   # ← change to your template repo
+GROUPS="A B C D E F G H I J K L M X"
+NLAB=5                                     # ← creates lab05
+
+LAB=$(printf "%02d" $NLAB)                 # turns 5 into "05"
+
+echo "Creating repositories for LAB$LAB using template: $TEMPLATE"
+echo ""
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  GROUP_LOWER="${letter,,}"
+  REPO="grupo-${GROUP_LOWER}-lab$LAB"
+
+  echo "Creating $REPO for $TEAM..."
+
+  gh repo create "$ORG/$REPO" \
+    --template "$TEMPLATE" \
+    --private \
+    --team "$TEAM" \
+    --description "LAB$LAB - Grupo $letter" \
+    --silent
+
+  # Give the team write access
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+
+  echo "  ✓ $REPO created"
+done
+
+echo ""
+echo "All LAB$LAB repositories created successfully!"
+```
+
+## Here’s a script that creates the lab templates (lab00-template, lab01-template, …):
+
+```bash
+#!/bin/bash
+
+ORG="ELT73A-S22-2026-2"
+NLABS=10          # Creates lab00-template → lab10-template
+
+echo "Creating lab templates in organization: $ORG"
+echo ""
+
+for lab in $(seq -w 0 $NLABS); do
+  REPO="lab${lab}-template"
+
+  echo "Creating $REPO..."
+
+  # Create the repository
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --description "Template for LAB$lab" \
+    --add-readme \
+    --silent
+
+  # Mark it as a template repository
+  gh api --method PATCH --silent \
+    "repos/$ORG/$REPO" \
+    -f is_template=true
+
+  echo "  ✓ $REPO created and marked as template"
+done
+
+echo ""
+echo "All lab templates created successfully!"
+echo ""
+echo "You can now use them like this:"
+echo "  TEMPLATE=\"$ORG/lab05-template\""
+```
+
+Optional: Create only one specific template
+
+```bash
+ORG="ELT73A-S22-2026-2"
+NLAB=5
+LAB=$(printf "%02d" $NLAB)
+REPO="lab${LAB}-template"
+
+gh repo create "$ORG/$REPO" \
+  --private \
+  --description "Template for LAB$LAB" \
+  --add-readme
+
+gh api --method PATCH \
+  "repos/$ORG/$REPO" \
+  -f is_template=true
+```
