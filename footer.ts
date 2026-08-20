@@ -67,35 +67,35 @@ const footer: ThemeConfig["footer"] = {
             ],
         },
         {
-            title: "Sistemas",
+            title: "Online Services",
             items: [
                 {
-                    label: "Sigepe",
-                    href: "https://sougov.sigepe.gov.br/sougov/Home",
+                    label: "Markdown Preview",
+                    href: "https://markdownlivepreview.com/",
                 },
                 {
-                    label: "Consulta Diários",
-                    href: "https://sistemas2.utfpr.edu.br/url/1141",
+                    label: "Wokwi",
+                    href: "https://wokwi.com/esp32",
                 },
                 {
-                    label: "Permanências",
-                    href: "https://sistemas2.utfpr.edu.br/url/1026",
+                    label: "Cirkit Designer",
+                    href: "https://www.cirkitdesigner.com/esp32-simulator",
                 },
                 {
-                    label: "Planejamento",
-                    href: "https://sistemas2.utfpr.edu.br/url/1890",
+                    label: "Code Beautify",
+                    href: "https://codebeautify.org/",
                 },
                 {
-                    label: "Lançamentos",
-                    href: "https://sistemas2.utfpr.edu.br/url/1514",
+                    label: "SQLite Viewer",
+                    href: "https://inloop.github.io/sqlite-viewer/",
                 },
                 {
-                    label: "Mapa de Professor",
-                    href: "https://sistemas2.utfpr.edu.br/url/1022",
+                    label: "Mermaid Editor",
+                    href: "https://mermaid.ai/live/",
                 },
                 {
-                    label: "Mapa de Sala",
-                    href: "https://sistemas2.utfpr.edu.br/url/1934",
+                    label: "Compiler Explorer",
+                    href: "https://compiler-explorer.com",
                 },
             ],
         },
