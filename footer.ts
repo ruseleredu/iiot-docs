@@ -155,6 +155,10 @@ const footer: ThemeConfig["footer"] = {
                     label: "ESP32",
                     href: "https://www.espressif.com/en/products/socs/esp32",
                 },
+                {
+                    label: "ESP32 Learning Kit",
+                    href: "https://docs.keyestudio.com/en/latest/docs/esp32/esp32.html",
+                },
             ],
         },
         {
