@@ -69,7 +69,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/industrial-robot-robot-svgrepo-com.svg').default,
     description: (
       <>
-        O <Link to="/pjts/intro">projeto final</Link> constitue em aplicar os conhecimentos adquiridos ao longo do curso para desenvolver um protótipo utilizando o  <a href="https://www.arduino.cc/" target="_blank">Arduino</a>. O projeto é desenvolvido em grupos, promovendo a colaboração entre os alunos e a aplicação prática dos conceitos aprendidos.
+        O <Link to="/pjts/intro">projeto final</Link> constitue em aplicar os conhecimentos adquiridos ao longo do curso para desenvolver um protótipo utilizando o  <Link to="/esp32/intro">ESP32</Link>. O projeto é desenvolvido em grupos, promovendo a colaboração entre os alunos e a aplicação prática dos conceitos aprendidos.
       </>
     ),
   },
