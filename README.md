@@ -95,3 +95,9 @@ Run Automation Script for katex
 ```bash
 node scripts/download-katex.js
 ```
+
+Run Automation Script to download ESPConnect
+
+```bash
+node scripts/download-espconnect.js
+```
