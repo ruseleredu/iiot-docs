@@ -1,4 +1,5 @@
 import LabTable from "@site/src/components/LabTable";
+import LabTeamMembers from "@site/src/components/LabTeamMembers";
 
 # Laboratório 00
 
@@ -9,6 +10,520 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+# LAB00 — Introdução ao Git, GitHub e entrega com CI
+
+**Objetivo:** usar o repositório do grupo (criado a partir do template), praticar o fluxo Git e verificar o **Autograde (CI)** que compõe a nota de entrega.
+
+**Organização:** `ELT73A-S22-2026-2`  
+**Seu repositório:** `lab00-grupo-<sua-letra>` (ex.: `lab00-grupo-a`)  
+**Time:** `Grupo-<LETRA>`
+
+---
+
+## 0. O que você vai validar neste lab
+
+| Etapa | Recurso                     | Como “testar”                                                                |
+| ----- | --------------------------- | ---------------------------------------------------------------------------- |
+| 1     | Repo criado do **template** | Clone e confira a estrutura (`src/`, `platformio.ini`, `.github/workflows/`) |
+| 2     | **Git** local               | `status`, `add`, `commit`, histórico                                         |
+| 3     | **GitHub** remoto           | `push`, ver commits no site                                                  |
+| 4     | **CI / Autograde**          | Aba Actions ou `gh run list` — build verde/vermelho                          |
+| 5     | **Nota de entrega**         | Push na `main` dispara o workflow; sucesso = entrega válida no CI            |
+
+---
+
+## 1. Pré-requisitos (antes da aula)
+
+1. Conta no GitHub e convite aceito na organização / time do grupo
+2. [Git](https://git-scm.com/) instalado
+3. [GitHub CLI](https://cli.github.com/) (`gh`) instalado
+4. VS Code (perfil da disciplina, se houver — ex. `"ESP32IO"`)
+
+**Login (uma vez):**
+
+```bash
+gh auth login
+git config --global user.name "Seu Nome"
+git config --global user.email "seu@email.com"
+```
+
+Confira:
+
+```bash
+gh auth status
+```
+
+---
+
+## 2. Conceitos mínimos (10 min)
+
+```text
+Working area  →  Staging  →  Commit  →  Push  →  GitHub
+   (editar)       (git add)  (git commit) (git push)  (remoto)
+
+No GitHub: Actions (CI) roda o Autograde a cada push.
+```
+
+| Comando       | Função                         |
+| ------------- | ------------------------------ |
+| `git clone`   | Copia o repositório            |
+| `git status`  | O que mudou                    |
+| `git add`     | Prepara arquivos para o commit |
+| `git commit`  | Salva um snapshot local        |
+| `git push`    | Envia commits ao GitHub        |
+| `git pull`    | Baixa commits do GitHub        |
+| `gh run list` | Vê o resultado do CI           |
+
+---
+
+## 3. Atividade 1 — Clonar o repo do template
+
+Substitua `a` pela letra do seu grupo.
+
+```bash
+gh repo clone ELT73A-S22-2026-2/lab00-grupo-a
+cd lab00-grupo-a
+code . --profile "STM32"
+```
+
+**Checklist (template ok):**
+
+- [ ] Existe `README.md`
+- [ ] Existe `platformio.ini` (ou estrutura do lab)
+- [ ] Existe `.github/workflows/grade.yml` (ou nome do workflow de CI)
+- [ ] Existe pasta `src/` (ou equivalente)
+
+Se a estrutura estiver incompleta, avise o professor **antes** de seguir (problema de template/propagação).
+
+---
+
+## 4. Atividade 2 — Primeiro ciclo Git (obrigatório)
+
+### 4.1 Ver estado
+
+```bash
+git status
+git log --oneline -5
+```
+
+### 4.2 Fazer uma alteração visível
+
+Edite o README e adicione no final:
+
+```markdown
+## Integrantes — LAB00
+
+- Nome 1
+- Nome 2
+```
+
+Salve o arquivo.
+
+### 4.3 add → commit → push
+
+```bash
+git status
+git add README.md
+git commit -m "lab00: adiciona nomes dos integrantes"
+git push
+```
+
+### 4.4 Conferir no GitHub
+
+```bash
+gh repo view --web
+```
+
+Na interface: commits recentes devem mostrar a mensagem acima.
+
+**Critério desta atividade:** existe pelo menos **um commit seu** na branch padrão (`main`) com a mensagem pedida (ou equivalente clara).
+
+---
+
+## 5. Atividade 3 — Disparar e ler o CI (Autograde)
+
+Após o `push`, o GitHub Actions executa o workflow do template.
+
+```bash
+gh run list
+```
+
+Abra a execução mais recente:
+
+```bash
+gh run view
+```
+
+Ou no navegador: repositório → aba **Actions**.
+
+| Resultado                | Significado neste lab                                                      |
+| ------------------------ | -------------------------------------------------------------------------- |
+| **success** (verde)      | Build/CI ok — entrega válida no critério automático                        |
+| **failure** (vermelho)   | Algo quebrou (compile, arquivo faltando, etc.) — corrija e dê push de novo |
+| **queued / in_progress** | Aguarde 1–2 minutos e atualize                                             |
+
+### Se falhou
+
+1. Abra o log do job que falhou
+2. Corrija no código
+3. Novamente:
+
+```bash
+git add .
+git commit -m "lab00: corrige falha do CI"
+git push
+gh run list
+```
+
+**Critério:** última execução na `main` com conclusion **success**.
+
+---
+
+## 6. Atividade 4 — Segundo commit (prática de fluxo)
+
+Altere um arquivo de código do template (ex.: comentário em `src/main.cpp`):
+
+```cpp
+// LAB00 - Grupo A - teste de commit e CI
+```
+
+```bash
+git add src/main.cpp
+git commit -m "lab00: comentário de identificação no main"
+git push
+gh run list
+```
+
+Confirme de novo o CI **verde**.
+
+---
+
+## 7. Atividade 5 (opcional) — Branch e Pull Request
+
+```bash
+git checkout -b feature/readme-extra
+# edite algo pequeno no README
+git add README.md
+git commit -m "lab00: texto extra no README"
+git push -u origin feature/readme-extra
+gh pr create --title "LAB00: extra README" --body "Exercício de PR"
+```
+
+No GitHub, veja se o CI também roda no PR. Depois o professor pode orientar merge (ou não usar PR neste lab).
+
+---
+
+## 8. Como a “nota” do CI entra na disciplina
+
+Modelo simples usado neste lab:
+
+| Critério                                              | Peso sugerido |
+| ----------------------------------------------------- | ------------- |
+| Repo do grupo acessível + clone ok (veio do template) | 20%           |
+| Commits dos integrantes na `main`                     | 30%           |
+| **CI success** na última execução da `main`           | 50%           |
+
+O professor pode coletar o status com:
+
+```bash
+gh run list -R ELT73A-S22-2026-2/lab00-grupo-a -L 1
+```
+
+**Importante:** CI verde valida o **pipeline de entrega** (template → git → GitHub → Actions). Não substitui, sozinho, toda a correção técnica dos labs seguintes.
+
+---
+
+## 9. Comandos de bolso
+
+```text
+clone   →  gh repo clone ELT73A-S22-2026-2/lab00-grupo-a
+status  →  git status
+salvar  →  git add . && git commit -m "msg" && git push
+web     →  gh repo view --web
+ci      →  gh run list
+```
+
+---
+
+## 10. Problemas comuns
+
+| Problema                    | O que fazer                                            |
+| --------------------------- | ------------------------------------------------------ |
+| `Permission denied` no push | `gh auth status`; confirmar se está no time `Grupo-X`  |
+| Repo 404                    | Nome certo? Convite da org aceito?                     |
+| CI não aparece              | Existe `.github/workflows/`? Push foi na branch certa? |
+| CI vermelho                 | Ler o log; corrigir; novo commit + push                |
+| `GROUPS=197121` em scripts  | Não usar variável Bash chamada `GROUPS` (reservada)    |
+
+---
+
+## 11. Entrega do LAB00 (resumo)
+
+1. [ ] Clone de `lab00-grupo-<x>` (estrutura do template ok)
+2. [ ] README com nomes dos integrantes (commit)
+3. [ ] Pelo menos um commit de código/comentário
+4. [ ] `git push` na `main`
+5. [ ] Actions com **success** na execução mais recente
+
+---
+
+## 12. Para o professor (bastidor)
+
+| Recurso           | Como foi exercitado no LAB00                 |
+| ----------------- | -------------------------------------------- |
+| Template          | Aluno confere árvore de arquivos ao clonar   |
+| Times + permissão | Só o grupo faz push no próprio repo          |
+| Git               | add / commit / push / (opcional) branch + PR |
+| CI                | Workflow do template roda no push            |
+| Notas             | Script `gh run list` por `lab00-grupo-*`     |
+
+**Antes da aula:** template com `grade.yml` ok; repos `lab00-grupo-*` criados; times com `push`; alunos nos times.
+
+**Depois da aula:** rodar coleta de CI e cruzar com presença/integrantes no README.
+
+# Exemplos — nova branch e release
+
+Contexto: repo do grupo `ELT73A-S22-2026-2/lab00-grupo-a` (troque a letra).
+
+---
+
+## 1. Nova branch
+
+### Criar e usar uma branch
+
+```bash
+# Garantir que a main está atualizada
+git checkout main
+git pull
+
+# Criar e já mudar para a nova branch
+git checkout -b feature/exercicio-1
+
+# (equivalente mais novo)
+# git switch -c feature/exercicio-1
+```
+
+### Trabalhar na branch
+
+```bash
+# edite arquivos...
+git status
+git add .
+git commit -m "lab00: resolve exercício 1"
+git push -u origin feature/exercicio-1
+```
+
+O `-u origin feature/exercicio-1` liga a branch local à remota (só precisa na primeira vez).
+
+### Abrir Pull Request
+
+```bash
+gh pr create --base main --head feature/exercicio-1 \
+  --title "LAB00: exercício 1" \
+  --body "Implementação do exercício 1"
+```
+
+Ou no navegador:
+
+```bash
+gh repo view --web
+```
+
+### Voltar para main e apagar a branch (depois do merge)
+
+```bash
+git checkout main
+git pull
+git branch -d feature/exercicio-1          # apaga local
+git push origin --delete feature/exercicio-1  # apaga no GitHub (opcional)
+```
+
+### Nomes de branch sugeridos
+
+| Nome                      | Uso                             |
+| ------------------------- | ------------------------------- |
+| `feature/exercicio-1`     | nova funcionalidade / exercício |
+| `fix/ci-build`            | correção de build/CI            |
+| `docs/readme-integrantes` | só documentação                 |
+| `lab00/entrega`           | preparação da entrega           |
+
+Evite espaços e acentos no nome da branch.
+
+---
+
+## 2. Release (marcar uma versão)
+
+Release = **tag** (e opcionalmente página de Release no GitHub) apontando para um commit estável, em geral na `main`.
+
+### Fluxo simples (tag + push)
+
+```bash
+git checkout main
+git pull
+
+# Tag anotada (recomendado)
+git tag -a v0.1.0 -m "LAB00: primeira entrega estável"
+
+# Enviar a tag ao GitHub
+git push origin v0.1.0
+```
+
+### Criar a Release no GitHub com `gh`
+
+```bash
+gh release create v0.1.0 \
+  --title "LAB00 v0.1.0" \
+  --notes "Primeira entrega do LAB00.
+- README com integrantes
+- CI verde na main
+- Comentário de identificação no código"
+```
+
+### Release a partir de uma tag que já existe
+
+```bash
+git tag -a v0.1.0 -m "LAB00 entrega"
+git push origin v0.1.0
+
+gh release create v0.1.0 \
+  --title "LAB00 v0.1.0" \
+  --notes-file RELEASE_NOTES.md
+```
+
+### Ver tags e releases
+
+```bash
+git tag -l
+gh release list
+gh release view v0.1.0 --web
+```
+
+---
+
+## 3. Exemplo completo (branch → PR → main → release)
+
+```bash
+# 1) Branch de trabalho
+git checkout main && git pull
+git checkout -b feature/lab00-entrega
+
+# 2) Alterações
+# ... editar README e código ...
+git add .
+git commit -m "lab00: finaliza entrega"
+git push -u origin feature/lab00-entrega
+
+# 3) Pull Request
+gh pr create --title "LAB00: entrega" --body "Pronto para revisão"
+
+# 4) Depois do merge na main (no GitHub ou: gh pr merge)
+git checkout main
+git pull
+
+# 5) Conferir CI
+gh run list -L 3
+
+# 6) Release só se a main estiver verde
+git tag -a v0.1.0 -m "LAB00: entrega com CI ok"
+git push origin v0.1.0
+gh release create v0.1.0 --title "LAB00 v0.1.0" --generate-notes
+```
+
+`--generate-notes` monta notas automáticas a partir dos PRs/commits.
+
+---
+
+## 4. Versionamento simples para a disciplina
+
+| Tag      | Significado                     |
+| -------- | ------------------------------- |
+| `v0.1.0` | primeira entrega do lab         |
+| `v0.1.1` | correção após feedback (bugfix) |
+| `v0.2.0` | segunda parte / melhoria maior  |
+
+Padrão comum: **MAJOR.MINOR.PATCH** (`v1.0.0`).
+
+Para labs, `v0.1.0` = “entregamos o LAB00 com CI verde” já basta.
+
+---
+
+## 5. Erros comuns (branch e release)
+
+### Branch
+
+```text
+fatal: A branch named 'feature/exercicio-1' already exists.
+```
+
+→ Use outro nome ou: `git checkout feature/exercicio-1`
+
+```text
+error: Your local changes would be overwritten by checkout
+```
+
+→ Faça commit ou `git stash` antes de trocar de branch.
+
+### Release / tag
+
+```text
+fatal: tag 'v0.1.0' already exists
+```
+
+→ Use `v0.1.1` ou apague a tag (só se tiver certeza):
+
+```bash
+git tag -d v0.1.0
+git push origin --delete v0.1.0
+```
+
+```text
+gh: HTTP 422 ... Release already exists
+```
+
+→ A release `v0.1.0` já foi criada; edite no site ou use outra versão.
+
+---
+
+## 6. O que usar no LAB00?
+
+| Recurso                  | Obrigatório? | Objetivo                             |
+| ------------------------ | ------------ | ------------------------------------ |
+| Commits + push na `main` | Sim          | entrega + CI                         |
+| Nova branch + PR         | Opcional     | praticar colaboração                 |
+| Release `v0.1.0`         | Opcional     | marcar versão “congelada” da entrega |
+
+**Sugestão pedagógica:**
+
+- Atividade principal: `main` + CI verde
+- Atividade extra: branch `feature/...` + PR
+- Atividade extra: tag/release `v0.1.0` quando o CI estiver verde
+
+---
+
+### Trecho para colar no material do aluno
+
+```bash
+# Nova branch
+git checkout main && git pull
+git checkout -b feature/exercicio-1
+git add . && git commit -m "lab00: exercício 1"
+git push -u origin feature/exercicio-1
+gh pr create --title "LAB00: exercício 1" --body "Concluído"
+
+# Release (após merge e CI verde na main)
+git checkout main && git pull
+git tag -a v0.1.0 -m "LAB00: entrega"
+git push origin v0.1.0
+gh release create v0.1.0 --title "LAB00 v0.1.0" --generate-notes
+```
+
+## Seu repositório
+
+<LabTeamMembers labName="lab00" />
+```
+
+Assim a aula liga **conteúdo pedagógico** + **comandos por grupo** + **teste real** da cadeia template → Git → CI → nota.
 
 ## InstructionsSite
 

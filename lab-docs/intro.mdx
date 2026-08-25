@@ -101,3 +101,309 @@ docker compose start n21-a-nodered  # Habilita
 ```bash
 docker compose up -d --remove-orphans
 ```
+
+## Grok dump
+
+Here’s a clean **PlatformIO + Arduino + ESP32** starter structure you can use in your lab templates.
+
+### Recommended folder structure
+
+```bash
+labXX-template/
+├── .github/
+│   └── workflows/
+│       └── grade.yml
+├── include/
+│   └── README
+├── lib/
+│   └── README
+├── src/
+│   └── main.cpp
+├── test/
+│   └── test_main.cpp
+├── .gitignore
+├── platformio.ini
+└── README.md
+```
+
+---
+
+### File contents
+
+**`platformio.ini`**
+
+```ini
+; PlatformIO Project Configuration File
+; https://docs.platformio.org/page/projectconf.html
+
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+
+; Optional: common build flags
+build_flags =
+    -DCORE_DEBUG_LEVEL=0
+
+; Unit Testing
+test_framework = unity
+```
+
+**`src/main.cpp`**
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("LAB started - ESP32 + PlatformIO");
+
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+}
+```
+
+**`test/test_main.cpp`** (PlatformIO Unity test)
+
+```cpp
+#include <unity.h>
+#include <Arduino.h>
+
+void setUp(void) {
+  // runs before each test
+}
+
+void tearDown(void) {
+  // runs after each test
+}
+
+void test_led_pin_mode() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  TEST_ASSERT_EQUAL(OUTPUT, 1); // simple example
+}
+
+void setup() {
+  delay(2000);          // wait for serial / board
+  UNITY_BEGIN();
+  RUN_TEST(test_led_pin_mode);
+  UNITY_END();
+}
+
+void loop() {
+  // empty
+}
+```
+
+**`.gitignore`**
+
+```gitignore
+.pio
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
+*.pyc
+__pycache__/
+.DS_Store
+```
+
+**`README.md`**
+
+````markdown
+# LABXX - ESP32 + PlatformIO
+
+## Requirements
+
+- [PlatformIO](https://platformio.org/) (VS Code extension or CLI)
+- ESP32 board
+
+## Build & Upload
+
+```bash
+pio run              # compile
+pio run -t upload    # upload
+pio device monitor   # serial monitor
+```
+````
+
+## Run tests
+
+```bash
+pio test
+```
+
+## Structure
+
+- `src/` → main application code
+- `include/` → header files
+- `lib/` → private libraries
+- `test/` → unit tests (Unity)
+
+````
+
+**`.github/workflows/grade.yml`** (CI – compile only)
+```yaml
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build project
+        run: pio run
+
+      # Uncomment if you want native/unit tests in CI
+      # - name: Run tests
+      #   run: pio test -e native
+````
+
+**`include/README`** and **`lib/README`** (PlatformIO placeholders)
+
+```text
+This directory is intended for project header files / private libraries.
+```
+
+---
+
+### Updated script snippet (replace the “Create starter folder structure” part)
+
+```bash
+# 3. Create PlatformIO starter structure
+mkdir -p src include lib test .github/workflows
+
+# platformio.ini
+cat > platformio.ini << 'EOF'
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+test_framework = unity
+EOF
+
+# src/main.cpp
+cat > src/main.cpp << EOF
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("LAB$lab started - ESP32 + PlatformIO");
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+}
+EOF
+
+# test/test_main.cpp
+cat > test/test_main.cpp << 'EOF'
+#include <unity.h>
+#include <Arduino.h>
+
+void test_example() {
+  TEST_ASSERT_TRUE(true);
+}
+
+void setup() {
+  delay(2000);
+  UNITY_BEGIN();
+  RUN_TEST(test_example);
+  UNITY_END();
+}
+
+void loop() {}
+EOF
+
+# .gitignore
+cat > .gitignore << 'EOF'
+.pio
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
+.DS_Store
+EOF
+
+# README.md
+cat > README.md << EOF
+# LAB$lab - ESP32 + PlatformIO
+
+## Commands
+\`\`\`bash
+pio run              # build
+pio run -t upload    # upload
+pio device monitor   # serial
+pio test             # unit tests
+\`\`\`
+EOF
+
+# GitHub Actions
+cat > .github/workflows/grade.yml << 'EOF'
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Build
+        run: pio run
+EOF
+
+# placeholders
+echo "Project headers go here" > include/README
+echo "Private libraries go here" > lib/README
+```
+
+---
+
+### Notes for ESP32 + PlatformIO
+
+| Item                 | Recommendation                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| Board                | `esp32dev` is the most common. Change to `esp32-s3-devkitc-1`, `az-delivery-devkit-v4`, etc. if needed |
+| CI                   | Can only **compile** (no real hardware). Use `pio run`                                                 |
+| Unit tests on device | `pio test` (requires connected board)                                                                  |
+| Native tests         | Add a `[env:native]` environment if you want tests without hardware                                    |
+
+Would you like me to give you the **full ready-to-run script** already adapted for PlatformIO ESP32 (creating all `lab00-template` … `lab10-template`)?

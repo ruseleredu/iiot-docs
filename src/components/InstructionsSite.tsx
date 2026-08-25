@@ -178,6 +178,16 @@ export function DevTools() {
                     gh auth status
                 </ThemeCodeBlock>
             </TabItem>
+            <TabItem value="GitHubDesktop" label="GitHub Desktop">
+                <p><b><Link to="/docs/github-desktop">GitHub Desktop</Link> is a simple way to use Git and GitHub on your computer.</b></p>
+                <ul>
+                    <li><a href="https://desktop.github.com/download/" target="_blank">GitHub Desktop</a> is a free, open-source Git client for Windows and macOS. It allows you to manage your Git repositories and collaborate with others.
+                    </li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    winget install -e --id GitHub.GitHubDesktop
+                </ThemeCodeBlock>
+            </TabItem>
             <TabItem value="vscode" label="VS Code">
                 <p><b><Link to="/docs/vs-code-intro">Visual Studio Code</Link>: IDE and Code Editor for Software Development.</b></p>
                 <ul>
@@ -192,7 +202,18 @@ export function DevTools() {
                     code --list-extensions --profile "ESP32IO"
                 </ThemeCodeBlock>
             </TabItem>
-            <TabItem value="stm32-platformio" label="PlatformIO">
+            <TabItem value="esp32-wokwi" label="Wokwi">
+                <p><b><Link to="/docs/category/wokwi">Wokwi for VSCode</Link>: Embedded systems and IoT simulator supporting ESP32, Arduino, and the Raspberry Pi Pico.</b></p>
+                <ul>
+                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi for VSCode</a> Your code never leaves your computer - Wokwi runs the simulation inside VS Code, using the firmware binaries from your project.
+                    </li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
+                </ThemeCodeBlock>
+
+            </TabItem>
+            <TabItem value="esp32-platformio" label="PlatformIO">
                 <p><b><Link to="/docs/platformio-intro">PlatformIO IDE for VSCode</Link>: Your Gateway to Embedded Software Development Excellence.</b></p>
                 <ul>
                     <li><a href="https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide" target="_blank">PlatformIO IDE for VSCode</a> Unlock the true potential of embedded software development with PlatformIO’s collaborative ecosystem, embracing declarative principles, test-driven methodologies, and modern toolchains for unrivaled success.
@@ -278,9 +299,6 @@ export function GitCommit() {
         </div >
     );
 }
-
-
-
 
 // import {NewBranch} from '@site/src/components/InstructionsSite';
 // <!-- Como criar uma nova branch -->
