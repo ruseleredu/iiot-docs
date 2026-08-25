@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkiiot_docs=self.webpackChunkiiot_docs||[]).push([["1668"],{79500(e,s,r){r.r(s),r.d(s,{default:()=>d});var c=r(74848);r(96540);var a=r(34164),t=r(64329),u=r(5678),i=r(22831),o=r(88692);function d(e){return(0,c.jsx)(t.e3,{className:(0,a.A)(u.G.wrapper.docsPages),children:(0,c.jsx)(o.A,{children:(0,i.v)(e.route.routes)})})}}}]);
