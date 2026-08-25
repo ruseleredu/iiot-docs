@@ -1,0 +1,178 @@
+---
+id: lab-esptool
+title: ESP32 com esptool no Windows
+sidebar_label: LABTEST - ESP32 com esptool
+description: Verificar se o ESP32 está funcionando corretamente
+---
+
+**Aula de Laboratório – Teste Inicial do ESP32 com esptool no Windows**
+
+**Duração sugerida:** 60–90 minutos  
+**Nível:** Iniciante  
+**Objetivo da aula:** Verificar se o ESP32 está funcionando corretamente, se a comunicação serial está ok e se os drivers USB estão instalados, usando a ferramenta oficial **esptool**.
+
+---
+
+### 1. Objetivos de Aprendizagem
+
+Ao final desta aula o aluno deverá ser capaz de:
+
+- Instalar o esptool no Windows
+- Identificar a porta COM correta do ESP32
+- Executar os principais comandos de diagnóstico
+- Interpretar o resultado e resolver problemas comuns de conexão
+- Confirmar que o chip responde (teste de hardware básico)
+
+---
+
+### 2. Pré-requisitos
+
+- Windows 10 ou 11
+- Python 3.8 ou superior instalado (com opção “Add Python to PATH” marcada)
+- Cabo USB de dados (não só de carga)
+- Placa ESP32 (qualquer modelo: DevKit, NodeMCU-32S, etc.)
+
+---
+
+### 3. Materiais Necessários
+
+- Computador com Windows
+- Placa ESP32
+- Cabo USB
+- Acesso à internet (apenas para instalação)
+
+---
+
+### 4. Passo a Passo da Aula
+
+#### Etapa 1 – Instalação do esptool (10 min)
+
+1. Abra o **Prompt de Comando** ou o **PowerShell** como administrador (opcional, mas recomendado).
+2. Verifique se o Python está instalado:
+   ```bash
+   python --version
+   ```
+3. Instale o esptool:
+   ```bash
+   pip install esptool
+   ```
+4. Confirme a instalação:
+   ```bash
+   esptool version
+   ```
+   (Deve aparecer algo como `esptool.py v4.x.x`)
+
+> Dica: Se aparecer erro de “pip não reconhecido”, use `python -m pip install esptool`.
+
+---
+
+#### Etapa 2 – Identificar a Porta COM (10 min)
+
+1. Conecte o ESP32 no computador via USB.
+2. Abra o **Gerenciador de Dispositivos** (clique com botão direito no Menu Iniciar → Gerenciador de Dispositivos).
+3. Expanda a seção **Portas (COM e LPT)**.
+4. Procure por um dispositivo similar a:
+   - [Silicon Labs CP210x USB to UART Bridge (COMx)](https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers?tab=downloads)
+   - [USB-SERIAL CH340 (COMx)](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers)
+   - [CH340/CH341 USB to serial port Windows driver](https://www.wch-ic.com/downloads/CH341SER_ZIP.html)
+   - FTDI ou “USB Serial Device (COMx)”
+
+Anote o número da porta (ex: **COM4**, **COM6**, **COM12**).
+
+> Se não aparecer nenhuma porta nova, o driver não está instalado. Baixe o driver correspondente (CP210x ou CH340) no site do fabricante da placa.
+
+---
+
+#### Etapa 3 – Teste Básico com esptool (20 min)
+
+No Prompt de Comando ou PowerShell, execute os comandos abaixo **substituindo COM4 pela sua porta**:
+
+**Comando 1 – Teste principal (recomendado)**
+
+```bash
+esptool --port COM4 chip-id
+```
+
+**Comando 2 – Informações da memória flash**
+
+```bash
+esptool --port COM4 flash-id
+```
+
+**Comando 3 – Endereço MAC do chip**
+
+```bash
+esptool --port COM4 read-mac
+```
+
+**Comando 4 – Resumo completo (muito útil)**
+
+```bash
+esptool --port COM4 chip-id flash-id read-mac
+```
+
+---
+
+#### Etapa 4 – Interpretação do Resultado (15 min)
+
+**Resultado esperado (exemplo real):**
+
+```
+esptool.py v4.8.1
+Serial port COM4
+Connecting........
+Detecting chip type... ESP32
+Chip is ESP32-D0WD-V3 (revision v3.0)
+Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in eFuse, Coding Scheme None
+Crystal is 40MHz
+MAC: 24:6f:28:xx:xx:xx
+Uploading stub...
+Running stub...
+Stub running...
+Chip ID: 0x00a1b2c3
+Hard resetting via RTS pin...
+```
+
+**O que isso significa?**
+
+- Comunicação serial OK
+- Drivers funcionando
+- Chip respondendo corretamente
+- ESP32 está “vivo”
+
+---
+
+#### Etapa 5 – Problemas Comuns e Soluções (15 min)
+
+| Problema                                        | Solução                                                                                 |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `Failed to connect` / `No serial data received` | Segure o botão **BOOT**, aperte e solte o **EN/RESET**, depois solte o BOOT             |
+| Porta não encontrada                            | Verifique no Gerenciador de Dispositivos se o driver está ok                            |
+| “Acesso negado”                                 | Feche Arduino IDE, PlatformIO, Serial Monitor ou qualquer outro programa usando a porta |
+| Não detecta o chip                              | Tente com baud rate menor: `esptool --port COM4 --baud 115200 chip-id`                  |
+| Ainda não funciona                              | Use o modo trace: `esptool --port COM4 --trace chip-id`                                 |
+
+---
+
+### 5. Atividade Prática (para os alunos)
+
+1. Cada aluno deve anotar:
+   - Número da porta COM
+   - Modelo do chip detectado
+   - MAC Address
+   - Tamanho da flash
+
+2. Tire um print ou anote o resultado do comando `chip-id` e entregue ao professor.
+
+---
+
+### 6. Próximos Passos (para a próxima aula)
+
+- Apagar a flash (`esptool --port COMx erase-flash`)
+- Gravar o primeiro firmware (exemplo WiFi Scan)
+- Testar conexão WiFi
+
+---
+
+**Arquivo pronto para entregar aos alunos?**  
+Posso gerar também uma versão em PDF/Markdown ou um roteiro resumido de 1 página se quiser.
