@@ -172,7 +172,528 @@ Hard resetting via RTS pin...
 - Gravar o primeiro firmware (exemplo WiFi Scan)
 - Testar conexão WiFi
 
+## Aula de teste: VS Code + PlatformIO + ESP32 + Arduino + Wokwi + Git
+
+Uma boa **aula de teste inicial** pode ter como objetivo validar todo o ambiente de desenvolvimento antes de iniciar projetos mais complexos de IoT.
+
+### Objetivo da aula
+
+Ao final, o aluno deverá conseguir:
+
+1. Instalar e configurar o **VS Code**.
+2. Utilizar o **PlatformIO** para criar um projeto.
+3. Programar um **ESP32** utilizando o framework **Arduino**.
+4. Compilar e executar o código.
+5. Simular o circuito no **Wokwi**.
+6. Utilizar **Git** para controlar versões.
+7. Publicar o projeto em um repositório remoto.
+
 ---
 
-**Arquivo pronto para entregar aos alunos?**  
-Posso gerar também uma versão em PDF/Markdown ou um roteiro resumido de 1 página se quiser.
+# 1. Visão geral do ambiente
+
+```text
+┌───────────────────────────────────────────────┐
+│                   VS Code                     │
+│                                               │
+│  ┌──────────────┐      ┌───────────────────┐ │
+│  │  PlatformIO  │─────▶│ ESP32 + Arduino   │ │
+│  └──────────────┘      └───────────────────┘ │
+│           │                                   │
+│           ├──────────────▶ Wokwi              │
+│           │                  Simulação        │
+│           │                                   │
+│           └──────────────▶ Git                │
+│                              │                │
+└──────────────────────────────┼────────────────┘
+                               │
+                               ▼
+                         Repositório Git
+```
+
+---
+
+# 2. Pré-requisitos
+
+Os alunos devem possuir:
+
+- **Visual Studio Code**
+- Extensão **PlatformIO IDE**
+- **Git**
+- Conta no GitHub
+- Conta no Wokwi, caso necessário
+
+Extensões recomendadas no VS Code:
+
+- PlatformIO IDE
+- Wokwi Simulator
+- GitHub Pull Requests and Issues
+- GitLens _(opcional)_
+
+---
+
+# 3. Criando o projeto PlatformIO
+
+No VS Code:
+
+```text
+PlatformIO Home
+    ↓
+New Project
+```
+
+Configuração sugerida:
+
+| Opção     | Valor                        |
+| --------- | ---------------------------- |
+| Name      | `esp32-test`                 |
+| Board     | `Espressif ESP32 Dev Module` |
+| Framework | `Arduino`                    |
+| Location  | Diretório de trabalho        |
+
+A estrutura inicial será semelhante a:
+
+```text
+esp32-test/
+│
+├── .pio/
+├── .vscode/
+├── include/
+├── lib/
+├── src/
+│   └── main.cpp
+├── test/
+│
+├── .gitignore
+└── platformio.ini
+```
+
+---
+
+# 4. Configuração do ESP32
+
+Arquivo:
+
+```ini
+platformio.ini
+```
+
+Configuração inicial:
+
+```ini
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+
+monitor_speed = 115200
+```
+
+---
+
+# 5. Primeiro programa: Blink + Serial
+
+Arquivo:
+
+```cpp
+#include <Arduino.h>
+
+#define LED_PIN 2
+
+void setup() {
+    Serial.begin(115200);
+
+    pinMode(LED_PIN, OUTPUT);
+
+    Serial.println("ESP32 iniciado!");
+}
+
+void loop() {
+    digitalWrite(LED_PIN, HIGH);
+
+    Serial.println("LED ON");
+
+    delay(1000);
+
+    digitalWrite(LED_PIN, LOW);
+
+    Serial.println("LED OFF");
+
+    delay(1000);
+}
+```
+
+Esse programa permite testar simultaneamente:
+
+- compilação;
+- framework Arduino;
+- GPIO;
+- monitor serial;
+- simulação.
+
+---
+
+# 6. Testando o projeto
+
+O PlatformIO disponibiliza os comandos principais:
+
+```text
+✓ Build
+→ Upload
+🔌 Serial Monitor
+🗑 Clean
+```
+
+Fluxo:
+
+```text
+Código
+   ↓
+Build
+   ↓
+Compilação
+   ↓
+Sem erros?
+   │
+   ├── Não → Corrigir código
+   │
+   └── Sim
+         ↓
+       Upload
+         ↓
+      ESP32 físico
+```
+
+Mesmo sem possuir a placa física, podemos continuar utilizando o **Wokwi**.
+
+---
+
+# 7. Simulação com Wokwi
+
+Adicionar o arquivo:
+
+```text
+wokwi.toml
+```
+
+Exemplo:
+
+```toml
+[wokwi]
+version = 1
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf = ".pio/build/esp32dev/firmware.elf"
+```
+
+Criar também:
+
+```text
+diagram.json
+```
+
+Exemplo básico:
+
+```json
+{
+  "version": 1,
+  "author": "Aula de Teste",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    }
+  ],
+  "connections": []
+}
+```
+
+A estrutura passa a ser:
+
+```text
+esp32-test/
+│
+├── src/
+│   └── main.cpp
+│
+├── platformio.ini
+├── wokwi.toml
+├── diagram.json
+│
+└── .gitignore
+```
+
+---
+
+# 8. Fluxo PlatformIO + Wokwi
+
+O fluxo esperado durante a aula será:
+
+```text
+┌──────────────┐
+│ VS Code      │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ main.cpp     │
+│ Arduino      │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ PlatformIO   │
+│ Build        │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ firmware.bin │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Wokwi        │
+│ Simulação    │
+└──────────────┘
+```
+
+---
+
+# 9. Teste do monitor serial
+
+Durante a simulação, o aluno deverá observar:
+
+```text
+ESP32 iniciado!
+LED ON
+LED OFF
+LED ON
+LED OFF
+...
+```
+
+Esse teste confirma que:
+
+- o código foi compilado corretamente;
+- o ESP32 virtual está executando;
+- a comunicação serial está funcionando;
+- o ambiente PlatformIO + Wokwi está integrado.
+
+---
+
+# 10. Inicializando o Git
+
+No terminal do VS Code:
+
+```bash
+git init
+```
+
+Verificar os arquivos:
+
+```bash
+git status
+```
+
+Adicionar os arquivos:
+
+```bash
+git add .
+```
+
+Criar o primeiro commit:
+
+```bash
+git commit -m "Initial ESP32 PlatformIO Wokwi project"
+```
+
+---
+
+# 11. `.gitignore`
+
+O PlatformIO normalmente deve ignorar arquivos gerados automaticamente.
+
+Exemplo:
+
+```gitignore
+.pio/
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
+```
+
+É importante **não versionar**:
+
+```text
+.pio/
+```
+
+pois contém os arquivos de compilação.
+
+Por outro lado, é interessante manter no repositório:
+
+```text
+platformio.ini
+src/
+include/
+lib/
+test/
+diagram.json
+wokwi.toml
+README.md
+```
+
+---
+
+# 12. Publicando no GitHub
+
+Após criar um repositório remoto:
+
+```bash
+git branch -M main
+```
+
+Adicionar o repositório remoto:
+
+```bash
+git remote add origin SEU_REPOSITORIO
+```
+
+Enviar:
+
+```bash
+git push -u origin main
+```
+
+Fluxo completo:
+
+```text
+┌─────────────┐
+│ Desenvolver │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   Build     │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│ Simular     │
+│   Wokwi     │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│ git status  │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  git add    │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│ git commit  │
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  git push   │
+└─────────────┘
+```
+
+---
+
+# 13. Atividade prática da aula
+
+## Desafio: LED piscando com configuração
+
+Modificar o programa para que o LED alterne entre:
+
+```text
+LED ligado por 500 ms
+LED desligado por 500 ms
+```
+
+Depois:
+
+1. Executar o **Build**.
+2. Corrigir possíveis erros.
+3. Executar a simulação no **Wokwi**.
+4. Verificar as mensagens no monitor serial.
+5. Criar um commit.
+
+Exemplo:
+
+```bash
+git add .
+git commit -m "Configure LED blink interval"
+git push
+```
+
+---
+
+# 14. Desafio adicional: adicionar botão
+
+Como próxima etapa da aula, adicionar:
+
+```text
+ESP32
+  │
+  ├── LED
+  │
+  └── Botão
+```
+
+Funcionamento:
+
+```text
+Botão pressionado
+        ↓
+ESP32 detecta entrada
+        ↓
+LED alterna de estado
+        ↓
+Mensagem enviada ao Serial Monitor
+```
+
+Isso permite testar:
+
+- `pinMode()`;
+- `digitalRead()`;
+- `digitalWrite()`;
+- `INPUT_PULLUP`;
+- simulação de entradas digitais;
+- controle de versões.
+
+---
+
+# Resultado esperado
+
+Ao final da aula, cada aluno deverá possuir um projeto semelhante a:
+
+```text
+esp32-platformio-wokwi-test/
+│
+├── src/
+│   └── main.cpp
+│
+├── include/
+├── lib/
+├── test/
+│
+├── diagram.json
+├── wokwi.toml
+├── platformio.ini
+├── .gitignore
+└── README.md
+```
+
+com o seguinte fluxo de trabalho:
+
+> **VS Code → PlatformIO → ESP32/Arduino → Wokwi → Git → GitHub**
+
+Isso cria uma excelente **aula zero**, pois valida toda a cadeia de ferramentas que será utilizada posteriormente em projetos de IoT mais completos.
+
+Posso também montar o **repositório-base completo**, com `README.md`, código do ESP32, `diagram.json`, configuração do Wokwi e uma sequência de exercícios para os alunos.

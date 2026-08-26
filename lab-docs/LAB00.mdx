@@ -15,7 +15,7 @@ import LabTeamMembers from "@site/src/components/LabTeamMembers";
 
 **Objetivo:** usar o repositório do grupo (criado a partir do template), praticar o fluxo Git e verificar o **Autograde (CI)** que compõe a nota de entrega.
 
-**Organização:** `ELT73A-S22-2026-2`  
+**Organização:** `ELT85B-N21-2026-2`  
 **Seu repositório:** `lab00-grupo-<sua-letra>` (ex.: `lab00-grupo-a`)  
 **Time:** `Grupo-<LETRA>`
 
@@ -82,9 +82,43 @@ No GitHub: Actions (CI) roda o Autograde a cada push.
 Substitua `a` pela letra do seu grupo.
 
 ```bash
-gh repo clone ELT73A-S22-2026-2/lab00-grupo-a
+gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
 cd lab00-grupo-a
 code . --profile "STM32"
+```
+
+```bash
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+```
+
+Crie ou edite o arquivo src/main.cpp com a seguinte estrutura:
+
+```c
+#include <Arduino.h>
+
+// Definição de pinos
+#define LED_PIN 2
+
+// Protótipos de funções (obrigatório em C/C++ padrão)
+void blinkLed(uint8_t pin, uint16_t delayMs);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 Inicializado!");
+}
+
+void loop() {
+  blinkLed(LED_PIN, 500);
+}
+
+// Implementação de funções auxiliares
+void blinkLed(uint8_t pin, uint16_t delayMs) {
+  digitalWrite(pin, HIGH);
+  delay(delayMs);
+  digitalWrite(pin, LOW);
+  delay(delayMs);
+}
 ```
 
 **Checklist (template ok):**
@@ -227,7 +261,7 @@ Modelo simples usado neste lab:
 O professor pode coletar o status com:
 
 ```bash
-gh run list -R ELT73A-S22-2026-2/lab00-grupo-a -L 1
+gh run list -R ELT85B-N21-2026-2/lab00-grupo-a -L 1
 ```
 
 **Importante:** CI verde valida o **pipeline de entrega** (template → git → GitHub → Actions). Não substitui, sozinho, toda a correção técnica dos labs seguintes.
@@ -237,7 +271,7 @@ gh run list -R ELT73A-S22-2026-2/lab00-grupo-a -L 1
 ## 9. Comandos de bolso
 
 ```text
-clone   →  gh repo clone ELT73A-S22-2026-2/lab00-grupo-a
+clone   →  gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
 status  →  git status
 salvar  →  git add . && git commit -m "msg" && git push
 web     →  gh repo view --web
@@ -284,7 +318,7 @@ ci      →  gh run list
 
 # Exemplos — nova branch e release
 
-Contexto: repo do grupo `ELT73A-S22-2026-2/lab00-grupo-a` (troque a letra).
+Contexto: repo do grupo `ELT85B-N21-2026-2/lab00-grupo-a` (troque a letra).
 
 ---
 
@@ -521,7 +555,6 @@ gh release create v0.1.0 --title "LAB00 v0.1.0" --generate-notes
 ## Seu repositório
 
 <LabTeamMembers labName="lab00" />
-```
 
 Assim a aula liga **conteúdo pedagógico** + **comandos por grupo** + **teste real** da cadeia template → Git → CI → nota.
 
@@ -629,7 +662,7 @@ done
 
 ```bash
 for letter in A B C D E F G H I J K L M X; do
-  gh api --method POST orgs/ELT73A-S22-2026-2/teams \
+  gh api --method POST orgs/ELT85B-N21-2026-2/teams \
     -f name="Grupo-$letter" \
     -f privacy="closed"
 done
@@ -637,14 +670,14 @@ done
 
 ```bash
 for letter in A B C D E F G H I J K L M X; do
-  gh api --method POST --silent orgs/ELT73A-S22-2026-2/teams \
+  gh api --method POST --silent orgs/ELT85B-N21-2026-2/teams \
     -f name="Grupo-$letter" \
     -f privacy="closed"
 done
 ```
 
 ```bash
-Organization: ELT73A-S22-2026-2
+Organization: ELT85B-N21-2026-2
 │
 ├── Teams
 │   ├── Grupo-A
@@ -667,7 +700,7 @@ Organization: ELT73A-S22-2026-2
 Here’s a ready-to-use script that creates LAB00 to LAB10 for every group:
 
 ```bash
-ORG="ELT73A-S22-2026-2"
+ORG="ELT85B-N21-2026-2"
 GROUPS="A B C D E F G H I J K L M X"
 
 for letter in $GROUPS; do
@@ -696,7 +729,7 @@ done
 ### Projeto
 
 ```bash
-ORG="ELT73A-S22-2026-2"
+ORG="ELT85B-N21-2026-2"
 GROUPS="A B C D E F G H I J K L M X"
 
 for letter in $GROUPS; do
@@ -724,7 +757,7 @@ done
 ```bash
 #!/bin/bash
 
-ORG="ELT73A-S22-2026-2"
+ORG="ELT85B-N21-2026-2"
 GROUPS="A B C D E F G H I J K L M P"
 NLABS=10   # Creates LAB00 to LAB10
 
@@ -795,8 +828,8 @@ grupo-a-projeto
 ```bash
 #!/bin/bash
 
-ORG="ELT73A-S22-2026-2"
-TEMPLATE="ELT73A-S22-2026-2/lab-template"   # ← change to your template repo
+ORG="ELT85B-N21-2026-2"
+TEMPLATE="ELT85B-N21-2026-2/lab-template"   # ← change to your template repo
 GROUPS="A B C D E F G H I J K L M X"
 NLAB=5                                     # ← creates lab05
 
@@ -836,7 +869,7 @@ echo "All LAB$LAB repositories created successfully!"
 ```bash
 #!/bin/bash
 
-ORG="ELT73A-S22-2026-2"
+ORG="ELT85B-N21-2026-2"
 NLABS=10          # Creates lab00-template → lab10-template
 
 echo "Creating lab templates in organization: $ORG"
@@ -872,7 +905,7 @@ echo "  TEMPLATE=\"$ORG/lab05-template\""
 Optional: Create only one specific template
 
 ```bash
-ORG="ELT73A-S22-2026-2"
+ORG="ELT85B-N21-2026-2"
 NLAB=5
 LAB=$(printf "%02d" $NLAB)
 REPO="lab${LAB}-template"

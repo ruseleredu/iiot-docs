@@ -211,7 +211,6 @@ export function DevTools() {
                 <ThemeCodeBlock className="language-bash">
                     code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
                 </ThemeCodeBlock>
-
             </TabItem>
             <TabItem value="esp32-platformio" label="PlatformIO">
                 <p><b><Link to="/docs/platformio-intro">PlatformIO IDE for VSCode</Link>: Your Gateway to Embedded Software Development Excellence.</b></p>

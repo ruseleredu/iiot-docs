@@ -1,0 +1,483 @@
+---
+hide_title: true
+draft: true # <--- Use this key to mark the document as a draft
+title: Grupos/Organizações
+description: Criação de grupos/organizações no GitHub para as aulas de laboratório
+---
+
+## ELT85B-N21-2026-2 Teams
+
+- https://github.com/orgs/ELT85B-N21-2026-2/teams
+
+```bash
+for letter in A B C D E F G H I J K L M P; do
+  gh api --method POST --silent orgs/ELT85B-N21-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+- https://github.com/orgs/ELT85B-N21-2026-2/repositories
+
+```bash
+Organization: ELT85B-N21-2026-2
+│
+├── Teams
+│   ├── Grupo-A
+│   ├── Grupo-B
+│   ├── Grupo-C
+│   └── ...
+│
+└── Repositories
+    ├── lab00-template
+    ├── lab00-grupo-a
+    ├── lab00-grupo-b
+    ├── ...
+    ├── lab10-template
+    ├── lab10-grupo-a
+    ├── lab10-grupo-b
+    ├── ...
+    ├── projeto-template
+    ├── projeto-grupo-a
+    ├── projeto-grupo-b
+    └── ...
+```
+
+List your teams and their slugs:
+
+```bash
+gh api orgs/ELT85B-N21-2026-2/teams --jq '.[] | "\(.name) → \(.slug)"'
+```
+
+List members
+
+```bash
+gh api orgs/ELT85B-N21-2026-2/teams/grupo-a/members --jq '.[].login'
+```
+
+List repos for a team
+
+```bash
+gh api orgs/ELT85B-N21-2026-2/teams/grupo-a/repos --jq '.[].full_name'
+```
+
+Here’s a script that creates the lab templates (lab00-template, lab01-template, …):
+
+```bash
+#!/bin/bash
+
+ORG="ELT85B-N21-2026-2"
+NLABS=10          # Creates lab00-template → lab10-template
+
+echo "Creating lab templates in organization: $ORG"
+echo ""
+
+for lab in $(seq -w 0 $NLABS); do
+  REPO="lab${lab}-template"
+
+  echo "Creating $REPO..."
+
+  # Create the repository
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --description "Template for LAB$lab" \
+    --add-readme \
+    --silent
+
+  # Mark it as a template repository
+  gh api --method PATCH --silent \
+    "repos/$ORG/$REPO" \
+    -f is_template=true
+
+  echo "  ✓ $REPO created and marked as template"
+done
+
+echo ""
+echo "All lab templates created successfully!"
+echo ""
+echo "You can now use them like this:"
+echo "  TEMPLATE=\"$ORG/lab05-template\""
+```
+
+```bash
+./scripts/create-labs-template.sh
+```
+
+Create only one specific template
+
+```bash
+ORG="ELT85B-N21-2026-2"
+NLAB=0
+LAB=$(printf "%02d" $NLAB)
+REPO="lab${LAB}-template"
+
+gh repo create "$ORG/$REPO" \
+  --private \
+  --description "Template for LAB$LAB" \
+  --add-readme
+
+gh api --method PATCH \
+  "repos/$ORG/$REPO" \
+  -f is_template=true
+```
+
+```bash
+./scripts/create-lab-template.sh
+```
+
+```bash
+#!/bin/bash
+set -e
+
+ORG="ELT85B-N21-2026-2"
+GROUP_LIST="A B C D E F G H I J K L M P"   # ← not GROUPS
+NLAB=0
+LAB=$(printf "lab%02d" "$NLAB")
+TEMPLATE="$ORG/${LAB}-template"
+
+echo "GROUP_LIST=[$GROUP_LIST]"
+echo "Creating ${LAB}-grupo-* from $TEMPLATE"
+echo ""
+
+for letter in $GROUP_LIST; do
+  GROUP_LOWER=$(echo "$letter" | tr '[:upper:]' '[:lower:]')
+  TEAM_SLUG="grupo-${GROUP_LOWER}"
+  REPO="${LAB}-grupo-${GROUP_LOWER}"
+
+  echo "→ $REPO  (team: $TEAM_SLUG)"
+
+  if gh repo view "$ORG/$REPO" &>/dev/null; then
+    echo "  ⚠ already exists, skipping create"
+  else
+    gh repo create "$ORG/$REPO" \
+      --private \
+      --template "$TEMPLATE" \
+      --description "LAB$(printf '%02d' "$NLAB") - Grupo $letter"
+  fi
+
+  if gh api --method PUT --silent \
+      "orgs/$ORG/teams/$TEAM_SLUG/repos/$ORG/$REPO" \
+      -f permission=push; then
+    echo "  ✓ https://github.com/$ORG/$REPO"
+  else
+    echo "  ✗ Failed to add team $TEAM_SLUG"
+  fi
+done
+
+echo ""
+echo "Done."
+```
+
+```bash
+./scripts/create-lab-from-template.sh
+```
+
+### Cheatsheet for your org
+
+```bash
+ORG="ELT85B-N21-2026-2"
+
+# List teams
+gh api "orgs/$ORG/teams" --jq '.[] | "\(.name) → \(.slug)"'
+
+# Create all groups
+for L in A B C D E F G H I J K L M X; do
+  gh api --method POST "orgs/$ORG/teams" \
+    -f name="Grupo-$L" -f privacy="closed" --silent
+done
+
+# Give team write on a lab repo
+gh api --method PUT \
+  "orgs/$ORG/teams/grupo-a/repos/$ORG/lab00-grupo-a" \
+  -f permission="push"
+
+# Add a student to a team
+gh api --method PUT \
+  "orgs/$ORG/teams/grupo-a/memberships/student-username" \
+  -f role="member"
+```
+
+## Cheatsheet — Team members working with lab repos
+
+**Org:** `ELT85B-N21-2026-2`  
+**Your team:** `Grupo-X` → slug `grupo-x`  
+**Your lab repo:** `lab00-grupo-x` (example)
+
+---
+
+## 1. One-time setup
+
+```bash
+# Install GitHub CLI (if needed), then login
+gh auth login
+
+# Configure git (once)
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+```
+
+Clone your lab repo:
+
+```bash
+gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
+cd lab00-grupo-a
+```
+
+Or with git:
+
+```bash
+git clone https://github.com/ELT85B-N21-2026-2/lab00-grupo-a.git
+cd lab00-grupo-a
+```
+
+Open in VS Code:
+
+```bash
+code .
+# or, if you use a profile:
+code . --profile "ESP32IO"
+```
+
+```bash
+pio project init --board esp32dev --project-option "framework=arduino"
+```
+
+```bash
+include - Put project header files here
+lib - Put project specific (private) libraries here
+src - Put project source files here
+platformio.ini - Project Configuration File
+Resolving esp32dev dependencies...
+Already up-to-date.
+Project has been successfully initialized!
+```
+
+```bash
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+```
+
+Crie ou edite o arquivo src/main.cpp com a seguinte estrutura:
+
+```c
+#include <Arduino.h>
+
+// Definição de pinos
+#define LED_PIN 2
+
+// Protótipos de funções (obrigatório em C/C++ padrão)
+void blinkLed(uint8_t pin, uint16_t delayMs);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 Inicializado!");
+}
+
+void loop() {
+  blinkLed(LED_PIN, 500);
+}
+
+// Implementação de funções auxiliares
+void blinkLed(uint8_t pin, uint16_t delayMs) {
+  digitalWrite(pin, HIGH);
+  delay(delayMs);
+  digitalWrite(pin, LOW);
+  delay(delayMs);
+}
+```
+
+```bash
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code --ide vscode
+```
+
+---
+
+## 2. Daily workflow
+
+```bash
+# Update from remote
+git pull
+
+# See status
+git status
+
+# Stage changes
+git add .
+# or specific files:
+git add src/main.cpp
+
+# Commit
+git commit -m "Implement exercise 2"
+
+# Push to GitHub
+git push
+```
+
+If `git push` asks for a remote branch the first time:
+
+```bash
+git push -u origin main
+```
+
+---
+
+## 3. Useful `gh` commands for students
+
+```bash
+# Open the repo in the browser
+gh repo view --web
+
+# View repo info
+gh repo view
+
+# List issues
+gh issue list
+
+# Create an issue
+gh issue create --title "Doubt about exercise 3" --body "..."
+
+# List PRs
+gh pr list
+
+# Create a pull request (if you work on a branch)
+gh pr create --title "Solution lab00" --body "..."
+
+# Check Actions / CI status
+gh run list
+gh run view
+```
+
+---
+
+## 4. Branch workflow (recommended)
+
+```bash
+# Create and switch to a branch
+git checkout -b feature/ex2
+
+# Work, commit, push
+git add .
+git commit -m "Exercise 2"
+git push -u origin feature/ex2
+
+# Open a PR into main
+gh pr create --base main --title "Exercise 2" --body "Done"
+```
+
+After the PR is merged:
+
+```bash
+git checkout main
+git pull
+git branch -d feature/ex2
+```
+
+---
+
+## 5. PlatformIO / embedded labs (if applicable)
+
+```bash
+# Build
+pio run
+
+# Upload to board
+pio run -t upload
+
+# Serial monitor
+pio device monitor
+
+# Run tests
+pio test
+```
+
+---
+
+## 6. What you **can** and **cannot** do
+
+| Action                                        | Allowed?                 |
+| --------------------------------------------- | ------------------------ |
+| Clone / pull / push to **your** group repo    | Yes (if team has `push`) |
+| Create branches / commits                     | Yes                      |
+| Open issues / PRs in your repo                | Yes                      |
+| Edit other groups’ repos (`lab00-grupo-b`, …) | No                       |
+| Delete the repository                         | No (usually)             |
+| Change team / org settings                    | No                       |
+| Access `lab00-template` (if private)          | Only if granted          |
+
+Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin.
+
+---
+
+## 7. Quick reference by lab
+
+| Lab     | Repository                          |
+| ------- | ----------------------------------- |
+| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-a`   |
+| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-a`   |
+| Projeto | `ELT85B-N21-2026-2/projeto-grupo-a` |
+
+Replace `a` with your group letter (`b`, `c`, …).
+
+Clone pattern:
+
+```bash
+gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
+```
+
+---
+
+## 8. Common problems
+
+**Permission denied on push**
+
+- Confirm you are logged in: `gh auth status`
+- Confirm you are in the right team/repo
+- Ask the instructor to check team access (`push` on the repo)
+
+**Repo not found**
+
+```bash
+gh repo view ELT85B-N21-2026-2/lab00-grupo-a
+```
+
+If 404: wrong name, or you are not a member of the org/team yet.
+
+**Merge conflicts**
+
+```bash
+git pull
+# fix conflicted files
+git add .
+git commit -m "Resolve merge conflicts"
+git push
+```
+
+**Undo local changes (destructive)**
+
+```bash
+git checkout -- .
+git clean -fd
+```
+
+---
+
+## 9. Minimal “start of lab” checklist
+
+1. `gh auth status` (logged in)
+2. `gh repo clone ELT85B-N21-2026-2/labXX-grupo-y`
+3. `cd labXX-grupo-y`
+4. `code .`
+5. Work → `git add` → `git commit` → `git push`
+6. Check CI: `gh run list`
+
+---
+
+## 10. One-liner cheat card
+
+```text
+clone   →  gh repo clone ORG/lab00-grupo-a
+update  →  git pull
+save    →  git add . && git commit -m "msg" && git push
+web     →  gh repo view --web
+ci      →  gh run list
+```
