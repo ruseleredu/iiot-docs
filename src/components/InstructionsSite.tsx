@@ -143,17 +143,16 @@ export function GitConfig() {
     );
 }
 
-
 // import {DevTools} from '@site/src/components/InstructionsSite';
-// <!-- List of Dev Tools -->
+// <!-- Lista de Ferramentas de Desenvolvimento -->
 // <DevTools />
 export function DevTools() {
     return (
         <Tabs>
             <TabItem value="git-scm" label="Git SCM" default>
-                <p><b><Link to="/docs/git">Git</Link> is the most widely used source-code management tool among professional developers.</b></p>
+                <p><b>O <Link to="/docs/git">Git</Link> é a ferramenta de gerenciamento de código-fonte mais utilizada por desenvolvedores profissionais.</b></p>
                 <ul>
-                    <li><a href="https://git-scm.com/downloads/win" target="_blank">Git</a> is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
+                    <li>O <a href="https://git-scm.com/downloads/win" target="_blank">Git</a> é um sistema de controle de versão distribuído gratuito e de código aberto, projetado para lidar com tudo, desde projetos pequenos até muito grandes, com rapidez e eficiência.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
@@ -165,9 +164,9 @@ export function DevTools() {
                 </ThemeCodeBlock>
             </TabItem>
             <TabItem value="gh" label="GitHub CLI">
-                <p><b><Link to="/docs/github-cli">GitHub CLI</Link> brings GitHub to your terminal.</b></p>
+                <p><b>O <Link to="/docs/github-cli">GitHub CLI</Link> traz o GitHub para o seu terminal.</b></p>
                 <ul>
-                    <li><a href="https://cli.github.com/" target="_blank">GitHub CLI</a> is a command line tool that allows you to interact with GitHub from the command line. It is available for Windows, macOS, and Linux.
+                    <li>O <a href="https://cli.github.com/" target="_blank">GitHub CLI</a> é uma ferramenta de linha de comando que permite interagir com o GitHub diretamente pelo terminal. Está disponível para Windows, macOS e Linux.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
@@ -179,9 +178,9 @@ export function DevTools() {
                 </ThemeCodeBlock>
             </TabItem>
             <TabItem value="GitHubDesktop" label="GitHub Desktop">
-                <p><b><Link to="/docs/github-desktop">GitHub Desktop</Link> is a simple way to use Git and GitHub on your computer.</b></p>
+                <p><b>O <Link to="/docs/github-desktop">GitHub Desktop</Link> é uma maneira simples de usar o Git e o GitHub no seu computador.</b></p>
                 <ul>
-                    <li><a href="https://desktop.github.com/download/" target="_blank">GitHub Desktop</a> is a free, open-source Git client for Windows and macOS. It allows you to manage your Git repositories and collaborate with others.
+                    <li>O <a href="https://desktop.github.com/download/" target="_blank">GitHub Desktop</a> é um cliente Git gratuito e de código aberto para Windows e macOS. Ele permite gerenciar seus repositórios Git e colaborar com outras pessoas.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
@@ -189,45 +188,90 @@ export function DevTools() {
                 </ThemeCodeBlock>
             </TabItem>
             <TabItem value="vscode" label="VS Code">
-                <p><b><Link to="/docs/vs-code-intro">Visual Studio Code</Link>: IDE and Code Editor for Software Development.</b></p>
+                <p><b><Link to="/docs/vs-code-intro">Visual Studio Code</Link>: IDE e Editor de Código para Desenvolvimento de Software.</b></p>
                 <ul>
-                    <li><a href="https://code.visualstudio.com/download" target="_blank">VS Code</a> is a free source-code editor made by Microsoft for Windows, Linux and macOS. It includes support for debugging, embedded Git control, syntax highlighting, intelligent code completion, snippets, and code refactoring.
+                    <li>O <a href="https://code.visualstudio.com/download" target="_blank">VS Code</a> é um editor de código-fonte gratuito criado pela Microsoft para Windows, Linux e macOS. Inclui suporte para depuração, controle Git integrado, realce de sintaxe, conclusão inteligente de código, snippets e refatoração de código.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
                     winget install --id Microsoft.VisualStudioCode -e --source winget
                 </ThemeCodeBlock>
-                <p>Extensões instaladas do <Link to="/docs/vs-code-intro">Visual Studio Code</Link> para o perfil STM32:</p>
+                <p>Extensões instaladas do <Link to="/docs/vs-code-intro">Visual Studio Code</Link> para o perfil ESP32IO:</p>
                 <ThemeCodeBlock className="language-bash">
                     code --list-extensions --profile "ESP32IO"
                 </ThemeCodeBlock>
+                <p>Inicie o projeto no PlatformIO:</p>
+                <ThemeCodeBlock className="language-bash">
+                    pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+                </ThemeCodeBlock>
             </TabItem>
             <TabItem value="esp32-wokwi" label="Wokwi">
-                <p><b><Link to="/docs/category/wokwi">Wokwi for VSCode</Link>: Embedded systems and IoT simulator supporting ESP32, Arduino, and the Raspberry Pi Pico.</b></p>
+                <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32, Arduino e Raspberry Pi Pico.</b></p>
                 <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi for VSCode</a> Your code never leaves your computer - Wokwi runs the simulation inside VS Code, using the firmware binaries from your project.
+                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> Seu código nunca sai do seu computador - o Wokwi executa a simulação dentro do VS Code, utilizando os binários de firmware do seu projeto.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
                     code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
                 </ThemeCodeBlock>
+                <ul><li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Wokwi for Visual Studio Code.</a></li></ul>
             </TabItem>
             <TabItem value="esp32-platformio" label="PlatformIO">
-                <p><b><Link to="/docs/platformio-intro">PlatformIO IDE for VSCode</Link>: Your Gateway to Embedded Software Development Excellence.</b></p>
+                <p><b><Link to="/docs/platformio-intro">PlatformIO IDE para VSCode</Link>: Sua porta de entrada para a excelência no desenvolvimento de software embarcado.</b></p>
                 <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide" target="_blank">PlatformIO IDE for VSCode</a> Unlock the true potential of embedded software development with PlatformIO’s collaborative ecosystem, embracing declarative principles, test-driven methodologies, and modern toolchains for unrivaled success.
+                    <li><a href="https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide" target="_blank">PlatformIO IDE para VSCode</a> Desbloqueie o verdadeiro potencial do desenvolvimento de software embarcado com o ecossistema colaborativo do PlatformIO, adotando princípios declarativos, metodologias orientadas a testes e toolchains modernas para um sucesso incomparável.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
                     code --install-extension platformio.platformio-ide --profile "ESP32IO"
                 </ThemeCodeBlock>
-                <p>You need to edit the system environment variable called <b>Path</b> and append <b>%USERPROFILE%\.platformio\penv\Scripts\</b> path in the beginning of the list.</p>
-
+                <p><ul><li>Instale a plataforma espressif32:</li></ul></p>
+                <ThemeCodeBlock className="language-bash">
+                    {`pio platform install espressif32`}
+                </ThemeCodeBlock>
+                <p>Você precisa editar a variável de ambiente do sistema chamada <b>Path</b> e adicionar o caminho <b>%USERPROFILE%\.platformio\penv\Scripts\</b> no início da lista.</p>
+                <p><ul><li>Inicie o projeto no PlatformIO:</li></ul></p>
+                <ThemeCodeBlock className="language-bash">
+                    {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code`}
+                </ThemeCodeBlock>
+            </TabItem>
+            <TabItem value="esp32-drivers" label="Drivers">
+                <ol>
+                    <li>Conecte o ESP32 ao computador via USB.</li>
+                    <li>
+                        Abra o <b>Gerenciador de Dispositivos</b> (clique com o botão direito no Menu Iniciar &rarr; Gerenciador de Dispositivos).
+                    </li>
+                    <li>Expanda a seção <b>Portas (COM e LPT)</b>.</li>
+                    <li>
+                        Procure por um dispositivo similar a:
+                        <ul>
+                            <li>
+                                <a href="https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers?tab=downloads" target="_blank" rel="noopener noreferrer">
+                                    Silicon Labs CP210x USB to UART Bridge (COMx)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.wch-ic.com/downloads/CH341SER_ZIP.html" target="_blank" rel="noopener noreferrer">
+                                    Driver Windows CH340/CH341 USB para porta serial
+                                </a>
+                            </li>
+                            <li>FTDI ou &ldquo;Dispositivo Serial USB (COMx)&rdquo;</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>
+                    Anote o número da porta (ex: <b>COM4</b>, <b>COM6</b>, <b>COM12</b>). Se não aparecer nenhuma porta nova, o driver não está instalado. Baixe o driver correspondente (CP210x ou CH340) no site do fabricante da placa.
+                </p>
+                <ThemeCodeBlock className="language-bash">
+                    pip install esptool
+                </ThemeCodeBlock>
+                <ThemeCodeBlock className="language-bash">
+                    esptool chip-id
+                </ThemeCodeBlock>
             </TabItem>
         </Tabs>
     );
 }
-
 
 // import {GitLogOut} from '@site/src/components/InstructionsSite';
 // <!-- Logout do seu ambiente dev, git e gh -->

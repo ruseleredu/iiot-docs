@@ -1,5 +1,5 @@
 import LabTable from "@site/src/components/LabTable";
-import LabFromTemplate from "@site/src/components/LabFromTemplate";
+import LabTeamMembers from "@site/src/components/LabTeamMembers";
 
 # Laboratório 01
 
@@ -11,33 +11,463 @@ import LabFromTemplate from "@site/src/components/LabFromTemplate";
 
 ---
 
-## Visão Geral sobre IoT
+## Checklist — Configuração do Ambiente ESP32
 
-**Ementa:** O que é IoT · Referências · Seu uso · Internet e IoT
-
-**Stack da semana:** ESP32 · PlatformIO · VS Code · Wokwi
-
-| Aula | Tipo | Conteúdo                                         | Detalhamento                                                                                  |
-| ---- | ---- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| 1    | AT   | Introdução à IoT: definição, história e evolução | Conceito de "coisa conectada", marcos históricos, impacto econômico e social                  |
-| 2    | AT   | IoT industrial vs. IoT consumidor (IIoT)         | Diferenças de requisitos: confiabilidade, latência, segurança, escala                         |
-| 3    | AP   | Setup do ambiente: VS Code + PlatformIO + Wokwi  | Instalação e configuração do ambiente de desenvolvimento; primeiro projeto ESP32 no simulador |
-| 4    | AP   | Hello World IoT: piscar LED no ESP32 via Wokwi   | Estrutura de um projeto PlatformIO, `platformio.ini`, upload e monitoramento serial           |
+- [ ] Verificar o Windows e o `winget`
+- [ ] Executar `winget source update`
+- [ ] Instalar o VS Code
+- [ ] Instalar o Git
+- [ ] Verificar `git --version`
+- [ ] Configurar `user.name`
+- [ ] Configurar `user.email`
+- [ ] Abrir o VS Code
+- [ ] Instalar a extensão PlatformIO IDE
+- [ ] Instalar a extensão Wokwi
+- [ ] Ativar/configurar o Wokwi
+- [ ] Criar um projeto ESP32
+- [ ] Selecionar o framework Arduino
+- [ ] Executar o primeiro Build
+- [ ] Criar `wokwi.toml`
+- [ ] Criar `diagram.json`
+- [ ] Executar a simulação
+- [ ] Verificar o Serial Monitor
+- [ ] Inicializar o Git
+- [ ] Criar o primeiro commit
+- [ ] Criar o repositório no GitHub
+- [ ] Executar `git push`
+- [ ] Confirmar que o projeto está disponível no GitHub
+- [ ] Logout
 
 ---
 
-- **Objetivo:** Configurar todo o ambiente de desenvolvimento.
-- **Atividades:**
-  1. Instalar VS Code + extensão **PlatformIO**.
-  2. Criar projeto ESP32 no PlatformIO.
-  3. Configurar e testar simulação no **Wokwi** (blink LED + integração com VS Code).
-  4. Instalar via Docker: Node-RED, InfluxDB, Grafana e Mosquitto (MQTT broker).
-- **Entrega:** Print do Wokwi rodando + containers Docker ativos (`docker ps`).
+- https://github.com/orgs/ELT85B-N21-2026-2/repositories?q=lab01
 
-## Crie um novo repositório com base no template do LAB00 {/* #new-repo-from-tpl */}
+```bash
+Organization: ELT85B-N21-2026-2
+│
+├── Teams
+│   ├── Grupo-A
+│   ├── Grupo-B
+│   ├── ...
+│   └── Grupo-P (Professor)
+│
+└── Repositories
+    ├── lab01-template
+    ├── lab01-grupo-a
+    ├── lab01-grupo-b
+    ├── ...
+    └── lab01-grupo-p (Professor)
+```
+
+## Configuração do ambiente de desenvolvimento
+
+import { DevTools } from "@site/src/components/InstructionsSite";
+
+<DevTools />
+
+Verifique o seu ambiente de desenvolvimento, git, gh e code:
+
+import { VerifyDev1 } from "@site/src/components/InstructionsSite";
+
+<VerifyDev1 />
+
+Configure o git
+
+import { GitConfig } from "@site/src/components/InstructionsSite";
+
+<GitConfig />
+
+- [Git Cheat Sheet](https://training.github.com/downloads/github-git-cheat-sheet.pdf)
+
+## Clone o repositório inicial do LAB01
 
 Escolha o Grupo e entre com o comando abaixo para criar o repositório no GitHub:
 
-{/* Gera instruções para criar o repositório no GitHub por grupo com base no template do laboratório. */}
+<LabTeamMembers labName="lab01" />
 
-<LabFromTemplate labNumber="LAB00" opts="-c" />
+```bash
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+```
+
+```bash
+include - Put project header files here
+lib - Put project specific (private) libraries here
+src - Put project source files here
+platformio.ini - Project Configuration File
+Resolving esp32dev dependencies...
+Already up-to-date.
+Project has been successfully initialized!
+```
+
+Crie ou edite o arquivo src/main.cpp com a seguinte estrutura:
+
+```c
+#include <Arduino.h>
+
+// Definição de pinos
+#define LED_PIN 2
+
+// Protótipos de funções (obrigatório em C/C++ padrão)
+void blinkLed(uint8_t pin, uint16_t delayMs);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 Inicializado!");
+}
+
+void loop() {
+  blinkLed(LED_PIN, 500);
+}
+
+// Implementação de funções auxiliares
+void blinkLed(uint8_t pin, uint16_t delayMs) {
+  digitalWrite(pin, HIGH);
+  delay(delayMs);
+  digitalWrite(pin, LOW);
+  delay(delayMs);
+}
+```
+
+---
+
+## 4. Simulação com Wokwi
+
+Objetivo: validar lógica **sem depender da bancada**.
+
+- https://docs.wokwi.com/guides/esp32#arduino-examples
+
+### Opção A — Extensão Wokwi no VS Code
+
+- https://docs.wokwi.com/vscode/project-config
+
+1. Instale **Wokwi Simulator**
+2. No projeto, use/crie:
+   - `diagram.json` — circuito (ESP32, LED, fios)
+   - `wokwi.toml` — liga o firmware do PlatformIO ao simulador (conforme docs do template)
+3. Comando típico da extensão: **Start Simulator**
+4. Abra o monitor serial do Wokwi e veja o mesmo `Serial.println`
+
+A basic wokwi.toml file looks like this:
+
+```yml
+[wokwi]
+version = 1
+firmware = 'path-to-your-firmware.hex'
+elf = 'path-to-your-firmware.elf'
+```
+
+---
+
+```yml
+[wokwi]
+version = 1
+firmware = '.pio\build\esp32dev\firmware.bin'
+elf = '.pio\build\esp32dev\firmware.elf'
+```
+
+### Opção B — Wokwi no navegador
+
+1. Acesse [wokwi.com](https://wokwi.com)
+2. Novo projeto → **ESP32**
+3. Cole o conteúdo de `src/main.cpp`
+4. Monte LED no GPIO do `LED_BUILTIN` (ou no GPIO que o template usar)
+5. **Start** e observe LED + serial
+
+### Exemplo mínimo de ideia de `diagram.json` (LED no GPIO 2)
+
+Muitos DevKit tratam LED embutido no GPIO 2 — confirme no template.
+
+**Checklist Wokwi**
+
+- [ ] Projeto simula e imprime no serial a mensagem do grupo
+- [ ] LED pisca conforme o `loop()`
+- [ ] Você não precisou da placa física para esta parte
+
+---
+
+## 5. Placa real (opcional, se houver ESP32)
+
+1. Conecte o USB
+2. Selecione a porta no PlatformIO (ou `pio device list`)
+3. Upload + monitor:
+
+```bash
+pio device list
+pio run -t upload
+pio device monitor
+```
+
+| Problema          | O que tentar                                     |
+| ----------------- | ------------------------------------------------ |
+| Porta não aparece | Cabo, driver, outro USB                          |
+| Upload fail       | Segurar BOOT na gravação (algumas placas)        |
+| Serial sem texto  | `monitor_speed = 115200` igual ao `Serial.begin` |
+
+---
+
+## 6. Git: salvar o trabalho e entregar
+
+Depois de **build ok** (e, se possível, Wokwi ok):
+
+```bash
+git status
+git add src/main.cpp README.md
+git commit -m "lab00: mensagem serial do grupo + LED"
+git push
+```
+
+README — seção mínima:
+
+```markdown
+## Integrantes
+
+- Nome 1
+- Nome 2
+
+## Como rodar
+
+- Build: `pio run`
+- Simulação: Wokwi (extensão ou site)
+- Placa: `pio run -t upload` && `pio device monitor`
+```
+
+---
+
+Example workflow (.github/workflows/grade.yml):
+
+````yaml
+
+**`.github/workflows/grade.yml`** (CI – compile only)
+```yaml
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build project
+        run: pio run
+
+      # Uncomment if you want native/unit tests in CI
+      # - name: Run tests
+      #   run: pio test -e native
+````
+
+---
+
+## 2. Daily workflow
+
+```bash
+# Update from remote
+git pull
+
+# See status
+git status
+
+# Stage changes
+git add .
+# or specific files:
+git add src/main.cpp
+
+# Commit
+git commit -m "Implement exercise 2"
+
+# Push to GitHub
+git push
+```
+
+If `git push` asks for a remote branch the first time:
+
+```bash
+git push -u origin main
+```
+
+---
+
+## 3. Useful `gh` commands for students
+
+```bash
+# Open the repo in the browser
+gh repo view --web
+
+# View repo info
+gh repo view
+
+# List issues
+gh issue list
+
+# Create an issue
+gh issue create --title "Doubt about exercise 3" --body "..."
+
+# List PRs
+gh pr list
+
+# Create a pull request (if you work on a branch)
+gh pr create --title "Solution lab00" --body "..."
+
+# Check Actions / CI status
+gh run list
+gh run view
+```
+
+---
+
+## 4. Branch workflow (recommended)
+
+```bash
+# Create and switch to a branch
+git checkout -b feature/ex2
+
+# Work, commit, push
+git add .
+git commit -m "Exercise 2"
+git push -u origin feature/ex2
+
+# Open a PR into main
+gh pr create --base main --title "Exercise 2" --body "Done"
+```
+
+After the PR is merged:
+
+```bash
+git checkout main
+git pull
+git branch -d feature/ex2
+```
+
+---
+
+## 5. PlatformIO / embedded labs (if applicable)
+
+```bash
+# Build
+pio run
+
+# Upload to board
+pio run -t upload
+
+# Serial monitor
+pio device monitor
+
+# Run tests
+pio test
+```
+
+---
+
+## 6. What you **can** and **cannot** do
+
+| Action                                        | Allowed?                 |
+| --------------------------------------------- | ------------------------ |
+| Clone / pull / push to **your** group repo    | Yes (if team has `push`) |
+| Create branches / commits                     | Yes                      |
+| Open issues / PRs in your repo                | Yes                      |
+| Edit other groups’ repos (`lab00-grupo-b`, …) | No                       |
+| Delete the repository                         | No (usually)             |
+| Change team / org settings                    | No                       |
+| Access `lab00-template` (if private)          | Only if granted          |
+
+Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin.
+
+---
+
+## 7. Quick reference by lab
+
+| Lab     | Repository                          |
+| ------- | ----------------------------------- |
+| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-a`   |
+| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-a`   |
+| Projeto | `ELT85B-N21-2026-2/projeto-grupo-a` |
+
+Replace `a` with your group letter (`b`, `c`, …).
+
+Clone pattern:
+
+```bash
+gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
+```
+
+---
+
+## 8. Common problems
+
+**Permission denied on push**
+
+- Confirm you are logged in: `gh auth status`
+- Confirm you are in the right team/repo
+- Ask the instructor to check team access (`push` on the repo)
+
+**Repo not found**
+
+```bash
+gh repo view ELT85B-N21-2026-2/lab00-grupo-a
+```
+
+If 404: wrong name, or you are not a member of the org/team yet.
+
+**Merge conflicts**
+
+```bash
+git pull
+# fix conflicted files
+git add .
+git commit -m "Resolve merge conflicts"
+git push
+```
+
+**Undo local changes (destructive)**
+
+```bash
+git checkout -- .
+git clean -fd
+```
+
+---
+
+## 9. Minimal “start of lab” checklist
+
+1. `gh auth status` (logged in)
+2. `gh repo clone ELT85B-N21-2026-2/labXX-grupo-y`
+3. `cd labXX-grupo-y`
+4. `code .`
+5. Work → `git add` → `git commit` → `git push`
+6. Check CI: `gh run list`
+
+---
+
+## 10. One-liner cheat card
+
+```text
+clone   →  gh repo clone ORG/lab00-grupo-a
+update  →  git pull
+save    →  git add . && git commit -m "msg" && git push
+web     →  gh repo view --web
+ci      →  gh run list
+```
+
+## Logout do seu ambiente dev, git e gh
+
+import { GitLogOut } from "@site/src/components/InstructionsSite";
+
+<GitLogOut />

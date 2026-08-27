@@ -101,3 +101,14 @@ Run Automation Script to download ESPConnect
 ```bash
 node scripts/download-espconnect.js
 ```
+
+Cria template do lab e repos por grupo:
+
+```bash
+./scripts/create-lab-template.sh
+```
+
+```bash
+./scripts/create-lab-from-template.sh
+```
+

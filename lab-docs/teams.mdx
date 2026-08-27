@@ -197,287 +197,528 @@ gh api --method PUT \
   -f role="member"
 ```
 
-## Cheatsheet — Team members working with lab repos
+---
 
-**Org:** `ELT85B-N21-2026-2`  
-**Your team:** `Grupo-X` → slug `grupo-x`  
-**Your lab repo:** `lab00-grupo-x` (example)
+## ELT85B-N21-2026-2 Teams (TODO)
+
+- https://x.com/i/grok/share/704ea2e561a94df7ba04e21cbc383c0a
+
+- https://github.com/orgs/ELT85B-N21-2026-2/teams
+
+```bash
+for letter in A B C D E F G H I J X; do
+  gh api --method POST orgs/ELT85B-N21-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+for letter in A B C D E F G H I J K L M X; do
+  gh api --method POST orgs/ELT85B-N21-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+for letter in A B C D E F G H I J K L M X; do
+  gh api --method POST --silent orgs/ELT85B-N21-2026-2/teams \
+    -f name="Grupo-$letter" \
+    -f privacy="closed"
+done
+```
+
+```bash
+Organization: ELT85B-N21-2026-2
+│
+├── Teams
+│   ├── Grupo-A
+│   ├── Grupo-B
+│   ├── Grupo-C
+│   └── ...
+│
+└── Repositories
+    ├── grupo-a-lab00
+    ├── grupo-a-lab01
+    ├── ...
+    ├── grupo-a-lab10
+    ├── grupo-b-lab00
+    ├── grupo-b-lab01
+    └── ...
+```
+
+### Bulk Creation Script (Git Bash)
+
+Here’s a ready-to-use script that creates LAB00 to LAB10 for every group:
+
+```bash
+ORG="ELT85B-N21-2026-2"
+GROUPS="A B C D E F G H I J K L M X"
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+
+  for lab in $(seq -w 0 10); do          # 00, 01, 02 ... 10
+    REPO="grupo-${letter,,}-lab$lab"     # grupo-a-lab00, grupo-b-lab01...
+
+    echo "Creating $REPO for $TEAM..."
+
+    gh repo create "$ORG/$REPO" \
+      --private \
+      --team "$TEAM" \
+      --description "LAB$lab - Grupo $letter" \
+      --add-readme \
+      --silent
+
+    # Give the team write access (instead of just read)
+    gh api --method PUT --silent \
+      "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+      -f permission=push
+  done
+done
+```
+
+### Projeto
+
+```bash
+ORG="ELT85B-N21-2026-2"
+GROUPS="A B C D E F G H I J K L M X"
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  REPO="grupo-${letter,,}-projeto"   # grupo-a-projeto, grupo-b-projeto...
+
+  echo "Creating $REPO for $TEAM..."
+
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --team "$TEAM" \
+    --description "Projeto Final - Grupo $letter" \
+    --add-readme \
+    --silent
+
+  # Give the team write access
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+done
+```
+
+### Here’s the merged complete script with a NLABS variable:
+
+```bash
+#!/bin/bash
+
+ORG="ELT85B-N21-2026-2"
+GROUPS="A B C D E F G H I J K L M P"
+NLABS=10   # Creates LAB00 to LAB10
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  GROUP_LOWER="${letter,,}"   # a, b, c...
+
+  echo "=== Processing Grupo-$letter ==="
+
+  # ---------- Create LAB repositories ----------
+  for lab in $(seq -w 0 $NLABS); do
+    REPO="grupo-${GROUP_LOWER}-lab$lab"
+
+    echo "  Creating $REPO..."
+
+    gh repo create "$ORG/$REPO" \
+      --private \
+      --team "$TEAM" \
+      --description "LAB$lab - Grupo $letter" \
+      --add-readme \
+      --silent
+
+    # Give write access to the team
+    gh api --method PUT --silent \
+      "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+      -f permission=push
+  done
+
+  # ---------- Create Projeto repository ----------
+  REPO="grupo-${GROUP_LOWER}-projeto"
+
+  echo "  Creating $REPO..."
+
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --team "$TEAM" \
+    --description "Projeto Final - Grupo $letter" \
+    --add-readme \
+    --silent
+
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+
+  echo ""
+done
+
+echo "All repositories created successfully!"
+```
+
+```bash
+bash create-repos.sh
+```
+
+### What it creates (example for Grupo-A)
+
+```bash
+grupo-a-lab00
+grupo-a-lab01
+grupo-a-lab02
+...
+grupo-a-lab10
+grupo-a-projeto
+```
+
+### Here’s a focused script that creates repositories for one specific lab using a template:
+
+```bash
+#!/bin/bash
+
+ORG="ELT85B-N21-2026-2"
+TEMPLATE="ELT85B-N21-2026-2/lab-template"   # ← change to your template repo
+GROUPS="A B C D E F G H I J K L M X"
+NLAB=5                                     # ← creates lab05
+
+LAB=$(printf "%02d" $NLAB)                 # turns 5 into "05"
+
+echo "Creating repositories for LAB$LAB using template: $TEMPLATE"
+echo ""
+
+for letter in $GROUPS; do
+  TEAM="Grupo-$letter"
+  GROUP_LOWER="${letter,,}"
+  REPO="grupo-${GROUP_LOWER}-lab$LAB"
+
+  echo "Creating $REPO for $TEAM..."
+
+  gh repo create "$ORG/$REPO" \
+    --template "$TEMPLATE" \
+    --private \
+    --team "$TEAM" \
+    --description "LAB$LAB - Grupo $letter" \
+    --silent
+
+  # Give the team write access
+  gh api --method PUT --silent \
+    "orgs/$ORG/teams/$TEAM/repos/$ORG/$REPO" \
+    -f permission=push
+
+  echo "  ✓ $REPO created"
+done
+
+echo ""
+echo "All LAB$LAB repositories created successfully!"
+```
+
+## Here’s a script that creates the lab templates (lab00-template, lab01-template, …):
+
+```bash
+#!/bin/bash
+
+ORG="ELT85B-N21-2026-2"
+NLABS=10          # Creates lab00-template → lab10-template
+
+echo "Creating lab templates in organization: $ORG"
+echo ""
+
+for lab in $(seq -w 0 $NLABS); do
+  REPO="lab${lab}-template"
+
+  echo "Creating $REPO..."
+
+  # Create the repository
+  gh repo create "$ORG/$REPO" \
+    --private \
+    --description "Template for LAB$lab" \
+    --add-readme \
+    --silent
+
+  # Mark it as a template repository
+  gh api --method PATCH --silent \
+    "repos/$ORG/$REPO" \
+    -f is_template=true
+
+  echo "  ✓ $REPO created and marked as template"
+done
+
+echo ""
+echo "All lab templates created successfully!"
+echo ""
+echo "You can now use them like this:"
+echo "  TEMPLATE=\"$ORG/lab05-template\""
+```
+
+Optional: Create only one specific template
+
+```bash
+ORG="ELT85B-N21-2026-2"
+NLAB=5
+LAB=$(printf "%02d" $NLAB)
+REPO="lab${LAB}-template"
+
+gh repo create "$ORG/$REPO" \
+  --private \
+  --description "Template for LAB$LAB" \
+  --add-readme
+
+gh api --method PATCH \
+  "repos/$ORG/$REPO" \
+  -f is_template=true
+```
+
+## GitHub CLI team management
+
+# GitHub CLI team management
+
+The official `gh` CLI **does not** have a dedicated `gh team` command. Team operations are done with **`gh api`** (REST API) or with **community extensions**.
 
 ---
 
-## 1. One-time setup
+## 1. Prerequisites
 
 ```bash
-# Install GitHub CLI (if needed), then login
+# Auth with org permissions
 gh auth login
-
-# Configure git (once)
-git config --global user.name "Your Name"
-git config --global user.email "your@email.com"
+gh auth refresh -h github.com -s admin:org,read:org,repo
 ```
 
-Clone your lab repo:
+| Scope       | Purpose                        |
+| ----------- | ------------------------------ |
+| `read:org`  | List teams / members           |
+| `admin:org` | Create / update / delete teams |
+| `repo`      | Grant teams access to repos    |
+
+**Git Bash tip:** omit the leading `/` in API paths (`orgs/...` not `/orgs/...`).
+
+**Bash tip:** do **not** name a variable `GROUPS` — it is a special Bash array (that caused your `197121` issue).
+
+---
+
+## 2. Core concepts
+
+| Concept                | Meaning                             | Example        |
+| ---------------------- | ----------------------------------- | -------------- |
+| **Name**               | Display name                        | `Grupo-A`      |
+| **Slug**               | URL/API id (lowercase)              | `grupo-a`      |
+| **Privacy**            | `closed` or `secret`                | `closed`       |
+| **Permission on repo** | `pull`, `push`, `maintain`, `admin` | `push` = write |
+
+Always use the **slug** in API paths.
 
 ```bash
-gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
-cd lab00-grupo-a
-```
-
-Or with git:
-
-```bash
-git clone https://github.com/ELT85B-N21-2026-2/lab00-grupo-a.git
-cd lab00-grupo-a
-```
-
-Open in VS Code:
-
-```bash
-code .
-# or, if you use a profile:
-code . --profile "ESP32IO"
-```
-
-```bash
-pio project init --board esp32dev --project-option "framework=arduino"
-```
-
-```bash
-include - Put project header files here
-lib - Put project specific (private) libraries here
-src - Put project source files here
-platformio.ini - Project Configuration File
-Resolving esp32dev dependencies...
-Already up-to-date.
-Project has been successfully initialized!
-```
-
-```bash
-pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
-```
-
-Crie ou edite o arquivo src/main.cpp com a seguinte estrutura:
-
-```c
-#include <Arduino.h>
-
-// Definição de pinos
-#define LED_PIN 2
-
-// Protótipos de funções (obrigatório em C/C++ padrão)
-void blinkLed(uint8_t pin, uint16_t delayMs);
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  Serial.println("ESP32 Inicializado!");
-}
-
-void loop() {
-  blinkLed(LED_PIN, 500);
-}
-
-// Implementação de funções auxiliares
-void blinkLed(uint8_t pin, uint16_t delayMs) {
-  digitalWrite(pin, HIGH);
-  delay(delayMs);
-  digitalWrite(pin, LOW);
-  delay(delayMs);
-}
-```
-
-```bash
-pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code --ide vscode
+gh api orgs/ELT73A-S22-2026-2/teams --jq '.[] | "\(.name) → \(.slug)"'
 ```
 
 ---
 
-## 2. Daily workflow
+## 3. Common operations with `gh api`
+
+### List teams
 
 ```bash
-# Update from remote
-git pull
-
-# See status
-git status
-
-# Stage changes
-git add .
-# or specific files:
-git add src/main.cpp
-
-# Commit
-git commit -m "Implement exercise 2"
-
-# Push to GitHub
-git push
+gh api orgs/ELT73A-S22-2026-2/teams --jq '.[] | {name, slug, privacy}'
 ```
 
-If `git push` asks for a remote branch the first time:
+### Get one team
 
 ```bash
-git push -u origin main
+gh api orgs/ELT73A-S22-2026-2/teams/grupo-a
+```
+
+### Create a team
+
+```bash
+gh api --method POST orgs/ELT73A-S22-2026-2/teams \
+  -f name="Grupo-A" \
+  -f description="Students group A" \
+  -f privacy="closed"
+```
+
+### Update a team
+
+```bash
+gh api --method PATCH orgs/ELT73A-S22-2026-2/teams/grupo-a \
+  -f description="Updated description" \
+  -f privacy="closed"
+```
+
+### Delete a team
+
+```bash
+gh api --method DELETE orgs/ELT73A-S22-2026-2/teams/grupo-a
+```
+
+### Nested (parent) team
+
+```bash
+PARENT_ID=$(gh api orgs/ELT73A-S22-2026-2/teams/grupo-a --jq '.id')
+
+gh api --method POST orgs/ELT73A-S22-2026-2/teams \
+  -f name="Grupo-A-Frontend" \
+  -f privacy="closed" \
+  -F parent_team_id="$PARENT_ID"
 ```
 
 ---
 
-## 3. Useful `gh` commands for students
+## 4. Members
+
+### List members
 
 ```bash
-# Open the repo in the browser
-gh repo view --web
+gh api orgs/ELT73A-S22-2026-2/teams/grupo-a/members --jq '.[].login'
+```
 
-# View repo info
-gh repo view
+### Add member
 
-# List issues
-gh issue list
+```bash
+# role: member | maintainer
+gh api --method PUT \
+  orgs/ELT73A-S22-2026-2/teams/grupo-a/memberships/USERNAME \
+  -f role="member"
+```
 
-# Create an issue
-gh issue create --title "Doubt about exercise 3" --body "..."
+### Remove member
 
-# List PRs
-gh pr list
+```bash
+gh api --method DELETE \
+  orgs/ELT73A-S22-2026-2/teams/grupo-a/memberships/USERNAME
+```
 
-# Create a pull request (if you work on a branch)
-gh pr create --title "Solution lab00" --body "..."
+### Bulk add members
 
-# Check Actions / CI status
-gh run list
-gh run view
+```bash
+for user in alice bob carol; do
+  gh api --method PUT --silent \
+    orgs/ELT73A-S22-2026-2/teams/grupo-a/memberships/$user \
+    -f role="member"
+  echo "Added $user"
+done
 ```
 
 ---
 
-## 4. Branch workflow (recommended)
+## 5. Team ↔ repository access
+
+### Grant access
 
 ```bash
-# Create and switch to a branch
-git checkout -b feature/ex2
-
-# Work, commit, push
-git add .
-git commit -m "Exercise 2"
-git push -u origin feature/ex2
-
-# Open a PR into main
-gh pr create --base main --title "Exercise 2" --body "Done"
+gh api --method PUT \
+  orgs/ELT73A-S22-2026-2/teams/grupo-a/repos/ELT73A-S22-2026-2/lab00-grupo-a \
+  -f permission="push"
 ```
 
-After the PR is merged:
+| `permission` | Meaning  |
+| ------------ | -------- |
+| `pull`       | Read     |
+| `triage`     | Triage   |
+| `push`       | Write    |
+| `maintain`   | Maintain |
+| `admin`      | Admin    |
+
+### List repos for a team
 
 ```bash
-git checkout main
-git pull
-git branch -d feature/ex2
+gh api orgs/ELT73A-S22-2026-2/teams/grupo-a/repos --jq '.[].full_name'
+```
+
+### Remove team from a repo
+
+```bash
+gh api --method DELETE \
+  orgs/ELT73A-S22-2026-2/teams/grupo-a/repos/ELT73A-S22-2026-2/lab00-grupo-a
+```
+
+### Note on `gh repo create`
+
+- `--team` grants access at create time, but **only `pull` (read)** and **cannot be combined with `--template`**.
+- Pattern you already use: create from template → then `PUT` team with `push`.
+
+---
+
+## 6. Where teams appear in native `gh`
+
+| Command                                 | Team-related behavior                    |
+| --------------------------------------- | ---------------------------------------- |
+| `gh repo create --team NAME`            | Add team with **read** (no `--template`) |
+| `gh pr create --reviewer org/team-slug` | Request team review                      |
+| `gh project link --team ...`            | Link project to a team                   |
+| `gh org list`                           | List orgs only (not teams)               |
+
+Everything else → `gh api`.
+
+---
+
+## 7. Optional extensions
+
+Higher-level team commands:
+
+```bash
+# Team CRUD, members, repos
+gh extension install srz-zumix/gh-team-kit
+
+# Examples
+gh team-kit list
+gh team-kit create "Grupo-A" --description "..."
+gh team-kit tree
+```
+
+```bash
+# Repo collaborators + teams
+gh extension install mislav/gh-repo-collab
+gh repo-collab add ORG/REPO org/team-slug --permission push
+```
+
+```bash
+# Org extras (members/teams)
+gh extension install Kyuubang/gh-org-extras
+```
+
+Core `gh api` is enough for your lab setup and avoids extra dependencies.
+
+---
+
+## 8. Cheatsheet for your org
+
+```bash
+ORG="ELT73A-S22-2026-2"
+
+# List teams
+gh api "orgs/$ORG/teams" --jq '.[] | "\(.name) → \(.slug)"'
+
+# Create all groups
+for L in A B C D E F G H I J K L M X; do
+  gh api --method POST "orgs/$ORG/teams" \
+    -f name="Grupo-$L" -f privacy="closed" --silent
+done
+
+# Give team write on a lab repo
+gh api --method PUT \
+  "orgs/$ORG/teams/grupo-a/repos/$ORG/lab00-grupo-a" \
+  -f permission="push"
+
+# Add a student to a team
+gh api --method PUT \
+  "orgs/$ORG/teams/grupo-a/memberships/student-username" \
+  -f role="member"
 ```
 
 ---
 
-## 5. PlatformIO / embedded labs (if applicable)
+## 9. Official docs
 
-```bash
-# Build
-pio run
-
-# Upload to board
-pio run -t upload
-
-# Serial monitor
-pio device monitor
-
-# Run tests
-pio test
-```
+- Teams REST API: [https://docs.github.com/en/rest/teams/teams](https://docs.github.com/en/rest/teams/teams)
+- Team members: [https://docs.github.com/en/rest/teams/members](https://docs.github.com/en/rest/teams/members)
+- Team repo permissions: [https://docs.github.com/en/rest/teams/teams#add-or-update-team-repository-permissions](https://docs.github.com/en/rest/teams/teams)
+- `gh api`: [https://cli.github.com/manual/gh_api](https://cli.github.com/manual/gh_api)
 
 ---
 
-## 6. What you **can** and **cannot** do
-
-| Action                                        | Allowed?                 |
-| --------------------------------------------- | ------------------------ |
-| Clone / pull / push to **your** group repo    | Yes (if team has `push`) |
-| Create branches / commits                     | Yes                      |
-| Open issues / PRs in your repo                | Yes                      |
-| Edit other groups’ repos (`lab00-grupo-b`, …) | No                       |
-| Delete the repository                         | No (usually)             |
-| Change team / org settings                    | No                       |
-| Access `lab00-template` (if private)          | Only if granted          |
-
-Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin.
-
----
-
-## 7. Quick reference by lab
-
-| Lab     | Repository                          |
-| ------- | ----------------------------------- |
-| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-a`   |
-| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-a`   |
-| Projeto | `ELT85B-N21-2026-2/projeto-grupo-a` |
-
-Replace `a` with your group letter (`b`, `c`, …).
-
-Clone pattern:
-
-```bash
-gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
-```
-
----
-
-## 8. Common problems
-
-**Permission denied on push**
-
-- Confirm you are logged in: `gh auth status`
-- Confirm you are in the right team/repo
-- Ask the instructor to check team access (`push` on the repo)
-
-**Repo not found**
-
-```bash
-gh repo view ELT85B-N21-2026-2/lab00-grupo-a
-```
-
-If 404: wrong name, or you are not a member of the org/team yet.
-
-**Merge conflicts**
-
-```bash
-git pull
-# fix conflicted files
-git add .
-git commit -m "Resolve merge conflicts"
-git push
-```
-
-**Undo local changes (destructive)**
-
-```bash
-git checkout -- .
-git clean -fd
-```
-
----
-
-## 9. Minimal “start of lab” checklist
-
-1. `gh auth status` (logged in)
-2. `gh repo clone ELT85B-N21-2026-2/labXX-grupo-y`
-3. `cd labXX-grupo-y`
-4. `code .`
-5. Work → `git add` → `git commit` → `git push`
-6. Check CI: `gh run list`
-
----
-
-## 10. One-liner cheat card
-
-```text
-clone   →  gh repo clone ORG/lab00-grupo-a
-update  →  git pull
-save    →  git add . && git commit -m "msg" && git push
-web     →  gh repo view --web
-ci      →  gh run list
-```
+If you want, next we can add a small `scripts/teams.sh` helper (create teams, add members from a CSV, sync repo access) tailored to `ELT73A-S22-2026-2`.

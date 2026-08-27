@@ -3,7 +3,7 @@ set -e
 
 ORG="ELT85B-N21-2026-2"
 GROUP_LIST="A B C D E F G H I J K L M P"   # ← not GROUPS
-NLAB=0
+NLAB=1
 LAB=$(printf "lab%02d" "$NLAB")
 TEMPLATE="$ORG/${LAB}-template"
 

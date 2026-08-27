@@ -1,6 +1,9 @@
+#!/bin/bash
+set -e
+
 ORG="ELT85B-N21-2026-2"
-NLAB=0
-LAB=$(printf "%02d" $NLAB)
+NLAB=2
+LAB=$(printf "%02d" "$NLAB")
 REPO="lab${LAB}-template"
 
 gh repo create "$ORG/$REPO" \
@@ -11,4 +14,3 @@ gh repo create "$ORG/$REPO" \
 gh api --method PATCH \
   "repos/$ORG/$REPO" \
   -f is_template=true
-  
