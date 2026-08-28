@@ -138,7 +138,7 @@ const navbarItems: NavbarItem[] = [
         position: "right",
     },
     {
-        href: "https://github.com/ruseleredu/iiot-docs",
+        href: "https://github.com/ELT85B-N21-2026-2",
         label: "GitHub",
         position: "right",
     },
