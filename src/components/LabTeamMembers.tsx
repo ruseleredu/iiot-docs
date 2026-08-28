@@ -57,7 +57,7 @@ export default function LabTeamMembers({
                             <b>1.</b> Clone o repositório do laboratório:
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`gh repo clone ${fullRepo}`}
+                            {`git clone ${repoUrl}.git`}
                         </ThemeCodeBlock>
                         <ThemeCodeBlock className="language-bash">
                             {`cd ${repoName}`}
@@ -70,26 +70,13 @@ export default function LabTeamMembers({
                             {`code . --profile "${vscodeProfile}"`}
                         </ThemeCodeBlock>
                         <p>
-                            <b>3.</b> Inicie o projeto no PlatformIO:
-                        </p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code`}
-                        </ThemeCodeBlock>
-                        <p>
-                            <b>4.</b> Fluxo diário de trabalho:
+                            <b>3.</b> Fluxo diário de trabalho:
                         </p>
                         <ThemeCodeBlock className="language-bash">
                             {`git pull
 git add .
 git commit -m "Descreva suas alterações"
 git push`}
-                        </ThemeCodeBlock>
-
-                        <p>
-                            <b>5.</b> Abrir o repositório no navegador:
-                        </p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`gh repo view ${fullRepo} --web`}
                         </ThemeCodeBlock>
                     </TabItem>
                 );

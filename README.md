@@ -77,7 +77,7 @@ To upgrade Docusaurus packages with the latest version, run the following comman
 npm i @docusaurus/core@latest @docusaurus/preset-classic@latest @docusaurus/theme-mermaid@latest @docusaurus/module-type-aliases@latest @docusaurus/tsconfig@latest @docusaurus/types@latest
 ```
 
-To ensure accurate Baseline data, please update:
+## To ensure accurate Baseline data, please update:
 ```bash
 npm i baseline-browser-mapping@latest -D
 ```
@@ -90,19 +90,19 @@ npm update
 npm audit fix
 ```
 
-Run Automation Script for katex
+### Run Automation Script for katex
 
 ```bash
 node scripts/download-katex.js
 ```
 
-Run Automation Script to download ESPConnect
+### Run Automation Script to download ESPConnect
 
 ```bash
 node scripts/download-espconnect.js
 ```
 
-Cria template do lab e repos por grupo:
+### Cria template do lab e repos por grupo:
 
 ```bash
 ./scripts/create-lab-template.sh
@@ -111,4 +111,3 @@ Cria template do lab e repos por grupo:
 ```bash
 ./scripts/create-lab-from-template.sh
 ```
-

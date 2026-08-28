@@ -94,3 +94,32 @@ Não. Cada aluno abre a sua própria solicitação, para facilitar o controle.
 Este repositório é **apenas** para solicitações de inclusão em times. Dúvidas sobre
 conteúdo, notas ou entregas devem ser encaminhadas pelos canais oficiais da disciplina.
 :::
+
+---
+
+```md
+CONTEXTO: Inclusão manual de alunos em times do GitHub (disciplina).
+
+Organização: ELT85B-N21-2026-2
+Times de alunos: grupo-a … grupo-o | grupo-p = reservado ao professor
+URL de membros: https://github.com/orgs/ELT85B-N21-2026-2/teams/<slug>/members
+
+FLUXO:
+
+1. Aluno abre issue via Issue Form (escolhe slug do grupo + informa username).
+2. Admin acessa a URL de membros do slug, adiciona o username e fecha a issue.
+
+INFRA (repositório dedicado, PÚBLICO — não usar o repo especial `.github`,
+que espalharia o template por toda a org):
+
+- .github/ISSUE_TEMPLATE/solicitar-time.yml → formulário (dropdown a–o + username + confirmação)
+- .github/ISSUE_TEMPLATE/config.yml → blank_issues_enabled: false
+- README.md → instruções aluno + admin
+- Docs (Docusaurus): solicitar-inclusao-em-time.mdx → passo a passo p/ alunos
+
+REGRAS:
+
+- Dropdown do formulário só oferece grupo-a a grupo-o.
+- config.yml só vale no branch padrão.
+- Repo precisa ser público para alunos abrirem issues.
+```
