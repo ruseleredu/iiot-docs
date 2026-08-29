@@ -1,27 +1,247 @@
 ---
-title: ESP-Prog Board
-description: ESP-Prog Board Documentation
-sidebar_position: 5
+id: esp-prog
+title: ESP-Prog
+sidebar_label: ESP-Prog
 ---
 
-## ESP-Prog Board
+# ESP-Prog
 
-- [Introduction to the ESP-Prog Board](https://docs.espressif.com/projects/esp-iot-solution/en/latest/hw-reference/ESP-Prog_guide.html)
+Este guia do usuário ajudará você a começar a usar o ESP-Prog e também fornecerá informações mais detalhadas.
 
-## Traditional ESP32 vs. Built-in JTAG (S3 / C-Series)
+O **ESP-Prog** é uma das ferramentas de desenvolvimento e depuração da Espressif, oferecendo funcionalidades como download automático de firmware, comunicação serial e depuração JTAG. As funções de download automático de firmware e comunicação serial do ESP-Prog são suportadas em todos os chips da Espressif, enquanto a depuração JTAG é suportada em todos os chips que oferecem interface JTAG.
 
-- Standard ESP32: Requires an external JTAG adapter (like an ESP-Prog) connected to specific JTAG pins: TDI, TDO, TCK, TMS, and GND.
-- ESP32-S3 / ESP32-C3 / ESP32-C6: These chips feature a built-in USB-to-JTAG converter. You only need to wire your board's GPIO 19 (D+) and GPIO 18 (D-) directly to a computer USB port. You do not need additional hardware like an ESP-Prog or FTDI board.
+O ESP-Prog pode ser facilmente conectado a um PC usando apenas um cabo USB. Em seguida, o PC pode identificar as interfaces (funções) de Programação e JTAG da placa por meio de seus números de porta.
 
-### Standard ESP32
+Como a tensão de alimentação pode variar em diferentes placas de usuários, qualquer uma das interfaces do ESP-Prog pode fornecer alimentação de 5 V ou 3,3 V por meio de pinos seletores (headers), garantindo compatibilidade de energia. A alimentação no ESP-Prog pode ser alternada entre 3,3 V e 5 V, mas os sinais RX/TX e JTAG estarão sempre no nível de 3,3 V.
 
-- [JTAG Debugging](https://docs.espressif.com/projects/esp-idf/en/v6.0.1/esp32/api-guides/jtag-debugging/index.html)
+---
 
-### ESP32-S3
+## Primeiros Passos
 
-- [JTAG Debugging](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/jtag-debugging/index.html)
-- [Configure ESP32-S3 Built-in JTAG Interface](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/jtag-debugging/configure-builtin-jtag.html)
+Esta seção fornece uma breve introdução sobre como realizar a configuração inicial de hardware do ESP-Prog.
 
-### ESP32-C3
+### Descrição dos Componentes
 
-### ESP32-C6
+![ESP-Prog - Frente](/esp-prog/modules.png)
+
+_ESP-Prog - Visão frontal_
+
+Os principais componentes da placa são descritos a seguir no sentido horário:
+
+| Componente Chave  | Descrição                                                                                                                                                                                                                                                                             |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Micro USB**     | Interface de comunicação entre o PC e o ESP-Prog.                                                                                                                                                                                                                                     |
+| **Botão Boot**    | Botão de download. Manter o botão Boot pressionado e em seguida pressionar o botão Reset inicia o modo de Download de Firmware via porta serial.                                                                                                                                      |
+| **IO0 On/Off**    | Pinos seletores (header) para definir o estado do pino de strapping GPIO0.                                                                                                                                                                                                            |
+| **PROG PWR SEL**  | Pinos seletores (header) para escolher a entrada de alimentação da interface de Programação.                                                                                                                                                                                          |
+| **PROG 2.54 mm**  | Interface de Programação com espaçamento entre pinos de 2,54 mm (0,1").                                                                                                                                                                                                               |
+| **PROG 1.27 mm**  | Interface de Programação com espaçamento entre pinos de 1,27 mm (0,05").                                                                                                                                                                                                              |
+| **JTAG 1.27 mm**  | Interface JTAG com espaçamento entre pinos de 1,27 mm (0,05").                                                                                                                                                                                                                        |
+| **JTAG 2.54 mm**  | Interface JTAG com espaçamento entre pinos de 2,54 mm (0,1").                                                                                                                                                                                                                         |
+| **JTAG PWR SEL**  | Pinos seletores (header) para escolher a entrada de alimentação da interface JTAG.                                                                                                                                                                                                    |
+| **Indicador LED** | LED para indicar o estado do ESP-Prog. Existem três modos de cor: vermelho, verde e azul. O LED vermelho acende quando o sistema está conectado à fonte de 3,3 V. O LED verde acende quando o ESP-Prog está baixando dados. O LED azul acende quando o ESP-Prog está recebendo dados. |
+| **Ponte USB**     | Chip conversor único USB-para-UART que oferece taxa de transferência de até 3 Mbps.                                                                                                                                                                                                   |
+| **Botão Reset**   | Pressione este botão para reiniciar o sistema.                                                                                                                                                                                                                                        |
+
+---
+
+### Iniciar o Desenvolvimento de Aplicações
+
+Antes de ligar sua placa, certifique-se de que ela esteja em boas condições e sem sinais óbvios de danos.
+
+#### Hardware Necessário
+
+- **ESP-Prog**
+- Cabo USB 2.0 (Standard-A para Micro-B)
+- Computador com Windows, Linux ou macOS
+- Cabos Dupont ou cabos flat fornecidos pela Espressif para conectar a placa de desenvolvimento ao ESP-Prog
+
+:::note[Nota sobre o Cabo USB]
+Certifique-se de usar um cabo USB apropriado. Alguns cabos servem apenas para carregamento e não possuem as linhas de dados necessárias para a programação das placas.
+:::
+
+#### Configuração de Hardware
+
+1. Conecte a placa ESP-Prog à porta USB do PC usando o cabo USB.
+2. O PC detectará duas portas do ESP-Prog, indicando que a placa foi conectada com sucesso. Caso as portas não sejam detectadas, instale o [driver do chip FT2232HL](http://www.ftdichip.com/Drivers/VCP.htm) no seu computador.
+3. Selecione a tensão de saída de alimentação para as interfaces de Programação/JTAG utilizando os pinos seletores PROG PWR SEL / JTAG PWR SEL.
+4. Conecte o ESP-Prog à placa de usuário ESP usando os cabos flat fornecidos pela Espressif.
+5. Inicie a programação (download) ou a depuração JTAG usando as ferramentas de software oficiais ou scripts fornecidos pela Espressif.
+
+#### Configuração de Software
+
+Por favor, prossiga para a documentação [Get Started with ESP-IDF](https://idf.espressif.com/), onde a seção [Installation Step by Step](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html#installation-step-by-step) ajudará você a configurar rapidamente o ambiente de desenvolvimento.
+
+---
+
+### Conteúdo e Embalagem
+
+#### Vendas no Varejo
+
+Cada placa ESP-Prog vem em uma embalagem individual.
+
+![Conteúdo da Embalagem do ESP-Prog](/esp-prog/package.png)
+_Conteúdo da Embalagem do ESP-Prog_
+
+O conteúdo inclui:
+
+- **Placa de desenvolvimento:** ESP-Prog
+- **Cabos:** Dois cabos flat flexíveis:
+  - Um cabo para interface JTAG de 1,27 mm para conexão com conector macho shrouded box de 2×5 pinos.
+  - Um cabo para interface PROG de 1,27 mm para conexão com conector macho shrouded box de 2×3 pinos.
+
+Para compras em pequena quantidade, cada placa vem embalada individualmente em um saco antiestático ou em embalagem apropriada definida pelo revendedor. Para compras no varejo, acesse: [Comprar uma amostra](https://www.espressif.com/en/company/contact/buy-a-sample).
+
+#### Vendas no Atacado
+
+Para pedidos em grande quantidade (atacado), as placas são enviadas em caixas de papelão maiores. Para compras em lote, acesse: [Contato de Vendas](https://www.espressif.com/en/contact-us/sales-questions).
+
+---
+
+## Referência de Hardware
+
+### Diagrama de Blocos
+
+O diagrama de blocos abaixo mostra os componentes do ESP-Prog e suas interconexões.
+
+![Diagrama de Blocos do ESP-Prog](/esp-prog/block.png)
+_Diagrama de Blocos do ESP-Prog_
+
+#### Opções de Alimentação
+
+Existem três formas mutuamente exclusivas de fornecer energia à placa:
+
+- **Porta USB do ESP-Prog** (alimentação padrão recomendada)
+- **Pinos 5 V e G (GND)**
+- **Pinos 3,3 V e G (GND)**
+
+---
+
+### Bloco de Conectores (Pinout)
+
+As duas tabelas abaixo fornecem o **Nome** e a **Função** dos pinos em ambos os lados da placa (Interface de Programação e Interface JTAG). O nome dos pinos corresponde à visão frontal da placa ESP-Prog. A numeração é equivalente à presente no [Esquemático do ESP-Prog](https://dl.espressif.com/dl/schematics/SCH_ESP32-PROG_V2.1_20190709.pdf) (PDF).
+
+#### Interface de Programação (PROG)
+
+|  Nº   |  Nome   | Função                          |
+| :---: | :-----: | :------------------------------ |
+| **1** | ESP_EN  | Sinal de Habilitação (_Enable_) |
+| **2** |   VDD   | Alimentação de Energia          |
+| **3** | ESP_TXD | Pino de Transmissão (TX)        |
+| **4** |   GND   | Terra (_Ground_)                |
+| **5** | ESP_RXD | Pino de Recepção (RX)           |
+| **6** | ESP_IO0 | Pino de Strapping (GPIO0)       |
+
+#### Interface JTAG
+
+|   Nº   |  Nome   | Função                          |
+| :----: | :-----: | :------------------------------ |
+| **1**  |   VDD   | Alimentação de Energia          |
+| **2**  | ESP_TMS | Pino JTAG TMS, seleção de modo  |
+| **3**  |   GND   | Terra (_Ground_)                |
+| **4**  | ESP_TCK | Pino JTAG TCK, entrada de clock |
+| **5**  |   GND   | Terra (_Ground_)                |
+| **6**  | ESP_TDO | Pino JTAG TDO                   |
+| **7**  |   GND   | Terra (_Ground_)                |
+| **8**  | ESP_TDI | Pino JTAG TDI                   |
+| **9**  |   GND   | Terra (_Ground_)                |
+| **10** |   NC    | Não Conectado (_No Connection_) |
+
+---
+
+## Documentos Relacionados
+
+- [Esquemático do ESP-Prog](https://dl.espressif.com/dl/schematics/SCH_ESP32-PROG_V2.1_20190709.pdf) (PDF)
+- [PCB Layout do ESP-Prog](https://dl.espressif.com/dl/schematics/PCB_ESP32-PROG_V2.1_20190709.pdf) (PDF)
+- [Dimensões do ESP-Prog](https://dl.espressif.com/dl/schematics/DIM_ESP32-PROG_V2.1_20190709.pdf) (PDF)
+
+Para documentação adicional de design da placa, entre em contato pelo e-mail [sales@espressif.com](mailto:sales@espressif.com).
+
+---
+
+## Documentação de Referência
+
+### Modo de Funcionamento da Ponte USB
+
+O ESP-Prog utiliza o chip FT2232HL, fornecido pela FTDI, como seu controlador de ponte USB. A placa pode ser configurada para converter a interface USB 2.0 em interfaces seriais e paralelas que suportam uma ampla variedade de padrões da indústria. O ESP-Prog utiliza o modo padrão de interface serial assíncrona dupla do FT2232HL, disponível após a instalação do [driver do chip FT2232HL](http://www.ftdichip.com/Drivers/VCP.htm) no computador.
+
+:::note[Identificação das Portas]
+O PC consegue identificar as duas portas do ESP-Prog pelos seus números de porta. O número de porta maior representa a interface de **Programação**, enquanto o menor representa a interface **JTAG**.
+:::
+
+---
+
+### Interface de Comunicação
+
+O ESP-Prog pode se conectar às placas de usuário com ESP32 utilizando tanto a interface de Programação quanto a interface JTAG.
+
+- **Interface de Programação**  
+  A interface de Programação possui seis pinos, incluindo a interface UART (ESP_TXD, ESP_RXD), o pino de seleção de modo de inicialização (ESP_IO0) e o pino de reset (ESP_EN). O projeto para a interface de Programação na placa do usuário deve seguir a referência fornecida na figura abaixo.
+
+![Interface de Programação](/esp-prog/program_pin.png)
+_Interface de Programação_
+
+- **Interface JTAG**  
+  O projeto para a interface JTAG na placa do usuário deve seguir a referência fornecida na figura abaixo.
+
+![Interface JTAG](/esp-prog/JTAG_pin.png)
+_Interface JTAG_
+
+- **Design à Prova de Erros (Fool-proof)**  
+  A placa ESP-Prog utiliza conectores de barra/box header (DC3-6P/DC3-10P) que suportam proteção contra corrente reversa no circuito. Nesses casos, recomenda-se que os usuários também utilizem conectores do tipo header em suas placas de usuário, como `FTSH-105-01-S-DV-*` ou `DC3-*P`.
+
+:::warning[Orientação dos Cabos]
+O encaixe dos plugues e soquetes exige uma orientação específica, o que significa que cada soquete do ESP-Prog corresponde exatamente aos plugues do cabo. O uso de um cabo incompatível pode levar a uma ordem incorreta de conexão. Por favor, utilize os cabos fornecidos pela Espressif.
+:::
+
+---
+
+### Função de Download Automático
+
+O ESP-Prog suporta download automático de firmware. Após conectar a interface de Programação do ESP-Prog à placa do usuário, o programa de gravação pode transferir dados ou executar aplicações automaticamente controlando os estados do pino de seleção de boot (ESP_IO0) e do pino de reset (ESP_EN). Isso evita que o usuário precise reiniciar manualmente o dispositivo e selecionar os modos de download.
+
+Os dois botões na placa ESP-Prog permitem aos usuários reiniciar e controlar o modo de inicialização (_boot_) do dispositivo de forma manual.
+
+O esquema do circuito de download automático é apresentado abaixo:
+
+![Circuito de Download Automático](/esp-prog/Auto_program.png)
+_Circuito de Download Automático_
+
+---
+
+### Circuito de Atraso (Delay Circuit)
+
+O circuito de atraso do ESP-Prog inclui buffer de barramento, inversor, MOSFET, circuito RC de primeira ordem e outros componentes. Este circuito garante que o chip ESP32 possa ser alimentado ou reiniciado antes de se conectar ao sinal JTAG, protegendo o chip contra interferências do JTAG durante a inicialização ou reset.
+
+![Circuito de Atraso do ESP-Prog](/esp-prog/delay_circuit.png)
+_Circuito de Atraso do ESP-Prog_
+
+---
+
+### Indicação de Status por LED
+
+- O **LED vermelho** acende quando o sistema está conectado à fonte de alimentação de 3,3 V.
+- O **LED verde** acende quando o ESP-Prog está enviando/gravando dados no ESP32.
+- O **LED azul** acende quando o ESP-Prog está recebendo dados do ESP32.
+
+![Status dos LEDs](/esp-prog/prog_led.jpg)
+_Status dos LEDs_
+
+---
+
+### Pinos Seletores (Pin Headers)
+
+Os usuários podem selecionar a fonte de alimentação para as interfaces de Programação e JTAG através do **Pino Seletor de Alimentação**, além de selecionar os modos de inicialização do ESP8266 e ESP32 através do **Pino IO0 On/Off**.
+
+- **Pino Seletor de Alimentação (Power Supply Select)**  
+  O pino central é o pino de entrada de energia para cada interface. Quando conectado a **5 V**, a saída de energia da interface correspondente será de 5 V. Quando conectado a **3,3 V**, a saída de energia será de 3,3 V.
+
+- **Pino IO0 On/Off**  
+  O pino IO0 é utilizado para selecionar os modos de inicialização do ESP8266 e do ESP32. Este pino pode ser usado como um GPIO comum após o chip ser energizado. Ao remover o jumper do pino header, o usuário pode desconectar o pino IO0 manualmente para evitar que o circuito de download automático do ESP-Prog interfira no funcionamento da placa do usuário.
+
+![Pinos Seletores](/esp-prog/prog_power_sel.jpg)
+_Pinos Seletores_
+
+---
+
+Para mais documentações de projeto referentes à placa, entre em contato através do e-mail [sales@espressif.com](mailto:sales@espressif.com).

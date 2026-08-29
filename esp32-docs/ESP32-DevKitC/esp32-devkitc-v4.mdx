@@ -1,12 +1,46 @@
 ---
-title: Introdução
-description: ESP32-DevKitC - Introdução as atividades de laboratório.
-sidebar_position: 1
+id: esp32-devkitc-v4
+title: ESP32-DevKitC V4
+sidebar_label: ESP32-DevKitC V4
 ---
 
-## ESP32-DevKitC V4
+# ESP32-DevKitC V4
 
-### Visão Geral Funcional
+Este guia mostra como começar a usar a placa de desenvolvimento ESP32-DevKitC V4.
+
+## O Que Você Precisa
+
+- Placa [ESP32-DevKitC V4](#visão-geral-funcional)
+- Cabo USB 2.0 (Standard-A para Micro-B)
+- Computador com Windows, Linux ou macOS
+
+Você pode pular as seções de introdução e ir diretamente para a seção [Iniciar o Desenvolvimento de Aplicações](#iniciar-o-desenvolvimento-de-aplicações).
+
+---
+
+## Visão Geral
+
+O ESP32-DevKitC V4 é uma placa de desenvolvimento de tamanho reduzido baseada no ESP32, produzida pela [Espressif](https://espressif.com). A maioria dos pinos de I/O está exposta nos barramentos de pinos em ambos os lados para facilitar a interconexão. Os desenvolvedores podem conectar periféricos com cabos jumper ou montar o ESP32-DevKitC V4 diretamente em uma protoboard.
+
+Para atender a uma ampla gama de requisitos dos usuários, as seguintes versões do ESP32-DevKitC V4 estão disponíveis:
+
+- **Diferentes módulos ESP32:**
+  - [ESP32-WROOM-32E](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf)
+  - [ESP32-WROOM-32UE](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf)
+  - [ESP32-WROVER-E](https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf)
+  - [ESP32-WROVER-IE](https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf)
+  - [ESP32-WROOM-32D](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
+  - [ESP32-WROOM-32U](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
+  - [ESP32-WROOM-DA](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-da_datasheet_en.pdf) _(Descontinuado / End of Life)_
+  - [ESP32-SOLO-1](https://www.espressif.com/sites/default/files/documentation/esp32-solo-1_datasheet_en.pdf)
+  - [ESP32-WROOM-32](https://espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- **Conectores de pinos macho ou fêmea**
+
+Para obter mais detalhes, consulte o [ESP Product Selector](https://products.espressif.com/#/product-selector?names=).
+
+---
+
+## Visão Geral Funcional
 
 A figura a seguir e a tabela abaixo descrevem os principais componentes, interfaces e controles da placa ESP32-DevKitC V4.
 
@@ -17,7 +51,7 @@ Os principais componentes da placa são descritos a seguir, começando pelo LED 
 
 |  Nº   | Componente Chave             | Descrição                                                                                                                                                                                                           |
 | :---: | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **1** | LED Ligado 5V (Power On LED) | Acende quando a placa está conectada à USB ou a uma fonte de alimentação externa de 5V. Para detalhes, veja os esquemáticos em Documentos Relacionados.                                                             |
+| **1** | LED Ligado 5V (Power On LED) | Acende quando a placa está conectada à USB ou a uma fonte de alimentação externa de 5V. Para detalhes, veja os esquemáticos em [Documentos Relacionados](#documentos-relacionados).                                 |
 | **2** | Conector de I/O              | A maioria dos pinos do módulo ESP está acessível nos barramentos da placa. Você pode programar o ESP32 para habilitar múltiplas funções, como PWM, ADC, DAC, I2C, I2S, SPI, etc.                                    |
 | **3** | ESP32-WROOM-32E              | Módulo com o chip ESP32 em seu núcleo. Para mais informações, veja o [Datasheet do ESP32-WROOM-32E](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf). |
 | **4** | Ponte USB-para-UART          | Chip único de conversão USB-para-UART, fornecendo taxas de transferência de até 3 Mbps.                                                                                                                             |
@@ -27,7 +61,7 @@ Os principais componentes da placa são descritos a seguir, começando pelo LED 
 
 ---
 
-### Opções de Alimentação
+## Opções de Alimentação
 
 Existem três formas mutuamente exclusivas de fornecer energia para a placa:
 
@@ -41,14 +75,7 @@ A alimentação deve ser fornecida utilizando **apenas uma das opções acima**,
 
 ---
 
-### Disposição dos Pinos (Pin Layout)
-
-![ESP32-DevKitC Pin Layout](/esp32-devkitc/esp32_devkitC_v4_pinlayout.png)
-_Esquema de pinos do ESP32-DevKitC_
-
----
-
-### Bloco de Conectores (Pinout)
+## Bloco de Conectores (Pinout)
 
 As duas tabelas abaixo fornecem o **Nome** e a **Função** dos pinos de E/S (I/O) em ambos os lados da placa.
 
@@ -107,4 +134,42 @@ As duas tabelas abaixo fornecem o **Nome** e a **Função** dos pinos de E/S (I/
 3. Os pinos **GPIO16** e **GPIO17** estão disponíveis para uso apenas em placas com os módulos ESP32-WROOM e ESP32-SOLO-1. Nas placas com módulos ESP32-WROVER, esses pinos são reservados para uso interno.
    :::
 
+### Disposição dos Pinos (Pin Layout)
+
+![ESP32-DevKitC Pin Layout](/esp32-devkitc/esp32_devkitC_v4_pinlayout.png)
+_Esquema de pinos do ESP32-DevKitC_
+
 ---
+
+## Nota sobre o C15
+
+O componente **C15** pode causar os seguintes problemas em versões anteriores da placa ESP32-DevKitC V4:
+
+- A placa pode inicializar diretamente no modo Download.
+- Se você gerar um sinal de clock no GPIO0, o C15 pode impactar o sinal.
+
+Caso esses problemas ocorram, remova o componente. A figura abaixo destaca a localização do C15 em amarelo.
+
+![Localização do C15 em amarelo na placa ESP32-DevKitC V4](/esp32-devkitc/esp32-devkitc-v4-c15-location.png)
+_Localização do C15 (amarelo) na placa ESP32-DevKitC V4_
+
+---
+
+## Iniciar o Desenvolvimento de Aplicações
+
+Antes de ligar o seu ESP32-DevKitC V4, certifique-se de que a placa esteja em boas condições e sem sinais óbvios de danos.
+
+Em seguida, prossiga para o guia [ESP-IDF Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html), que ajudará você a configurar rapidamente o ambiente de desenvolvimento e gravar um exemplo de aplicação na sua placa.
+
+---
+
+## Documentos Relacionados
+
+- [ESP32 Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf) (PDF)
+- [Esquématico do ESP32-DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_sch.pdf) (PDF)
+- [PCB Layout do ESP32-DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_pcb_layout.pdf) (PDF)
+- [Dimensões do ESP32-DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf) (PDF)
+- [Arquivo fonte das dimensões do ESP32-DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.dxf) (DXF) — Pode ser visualizado online com o [Autodesk Viewer](https://viewer.autodesk.com/)
+- [ESP Product Selector](https://products.espressif.com/#/product-selector?names=)
+
+Para obter mais documentações de design da placa, entre em contato pelo e-mail [sales@espressif.com](mailto:sales@espressif.com).

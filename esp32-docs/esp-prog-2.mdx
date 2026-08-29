@@ -1,0 +1,246 @@
+---
+id: esp-prog-2
+title: ESP-Prog-2
+sidebar_label: ESP-Prog-2
+---
+
+# ESP-Prog-2
+
+Este guia do usuário ajuda você a começar a usar o ESP-Prog-2 e fornece uma introdução detalhada às suas funcionalidades e recursos.
+
+O **ESP-Prog-2** é uma ferramenta de desenvolvimento e depuração lançada pela Espressif. Ele suporta funções como download automático de firmware, comunicação serial e depuração online via JTAG. O download automático e a comunicação serial são suportados em todos os chips da Espressif, enquanto a depuração online JTAG é suportada em todos os chips que possuem interface JTAG.
+
+O ESP-Prog-2 possui um design simples e fácil de usar: apenas um cabo USB é necessário para conectá-lo ao computador. O computador reconhece automaticamente duas portas (uma para download e outra para depuração JTAG) com base nos números das portas.
+
+Considerando que diferentes placas de destino podem operar em tensões distintas, ambas as interfaces do ESP-Prog-2 suportam tensões de alimentação de 5 V ou 3,3 V. A tensão pode ser selecionada por meio de pinos seletores (jumpers), garantindo compatibilidade com uma variedade de placas. No entanto, embora a fonte de alimentação possa alternar entre 3,3 V e 5 V, os níveis de sinal de RX/TX e JTAG são fixos em 3,3 V.
+
+![ESP-Prog-2](/esp-prog-2/esp-prog-2.png)
+_ESP-Prog-2_
+
+---
+
+## Primeiros Passos
+
+Esta seção introduz como configurar o hardware do ESP-Prog-2 pela primeira vez.
+
+### Descrição dos Componentes
+
+![ESP-Prog-2 - Frente](/esp-prog-2/prog-2-modules.png)
+_ESP-Prog-2 - Visão frontal_
+
+Os principais componentes da placa são descritos a seguir no sentido horário:
+
+| Componente Chave           | Descrição                                                                                                                                                                                                                                                                                                                           |
+| :------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ESP32-S3-MINI-1**        | O ESP32-S3-MINI-1 é um módulo MCU versátil com Wi-Fi e Bluetooth Low Energy (BLE). Possui diversas interfaces periféricas e vem com uma antena integrada na PCB. O núcleo do módulo é o chip ESP32-S3.                                                                                                                              |
+| **Botão Reset**            | Usado para reiniciar o sistema de destino que está sendo depurado.                                                                                                                                                                                                                                                                  |
+| **Botão Boot**             | Botão de download do sistema de destino. Mantenha pressionado o botão **Boot** e pressione brevemente o botão **Reset** para entrar no modo de Download de Firmware, permitindo baixar o firmware para o sistema de destino via porta serial para depuração. Pode ser usado como um botão de confirmação durante a operação normal. |
+| **Boot On/Off**            | Pinos seletores (header) usados para configurar o estado do pino de strapping IO0.                                                                                                                                                                                                                                                  |
+| **PROG PWR SEL**           | Pinos seletores (header) usados para selecionar a tensão de entrada da fonte de alimentação da interface de programação (3,3 V ou 5 V).                                                                                                                                                                                             |
+| **PROG 2.54 mm**           | Interface de programação com espaçamento entre pinos de 2,54 mm (0,1").                                                                                                                                                                                                                                                             |
+| **PROG 1.27 mm**           | Interface de programação com espaçamento entre pinos de 1,27 mm (0,05").                                                                                                                                                                                                                                                            |
+| **Porta USB Type-C**       | A interface USB Type-C do chip ESP32-S3 suporta o modo USB 2.0 Full-Speed, com taxa de transferência de dados de até 12 Mbps (esta interface não suporta o modo de alta velocidade de 480 Mbps). Esta interface pode ser usada para alimentação da placa e suporta comunicação com o ESP32-S3 via protocolo USB.                    |
+| **JTAG 1.27 mm**           | Interface JTAG com espaçamento entre pinos de 1,27 mm (0,05").                                                                                                                                                                                                                                                                      |
+| **JTAG 2.54 mm**           | Interface JTAG com espaçamento entre pinos de 2,54 mm (0,1").                                                                                                                                                                                                                                                                       |
+| **JTAG PWR SEL**           | Pinos seletores (header) usados para selecionar a tensão de entrada da interface JTAG (3,3 V ou 5 V).                                                                                                                                                                                                                               |
+| **Indicador LED**          | Exibe o status do ESP-Prog-2. Existem três modos de LED: vermelho, verde e azul. O LED vermelho acende quando a alimentação de 3,3 V do sistema está ativa; o LED verde acende quando as funções de download automático e comunicação serial estão em uso; o LED azul acende quando a função de depuração online JTAG está ativa.   |
+| **Botão Boot do ESP32-S3** | Botão de download de firmware do próprio ESP32-S3. Para entrar no modo de download de firmware, religue o ESP-Prog-2 enquanto pressiona o botão Boot do ESP32-S3.                                                                                                                                                                   |
+| **Conector de Extensão**   | Conector de I/O de extensão usado para expor os pinos de I/O ociosos do ESP32-S3. Você pode personalizar pinos para estender funcionalidades adicionais no ESP-Prog-2.                                                                                                                                                              |
+
+---
+
+### Iniciar o Desenvolvimento de Aplicações
+
+Antes de ligar, certifique-se de que a placa esteja em boas condições.
+
+#### Hardware Necessário
+
+- **ESP-Prog-2**
+- Cabo adaptador USB-A para USB-C
+- Computador (Windows, Linux ou macOS)
+- Cabos Dupont ou cabo flat fornecido pela Espressif para conectar a placa de desenvolvimento ao ESP-Prog-2
+
+:::note[Nota sobre o Cabo USB]
+Certifique-se de usar um cabo USB apropriado. Alguns cabos servem apenas para carregamento e não suportam transmissão de dados ou programação.
+:::
+
+#### Configuração do Hardware
+
+1. Conecte a placa ESP-Prog-2 à porta USB do PC usando um cabo USB.
+2. Use os pinos seletores PROG PWR SEL ou JTAG PWR SEL para escolher a tensão de saída da alimentação para a interface de Programação ou JTAG.
+3. Utilize o cabo flat fornecido pela Espressif para conectar a placa de depuração ESP-Prog-2 à placa de destino Espressif.
+4. Utilize as ferramentas de software ou scripts oficiais da Espressif para habilitar as funções de download automático e depuração JTAG.
+
+#### Instalação do Firmware
+
+Antes de iniciar o desenvolvimento de software, é recomendável atualizar o firmware de fábrica integrado do ESP-Prog-2. Isso garante que o dispositivo execute os recursos e correções de bugs mais recentes.
+
+1. **Atualizar o firmware usando a ferramenta online**: Atualize o firmware do ESP-Prog-2 via ferramenta de gravação online da Espressif, o [ESP Launchpad](https://espressif.github.io/esp-launchpad/?flashConfigURL=https://espressif.github.io/esp-usb-bridge/launchpad.toml), seguindo os passos abaixo:
+   - Use um navegador baseado em Chromium, como o Google Chrome.
+   - **Mantenha pressionado** o botão BOOT mais próximo do módulo e conecte o cabo USB para colocar o ESP-Prog-2 no modo de download de firmware.
+   - Abra a página do [ESP Launchpad](https://espressif.github.io/esp-launchpad/?flashConfigURL=https://espressif.github.io/esp-usb-bridge/launchpad.toml) no seu navegador e siga as instruções na tela para conectar e gravar o firmware.
+2. **Obter o código-fonte do firmware**: Para entender a implementação do firmware, confira o código-fonte no repositório [esp-usb-bridge](https://github.com/espressif/esp-usb-bridge).
+
+#### Configuração de Software
+
+Para configurar o ambiente de desenvolvimento, consulte a seção [Instalação](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32/get-started/index.html#get-started-step-by-step) no guia [Get Started with ESP-IDF](https://idf.espressif.com/index.html).
+
+---
+
+### Conteúdo e Embalagem
+
+#### Vendas no Varejo
+
+Cada placa ESP-Prog-2 vem em uma embalagem individual:
+
+![Conteúdo da Embalagem do ESP-Prog-2](/esp-prog-2/esp-prog-2-package.png)
+_Conteúdo da Embalagem do ESP-Prog-2_
+
+O conteúdo inclui:
+
+- **Placa de desenvolvimento:** ESP-Prog-2
+- **Cabos de dados:**
+  - Um cabo usado para a interface JTAG de 1,27 mm, conectando o cabeçote de 2x5 pinos.
+  - O outro cabo usado para a interface PROG de 1,27 mm, conectando o cabeçote de 2x3 pinos.
+
+Para pequenos pedidos de amostra, cada placa vem embalada individualmente em um saco antiestático ou embalagem correspondente ao revendedor. Para pedidos no varejo, acesse [Obter Amostras](https://www.espressif.com/en/company/contact/buy-a-sample).
+
+#### Vendas no Atacado
+
+Para compras em grande quantidade, as placas são enviadas em caixas de papelão maiores. Para pedidos no atacado, acesse [Contato de Vendas](https://www.espressif.com/en/contact-us/sales-questions).
+
+---
+
+## Referência de Hardware
+
+### Diagrama de Blocos
+
+O diagrama de blocos abaixo mostra os componentes do ESP-Prog-2 e suas interconexões.
+
+![Diagrama de Blocos do ESP-Prog-2](/esp-prog-2/esp-prog-2-block.png)
+_Diagrama de Blocos do ESP-Prog-2_
+
+#### Opções de Alimentação
+
+A placa de desenvolvimento possui três opções incompatíveis de alimentação:
+
+- Alimentação padrão via porta USB do ESP-Prog-2 (recomendado)
+- Alimentação via pinos 5 V e G (GND)
+- Alimentação via pinos 3,3 V e G (GND)
+
+---
+
+### Bloco de Conectores (Pinout)
+
+As tabelas abaixo fornecem o **Nome** e a **Função** dos pinos de ambos os lados da placa (Interface de Programação e Interface JTAG) e do conector de expansão. A numeração é equivalente à presente no [Esquemático do ESP-Prog-2](https://dl.espressif.com/schematics/SCH_ESP32-PROG-2_20250403.pdf) (PDF).
+
+#### Interface de Programação (PROG)
+
+|  Nº   |  Nome   | Função                          |
+| :---: | :-----: | :------------------------------ |
+| **1** | ESP_EN  | Sinal de Habilitação (_Enable_) |
+| **2** |   VDD   | Alimentação de Energia          |
+| **3** | ESP_TXD | Pino de Transmissão (TX)        |
+| **4** |   GND   | Terra (_Ground_)                |
+| **5** | ESP_RXD | Pino de Recepção (RX)           |
+| **6** | ESP_IO0 | Pino de Strapping (GPIO0)       |
+
+#### Interface JTAG
+
+|   Nº   |  Nome   | Função                          |
+| :----: | :-----: | :------------------------------ |
+| **1**  |   VDD   | Alimentação de Energia          |
+| **2**  | ESP_TMS | Pino JTAG TMS, seleção de modo  |
+| **3**  |   GND   | Terra (_Ground_)                |
+| **4**  | ESP_TCK | Pino JTAG TCK, entrada de clock |
+| **5**  |   GND   | Terra (_Ground_)                |
+| **6**  | ESP_TDO | Pino JTAG TDO                   |
+| **7**  |   GND   | Terra (_Ground_)                |
+| **8**  | ESP_TDI | Pino JTAG TDI                   |
+| **9**  |   GND   | Terra (_Ground_)                |
+| **10** |   NC    | Não Conectado (_No Connection_) |
+
+#### Conector de Extensão
+
+|   Nº   |      Nome       | Função                     |
+| :----: | :-------------: | :------------------------- |
+| **1**  | I2C_SDA/OPTN_IO | I/O Configurável           |
+| **2**  | I2C_SCL/OPTN_IO | I/O Configurável           |
+| **3**  |       GND       | Terra (_Ground_)           |
+| **4**  | SPI_HD/OPTN_IO  | I/O Configurável           |
+| **5**  |  SPI_D/OPTN_IO  | I/O Configurável           |
+| **6**  | SPI_CS/OPTN_IO  | I/O Configurável           |
+| **7**  |       GND       | Terra (_Ground_)           |
+| **8**  | SPI_CLK/OPTN_IO | I/O Configurável           |
+| **9**  | SPI_WD/OPTN_IO  | I/O Configurável           |
+| **10** |  SPI_Q/OPTN_IO  | I/O Configurável           |
+| **11** |     VCC_5V      | Fonte de Alimentação 5 V   |
+| **12** |     VCC_3V3     | Fonte de Alimentação 3,3 V |
+
+---
+
+## Documentos Relacionados
+
+- [Esquemático do ESP-Prog-2](https://dl.espressif.com/schematics/SCH_ESP32-PROG-2_20250403.pdf) (PDF)
+- [PCB Layout do ESP-Prog-2](https://dl.espressif.com/schematics/PCB_ESP32-PROG-2_20250403.pdf) (PDF)
+- [Dimensões do ESP-Prog-2](https://dl.espressif.com/schematics/DIM_ESP32-PROG-2_20250403.pdf) (PDF)
+
+Para documentações adicionais de projeto referentes à placa, entre em contato pelo e-mail [sales@espressif.com](mailto:sales@espressif.com).
+
+---
+
+## Documentação de Referência: Introdução às Funções
+
+### Modo de Funcionamento da Ponte USB
+
+O ESP-Prog-2 estabelece uma ponte entre o computador e o chip de destino baseado no ESP32-S3. Ele pode emular um dispositivo USB composto para permitir a transmissão de dados seriais através da ponte USB-para-UART, ou permitir a comunicação bidirecional JTAG por meio da ponte JTAG.
+
+---
+
+### Interface de Comunicação
+
+- **Interface de Programação**
+
+![Interface de Programação](/esp-prog/program_pin.png)
+_Interface de Programação_
+
+- **Interface JTAG**  
+  O projeto para a interface JTAG na placa do usuário deve seguir a referência fornecida na figura abaixo.
+
+![Interface JTAG](/esp-prog/JTAG_pin.png)
+_Interface JTAG_
+
+- **Design à Prova de Erros (Fool-proof)**  
+  As interfaces do ESP-Prog-2 utilizam conectores de barra/box header (DC3-6P/DC3-10P) com proteção contra polaridade reversa. Recomenda-se o uso de conectores do mesmo tipo na placa do usuário, como `FTSH-105-01-S-DV-*` ou `DC3-*P`.
+
+:::warning[Orientação dos Cabos]
+Como os cabos flat possuem uma orientação fixa, cada interface do ESP-Prog-2 corresponde a uma conexão de cabo específica. O uso de cabos incompatíveis pode resultar em fiação incorreta. Por isso, utilize os cabos flat oficiais.
+:::
+
+---
+
+### Indicação de Status por LED
+
+- Quando a fonte de alimentação de 3,3 V do sistema estiver ligada, o **LED vermelho** acende.
+- Quando o ESP-Prog-2 está realizando ponte via USB-para-UART, o **LED verde** acende.
+- Quando o ESP-Prog-2 está realizando ponte via JTAG, o **LED azul** acende.
+
+![Status dos LEDs](/esp-prog-2/esp-prog-2_led.png)
+_Status dos LEDs_
+
+---
+
+### Pinos Seletores (Pin Headers)
+
+- **Pino Seletor de Alimentação (Power Supply Select)**  
+  Os pinos identificados são os pinos de entrada de energia para cada interface. Quando conectado a **5 V**, a saída de energia da interface é de 5 V; quando conectado a **3,3 V**, a saída é de 3,3 V.
+
+- **Pino BOOT On/Off**  
+  O pino de seleção de modo de inicialização (_boot_) pode ser usado como um GPIO normal após a energização do chip. Para evitar que o ESP-Prog-2 afete o uso normal do pino BOOT na sua placa, você pode controlar manualmente o sinal do BOOT.
+
+![Pinos Seletores](/esp-prog-2/esp-prog-2_power_sel.png)
+_Pinos Seletores_
+
+---
+
+Para mais documentações de projeto referentes à placa, entre em contato com a equipe de vendas pelo e-mail [sales@espressif.com](mailto:sales@espressif.com).
