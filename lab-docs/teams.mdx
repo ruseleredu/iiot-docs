@@ -722,3 +722,69 @@ gh api --method PUT \
 ---
 
 If you want, next we can add a small `scripts/teams.sh` helper (create teams, add members from a CSV, sync repo access) tailored to `ELT73A-S22-2026-2`.
+
+## Restrict repository visibility to specific teams in a GitHub organization
+
+### 1. Set the organization base permission to **No permission** (critical)
+
+This prevents every organization member from automatically seeing or accessing private repositories.
+
+1. Go to the organization → **Settings**.
+2. In the left sidebar, under **Access**, click **Member privileges**.
+3. Under **Base permissions**, select **No permission**.
+4. Save the changes.
+
+With this setting, members only see repositories to which they (or their teams) have been explicitly granted access.
+
+### 2. Make every group repository **Private**
+
+- Public or Internal repositories are visible more widely.
+- For each `labXX-grupo-Y` and `proyecto-grupo-Y` repository:
+  - Go to the repository → **Settings** → **General** → **Danger Zone**.
+  - Click **Change visibility** → **Make private**.
+
+(Organization owners can also restrict who is allowed to change visibility under **Member privileges** → **Repository visibility change**.)
+
+### 3. Grant access **only** to the matching team
+
+For each group repository:
+
+1. Go to the repository → **Settings** → **Collaborators and teams** (or **Access** → **Collaborators & teams**).
+2. Click **Add teams**.
+3. Search for and select the matching team (e.g. `Grupo-A` for `lab00-grupo-a`).
+4. Choose the appropriate role:
+   - **Write** — typical for students who need to push code.
+   - **Maintain** or **Admin** — only if the group needs higher privileges.
+5. Confirm.
+
+**Do not** add other groups or a broad “all students” team to that repository.
+
+You can also manage this from the team side:
+
+- Organization → **Teams** → select the team → **Repositories** tab → add the matching repositories with the desired permission.
+
+### 4. Handle templates separately
+
+- `labXX-template` and `proyecto-template` are usually kept private and given **Read** (or Write) access to an instructors/staff team, or to all groups if students need to see the starter code.
+- Alternatively, leave templates accessible only to instructors and have students create their group repos from the template (or use GitHub Classroom / scripts).
+
+### 5. Optional but recommended hardening
+
+- **Secret teams**: Make the student groups _Secret_ teams (Teams → select team → Change visibility → Secret). Secret teams are only visible to their members and organization owners.
+- Avoid nested teams unless you intentionally want inheritance.
+- Prefer granting access via teams rather than individual users.
+- Organization owners always retain full access (this is by design).
+- Regularly audit access: Repository → Settings → Collaborators and teams.
+
+### Summary of the effective model
+
+| Setting                | Recommended value           | Effect                           |
+| ---------------------- | --------------------------- | -------------------------------- |
+| Base permissions       | **No permission**           | Members see nothing by default   |
+| Group repos visibility | **Private**                 | Not publicly visible             |
+| Access grants          | Only the matching team      | `lab00-grupo-a` → only `Grupo-A` |
+| Templates              | Private + controlled access | Separate policy                  |
+
+After these steps, a member of `Grupo-A` will only see (and be able to access) the repositories explicitly shared with `Grupo-A`. Members of other groups will not see those repositories at all.
+
+If you need to do this at scale (many labs × many groups), the same rules can be applied via the GitHub CLI (`gh`), the REST/GraphQL API, or automation scripts. Let me know if you want example commands or a script for that.
