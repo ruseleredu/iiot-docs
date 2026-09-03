@@ -5,7 +5,8 @@ import labassigns from '@site/src/data/labassigns.json';
 import styles from './styles.module.css';
 
 // Grupos e organização da turma. Ajuste aqui se a lista mudar.
-const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'P'] as const;
+// const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'P'] as const;
+const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'P'] as const;
 const ORG = 'ELT85B-N21-2026-2';
 
 // Aceita tanto { "lab00": 1748058 } quanto { "lab00": { cmid, title } }.
