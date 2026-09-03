@@ -177,7 +177,11 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://adrianoruseler.github.io/site/",
                 },
                 {
-                    label: "STM32 Docs",
+                    label: "MIC-ESP32",
+                    href: "https://ruseleredu.github.io/mic-docs/",
+                },
+                {
+                    label: "MIC-STM32",
                     href: "https://ruseleredu.github.io/stm32doc/",
                 },
                 {
