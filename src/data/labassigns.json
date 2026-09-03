@@ -1,9 +1,9 @@
 {
   "moodleBaseUrl": "https://moodle.utfpr.edu.br",
   "labs": {
-    "lab00": { "cmid": 0, "title": "Laboratório 00" },
-    "lab01": { "cmid": 0, "title": "Laboratório 01" },
-    "lab02": { "cmid": 0, "title": "Laboratório 02" },
+    "lab00": { "cmid": 2167691, "title": "Laboratório 00" },
+    "lab01": { "cmid": 2167697, "title": "Laboratório 01" },
+    "lab02": { "cmid": 2167698, "title": "Laboratório 02" },
     "lab03": { "cmid": 0, "title": "Laboratório 03" },
     "lab04": { "cmid": 0, "title": "Laboratório 04" },
     "lab05": { "cmid": 0, "title": "Laboratório 05" },
@@ -16,16 +16,16 @@
   },
   "sections": {
     "lab00": { "cmid": 400299, "title": "Semana 01" },
-    "lab01": { "cmid": 0, "title": "Semana 01" },
-    "lab02": { "cmid": 0, "title": "Semana 02" },
-    "lab03": { "cmid": 0, "title": "Semana 03" },
-    "lab04": { "cmid": 0, "title": "Semana 04" },
-    "lab05": { "cmid": 0, "title": "Semana 05" },
-    "lab06": { "cmid": 0, "title": "Semana 06" },
-    "lab07": { "cmid": 0, "title": "Semana 07" },
-    "lab08": { "cmid": 0, "title": "Semana 08" },
-    "lab09": { "cmid": 0, "title": "Semana 09" },
-    "lab10": { "cmid": 0, "title": "Semana 10" },
+    "lab01": { "cmid": 498851, "title": "Semana 02" },
+    "lab02": { "cmid": 499450, "title": "Semana 03" },
+    "lab03": { "cmid": 0, "title": "Semana 04" },
+    "lab04": { "cmid": 0, "title": "Semana 05" },
+    "lab05": { "cmid": 0, "title": "Semana 06" },
+    "lab06": { "cmid": 0, "title": "Semana 07" },
+    "lab07": { "cmid": 0, "title": "Semana 08" },
+    "lab08": { "cmid": 0, "title": "Semana 09" },
+    "lab09": { "cmid": 0, "title": "Semana 10" },
+    "lab10": { "cmid": 0, "title": "Semana 11" },
     "projeto": { "cmid": 0, "title": "Projeto Final" }
   }
 }
