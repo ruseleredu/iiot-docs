@@ -12,3 +12,286 @@ import { EaDIncomplete } from "@site/src/components/AvisosSite"; // <EaDIncomple
 <EaDIncomplete />
 
 ---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Guia de Estudos: VSCode + PlatformIO para ESP32
+
+Este guia abrange os conceitos e práticas essenciais para migrar do ambiente tradicional da Arduino IDE para o fluxo profissional do Visual Studio Code equipado com o ecossistema PlatformIO, focado no microcontrolador ESP32.
+
+## Introdução: Por que PlatformIO?
+
+O PlatformIO é um ecossistema de código aberto para desenvolvimento de sistemas embarcados cross-platform. Ao contrário da IDE do Arduino tradicional, ele oferece:
+
+Gerenciamento Automático de Dependências: Instalação de toolchains, frameworks e bibliotecas isoladas por projeto.
+
+Múltiplos Ambientes (Environments): Compilação paralela para placas, frequências e sinalizadores diferentes no mesmo repositório.
+
+Ferramentas Avançadas de Diagnóstico: Monitor serial integrado, depuração via hardware (JTAG) e decodificação automática de stack trace.
+
+Integração com CI/CD: Suporte nativo para automação via GitHub Actions, GitLab CI, etc.
+
+:::info[Visão Geral do Ecossistema]
+Apesar de usar o Framework Arduino neste guia, o PlatformIO suporta nativamente o ESP-IDF (SDK nativo da Espressif), permitindo a transição de APIs sem mudar a ferramenta de trabalho.
+:::
+
+## Estrutura de Diretórios de um Projeto
+
+Ao criar um novo projeto no PlatformIO, a seguinte árvore de diretórios é gerada:
+
+```
+meu_projeto_esp32/
+├── .pio/ # Cache, objetos compilados e bibliotecas locais (gerado auto.)
+├── .vscode/ # Configurações de autocompletar e depuração do VSCode
+├── data/ # Arquivos estáticos para sistemas de arquivos (LittleFS / SPIFFS)
+├── include/ # Arquivos de cabeçalho globais (.h, .hpp)
+├── lib/ # Bibliotecas privadas e componentes locais do projeto
+├── src/ # Código-fonte principal (.cpp, .c)
+│ └── main.cpp
+├── test/ # Testes unitários do projeto (pio test)
+├── .gitignore # Ignora a pasta .pio e temporários no Git
+└── platformio.ini # Arquivo principal de configuração do projeto
+```
+
+:::warning[Atentando para a pasta .pio]
+Nunca envie a pasta .pio/ para o controle de versão (Git). Ela contém binários compilados pesados e é recriada automaticamente pelo PlatformIO durante a compilação.
+:::
+
+## O Arquivo platformio.ini
+
+O arquivo platformio.ini é o centro nervoso do seu projeto. Ele gerencia bibliotecas, opções do compilador, parâmetros de gravação e múltiplos alvos de build.
+
+Exemplo Completo de Configuração
+
+```yml
+[platformio]
+default_envs = esp32dev_debug
+
+[env]
+platform = espressif32
+framework = arduino
+monitor_speed = 115200
+upload_speed = 921600
+board_build.filesystem = littlefs
+
+[env:esp32dev_debug]
+board = esp32dev
+build_type = debug
+build_flags =
+-D CORE_DEBUG_LEVEL=5
+-D DEBUG_MODE
+monitor_filters = esp32_exception_decoder, colorize
+
+[env:esp32dev_release]
+board = esp32dev
+build_type = release
+build_flags =
+-D CORE_DEBUG_LEVEL=0
+lib_deps =
+bblanchon/ArduinoJson @ ^6.21.3
+knolleary/PubSubClient @ ~2.8
+```
+
+## Principais Diretivas Explicadas
+
+| Diretiva               | Descrição                                          | Exemplo                      |
+| ---------------------- | -------------------------------------------------- | ---------------------------- |
+| platform               | Plataforma de desenvolvimento/microcontrolador.    | espressif32                  |
+| board                  | Placa-alvo específica.                             | esp32dev, esp32-s3-devkitc-1 |
+| framework              | Framework de código utilizado.                     | arduino ou espidf            |
+| monitor_speed          | Velocidade da porta serial no Monitor (baud rate). | 115200                       |
+| upload_speed           | Velocidade de gravação via cabo serial.            | 921600 ou 115200             |
+| lib_deps               | Lista de bibliotecas externas a serem baixadas.    | bblanchon/ArduinoJson        |
+| build_flags            | Macros (-D) e instruções passadas ao compilador.   | -D DEBUG                     |
+| board_build.partitions | Tabela personalizada de particionamento da Flash.  | huge_app.csv                 |
+
+## Diferenças Críticas em Relação ao Arduino IDE
+
+A IDE do Arduino oculta diversos aspectos da linguagem C++ através de pré-processamento interno. No PlatformIO, utiliza-se compilação C++ rigorosa e padrão.
+
+### Inclusão Obrigatória do Cabeçalho
+
+No PlatformIO, todo arquivo .cpp deve incluir explicitamente o framework do Arduino:
+
+```c
+#include <Arduino.h> // Obrigatorio no PlatformIO!
+
+void setup() {
+Serial.begin(115200);
+}
+
+void loop() {
+// Código principal
+}
+```
+
+### Declaração de Protótipos de Funções
+
+Diferente da IDE do Arduino, funções chamadas antes de sua definição no código resultam em erro de compilação se não possuírem protótipo declarativo.
+
+```c
+#include <Arduino.h>
+
+void setup() {
+int resultado = somar(5, 10); // ERRO: 'somar' não foi declarada neste escopo
+}
+
+void loop() {}
+
+int somar(int a, int b) {
+return a + b;
+}
+```
+
+```c
+#include <Arduino.h>
+
+// Protótipo da função
+int somar(int a, int b);
+
+void setup() {
+int resultado = somar(5, 10); // OK!
+}
+
+void loop() {}
+
+// Definição da função
+int somar(int a, int b) {
+return a + b;
+}
+```
+
+### Gerenciamento de Bibliotecas (lib_deps)
+
+O PlatformIO gerencia dependências de forma totalmente declarativa através do repositório PlatformIO Registry.
+
+Opções de Sintaxe para Versões
+
+```yml
+lib_deps =
+; Versão exata
+bblanchon/ArduinoJson @ 6.21.3
+
+; Compatível com a versão (sem quebrar API)
+knolleary/PubSubClient @ ^2.8.0
+
+; Link direto para repositório Git
+https://github.com/meu-usuario/minha-biblioteca.git
+
+; Caminho para biblioteca local gravada na sua máquina
+file://../minhas_libs/minha_lib_local
+```
+
+:::tip[Isolamento de Dependências]
+As bibliotecas listadas em lib_deps são salvas dentro da pasta .pio/libdeps/ do próprio projeto, evitando conflitos globais de versão entre diferentes projetos.
+:::
+
+### Sistemas de Arquivos (LittleFS / SPIFFS) e OTA
+
+Gravando Arquivos Estáticos na Flash
+
+Crie a pasta data/ na raiz do seu projeto.
+
+Insira os arquivos estáticos desejados (ex: index.html, style.css, config.json).
+
+No arquivo platformio.ini, defina o sistema de arquivos desejado:
+
+```yml
+board_build.filesystem = littlefs
+```
+
+Execute a tarefa Build Filesystem Image e em seguida Upload Filesystem Image no painel lateral do PlatformIO.
+
+Atualização via Rede (Over-The-Air - OTA)
+
+Para regravar o ESP32 remotamente via Wi-Fi sem conectar o cabo USB:
+
+```yml
+[env:esp32_ota]
+platform = espressif32
+board = esp32dev
+framework = arduino
+upload_protocol = espota
+upload_port = 192.168.1.150 ; IP do ESP32 na rede local
+upload_flags =
+--auth=minhasenhaota ; Senha configurada no código ArduinoOTA
+```
+
+## Monitor Serial e Decodificação de Exceções
+
+Quando o ESP32 sofre um crash de memória (Guru Meditation Error / Panic), ele imprime na serial um endereço de pilha (stack trace) em hexadecimal inacessível.
+
+Habilitando o Exception Decoder
+
+Adicione o filtro esp32_exception_decoder no platformio.ini:
+
+```yml
+monitor_speed = 115200
+monitor_filters = esp32_exception_decoder, colorize
+```
+
+Exemplo de Tradução de Erro
+
+Ao ocorrer uma exceção, o terminal do PlatformIO apontará exatamente o arquivo e a linha da falha:
+
+Decoding stack results
+
+```txt
+0x400d115e: causarCrash() at src/main.cpp:18
+0x400d11a1: setup() at src/main.cpp:24
+0x400d2105: main() at C:/Users/.../main.cpp:32
+```
+
+## Tabela de Comandos úteis da CLI (pio)
+
+Você pode usar o terminal integrado do VSCode para executar tarefas via linha de comando:
+
+### Compilar o projeto do ambiente padrão
+
+```bash
+pio run
+```
+
+### Compilar um ambiente específico
+
+```bash
+pio run -e esp32dev_debug
+```
+
+### Gravar o firmware na placa
+
+```bash
+pio run --target upload
+```
+
+### Abrir o Monitor Serial
+
+```bash
+pio device monitor
+```
+
+### Limpar arquivos intermediários compilados
+
+```bash
+pio run --target clean
+```
+
+### Apagar completamente a memória Flash do ESP32
+
+```bash
+pio run --target erase
+```
+
+## Questões de Fixação
+
+:::note[Teste seu Conhecimento]
+
+Por que a inclusão de `#include <Arduino.h>` é obrigatória no PlatformIO?
+
+Qual é a diferença entre as diretivas upload_speed e monitor_speed no platformio.ini?
+
+Onde devem ser armazenados os arquivos estáticos destinados à partição LittleFS do ESP32?
+
+Qual a função da chave board_build.partitions no arquivo de configuração?
+:::
