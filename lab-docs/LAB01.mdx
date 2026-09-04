@@ -242,18 +242,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cache PlatformIO
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/pip
             ~/.platformio/.cache
+            ~/.platformio/packages
           key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -262,6 +263,50 @@ jobs:
 
       - name: Build project
         run: pio run
+
+      # Uncomment if you want native/unit tests in CI
+      # - name: Run tests
+      #   run: pio test -e native
+```
+
+```yml
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+            ~/.platformio/packages
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build project
+        run: pio run
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: firmware-${{ github.sha }}
+          path: .pio/build/**/firmware.*
+          if-no-files-found: warn
+          retention-days: 30
 
       # Uncomment if you want native/unit tests in CI
       # - name: Run tests
