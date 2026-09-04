@@ -155,15 +155,6 @@ A basic wokwi.toml file looks like this:
 ```yml
 [wokwi]
 version = 1
-firmware = 'path-to-your-firmware.hex'
-elf = 'path-to-your-firmware.elf'
-```
-
----
-
-```yml
-[wokwi]
-version = 1
 firmware = '.pio\build\esp32dev\firmware.bin'
 elf = '.pio\build\esp32dev\firmware.elf'
 ```
@@ -238,9 +229,10 @@ README — seção mínima:
 
 Example workflow (.github/workflows/grade.yml):
 
-````yaml
+```bash
+.github/workflows/grade.yml
+```
 
-**`.github/workflows/grade.yml`** (CI – compile only)
 ```yaml
 name: Build & Test
 
@@ -274,7 +266,7 @@ jobs:
       # Uncomment if you want native/unit tests in CI
       # - name: Run tests
       #   run: pio test -e native
-````
+```
 
 ---
 
@@ -394,25 +386,7 @@ Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin
 
 ---
 
-## 7. Quick reference by lab
-
-| Lab     | Repository                          |
-| ------- | ----------------------------------- |
-| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-a`   |
-| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-a`   |
-| Projeto | `ELT85B-N21-2026-2/projeto-grupo-a` |
-
-Replace `a` with your group letter (`b`, `c`, …).
-
-Clone pattern:
-
-```bash
-gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
-```
-
----
-
-## 8. Common problems
+## 7. Common problems
 
 **Permission denied on push**
 
@@ -447,7 +421,7 @@ git clean -fd
 
 ---
 
-## 9. Minimal “start of lab” checklist
+## 8. Minimal “start of lab” checklist
 
 1. `gh auth status` (logged in)
 2. `gh repo clone ELT85B-N21-2026-2/labXX-grupo-y`
@@ -458,7 +432,7 @@ git clean -fd
 
 ---
 
-## 10. One-liner cheat card
+## 9. One-liner cheat card
 
 ```text
 clone   →  gh repo clone ORG/lab00-grupo-a
