@@ -1,0 +1,92 @@
+---
+id: conceitos-stack-software
+title: Software vs Firmware vs OS vs Driver vs Kernel
+sidebar_label: Software Stack
+description: Comparativo detalhado entre Software, Firmware, Sistema Operacional, Driver e Kernel.
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+O sistema operacional, kernel, drivers, firmware e softwares de aplicação compõem a pilha de software (_software stack_), organizados desde a camada mais baixa (próxima ao silício do hardware) até a camada mais alta (próxima ao usuário).
+
+---
+
+## Comparativo Geral
+
+| Camada                       | Função Principal                                              | Ambiente de Execução                     | Localização                                |
+| :--------------------------- | :------------------------------------------------------------ | :--------------------------------------- | :----------------------------------------- |
+| **Software**                 | Fornece funcionalidades ao usuário (apps, ferramentas)        | Modo Usuário (_Unprivileged_)            | Armazenamento do sistema (SSD/HDD)         |
+| **Sistema Operacional (OS)** | Gerencia recursos de hardware e ambiente do usuário           | Espaço de Usuário + Espaço de Kernel     | Armazenamento do sistema                   |
+| **Device Driver**            | Traduz comandos genéricos do OS para a linguagem do hardware  | Espaço de Kernel (geralmente)            | Armazenamento do sistema                   |
+| **Kernel**                   | Núcleo do OS: gerenciamento de memória, processos e segurança | Espaço de Kernel (_Privileged_ / Ring 0) | Armazenamento / Memória RAM                |
+| **Firmware**                 | Instruções de baixo nível gravadas diretamente no chip        | Ambiente de execução dedicado            | Memória não-volátil (Flash/EEPROM) no chip |
+
+---
+
+## Detalhamento das Camadas
+
+<Tabs>
+<TabItem value="software" label="1. Software" default>
+
+### Software de Aplicação
+
+- **O que é:** Qualquer conjunto de código ou instruções que orienta o computador ou dispositivo sobre como executar tarefas.
+- **Escopo:** É o termo guarda-chuva para tudo nesta lista. Na prática, refere-se aos programas de usuário, como navegadores web, suítes de escritório e reprodutores de mídia.
+- **Característica-chave:** Executa no **Modo Usuário** (_User Mode_), isolado do acesso direto à memória física ou registradores da CPU.
+
+</TabItem>
+
+<TabItem value="os" label="2. Sistema Operacional">
+
+### Sistema Operacional (OS)
+
+- **O que é:** O ambiente completo do sistema (ex: Linux, Windows, macOS) que conecta os recursos de hardware aos softwares do usuário.
+- **Escopo:** Inclui o Kernel, utilitários centrais do sistema, interface gráfica (GUI), estrutura do sistema de arquivos e serviços do sistema.
+- **Característica-chave:** Atua como o gerenciador central, impedindo que falhas em aplicações individuais comprometam todo o sistema.
+
+</TabItem>
+
+<TabItem value="driver" label="3. Driver">
+
+### Driver de Dispositivo (_Device Driver_)
+
+- **O que é:** Software especializado projetado para se comunicar com um componente de hardware específico (ex: GPU, placa Wi-Fi ou interface USB).
+- **Escopo:** Funciona como uma camada de tradução entre a interface genérica do OS/Kernel e o conjunto exato de instruções de um periférico.
+- **Característica-chave:** Permite que o OS comunique-se com o hardware sem precisar conter código customizado para cada modelo existente no mercado.
+
+</TabItem>
+
+<TabItem value="kernel" label="4. Kernel">
+
+### Kernel (Núcleo)
+
+- **O que é:** O motor central de um sistema operacional.
+- **Escopo:** Responsável pelo escalonamento de processos, alocação de memória, acesso a periféricos e tratamento de chamadas de sistema (_system calls_).
+- **Característica-chave:** Opera no nível máximo de privilégio da CPU (**Kernel Space** / Ring 0). Se o kernel falha, o sistema entra em _kernel panic_ ou trava completamente.
+
+</TabItem>
+
+<TabItem value="firmware" label="5. Firmware">
+
+### Firmware
+
+- **O que é:** Software de baixo nível gravado diretamente em memória não-volátil (ROM, Flash, EEPROM) de um microchip ou placa.
+- **Escopo:** Oferece inicialização persistente e controle básico. Exemplos incluem a BIOS/UEFI da placa-mãe, código de microcontroladores (ex: STM32, ESP32) ou controladores de display.
+- **Característica-chave:** Armazenado no próprio chip de hardware; executa imediatamente ao ligar o dispositivo, antes do carregamento de um OS (ou atua como o loop principal em microcontroladores sem OS).
+
+</TabItem>
+</Tabs>
+
+---
+
+## Fluxo de Execução Exemplo: Imprimir um Documento
+
+:::tip[Como as camadas se comunicam]
+Quando você clica em **"Imprimir"** em um editor de texto:
+:::
+
+1. **Software:** O editor de texto envia uma solicitação de impressão via chamada de sistema (_system call_).
+2. **OS / Kernel:** Recebe a _system call_, valida as permissões e repassa os dados do documento para o subsistema de impressão.
+3. **Driver:** Traduz os dados do documento para comandos específicos da impressora (ex: PostScript, PCL) e envia pela interface de destino (USB/Rede).
+4. **Firmware:** O microcontrolador interno da impressora recebe os comandos brutos, interpreta o código e aciona os motores e cabeçotes de impressão.
