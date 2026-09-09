@@ -73,13 +73,167 @@ import LabSubmit from "@site/src/components/LabSubmit";
 
 ## Espressif 32
 
+- [arduino-esp32](https://github.com/espressif/arduino-esp32)
 - [Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
 - [platform-espressif32](https://github.com/platformio/platform-espressif32)
 - [platformio/espressif32](https://registry.platformio.org/platforms/platformio/espressif32)
 
+### Libraries
+
+## Arduino Documentation
+
+### Documentação de Referência da Linguagem Arduino
+
+- https://docs.arduino.cc/language-reference/pt/
+
+Funções
+Variáveis
+Estruturas
+
+## Para controlar a placa Arduino e realizar computações.
+
+- Entradas e Saídas Digitais
+  digitalRead()
+  digitalWrite()
+  pinMode()
+
+---
+
+- Funções Matemáticas
+  abs()
+  constrain()
+  map()
+  max()
+  min()
+  pow()
+  sq()
+  sqrt()
+
+---
+
+- Bits and Bytes
+  bit()
+  bitClear()
+  bitRead()
+  bitSet()
+  bitWrite()
+  highByte()
+  lowByte()
+
 ## “platformio.ini” (Project Configuration File)
 
 - https://docs.platformio.org/en/latest/projectconf/index.html
+
+## ESP32 Arduino Hal Logging
+
+Aqui está um exemplo completo para o arquivo `src/main.cpp`.
+
+Este código demonstra a diferença entre as macros nativas do **ESP32 Arduino Hal Logging** (`log_i`, `log_w`, `log_e`, etc.) e o método tradicional `Serial.println()`, além de realizar o piscar de LED (_blink_) assíncrono utilizando `millis()`.
+
+---
+
+### Código: `src/main.cpp`
+
+```cpp
+#include <Arduino.h>
+
+// Definição do pino do LED (GPIO 2 é o LED embutido na maioria das placas ESP32 DevKit)
+#define LED_PIN 2
+
+// Intervalo de tempo para o Blink (em milissegundos)
+const unsigned long BLINK_INTERVAL = 500;
+
+// Variáveis de controle de tempo
+unsigned long previousMillis = 0;
+bool ledState = LOW;
+uint32_t counter = 0;
+
+void setup() {
+    // Configura o pino do LED como saída
+    pinMode(LED_PIN, OUTPUT);
+
+    // Inicializa a comunicação serial a 115200 baud
+    Serial.begin(115200);
+
+    // Aguarda um instante para a estabilização da conexão Serial
+    delay(1000);
+
+    Serial.println("\n==============================================");
+    Serial.println("   ESP32 Lab: Teste de Logs e Blink de LED   ");
+    Serial.println("==============================================\n");
+
+    // Mensagens de Log do ESP32 (requer CORE_DEBUG_LEVEL > 0 no platformio.ini)
+    log_v("Log de Verbose: Informação detalhada/baixa relevância.");
+    log_d("Log de Debug: Informação para depuração do sistema.");
+    log_i("Log de Info: Sistema inicializado com sucesso no pino GPIO %d.", LED_PIN);
+    log_w("Log de Warning: Este é um exemplo de aviso!");
+    log_e("Log de Error: Este é um exemplo de erro simulação!");
+}
+
+void loop() {
+    unsigned long currentMillis = millis();
+
+    // Lógica de tempo não-bloqueante (evita o uso de delay)
+    if (currentMillis - previousMillis >= BLINK_INTERVAL) {
+        previousMillis = currentMillis;
+
+        // Inverte o estado do LED
+        ledState = !ledState;
+        digitalWrite(LED_PIN, ledState);
+
+        counter++;
+
+        // Mensagem via Serial.println padrão do Arduino
+        Serial.print("[Arduino Serial] Ciclo do LED: ");
+        Serial.print(counter);
+        Serial.print(" | Estado atual: ");
+        Serial.println(ledState ? "LIGADO" : "DESLIGADO");
+
+        // Mensagem usando o Log nativo do ESP32 a cada 5 trocas de estado
+        if (counter % 5 == 0) {
+            log_i("Contador atingiu %u trocas de estado.", counter);
+        }
+    }
+}
+
+```
+
+---
+
+### Destaques do Código
+
+1. **`log_i()`, `log_w()`, `log_e()**`:
+
+- São macros de log nativas do core ESP32/Arduino.
+- Suportam formatação similar ao `printf` (ex: `%d`, `%s`, `%u`).
+- Adicionam automaticamente a tag do arquivo, linha da chamada e cor (se a flag `-D CONFIG_ARDUHAL_LOG_COLORS=1` estiver no `platformio.ini`).
+
+2. **Uso de `millis()` em vez de `delay()**`:
+
+- O uso de `delay()` bloqueia o processamento do ESP32. Utilizar a verificação por `millis()` permite que o microcontrolador execute outras tarefas de segundo plano no `loop()` sem travar a CPU.
+
+---
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+
+    #ifdef DEBUG_MODE
+        log_i("SISTEMA INICIADO EM MODO DE DEBUG");
+        log_d("Informações detalhadas de hardware e memória ativas.");
+    #else
+        // Código executado apenas no ambiente Release
+        Serial.println("Sistema iniciado (Modo Release).");
+    #endif
+}
+
+void loop() {
+    // Lógica do programa
+}
+```
 
 ## A Internet na IoT
 
