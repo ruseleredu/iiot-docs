@@ -4,6 +4,7 @@ sidebar_position: 6
 ---
 
 import LabTable from "@site/src/components/LabTable";
+import LabTeamMembers from "@site/src/components/LabTeamMembers";
 
 # Laboratório 03
 
@@ -14,6 +15,71 @@ import LabTable from "@site/src/components/LabTable";
 </div>
 
 ---
+
+## Checklist — Espressif 32: development platform for PlatformIO
+
+- [ ] Verificar `git --version`
+- [ ] Abrir o VS Code
+- [ ] Abrir a extensão PlatformIO IDE
+- [ ] Instalar a extensão Wokwi
+- [ ] Ativar/configurar o Wokwi
+- [ ] Criar um projeto ESP32
+- [ ] Selecionar o framework Arduino
+- [ ] Executar o primeiro Build
+- [ ] Criar `wokwi.toml`
+- [ ] Criar `diagram.json`
+- [ ] Executar a simulação
+- [ ] Verificar o Serial Monitor
+- [ ] Atualizar o repositório no GitHub
+- [ ] Executar `git push`
+- [ ] Confirmar que o projeto está disponível no GitHub
+- [ ] Logout
+
+---
+
+## Configuração do ambiente de desenvolvimento
+
+import { DevTools } from "@site/src/components/InstructionsSite";
+
+<DevTools />
+
+Verifique o seu ambiente de desenvolvimento, git, gh e code:
+
+import { VerifyDev1 } from "@site/src/components/InstructionsSite";
+
+<VerifyDev1 />
+
+Configure o git
+
+import { GitConfig } from "@site/src/components/InstructionsSite";
+
+<GitConfig />
+
+- [Git Cheat Sheet](https://training.github.com/downloads/github-git-cheat-sheet.pdf)
+
+## Clone o repositório inicial do LAB03
+
+Escolha o Grupo e entre com o comando abaixo para criar o repositório no GitHub:
+
+<LabTeamMembers labName="lab03" />
+
+import LabSubmit from "@site/src/components/LabSubmit";
+
+## Envie o link do repositório do seu grupo no Moodle:
+
+<LabSubmit labName="lab03" />
+
+---
+
+## Espressif 32
+
+- [Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
+- [platform-espressif32](https://github.com/platformio/platform-espressif32)
+- [platformio/espressif32](https://registry.platformio.org/platforms/platformio/espressif32)
+
+## “platformio.ini” (Project Configuration File)
+
+- https://docs.platformio.org/en/latest/projectconf/index.html
 
 ## A Internet na IoT
 

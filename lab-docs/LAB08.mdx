@@ -4,6 +4,7 @@ sidebar_position: 11
 ---
 
 import LabTable from "@site/src/components/LabTable";
+import LabTeamMembers from "@site/src/components/LabTeamMembers";
 
 # Laboratório 08
 
@@ -12,6 +13,40 @@ import LabTable from "@site/src/components/LabTable";
 <div style={{ display: "flex", justifyContent: "center" }}>
   <LabTable index={8} internal={false} />
 </div>
+
+---
+
+## Configuração do ambiente de desenvolvimento
+
+import { DevTools } from "@site/src/components/InstructionsSite";
+
+<DevTools />
+
+Verifique o seu ambiente de desenvolvimento, git, gh e code:
+
+import { VerifyDev1 } from "@site/src/components/InstructionsSite";
+
+<VerifyDev1 />
+
+Configure o git
+
+import { GitConfig } from "@site/src/components/InstructionsSite";
+
+<GitConfig />
+
+- [Git Cheat Sheet](https://training.github.com/downloads/github-git-cheat-sheet.pdf)
+
+## Clone o repositório inicial do LAB08
+
+Escolha o Grupo e entre com o comando abaixo para criar o repositório no GitHub:
+
+<LabTeamMembers labName="lab08" />
+
+import LabSubmit from "@site/src/components/LabSubmit";
+
+## Envie o link do repositório do seu grupo no Moodle:
+
+<LabSubmit labName="lab08" />
 
 ---
 
