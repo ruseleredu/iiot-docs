@@ -73,10 +73,16 @@ export default function LabTeamMembers({
                             <b>3.</b> Fluxo diário de trabalho:
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`git pull
-git add .
-git commit -m "Descreva suas alterações"
-git push`}
+                            {`git status`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`git add .`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`git commit -m "Descreva suas alterações"`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`git push`}
                         </ThemeCodeBlock>
                     </TabItem>
                 );
