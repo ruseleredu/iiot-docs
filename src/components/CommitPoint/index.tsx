@@ -1,5 +1,5 @@
-import {useId, useRef, useEffect, type ReactNode} from 'react';
-import {useLocation} from '@docusaurus/router';
+import { useId, useRef, useEffect, type ReactNode } from 'react';
+import { useLocation } from '@docusaurus/router';
 import ThemeCodeBlock from '@theme/CodeBlock';
 import Admonition from '@theme/Admonition';
 
@@ -12,16 +12,16 @@ export type AdmonitionType = 'note' | 'tip' | 'info' | 'warning' | 'danger';
  * - Deduplicacao por useId => estavel sob re-render / StrictMode.
  * - Limpeza no unmount zera o contador ao sair da pagina => voltar renumera.
  */
-const registry = new Map<string, {ids: Map<string, number>; count: number}>();
+const registry = new Map<string, { ids: Map<string, number>; count: number }>();
 
 function useAutoNumber(): number {
-  const {pathname} = useLocation();
+  const { pathname } = useLocation();
   const id = useId();
   const numRef = useRef<number | null>(null);
 
   let bucket = registry.get(pathname);
   if (!bucket) {
-    bucket = {ids: new Map(), count: 0};
+    bucket = { ids: new Map(), count: 0 };
     registry.set(pathname, bucket);
   }
 
@@ -69,7 +69,7 @@ export interface CommitPointProps {
 
 export default function CommitPoint({
   task,
-  type = 'tip',
+  type = 'info',
   pontos,
   points,
   files = '.',
