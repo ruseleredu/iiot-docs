@@ -362,6 +362,51 @@ Em `platformio.ini`: `build_flags = -DCORE_DEBUG_LEVEL=<0..5>`
 Se você esquecer o `-DCORE_DEBUG_LEVEL`, o valor padrão costuma ser `0` (NONE) e **nada aparece**, mesmo com o código correto. Se seus logs sumiram, comece a investigação por aqui.
 :::
 
+```ini; =====================================================================
+; Configurações Globais / Padrão (Herdadas por todos os ambientes)
+; =====================================================================
+[env]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+
+; Define o ambiente padrão caso nenhum seja especificado explicitamente
+default_envs = debug
+
+; =====================================================================
+; Ambiente de Debug (Desenvolvimento e Testes)
+; =====================================================================
+[env:debug]
+build_type = debug
+
+; Filtros para o monitor serial em ambiente de desenvolvimento
+monitor_filters =
+    esp32_exception_decoder
+    colorize
+    time
+
+; Flags específicas para compilação em Debug
+build_flags =
+    -D CORE_DEBUG_LEVEL=4               ; 4 = Debug, 5 = Verbose
+    -D CONFIG_ARDUHAL_LOG_COLORS=1       ; Habilita cores no console
+    -D DEBUG_MODE                        ; Macro customizada para usar no código (#ifdef DEBUG_MODE)
+
+; =====================================================================
+; Ambiente de Release (Produção e Implantação)
+; =====================================================================
+[env:release]
+build_type = release
+
+; Velocidade de upload maior para acelerar gravação em lote
+upload_speed = 921600
+
+; Flags de otimização de tamanho e desempenho para produção
+build_flags =
+    -D CORE_DEBUG_LEVEL=0               ; 0 = Logs desativados (economiza memória Flash e RAM)
+    -Os                                 ; Otimiza o tamanho do binário gerado
+```
+
 #### O código-base (`src/main.cpp`)
 
 ```cpp title="src/main.cpp"
@@ -666,58 +711,15 @@ int buttonPin = 3;
 
 ---
 
-### Funções Matemáticas
+## Bits, Bytes e Operadores no ESP32
 
-abs()
-constrain()
-map()
-max()
-min()
-pow()
-sq()
-sqrt()
+- [Aula de Laboratório — Bits, Bytes e Operadores no ESP32](/lab/lab/bits-bytes-operadores)
 
 ---
 
-## Bits and Bytes
+## Estruturas de Controle no ESP32
 
-bit()
-bitClear()
-bitRead()
-bitSet()
-bitWrite()
-highByte()
-lowByte()
-
-## Operadores de Comparação
-
-```
-== (equal to)
-> (greater than)
->= (greater than or equal to)
-< (less than)
-<= (less than or equal to)
-!= (not equal to)
-```
-
-## Operadores Bitwise
-
-```
-<< (bitshift left)
->> (bitshift right)
-& (bitwise AND)
-~ (bitwise NOT)
-| (bitwise OR)
-^ (bitwise XOR)
-```
-
-## Boolean Operators
-
-```
-&& (logical AND)
-! (logical NOT)
-|| (logical OR)
-```
+- [Aula de Laboratório — Estruturas de Controle no ESP32](/lab/lab/estruturas-de-controle)
 
 ---
 
