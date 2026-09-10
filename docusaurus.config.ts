@@ -102,6 +102,8 @@ const config: Config = {
         routeBasePath: "lab", // Base URL for these docs (e.g., yoursite.com/lab/...)
         sidebarPath: require.resolve("./labsidebars.ts"), // Separate sidebar for LAB docs
         // ... other options specific to your LAB docs
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
       },
@@ -115,6 +117,8 @@ const config: Config = {
         routeBasePath: "ead", // Base URL for these docs (e.g., yoursite.com/ead/...)
         sidebarPath: require.resolve("./eadsidebars.ts"), // Separate sidebar for EaD docs
         // ... other options specific to your EaD docs
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
       },
@@ -128,6 +132,8 @@ const config: Config = {
         routeBasePath: "utfpr", // Base URL for these docs (e.g., yoursite.com/api/...)
         sidebarPath: require.resolve("./sidebarsutfpr.ts"), // Separate sidebar for API docs
         // 👇 Add this line for the last update time
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
         // ... other options specific to your API docs
@@ -142,6 +148,8 @@ const config: Config = {
         routeBasePath: "pjts", // Base URL for these docs (e.g., yoursite.com/api/...)
         sidebarPath: require.resolve("./sidebarspjts.ts"), // Separate sidebar for API docs
         // 👇 Add this line for the last update time
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
         // ... other options specific to your API docs
@@ -156,6 +164,8 @@ const config: Config = {
         routeBasePath: "esp32", // Base URL for these docs (e.g., yoursite.com/esp32/...)
         sidebarPath: require.resolve("./sidebarsesp32.ts"), // Separate sidebar for ESP32 docs
         // 👇 Add this line for the last update time
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
         // ... other options specific to your API docs
@@ -170,6 +180,8 @@ const config: Config = {
         routeBasePath: "iot", // Base URL for these docs (e.g., yoursite.com/iot/...)
         sidebarPath: require.resolve("./sidebarsiot.ts"), // Separate sidebar for iot docs
         // 👇 Add this line for the last update time
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
         // ... other options specific to your API docs
@@ -184,6 +196,8 @@ const config: Config = {
         routeBasePath: "infra", // Base URL for these docs (e.g., yoursite.com/infra/...)
         sidebarPath: require.resolve("./sidebarsinfra.ts"), // Separate sidebar for infra docs
         // 👇 Add this line for the last update time
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
         showLastUpdateAuthor: true,
         showLastUpdateTime: true,
         // ... other options specific to your API docs
