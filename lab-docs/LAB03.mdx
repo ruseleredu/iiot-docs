@@ -198,6 +198,13 @@ void loop() {
 
 ```
 
+<CommitPoint
+  task="Teste de Logs e Blink de LED"
+  pontos={10}
+  files="src/main.cpp"
+  type="info"
+/>
+
 ---
 
 ### Destaques do Código
@@ -303,12 +310,12 @@ Principais especificadores: `%d` (inteiro), `%u` (inteiro sem sinal), `%.2f` (fl
 Uma chamada como `log_i("Sistema iniciado")` dentro de `setup()` produz algo assim:
 
 ```text
-[   342][I][main.cpp:15] setup(): Sistema iniciado
+[342][I][main.cpp:15] setup(): Sistema iniciado
 ```
 
 Lendo da esquerda para a direita:
 
-- `[   342]` — timestamp em milissegundos desde o boot.
+- `[342]` — timestamp em milissegundos desde o boot.
 - `[I]` — o nível (E, W, I, D ou V).
 - `[main.cpp:15]` — arquivo e linha exatos de onde a mensagem saiu.
 - `setup():` — a função que a chamou.
@@ -329,18 +336,7 @@ Isso imprime os bytes formatados em hexadecimal, útil para depurar protocolos.
 
 ---
 
-### Montando o projeto no PlatformIO
-
-#### Criar o projeto
-
-1. Abra o VS Code → ícone do PlatformIO (cabeça de formiga) na barra lateral → **PIO Home** → **New Project**.
-2. Preencha:
-   - **Name:** `lab-log-esp32`
-   - **Board:** `Espressif ESP32 Dev Module` (ou `DOIT ESP32 DEVKIT V1`)
-   - **Framework:** `Arduino`
-3. Clique em **Finish** e aguarde o download do toolchain.
-
-#### Configurar o `platformio.ini`
+### Configurar o `platformio.ini`
 
 Este é o passo **mais importante** da aula. Abra o `platformio.ini` na raiz do projeto e deixe-o assim:
 
@@ -386,6 +382,12 @@ void loop() {
 
 Observe que **usamos `Serial.begin()` normalmente**. O sistema de log escreve no mesmo periférico serial; o `Serial.begin` continua sendo o que inicializa a UART e define a velocidade.
 
+<CommitPoint
+  task="Filtra logs com CORE_DEBUG_LEVEL"
+  pontos={10}
+  files="platformio.ini"
+/>
+
 ---
 
 ### Configurando o Wokwi
@@ -400,20 +402,38 @@ O "circuito". Para começar, só a placa é suficiente:
 ```json title="diagram.json"
 {
   "version": 1,
-  "author": "Aluno",
+  "author": "Uri Shaked",
   "editor": "wokwi",
   "parts": [
     {
-      "type": "board-esp32-devkit-c-v4",
+      "type": "wokwi-esp32-devkit-v1",
       "id": "esp",
       "top": 0,
       "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -3.33,
+      "left": 153.33,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 64,
+      "left": 149.33,
+      "rotate": 90,
       "attrs": {}
     }
   ],
   "connections": [
     ["esp:TX0", "$serialMonitor:RX", "", []],
-    ["esp:RX0", "$serialMonitor:TX", "", []]
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["esp:GND.1", "led1:C", "black", ["h0"]],
+    ["led1:A", "r1:1", "green", ["v0"]],
+    ["r1:2", "esp:D2", "green", ["h0", "v38"]]
   ]
 }
 ```
@@ -438,6 +458,12 @@ Se o seu ambiente no `platformio.ini` não se chamar `esp32dev`, ajuste o caminh
 
 </TabItem>
 </Tabs>
+
+<CommitPoint
+  task="Configurando o Wokwi"
+  pontos={15}
+  files="diagram.json wokwi.toml"
+/>
 
 #### O fluxo de trabalho
 
@@ -582,56 +608,116 @@ Em `platformio.ini`: `build_flags = -DCORE_DEBUG_LEVEL=<0..5>`
 
 ---
 
-## Espressif 32
+## Documentação de Referência da Linguagem Arduino
 
+- https://docs.arduino.cc/language-reference/pt/
 - [arduino-esp32](https://github.com/espressif/arduino-esp32)
 - [Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
 - [platform-espressif32](https://github.com/platformio/platform-espressif32)
 - [platformio/espressif32](https://registry.platformio.org/platforms/platformio/espressif32)
 
-## Arduino Documentation
+### Sketch - setup()
 
-### Documentação de Referência da Linguagem Arduino
+- https://docs.arduino.cc/language-reference/pt/#estruturas
 
-- https://docs.arduino.cc/language-reference/pt/
+A função `setup()` é chamada quando um sketch inicia. Use-a para inicializar variáveis, configurar o modo dos pinos(INPUT ou OUTPUT), inicializar bibliotecas, etc. A função `setup()` será executada apenas uma vez, apoós a placa ser alimentada ou acontecer um reset.
 
-Funções
-Variáveis
-Estruturas
+```c
+int buttonPin = 3;
 
-## Para controlar a placa Arduino e realizar computações.
+    void setup() {
+      // Inicializa a porta serial
+      Serial.begin(9600);
+      // configura o pino 3 como INPUT
+      pinMode(buttonPin, INPUT);
+    }
 
-- Entradas e Saídas Digitais
-  digitalRead()
-  digitalWrite()
-  pinMode()
+    void loop() {
+      // ...
+    }
+```
+
+### Sketch - loop()
+
+Depois de criar uma função `setup()`, a qual inicializa e atribui os valores iniciais, a função `loop()` faz precisamente o que o seu nome sugere, e repete-se consecutivamente enquanto a placa estiver ligada, permitindo o seu programa mudar e responder a essas mudanças. Use-a para controlar ativamente uma placa Arduino.
+
+```c
+int buttonPin = 3;
+
+    // setup inicializa a porta serial e o pino para o botão
+    void setup() {
+      Serial.begin(9600);
+      pinMode(buttonPin, INPUT);
+    }
+
+    // loop checa o estado do botão repetidamente, e envia
+    // pela serial um 'H' se este está sendo pressionado
+    void loop() {
+      if (digitalRead(buttonPin) == HIGH) {
+        Serial.write('H');
+      }
+      else {
+        Serial.write('L');
+      }
+
+      delay(1000);
+    }
+```
 
 ---
 
-- Funções Matemáticas
-  abs()
-  constrain()
-  map()
-  max()
-  min()
-  pow()
-  sq()
-  sqrt()
+### Funções Matemáticas
+
+abs()
+constrain()
+map()
+max()
+min()
+pow()
+sq()
+sqrt()
 
 ---
 
-- Bits and Bytes
-  bit()
-  bitClear()
-  bitRead()
-  bitSet()
-  bitWrite()
-  highByte()
-  lowByte()
+## Bits and Bytes
 
-## “platformio.ini” (Project Configuration File)
+bit()
+bitClear()
+bitRead()
+bitSet()
+bitWrite()
+highByte()
+lowByte()
 
-- https://docs.platformio.org/en/latest/projectconf/index.html
+## Operadores de Comparação
+
+```
+== (equal to)
+> (greater than)
+>= (greater than or equal to)
+< (less than)
+<= (less than or equal to)
+!= (not equal to)
+```
+
+## Operadores Bitwise
+
+```
+<< (bitshift left)
+>> (bitshift right)
+& (bitwise AND)
+~ (bitwise NOT)
+| (bitwise OR)
+^ (bitwise XOR)
+```
+
+## Boolean Operators
+
+```
+&& (logical AND)
+! (logical NOT)
+|| (logical OR)
+```
 
 ---
 
@@ -678,6 +764,12 @@ jobs:
       # - name: Run tests
       #   run: pio test -e native
 ```
+
+<CommitPoint
+  task="GitHub action"
+  pontos={15}
+  files=".github/workflows/grade.yml"
+/>
 
 ## Wokwi for CI and GitHub Actions (TODO)
 
