@@ -176,6 +176,20 @@ const config: Config = {
       },
     ],
     [
+      "@docusaurus/plugin-content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      {
+        id: "infra", // Unique ID for this docs instance
+        path: "infra-docs", // Path to your infra docs folder
+        routeBasePath: "infra", // Base URL for these docs (e.g., yoursite.com/infra/...)
+        sidebarPath: require.resolve("./sidebarsinfra.ts"), // Separate sidebar for infra docs
+        // 👇 Add this line for the last update time
+        showLastUpdateAuthor: true,
+        showLastUpdateTime: true,
+        // ... other options specific to your API docs
+      },
+    ],
+    [
       "@cmfcmf/docusaurus-search-local",
       {
         // Options here

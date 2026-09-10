@@ -46,6 +46,18 @@ const navbarItems: NavbarItem[] = [
         ],
     },
     {
+        label: "Infra",
+        to: "/infra/intro", // Link to a page in your infra docs
+        type: "dropdown",
+        position: "left",
+        items: [
+            {
+                to: "/infra/teams", // Link to a page in your infra docs
+                label: "Grupos/Organizações",
+            },
+        ],
+    },
+    {
         label: "ESP32",
         to: "/esp32/intro", // Link to a page in your ESP32 docs
         type: "dropdown",
