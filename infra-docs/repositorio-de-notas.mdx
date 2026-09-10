@@ -15,6 +15,7 @@ keywords:
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import CommitPoint from "@site/src/components/CommitPoint";
 
 # Repositório de notas e correção automática
 
@@ -273,3 +274,91 @@ principal, ajuste o passo _Commit do boletim_ para gravar num branch `notas`.
 | `T4`   | Simulando um erro real            | 15     |
 
 Total configurável em `autograde/grade.py`; a nota final é normalizada para 0–10.
+
+## Componente `CommitPoint` (Docusaurus, TypeScript)
+
+Insere no roteiro da aula um **ponto de commit** para o aluno, renderizado como um
+**Admonition** do tema (`@theme/Admonition`, com o `type` que você escolher) e um
+**CodeBlock** do tema (`@theme/CodeBlock`, que já traz destaque de sintaxe e botão
+de copiar nativos). O comando segue a convenção que o autograder espera —
+`T<n>: <tarefa>` — e o número **`<n>` é incrementado automaticamente** na ordem em
+que os pontos aparecem na página.
+
+### Instalação
+
+Copie para o seu projeto Docusaurus (TypeScript):
+
+```tsx
+src/components/CommitPoint/index.tsx
+src/theme/MDXComponents.tsx        # registra <CommitPoint/> globalmente
+```
+
+O `src/theme/MDXComponents.tsx` deixa o componente disponível em **qualquer**
+`.mdx` sem `import`. Se você já tem um `MDXComponents`, apenas acrescente a linha do
+`CommitPoint`.
+
+### Uso no MDX
+
+```md
+<CommitPoint task="implementa os cinco niveis de log" pontos={15} />
+
+<CommitPoint
+  task="filtra logs com CORE_DEBUG_LEVEL=2"
+  pontos={10}
+  files="platformio.ini"
+  type="info"
+/>
+
+<CommitPoint task="log com dados formatados" pontos={15} />
+```
+
+<CommitPoint task="implementa os cinco niveis de log" pontos={15} />
+
+<CommitPoint
+  task="filtra logs com CORE_DEBUG_LEVEL=2"
+  pontos={10}
+  files="platformio.ini"
+  type="info"
+/>
+
+<CommitPoint task="log com dados formatados" pontos={15} />
+
+Renderiza três admonitions numerados (`T1`, `T2`, `T3`), cada um com um bloco de
+código copiável:
+
+```bash
+git add . && git commit -m "T1: implementa os cinco niveis de log" && git push
+git add platformio.ini && git commit -m "T2: filtra logs com CORE_DEBUG_LEVEL=2" && git push
+git add . && git commit -m "T3: log com dados formatados" && git push
+```
+
+Os tokens `T1`, `T2`, … coincidem com os `token` da rubrica em `autograde/grade.py`,
+no repositório de notas. Um `CommitPoint` por tarefa, na ordem, e a numeração casa
+com a correção.
+
+### Props
+
+| Prop     | Tipo                                                 | Padrão  | Descrição                                                       |
+| -------- | ---------------------------------------------------- | ------- | --------------------------------------------------------------- |
+| `task`   | `string`                                             | —       | Descrição da tarefa (obrigatória).                              |
+| `type`   | `'note' \| 'tip' \| 'info' \| 'warning' \| 'danger'` | `'tip'` | Tipo do admonition.                                             |
+| `pontos` | `number`                                             | —       | Pontos da tarefa; exibidos no título. (`points` também aceito.) |
+| `files`  | `string`                                             | `'.'`   | Arquivos do `git add` (ex.: `"src/main.cpp"`).                  |
+| `prefix` | `string`                                             | `'T'`   | Prefixo do token.                                               |
+| `push`   | `boolean`                                            | `true`  | Inclui `&& git push` no comando.                                |
+| `n`      | `number`                                             | auto    | Força o número, ignorando o incremento automático.              |
+| `title`  | `ReactNode`                                          | auto    | Título; sobrescreve o padrão "Ponto de commit · `T<n>`".        |
+
+### Numeração automática
+
+Cada `CommitPoint` recebe um número sequencial na ordem do documento, por página. A
+contagem é estável sob re-render e é **zerada ao sair da página**, então navegar e
+voltar renumera corretamente. Para um commit intermediário que não é tarefa
+avaliada, use `n` para fixar o número ou `prefix` para diferenciar.
+
+### Observações
+
+- Evite aspas duplas (`"`) dentro de `task`, pois o comando usa `-m "..."`.
+- O botão de copiar e o destaque `bash` vêm do `@theme/CodeBlock`; nada de CSS
+  próprio é necessário.
+- O componente foi verificado com `tsc --strict` sob `@types/react` 18 e 19.
