@@ -1,0 +1,646 @@
+---
+id: bits-bytes-operadores
+title: Bits, Bytes e Operadores no ESP32
+sidebar_label: Bits, Bytes e Operadores
+sidebar_position: 2
+description: Manipulação de bits e bytes e uso de operadores (comparação, bitwise e booleanos) no ESP32 com PlatformIO, com pontos de commit avaliados.
+slug: /lab/bits-bytes-operadores
+keywords:
+  - esp32
+  - bitwise
+  - operadores
+  - platformio
+  - bits
+  - bytes
+---
+
+import CommitPoint from "@site/src/components/CommitPoint";
+
+# Aula de Laboratório — Bits, Bytes e Operadores no ESP32
+
+**Plataforma:** ESP32 · **Ambiente:** PlatformIO · **Framework:** Arduino
+
+---
+
+## 1. Objetivos de aprendizagem
+
+Ao final desta aula, o aluno será capaz de:
+
+- Manipular bits individuais de uma variável usando `bit()`, `bitSet()`, `bitClear()`, `bitRead()` e `bitWrite()`.
+- Separar e combinar bytes de um valor de 16 bits com `highByte()` e `lowByte()`.
+- Usar operadores de comparação (`==`, `!=`, `<`, `>`, `<=`, `>=`) para tomar decisões.
+- Aplicar operadores _bitwise_ (`&`, `|`, `^`, `~`, `<<`, `>>`) para criar **máscaras** e manipular registradores.
+- Combinar condições lógicas com operadores booleanos (`&&`, `||`, `!`).
+- Entender a **diferença crucial** entre operadores _bitwise_ (`&`, `|`, `~`) e booleanos (`&&`, `||`, `!`).
+
+:::info[Pontos de commit]
+Ao longo da aula, os cartões **"Ponto de commit"** indicam quando salvar seu progresso. Cada commit corresponde a uma tarefa avaliada automaticamente — use exatamente a mensagem sugerida (o botão copia o comando pronto).
+:::
+
+---
+
+## 2. Material necessário
+
+- 1 × placa ESP32 (ex.: ESP32 DevKit v1)
+- 1 × cabo USB
+- (Opcional) 8 × LEDs + 8 × resistores de 220 Ω + protoboard
+- VS Code com a extensão **PlatformIO IDE** instalada
+
+---
+
+## 3. Setup do projeto no PlatformIO
+
+Crie um novo projeto e configure o arquivo `platformio.ini`:
+
+```ini title="platformio.ini"
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+```
+
+Toda a aula usa a **Serial Monitor** (115200 baud) para observar os resultados.
+Abra com o botão de "plug" na barra do PlatformIO ou com `Ctrl+Alt+S`.
+
+### Função auxiliar (cole no topo de cada exercício)
+
+Para visualizar bits, usaremos esta função que imprime um byte em binário **com zeros à esquerda**:
+
+```cpp
+void printBinByte(uint8_t valor) {
+  for (int i = 7; i >= 0; i--) {
+    Serial.print(bitRead(valor, i));  // lê do bit 7 (MSB) ao bit 0 (LSB)
+  }
+}
+```
+
+:::info[Conceito]
+Um `byte` tem 8 bits, numerados de **0 (LSB — bit menos significativo, à direita)** até **7 (MSB — bit mais significativo, à esquerda)**. Exemplo: em `0b10000001`, o bit 0 vale 1 e o bit 7 vale 1; todos os outros valem 0.
+:::
+
+---
+
+:::info[Por que quase todo o código fica no `setup()`?]
+No Arduino/ESP32, `setup()` roda **uma vez** no boot e `loop()` roda **repetidamente** logo depois, para sempre. Nos experimentos das Partes 1 a 4, o objetivo é **demonstrar um conceito e imprimir o resultado uma única vez** para você comparar com a saída esperada — por isso o código fica no `setup()` e o `loop()` fica vazio (`void loop() {}`). Se estivesse no `loop()`, a mesma saída se repetiria sem parar, rolando na Serial Monitor.
+
+O **projeto integrador** (seção 5) faz o contrário de propósito: a lógica fica no `loop()`, porque ele precisa **reagir continuamente** aos comandos que chegam pela serial. Regra prática: **execução única / demonstração → `setup()`**; **comportamento contínuo / que reage a entradas ou tempo → `loop()`**.
+:::
+
+---
+
+## Parte 1 — Funções de Bits and Bytes
+
+### 1.1 Teoria rápida
+
+| Função              | O que faz                                   | Retorna / efeito          |
+| ------------------- | ------------------------------------------- | ------------------------- |
+| `bit(n)`            | Calcula o valor do bit na posição `n`       | `2^n` (ex.: `bit(3)` → 8) |
+| `bitRead(x, n)`     | Lê o bit `n` de `x`                         | `0` ou `1`                |
+| `bitSet(x, n)`      | Coloca o bit `n` de `x` em **1**            | modifica `x`              |
+| `bitClear(x, n)`    | Coloca o bit `n` de `x` em **0**            | modifica `x`              |
+| `bitWrite(x, n, b)` | Escreve o valor `b` (0/1) no bit `n` de `x` | modifica `x`              |
+| `highByte(w)`       | Byte **alto** de um valor de 16 bits        | `uint8_t`                 |
+| `lowByte(w)`        | Byte **baixo** de um valor de 16 bits       | `uint8_t`                 |
+
+### 1.2 Experimento — manipulando bits
+
+```cpp
+#include <Arduino.h>
+
+void printBinByte(uint8_t valor) {
+  for (int i = 7; i >= 0; i--) Serial.print(bitRead(valor, i));
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  uint8_t reg = 0b00000000;   // registrador de 8 bits, começa zerado
+
+  Serial.print("Inicial:   "); printBinByte(reg); Serial.println();
+
+  // bit(n) => valor 2^n
+  Serial.print("bit(0)="); Serial.print(bit(0));
+  Serial.print("  bit(3)="); Serial.print(bit(3));
+  Serial.print("  bit(7)="); Serial.println(bit(7));
+
+  bitSet(reg, 0);   // liga o bit 0
+  bitSet(reg, 7);   // liga o bit 7
+  Serial.print("Apos set:  "); printBinByte(reg); Serial.println();
+
+  bitWrite(reg, 3, 1);  // escreve 1 no bit 3
+  Serial.print("Write b3:  "); printBinByte(reg); Serial.println();
+
+  bitClear(reg, 0);  // desliga o bit 0
+  Serial.print("Clear b0:  "); printBinByte(reg); Serial.println();
+
+  // bitRead retorna 0 ou 1
+  Serial.print("Bit 7 vale: "); Serial.println(bitRead(reg, 7));
+  Serial.print("Bit 0 vale: "); Serial.println(bitRead(reg, 0));
+}
+
+void loop() {}
+```
+
+**Antes de rodar, preveja a saída** e depois compare. Saída esperada:
+
+```text
+Inicial:   00000000
+bit(0)=1  bit(3)=8  bit(7)=128
+Apos set:  10000001
+Write b3:  10001001
+Clear b0:  10001000
+Bit 7 vale: 1
+Bit 0 vale: 0
+```
+
+<CommitPoint
+  task="manipula bits com bitSet, bitClear, bitWrite e bitRead"
+  pontos={5}
+/>
+
+### 1.3 Experimento — highByte() e lowByte()
+
+Muitos sensores I²C/SPI devolvem um valor de 16 bits em **dois bytes separados**. `highByte()`/`lowByte()` separam, e o _bit shift_ recombina.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  uint16_t leitura = 0xABCD;   // 43981 em decimal
+
+  uint8_t hi = highByte(leitura);  // 0xAB
+  uint8_t lo = lowByte(leitura);   // 0xCD
+
+  Serial.print("Valor 16 bits: 0x"); Serial.println(leitura, HEX);
+  Serial.print("High byte: 0x");    Serial.println(hi, HEX);
+  Serial.print("Low byte:  0x");    Serial.println(lo, HEX);
+
+  // Recombinar: sobe o byte alto 8 posições e junta com OR o byte baixo
+  uint16_t recombinado = (hi << 8) | lo;
+  Serial.print("Recombinado: 0x"); Serial.println(recombinado, HEX);
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+Valor 16 bits: 0xABCD
+High byte: 0xAB
+Low byte:  0xCD
+Recombinado: 0xABCD
+```
+
+<CommitPoint
+  task="separa e recombina bytes com highByte, lowByte e shift"
+  pontos={5}
+/>
+
+---
+
+## Parte 2 — Operadores de Comparação
+
+### 2.1 Teoria rápida
+
+Todos retornam um **booleano** (`true`/`false`, ou seja, `1`/`0`).
+
+| Operador | Significado      |
+| -------- | ---------------- |
+| `==`     | igual a          |
+| `!=`     | diferente de     |
+| `>`      | maior que        |
+| `>=`     | maior ou igual a |
+| `<`      | menor que        |
+| `<=`     | menor ou igual a |
+
+:::warning[Erro clássico]
+`=` é **atribuição**, `==` é **comparação**. `if (x = 5)` sempre é verdadeiro (atribui 5 e testa 5 ≠ 0). O correto é `if (x == 5)`.
+:::
+
+### 2.2 Experimento
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  int leituraADC = 2048;   // simula uma leitura do ADC (0..4095)
+  int limiar = 2000;
+
+  Serial.print("Leitura: "); Serial.println(leituraADC);
+  Serial.print("== 2048? "); Serial.println(leituraADC == 2048);
+  Serial.print("!= 2000? "); Serial.println(leituraADC != limiar);
+  Serial.print(">  limiar? "); Serial.println(leituraADC > limiar);
+  Serial.print(">= 2048?  "); Serial.println(leituraADC >= 2048);
+  Serial.print("<  4095?  "); Serial.println(leituraADC < 4095);
+  Serial.print("<= 2000?  "); Serial.println(leituraADC <= limiar);
+
+  if (leituraADC > limiar) {
+    Serial.println("Acao: acima do limiar!");
+  } else {
+    Serial.println("Acao: abaixo ou igual ao limiar.");
+  }
+}
+
+void loop() {}
+```
+
+Saída esperada (lembre: `1` = verdadeiro, `0` = falso):
+
+```text
+Leitura: 2048
+== 2048? 1
+!= 2000? 1
+>  limiar? 1
+>= 2048?  1
+<  4095?  1
+<= 2000?  0
+Acao: acima do limiar!
+```
+
+<CommitPoint task="usa operadores de comparação para decidir" pontos={5} />
+
+---
+
+## Parte 3 — Operadores Bitwise
+
+### 3.1 Tabelas-verdade (bit a bit)
+
+```text
+ A | ~A
+ --+----
+ 0 |  1
+ 1 |  0
+```
+
+```text
+ A B | A&B  A|B  A^B
+ ----+-------------
+ 0 0 |  0    0    0
+ 0 1 |  0    1    1
+ 1 0 |  0    1    1
+ 1 1 |  1    1    0
+```
+
+| Operador | Nome        | Uso típico                           |
+| -------- | ----------- | ------------------------------------ |
+| `&`      | AND         | **testar/limpar** bits (máscara)     |
+| `\|`     | OR          | **ligar** bits                       |
+| `^`      | XOR         | **inverter** (toggle) bits           |
+| `~`      | NOT         | inverter **todos** os bits           |
+| `<<`     | shift left  | multiplica por 2 / posiciona máscara |
+| `>>`     | shift right | divide por 2 / alinha bits           |
+
+### 3.2 Experimento — máscaras com AND, OR, XOR
+
+```cpp
+#include <Arduino.h>
+
+void printBinByte(uint8_t v) {
+  for (int i = 7; i >= 0; i--) Serial.print(bitRead(v, i));
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  uint8_t reg  = 0b10110010;
+  uint8_t mask = 0b00001111;   // isola os 4 bits baixos
+
+  Serial.print("reg      = "); printBinByte(reg);  Serial.println();
+  Serial.print("mask     = "); printBinByte(mask); Serial.println();
+
+  Serial.print("reg & mask = "); printBinByte(reg & mask); Serial.println();  // isola bits baixos
+  Serial.print("reg | mask = "); printBinByte(reg | mask); Serial.println();  // liga bits baixos
+  Serial.print("reg ^ mask = "); printBinByte(reg ^ mask); Serial.println();  // inverte bits baixos
+
+  // ~ inverte TODOS os bits (cuidado: cast para 8 bits!)
+  Serial.print("~reg       = "); printBinByte((uint8_t)~reg); Serial.println();
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+reg      = 10110010
+mask     = 00001111
+reg & mask = 00000010
+reg | mask = 10111111
+reg ^ mask = 10111101
+~reg       = 01001101
+```
+
+:::warning[Cuidado com o NOT (~) no ESP32]
+Um `int` tem **32 bits**. `~reg` gera `0xFFFFFF4D`. Por isso fazemos o _cast_ `(uint8_t)` para ver apenas os 8 bits que interessam.
+:::
+
+<CommitPoint task="aplica máscaras com AND, OR e XOR" pontos={5} />
+
+### 3.3 Experimento — bit shift
+
+```cpp
+#include <Arduino.h>
+
+void printBinByte(uint8_t v) {
+  for (int i = 7; i >= 0; i--) Serial.print(bitRead(v, i));
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  uint8_t x = 1;   // 00000001
+
+  for (int i = 0; i < 8; i++) {
+    Serial.print("1 << "); Serial.print(i); Serial.print(" = ");
+    printBinByte(x << i);
+    Serial.print("  (decimal "); Serial.print(x << i); Serial.println(")");
+  }
+
+  uint8_t y = 0b10000000;  // 128
+  Serial.print("128 >> 3 = "); printBinByte(y >> 3);
+  Serial.print("  (decimal "); Serial.print(y >> 3); Serial.println(")");
+}
+
+void loop() {}
+```
+
+:::tip
+`1 << n` é exatamente o que `bit(n)` faz. Deslocar à esquerda multiplica por 2; à direita, divide por 2 (inteiro).
+:::
+
+<CommitPoint task="usa deslocamento de bits (shift left e right)" pontos={5} />
+
+---
+
+## Parte 4 — Operadores Booleanos
+
+### 4.1 Teoria rápida
+
+Operam sobre **condições inteiras** (verdadeiro/falso), não bit a bit.
+
+| Operador | Nome       | Resultado                                          |
+| -------- | ---------- | -------------------------------------------------- |
+| `&&`     | E lógico   | `true` só se **ambas** condições forem verdadeiras |
+| `\|\|`   | OU lógico  | `true` se **pelo menos uma** for verdadeira        |
+| `!`      | NÃO lógico | inverte o valor lógico                             |
+
+### 4.2 A diferença que mais confunde: `&` vs `&&`
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  int a = 2;   // 00000010
+  int b = 1;   // 00000001
+
+  Serial.print("a & b  (bitwise) = "); Serial.println(a & b);   // 0  -> nao ha bit em comum
+  Serial.print("a && b (logico)  = "); Serial.println(a && b);  // 1  -> ambos sao != 0
+
+  Serial.print("a | b  (bitwise) = "); Serial.println(a | b);   // 3
+  Serial.print("a || b (logico)  = "); Serial.println(a || b);  // 1
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+a & b  (bitwise) = 0
+a && b (logico)  = 1
+a | b  (bitwise) = 3
+a || b (logico)  = 1
+```
+
+:::warning[Regra de ouro]
+Use `&&`, `||`, `!` em **condições de `if`/`while`**. Use `&`, `|`, `~`, `^` para **manipular bits**. Trocar um pelo outro compila, mas produz bugs silenciosos.
+:::
+
+<CommitPoint task="distingue operadores bitwise dos lógicos" pontos={5} />
+
+### 4.3 Experimento — combinando condições
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  int temperatura = 30;    // °C
+  bool botaoPressionado = true;
+  int umidade = 80;        // %
+
+  // Liga o ventilador se estiver quente E o botao estiver pressionado
+  if (temperatura > 28 && botaoPressionado) {
+    Serial.println("Ventilador LIGADO");
+  }
+
+  // Alerta se muito quente OU muito umido
+  if (temperatura > 35 || umidade > 70) {
+    Serial.println("ALERTA: ambiente desconfortavel");
+  }
+
+  // NOT: age se o botao NAO estiver pressionado
+  if (!botaoPressionado) {
+    Serial.println("Botao solto");
+  } else {
+    Serial.println("Botao ainda pressionado");
+  }
+}
+
+void loop() {}
+```
+
+<CommitPoint task="combina condições com operadores lógicos" pontos={5} />
+
+---
+
+## 5. Projeto integrador — "Registrador de 8 status"
+
+Junta **tudo**: vamos representar 8 sensores/atuadores em um único `byte`. Cada bit é um dispositivo. Usamos funções de bit para ligar/desligar, máscaras _bitwise_ para consultar grupos e operadores lógicos para tomar decisões.
+
+```cpp
+#include <Arduino.h>
+
+// Posicao de cada dispositivo dentro do byte de status
+#define LED_VERDE     0
+#define LED_VERMELHO  1
+#define MOTOR         2
+#define BUZZER        3
+#define SENSOR_PORTA  4
+#define SENSOR_LUZ    5
+#define SENSOR_TEMP   6
+#define ALARME        7
+
+uint8_t status = 0b00000000;
+
+void printBinByte(uint8_t v) {
+  for (int i = 7; i >= 0; i--) Serial.print(bitRead(v, i));
+}
+
+void mostrarStatus() {
+  Serial.print("STATUS = "); printBinByte(status);
+  Serial.print("  (0x"); Serial.print(status, HEX); Serial.println(")");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  // 1) Liga alguns dispositivos usando funcoes de bit
+  bitSet(status, LED_VERDE);
+  bitSet(status, SENSOR_PORTA);
+  bitSet(status, SENSOR_TEMP);
+  mostrarStatus();   // 01010001
+
+  // 2) Consulta um bit especifico (comparacao)
+  if (bitRead(status, SENSOR_PORTA) == 1) {
+    Serial.println("-> Porta aberta detectada!");
+  }
+
+  // 3) Mascara: existe ALGUM sensor ativo? (bits 4..7)
+  uint8_t maskSensores = 0b11110000;
+  if ((status & maskSensores) != 0) {
+    Serial.println("-> Pelo menos um sensor ativo.");
+  }
+
+  // 4) Logica combinada: dispara alarme se porta aberta E temperatura ativa
+  if (bitRead(status, SENSOR_PORTA) && bitRead(status, SENSOR_TEMP)) {
+    bitSet(status, ALARME);
+    Serial.println("-> ALARME acionado (porta + temperatura).");
+  }
+  mostrarStatus();   // 11010001
+
+  // 5) XOR para alternar (toggle) o LED verde 3 vezes
+  for (int i = 0; i < 3; i++) {
+    status ^= (1 << LED_VERDE);   // inverte o bit 0
+    Serial.print("Toggle LED verde -> "); mostrarStatus();
+  }
+
+  // 6) Limpa todos os sensores de uma vez com AND + NOT da mascara
+  status &= ~maskSensores;
+  Serial.print("Sensores limpos -> "); mostrarStatus();
+}
+
+void loop() {}
+```
+
+:::note[Extensão com hardware real]
+Troque cada `bitSet/bitClear` por `digitalWrite(pino, HIGH/LOW)` ligando 8 LEDs. Configure os pinos em `setup()` com `pinMode(pino, OUTPUT)` e faça a saída dos LEDs espelhar o `byte status`, bit a bit.
+:::
+
+<CommitPoint task="projeto integrador: registrador de 8 status" pontos={15} />
+
+---
+
+## 6. Desafios
+
+Tente resolver **sem olhar o gabarito**. Faça o commit de cada desafio conforme concluir.
+
+**D1.** Escreva uma função `bool ehPar(uint8_t n)` que use **apenas** um operador _bitwise_ (dica: o bit 0) para decidir se `n` é par.
+
+<CommitPoint task="desafio D1: função ehPar usando bitwise" pontos={10} />
+
+**D2.** Dado `uint16_t valor = 0x1234;`, imprima os dois bytes separados usando `highByte()`/`lowByte()` e depois recombine sem usar essas funções (só _shift_ e máscara).
+
+<CommitPoint
+  task="desafio D2: separa e recombina 0x1234 sem highByte/lowByte"
+  pontos={10}
+/>
+
+**D3.** Escreva `void trocaBits(uint8_t &x, int i, int j)` que troca os bits nas posições `i` e `j` de `x`. Teste com `0b10000001`, trocando bits 0 e 6.
+
+<CommitPoint task="desafio D3: função trocaBits(x, i, j)" pontos={15} />
+
+**D4.** Você tem `uint8_t flags`. Escreva uma condição `if` que seja verdadeira **somente** quando o bit 2 estiver ligado **E** o bit 5 estiver desligado.
+
+<CommitPoint
+  task="desafio D4: condição bit 2 ligado e bit 5 desligado"
+  pontos={15}
+/>
+
+**D5.** Explique com suas palavras por que `if (x = 3)` é quase sempre um bug e o que o compilador do PlatformIO normalmente avisa.
+
+---
+
+## 7. Gabarito
+
+:::danger[Spoiler]
+Só abra depois de tentar os desafios por conta própria.
+:::
+
+<details>
+<summary>Ver soluções</summary>
+
+**D1.**
+
+```cpp
+bool ehPar(uint8_t n) {
+  return (n & 1) == 0;   // se o bit 0 e 0, o numero e par
+}
+```
+
+**D2.**
+
+```cpp
+uint16_t valor = 0x1234;
+uint8_t hi = highByte(valor);   // 0x12
+uint8_t lo = lowByte(valor);    // 0x34
+uint16_t rec = ((uint16_t)hi << 8) | lo;   // 0x1234
+```
+
+**D3.**
+
+```cpp
+void trocaBits(uint8_t &x, int i, int j) {
+  bool bi = bitRead(x, i);
+  bool bj = bitRead(x, j);
+  bitWrite(x, i, bj);
+  bitWrite(x, j, bi);
+}
+// 0b10000001, trocar bits 0 e 6 -> 0b11000000
+```
+
+**D4.**
+
+```cpp
+if (bitRead(flags, 2) == 1 && bitRead(flags, 5) == 0) {
+  // ...
+}
+// Alternativa com mascara:
+// if ((flags & 0b00100100) == 0b00000100) { ... }
+```
+
+**D5.** `=` **atribui** o valor 3 a `x` e a expressão inteira vale 3, que é diferente de zero, logo o `if` é **sempre verdadeiro** — a intenção provavelmente era `==`. O compilador (GCC, usado pelo PlatformIO) geralmente emite o aviso _"suggest parentheses around assignment used as truth value"_.
+
+</details>
+
+---
+
+## 8. Checklist de encerramento
+
+- [ ] Compilei e rodei todos os experimentos (Partes 1 a 4).
+- [ ] Previ a saída **antes** de rodar e comparei.
+- [ ] Rodei o projeto integrador e entendi cada passo.
+- [ ] Sei explicar a diferença entre `&`/`&&` e `|`/`||`.
+- [ ] Resolvi ao menos os desafios D1 a D4.
+- [ ] Fiz o commit de cada ponto marcado (T1 a T12).
+
+---
+
+_Fim da aula._
