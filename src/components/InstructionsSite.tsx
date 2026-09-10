@@ -388,27 +388,29 @@ export function GitLogOut() {
     return (
         <div>
             <Details summary={<summary>Faça Logout do seu ambiente de desenvolvimento!</summary>}>
-                <p>Para o <Link to="/docs/git">git</Link> "esquecer" suas informações salvas:</p>
+                <div>Para o <Link to="/docs/git">git</Link> "esquecer" suas informações salvas:</div>
                 <ThemeCodeBlock className="language-bash">
                     git credential-manager erase
                 </ThemeCodeBlock>
-                <p>Ou liste suas credenciais:</p>
+
+                <div>Ou liste suas credenciais:</div>
                 <ThemeCodeBlock className="language-bash">
                     cmdkey /list | findstr "github"
                 </ThemeCodeBlock>
-                <p>Exclua a credencial:</p>
+
+                <div>Exclua a credencial:</div>
                 <ThemeCodeBlock className="language-bash">
                     cmdkey /delete:git:https://github.com
                 </ThemeCodeBlock>
-                <p>Logout do <Link to="/docs/github-cli">GitHub CLI</Link>:</p>
+
+                <div>Logout do <Link to="/docs/github-cli">GitHub CLI</Link>:</div>
                 <ThemeCodeBlock className="language-bash">
                     gh auth logout
                 </ThemeCodeBlock>
             </Details>
-        </div >
+        </div>
     );
 }
-
 
 // import {GitCommit} from '@site/src/components/InstructionsSite';
 // <!-- Configure o git -->
