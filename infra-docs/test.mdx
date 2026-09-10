@@ -1,5 +1,4 @@
 ---
-id: teste-daft
 title: Test (draft)
 description: Página para este de configuração.
 draft: true
@@ -20,9 +19,9 @@ The equation $E = mc^2$ should be inline.
 
 This tests the `$$` block syntax and multi-line alignment.
 
-$$
-I = \int_{0}^{2\pi} \sin(x) \, dx = 0
-$$
+```tex
+$$ I = \int\_{0}^{2\pi} \sin(x) \, dx = 0 $$
+```
 
 ## 3. Font & Symbol Stress Test
 
@@ -57,9 +56,41 @@ Since this is an `.mdx` file, let's ensure a standard React component doesn't br
 
 import Admonition from "@theme/Admonition";
 
+The issue occurs because MDX interprets curly braces `{}` inside regular Markdown text or JSX elements as JavaScript expressions. The fraction `\frac{f(x+h) - f(x)}{h}` contains `{}` characters, which causes the MDX compiler (via Acorn) to try to parse `{f(x+h) - f(x)}` and `{h}` as JS syntax and fail.
+
+### How to Fix
+
+#### Option 1: Wrap math expressions in KaTeX/MathJax delimiters (Recommended)
+
+If your Docusaurus site uses `@docusaurus/remark-plugin-npm2url` / `@docusaurus/theme-mermaid` or math plugins like `remark-math` and `rehype-katex`, wrap the formula in `$` or `$$`:
+
+```mdx
 <Admonition type="info">
   The definition of the derivative is $\lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$.
 </Admonition>
+```
+
+#### Option 2: Escape the curly braces with backslashes
+
+If you are not using a math plugin and want to display literal LaTeX code or text, escape the braces:
+
+```mdx
+<Admonition type="info">
+  The definition of the derivative is \lim_\{h \to 0\} \frac\{f(x+h) - f(x)\}\{h\}.
+</Admonition>
+```
+
+#### Option 3: Pass string literals inside JSX braces
+
+You can wrap the raw text inside JavaScript string templates within JSX:
+
+```mdx
+<Admonition type="info">
+  {
+    "The definition of the derivative is \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}."
+  }
+</Admonition>
+```
 
 ---
 
