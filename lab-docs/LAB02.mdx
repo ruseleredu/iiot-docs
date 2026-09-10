@@ -90,6 +90,8 @@ import LabSubmit from "@site/src/components/LabSubmit";
 
 ---
 
+## Crie um novo projeto no PlatformIo
+
 ```bash
 pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
 ```
@@ -158,15 +160,6 @@ A basic wokwi.toml file looks like this:
 ```yml
 [wokwi]
 version = 1
-firmware = 'path-to-your-firmware.hex'
-elf = 'path-to-your-firmware.elf'
-```
-
----
-
-```yml
-[wokwi]
-version = 1
 firmware = '.pio\build\esp32dev\firmware.bin'
 elf = '.pio\build\esp32dev\firmware.elf'
 ```
@@ -228,6 +221,9 @@ Muitos DevKit tratam LED embutido no GPIO 2 — confirme no template.
 }
 ```
 
+- [Migrating Wokwi projects to VS Code](https://docs.wokwi.com/vscode/migrating)
+- [Wokwi CLI Usage](https://docs.wokwi.com/wokwi-ci/cli-usage)
+
 ---
 
 ## 5. Placa real (opcional, se houver ESP32)
@@ -275,48 +271,6 @@ README — seção mínima:
 - Simulação: Wokwi (extensão ou site)
 - Placa: `pio run -t upload` && `pio device monitor`
 ```
-
----
-
-Example workflow (.github/workflows/grade.yml):
-
-````yaml
-
-**`.github/workflows/grade.yml`** (CI – compile only)
-```yaml
-name: Build & Test
-
-on: [push, pull_request]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache PlatformIO
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install PlatformIO
-        run: pip install platformio
-
-      - name: Build project
-        run: pio run
-
-      # Uncomment if you want native/unit tests in CI
-      # - name: Run tests
-      #   run: pio test -e native
-````
 
 ---
 
@@ -508,6 +462,50 @@ update  →  git pull
 save    →  git add . && git commit -m "msg" && git push
 web     →  gh repo view --web
 ci      →  gh run list
+```
+
+---
+
+Example workflow (.github/workflows/grade.yml):
+
+```bash
+.github/workflows/grade.yml
+```
+
+```yaml
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+            ~/.platformio/packages
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build project
+        run: pio run
+
+      # Uncomment if you want native/unit tests in CI
+      # - name: Run tests
+      #   run: pio test -e native
 ```
 
 ## Logout do seu ambiente dev, git e gh

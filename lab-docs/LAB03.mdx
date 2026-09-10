@@ -5,6 +5,9 @@ sidebar_position: 6
 
 import LabTable from "@site/src/components/LabTable";
 import LabTeamMembers from "@site/src/components/LabTeamMembers";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import CommitPoint from "@site/src/components/CommitPoint";
 
 # Laboratório 03
 
@@ -21,8 +24,6 @@ import LabTeamMembers from "@site/src/components/LabTeamMembers";
 - [ ] Verificar `git --version`
 - [ ] Abrir o VS Code
 - [ ] Abrir a extensão PlatformIO IDE
-- [ ] Instalar a extensão Wokwi
-- [ ] Ativar/configurar o Wokwi
 - [ ] Criar um projeto ESP32
 - [ ] Selecionar o framework Arduino
 - [ ] Executar o primeiro Build
@@ -69,60 +70,59 @@ import LabSubmit from "@site/src/components/LabSubmit";
 
 <LabSubmit labName="lab03" />
 
----
+# Avaliação do Laboratório — como é corrigido
 
-## Espressif 32
+A avaliação é **automática** e roda no GitHub a cada `push`. A ideia é simples:
 
-- [arduino-esp32](https://github.com/espressif/arduino-esp32)
-- [Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
-- [platform-espressif32](https://github.com/platformio/platform-espressif32)
-- [platformio/espressif32](https://registry.platformio.org/platforms/platformio/espressif32)
-
-### Libraries
-
-## Arduino Documentation
-
-### Documentação de Referência da Linguagem Arduino
-
-- https://docs.arduino.cc/language-reference/pt/
-
-Funções
-Variáveis
-Estruturas
-
-## Para controlar a placa Arduino e realizar computações.
-
-- Entradas e Saídas Digitais
-  digitalRead()
-  digitalWrite()
-  pinMode()
+:::info[Cada tarefa é entregue por um commit.]
+A mensagem do commit começa com o > código da tarefa (`T1`, `T2`, ...). O robô de correção encontra o commit de cada tarefa, volta o repositório para aquele ponto exato da história e testa se os requisitos daquela tarefa foram cumpridos.
+:::
+Você acompanha a nota na aba **Actions** do seu repositório (resumo do job) e no
+arquivo **`GRADE.md`**, disponível em **Artifacts** de cada execução.
 
 ---
 
-- Funções Matemáticas
-  abs()
-  constrain()
-  map()
-  max()
-  min()
-  pow()
-  sq()
-  sqrt()
+## Convenção de commits (obrigatória)
+
+Ao terminar uma tarefa, faça **um commit** cuja mensagem **comece** com o código dela:
+
+```bash
+git add .
+git commit -m "T1: implementa os cinco niveis de log"
+git push
+```
+
+Regras:
+
+- O código vai no **início** da mensagem: `T1`, `T2`, ... seguido de `:` e uma descrição.
+- Pode **refazer** uma tarefa: basta um novo commit `T1: ...`. O corretor usa sempre o **commit mais recente** de cada código.
+- `T1` e `T10` são tarefas diferentes — o corretor não confunde uma com a outra.
+- Uma tarefa **sem commit** correspondente vale **zero**.
+
+Cada commit funciona como um **carimbo com data/hora** da entrega: serve de prova
+do seu progresso e permite corrigir tarefas que editam o mesmo arquivo (por
+exemplo, mudar `CORE_DEBUG_LEVEL` de 5 para 2 e depois voltar para 5).
 
 ---
 
-- Bits and Bytes
-  bit()
-  bitClear()
-  bitRead()
-  bitSet()
-  bitWrite()
-  highByte()
-  lowByte()
+## O que é verificado em cada tarefa
 
-## “platformio.ini” (Project Configuration File)
+O corretor faz, para cada tarefa, no estado do repositório **naquele commit**:
 
-- https://docs.platformio.org/en/latest/projectconf/index.html
+1. **Compilação** — o projeto precisa compilar com `pio run` (código quebrado não pontua nessa verificação).
+2. **Requisitos específicos** — presença das macros e configurações certas (ex.: `log_e`/`log_w`/`log_i`/`log_d`/`log_v`, `CORE_DEBUG_LEVEL` no valor pedido, formatação `printf`, etc.).
+
+A nota de cada tarefa é **proporcional** ao número de verificações que passam.
+A rubrica completa (tarefas, pontos e checagens) está em
+[`.github/autograde/grade.py`](.github/autograde/grade.py) — o professor pode ajustá-la.
+
+## Crie um novo projeto no PlatformIo
+
+```bash
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+```
+
+<CommitPoint task="pio project init" pontos={5} />
 
 ## ESP32 Arduino Hal Logging
 
@@ -235,48 +235,460 @@ void loop() {
 }
 ```
 
-## A Internet na IoT
+## Logging no ESP32
 
-**Ementa:** Modelo de Referência OSI · Arquitetura TCP/IP e camadas
+### Fundamentos: por que usar log em vez de `Serial.print()`?
 
-**Stack da semana:** ESP32 · `WiFi.h` · `HTTPClient` · Wokwi
+Muita gente depura o ESP32 assim:
 
-| Aula | Tipo | Conteúdo                                          | Detalhamento                                                                                   |
-| ---- | ---- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| 5    | AT   | Modelo OSI: 7 camadas e suas funções              | Encapsulamento de dados, PDUs, papéis de cada camada em redes IoT                              |
-| 6    | AT   | Arquitetura TCP/IP e endereçamento IP (IPv4/IPv6) | Subnetting básico, NAT, por que IPv6 é essencial para IoT em escala                            |
-| 7    | AP   | ESP32 conectado ao Wi-Fi via Wokwi                | Biblioteca `WiFi.h`, scan de redes, conexão, leitura de IP e RSSI via serial                   |
-| 8    | AP   | Requisição HTTP GET com ESP32                     | Biblioteca `HTTPClient`, consumo de API REST pública (ex: `worldtimeapi.org`), parsing simples |
+```cpp
+Serial.print("valor = ");
+Serial.println(valor);
+```
+
+Funciona, mas tem problemas quando o projeto cresce:
+
+- **Não tem níveis.** Um erro grave e uma mensagem de curiosidade têm a mesma aparência.
+- **Fica no binário para sempre.** Você precisa comentar/apagar os `print` na versão final, e isso é fácil de esquecer.
+- **Não diz de onde veio.** Em um projeto com 20 arquivos, "valor = 5" não ajuda a localizar a origem.
+
+O sistema de log do Arduino-ESP32 resolve isso. Ele oferece **cinco níveis de severidade** e cada mensagem sai automaticamente com timestamp, nível, arquivo, linha e função de origem.
+
+#### Os cinco níveis (do mais grave ao mais verboso)
+
+| Macro     | Nível       | Valor | Quando usar                                                   |
+| --------- | ----------- | ----- | ------------------------------------------------------------- |
+| `log_e()` | **E**rror   | 1     | Falhas que impedem a operação (sensor não responde).          |
+| `log_w()` | **W**arning | 2     | Algo estranho, mas o programa continua (valor fora da faixa). |
+| `log_i()` | **I**nfo    | 3     | Marcos normais de funcionamento ("WiFi conectado").           |
+| `log_d()` | **D**ebug   | 4     | Detalhes úteis durante o desenvolvimento.                     |
+| `log_v()` | **V**erbose | 5     | Tudo, inclusive laços internos e valores brutos.              |
+
+O valor **0** (`NONE`) desliga todos os logs.
+
+#### A ideia-chave: o nível é decidido na _compilação_
+
+Existe uma macro chamada `CORE_DEBUG_LEVEL`. Cada macro de log só gera código **se o seu nível for menor ou igual** a `CORE_DEBUG_LEVEL`. Ou seja:
+
+- Se você compilar com `CORE_DEBUG_LEVEL=3` (Info), então `log_d()` e `log_v()` **desaparecem do binário** — não ocupam memória nem gastam tempo de CPU.
+- Para gerar a versão "de produção", basta recompilar com `CORE_DEBUG_LEVEL=1` (só erros) ou `0` (nenhum log). **Você não apaga uma linha sequer do código.**
+
+:::tip[A grande vantagem]
+As mensagens de debug ficam no código-fonte, documentando o programa, mas somem do produto final com uma única troca de configuração.
+:::
 
 ---
 
-- **Objetivo:** Configuração de rede e conectividade.
-- **Atividades:**
-  1. Criar projeto PlatformIO com suporte Wi-Fi.
-  2. Programar conexão Wi-Fi (`WiFi.h`) e exibir IP/MAC/RSSI.
-  3. Simular no Wokwi com configuração de rede.
-  4. Testar ping e conexão com o broker Mosquitto local.
-- **Entrega:** Código `main.cpp` comentado + screenshot do Serial Monitor.
+### A API do `esp32-hal-log.h`
 
-## Sensores e Atuadores em IoT
+#### Formatação estilo `printf`
 
-**Ementa:** Sensores IoT · Atuadores IoT · Integração com microcontroladores
+As macros aceitam os mesmos especificadores do `printf` do C:
 
-**Stack da semana:** ESP32 · `DHTesp` · Wokwi · PWM · I²C
+```cpp
+int temp = 25;
+float tensao = 3.31;
+const char* estado = "OK";
 
-| Aula | Tipo | Conteúdo                                                                 | Detalhamento                                                                               |
-| ---- | ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| 9    | AT   | Tipos de sensores IoT: temperatura, umidade, pressão, corrente, vibração | Princípio de funcionamento, interfaces (I²C, SPI, 1-Wire, analógico), critérios de seleção |
-| 10   | AT   | Atuadores: relés, motores, válvulas e inversores                         | Controle por PWM, acionamento de cargas, segurança elétrica e isolação                     |
-| 11   | AP   | Sensor DHT22 no Wokwi: leitura de temp. e umidade                        | Biblioteca `DHTesp`, leitura periódica, exibição no monitor serial e no display OLED       |
-| 12   | AP   | Controle de LED por PWM + sensor LDR (fotoresistor)                      | `analogRead`, `analogWrite` (LEDC), controle de brilho proporcional à luminosidade         |
+log_i("Temperatura: %d C", temp);
+log_i("Tensao: %.2f V", tensao);
+log_i("Estado do sensor: %s", estado);
+log_d("temp=%d tensao=%.2f estado=%s", temp, tensao, estado);
+```
+
+Principais especificadores: `%d` (inteiro), `%u` (inteiro sem sinal), `%.2f` (float com 2 casas), `%s` (string C), `%c` (caractere), `%x` (hexadecimal), `%p` (ponteiro), `%%` (o próprio símbolo de porcentagem).
+
+#### Formato da saída no monitor serial
+
+Uma chamada como `log_i("Sistema iniciado")` dentro de `setup()` produz algo assim:
+
+```text
+[   342][I][main.cpp:15] setup(): Sistema iniciado
+```
+
+Lendo da esquerda para a direita:
+
+- `[   342]` — timestamp em milissegundos desde o boot.
+- `[I]` — o nível (E, W, I, D ou V).
+- `[main.cpp:15]` — arquivo e linha exatos de onde a mensagem saiu.
+- `setup():` — a função que a chamou.
+- `Sistema iniciado` — a sua mensagem.
+
+Você não precisa escrever nada disso: o prefixo é montado automaticamente pela macro.
+
+#### Dump de memória em hexadecimal
+
+Para inspecionar buffers (ex.: pacotes de rede, leitura de sensor I2C), existem as variantes `log_buf_*`:
+
+```cpp
+uint8_t pacote[] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02};
+log_buf_i(pacote, sizeof(pacote));
+```
+
+Isso imprime os bytes formatados em hexadecimal, útil para depurar protocolos.
 
 ---
 
-- **Objetivo:** Leitura de sensores e controle de atuadores.
-- **Atividades:**
-  1. Montar no Wokwi: ESP32 + DHT22 + MPU6050 (ou sensor de vibração) + LED/Relé.
-  2. Programar no PlatformIO a leitura dos sensores.
-  3. Controlar atuador (ex: LED ou buzzer).
-  4. Exibir dados no Serial Monitor.
-- **Entrega:** Diagrama Wokwi + código + valores lidos.
+### Montando o projeto no PlatformIO
+
+#### Criar o projeto
+
+1. Abra o VS Code → ícone do PlatformIO (cabeça de formiga) na barra lateral → **PIO Home** → **New Project**.
+2. Preencha:
+   - **Name:** `lab-log-esp32`
+   - **Board:** `Espressif ESP32 Dev Module` (ou `DOIT ESP32 DEVKIT V1`)
+   - **Framework:** `Arduino`
+3. Clique em **Finish** e aguarde o download do toolchain.
+
+#### Configurar o `platformio.ini`
+
+Este é o passo **mais importante** da aula. Abra o `platformio.ini` na raiz do projeto e deixe-o assim:
+
+```ini title="platformio.ini"
+; CORE_DEBUG_LEVEL define ate que nivel de log sera COMPILADO:
+;   0 = NONE | 1 = ERROR | 2 = WARN | 3 = INFO | 4 = DEBUG | 5 = VERBOSE
+build_flags =
+    -DCORE_DEBUG_LEVEL=5
+```
+
+| Macro                 | `CORE_DEBUG_LEVEL` ≥ | Uso típico       |
+| --------------------- | -------------------- | ---------------- |
+| `log_e("...", ...)`   | 1                    | Erro             |
+| `log_w("...", ...)`   | 2                    | Aviso            |
+| `log_i("...", ...)`   | 3                    | Informação       |
+| `log_d("...", ...)`   | 4                    | Debug            |
+| `log_v("...", ...)`   | 5                    | Verbose          |
+| `log_buf_i(buf, tam)` | 3                    | Dump hexadecimal |
+
+Em `platformio.ini`: `build_flags = -DCORE_DEBUG_LEVEL=<0..5>`
+
+:::danger[Erro nº 1 dos iniciantes]
+Se você esquecer o `-DCORE_DEBUG_LEVEL`, o valor padrão costuma ser `0` (NONE) e **nada aparece**, mesmo com o código correto. Se seus logs sumiram, comece a investigação por aqui.
+:::
+
+#### O código-base (`src/main.cpp`)
+
+```cpp title="src/main.cpp"
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);  // da tempo do monitor serial abrir e nao perder as 1as linhas
+
+  log_i("===== Laboratorio de Log ESP32 =====");
+  log_i("Sistema iniciado com sucesso");
+}
+
+void loop() {
+  // veremos o loop nos exercicios
+}
+```
+
+Observe que **usamos `Serial.begin()` normalmente**. O sistema de log escreve no mesmo periférico serial; o `Serial.begin` continua sendo o que inicializa a UART e define a velocidade.
+
+---
+
+### Configurando o Wokwi
+
+O Wokwi simula o ESP32 usando o firmware **já compilado pelo PlatformIO**. Precisamos de dois arquivos na raiz do projeto.
+
+<Tabs>
+<TabItem value="diagram" label="diagram.json" default>
+
+O "circuito". Para começar, só a placa é suficiente:
+
+```json title="diagram.json"
+{
+  "version": 1,
+  "author": "Aluno",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []]
+  ]
+}
+```
+
+As duas conexões ligam a UART do ESP32 ao monitor serial do simulador — é o que faz os logs aparecerem na tela do Wokwi.
+
+</TabItem>
+<TabItem value="wokwi" label="wokwi.toml">
+
+Aponta para o firmware compilado:
+
+```toml title="wokwi.toml"
+[wokwi]
+version = 1
+firmware = '.pio/build/esp32dev/firmware.bin'
+elf = '.pio/build/esp32dev/firmware.elf'
+```
+
+:::info[Nome do ambiente]
+Se o seu ambiente no `platformio.ini` não se chamar `esp32dev`, ajuste o caminho `.pio/build/<nome-do-env>/` de acordo.
+:::
+
+</TabItem>
+</Tabs>
+
+#### O fluxo de trabalho
+
+1. **Compile:** ícone do PlatformIO na barra inferior (✓ "Build"), ou `Ctrl+Alt+B`. Isso gera o `firmware.bin`/`.elf`.
+2. **Simule:** abra a paleta de comandos (`Ctrl+Shift+P`) → **Wokwi: Start Simulator**.
+3. Uma aba com a placa e o **monitor serial do Wokwi** aparece. Seus logs surgem ali.
+
+:::tip[Regra de ouro]
+O Wokwi só roda o que já foi compilado. Se você mudar o código, **compile de novo antes** de reiniciar o simulador, senão vai ver o firmware antigo.
+:::
+
+---
+
+### Roteiro de laboratório (prática guiada)
+
+#### Exercício 1 — Os cinco níveis de uma vez
+
+Substitua o `setup()` por:
+
+```cpp title="src/main.cpp"
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  log_e("Isto e um ERRO (log_e)");
+  log_w("Isto e um AVISO (log_w)");
+  log_i("Isto e uma INFO (log_i)");
+  log_d("Isto e DEBUG (log_d)");
+  log_v("Isto e VERBOSE (log_v)");
+}
+```
+
+Compile com `CORE_DEBUG_LEVEL=5` e simule. **Anote:** você deve ver as cinco linhas, cada uma com seu prefixo de nível.
+
+#### Exercício 2 — Filtrando por nível de compilação
+
+Sem mudar o código do Exercício 1, edite o `platformio.ini` e troque para:
+
+```ini title="platformio.ini"
+build_flags =
+    -DCORE_DEBUG_LEVEL=2
+```
+
+Compile de novo e simule. **Observe:** agora só aparecem `log_e` e `log_w`. As linhas de Info, Debug e Verbose foram **removidas do binário na compilação** — não é um filtro em tempo de execução, elas literalmente não existem mais no firmware.
+
+:::note[Para o relatório]
+Por que isso é melhor do que um `if (nivel <= X)` dentro do código?
+:::
+
+#### Exercício 3 — Log com dados formatados
+
+Volte para `CORE_DEBUG_LEVEL=5` e use um `loop()` que simula a leitura de um sensor:
+
+```cpp title="src/main.cpp"
+void loop() {
+  static int contador = 0;
+  float temperatura = 20.0 + (contador % 15);  // valor fake que varia
+
+  log_d("Ciclo #%d iniciado", contador);
+  log_i("Leitura de temperatura: %.1f C", temperatura);
+
+  if (temperatura > 30.0) {
+    log_w("Temperatura alta: %.1f C (limite 30)", temperatura);
+  }
+
+  contador++;
+  delay(1000);
+}
+```
+
+Simule e acompanhe o timestamp crescendo de ~1000 ms em ~1000 ms, e o aviso aparecendo só quando o valor passa de 30.
+
+#### Exercício 4 — Simulando um erro real
+
+Vamos fingir que um sensor falhou:
+
+```cpp title="src/main.cpp"
+bool lerSensor(float* saida) {
+  static int tentativa = 0;
+  tentativa++;
+
+  if (tentativa % 4 == 0) {   // a cada 4 leituras, "falha"
+    log_e("Falha ao ler sensor na tentativa %d", tentativa);
+    return false;
+  }
+
+  *saida = 25.5;
+  log_v("Sensor respondeu OK na tentativa %d", tentativa);
+  return true;
+}
+
+void loop() {
+  float t;
+  if (lerSensor(&t)) {
+    log_i("Temperatura valida: %.1f C", t);
+  } else {
+    log_w("Usando ultimo valor conhecido (leitura ignorada)");
+  }
+  delay(1000);
+}
+```
+
+**Objetivo pedagógico:** perceber como os níveis contam uma história — o `log_e` marca a falha exata (com número da tentativa e linha do arquivo), o `log_w` mostra a recuperação, e o `log_v` só aparece se você quiser o detalhe fino.
+
+---
+
+### Exercícios propostos (para entregar)
+
+1. **Contador de erros.** Modifique o Exercício 4 para contar quantas falhas ocorreram e, a cada 10 ciclos, emitir um `log_i` com a taxa de falhas em porcentagem (`%.1f%%`).
+2. **Nível de produção.** Compile o projeto com `CORE_DEBUG_LEVEL=1` e descreva no relatório o que muda na saída. Explique por que essa seria a configuração para um produto entregue ao cliente.
+3. **Hexdump.** Crie um `uint8_t buffer[8]` preenchido com valores à sua escolha e imprima-o com `log_buf_i()`. Cole a saída no relatório.
+4. **Desafio.** Ligue um LED no diagrama do Wokwi (GPIO 2) e faça-o piscar, emitindo um `log_d` a cada troca de estado. Anexe o `diagram.json` modificado.
+
+---
+
+### Referência rápida
+
+| Macro                 | Aparece quando `CORE_DEBUG_LEVEL` ≥ | Uso típico       |
+| --------------------- | ----------------------------------- | ---------------- |
+| `log_e("...", ...)`   | 1                                   | Erro             |
+| `log_w("...", ...)`   | 2                                   | Aviso            |
+| `log_i("...", ...)`   | 3                                   | Informação       |
+| `log_d("...", ...)`   | 4                                   | Debug            |
+| `log_v("...", ...)`   | 5                                   | Verbose          |
+| `log_buf_i(buf, tam)` | 3                                   | Dump hexadecimal |
+
+Em `platformio.ini`: `build_flags = -DCORE_DEBUG_LEVEL=<0..5>`
+
+---
+
+### Solução de problemas (troubleshooting)
+
+| Sintoma                    | Causa provável                       | Solução                                                         |
+| -------------------------- | ------------------------------------ | --------------------------------------------------------------- |
+| Nenhum log aparece         | `CORE_DEBUG_LEVEL` não definido ou 0 | Adicione `-DCORE_DEBUG_LEVEL=5` em `build_flags` e recompile    |
+| Só aparecem erros e avisos | Nível de compilação baixo (1 ou 2)   | Suba o `CORE_DEBUG_LEVEL`                                       |
+| Caracteres estranhos       | Velocidade errada                    | `monitor_speed` deve bater com `Serial.begin()` (115200)        |
+| As primeiras linhas somem  | Monitor abriu depois do boot         | Adicione `delay(1000)` após `Serial.begin()`                    |
+| Wokwi mostra código antigo | Simulou sem recompilar               | Faça **Build** antes de **Start Simulator**                     |
+| Wokwi não acha o firmware  | Caminho errado no `wokwi.toml`       | Confira o nome do env em `.pio/build/<env>/`                    |
+| `log_i` "não existe"       | Faltou `#include <Arduino.h>`        | O header de log já vem junto do core Arduino; garanta o include |
+
+---
+
+## Espressif 32
+
+- [arduino-esp32](https://github.com/espressif/arduino-esp32)
+- [Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)
+- [platform-espressif32](https://github.com/platformio/platform-espressif32)
+- [platformio/espressif32](https://registry.platformio.org/platforms/platformio/espressif32)
+
+## Arduino Documentation
+
+### Documentação de Referência da Linguagem Arduino
+
+- https://docs.arduino.cc/language-reference/pt/
+
+Funções
+Variáveis
+Estruturas
+
+## Para controlar a placa Arduino e realizar computações.
+
+- Entradas e Saídas Digitais
+  digitalRead()
+  digitalWrite()
+  pinMode()
+
+---
+
+- Funções Matemáticas
+  abs()
+  constrain()
+  map()
+  max()
+  min()
+  pow()
+  sq()
+  sqrt()
+
+---
+
+- Bits and Bytes
+  bit()
+  bitClear()
+  bitRead()
+  bitSet()
+  bitWrite()
+  highByte()
+  lowByte()
+
+## “platformio.ini” (Project Configuration File)
+
+- https://docs.platformio.org/en/latest/projectconf/index.html
+
+---
+
+## CI workflow
+
+Example workflow (.github/workflows/grade.yml):
+
+```bash
+.github/workflows/grade.yml
+```
+
+```yaml
+name: Build & Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+            ~/.platformio/packages
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build project
+        run: pio run
+
+      # Uncomment if you want native/unit tests in CI
+      # - name: Run tests
+      #   run: pio test -e native
+```
+
+## Wokwi for CI and GitHub Actions (TODO)
+
+GitHub action for using Wokwi Embedded Systems Simulator in your CI workflow.
+
+- https://docs.wokwi.com/wokwi-ci/getting-started
+- [Migrating Wokwi projects to VS Code](https://docs.wokwi.com/vscode/migrating)
+- [Wokwi CLI Usage](https://docs.wokwi.com/wokwi-ci/cli-usage)
+
+## Logout do seu ambiente dev, git e gh
+
+import { GitLogOut } from "@site/src/components/InstructionsSite";
+
+<GitLogOut />
