@@ -362,3 +362,79 @@ avaliada, use `n` para fixar o número ou `prefix` para diferenciar.
 - O botão de copiar e o destaque `bash` vêm do `@theme/CodeBlock`; nada de CSS
   próprio é necessário.
 - O componente foi verificado com `tsc --strict` sob `@types/react` 18 e 19.
+
+---
+
+# Brief — Padrão de atividades de laboratório (ESP32 / PlatformIO / Wokwi)
+
+Documento de referência para pedir uma **nova aula de laboratório** já no padrão do
+curso. Cole este brief junto com o pedido e informe só o que muda (tema e tarefas).
+
+## Contexto e stack
+
+- **Plataforma:** ESP32 · **Ambiente:** PlatformIO (VS Code) · **Framework:** Arduino.
+- **Simulador:** **Wokwi** (sem necessidade de placa física).
+- **Documentação:** Docusaurus em **MDX**.
+- **Entrega e correção:** Git + GitHub Actions, baseada em commits.
+- **Organização:** `ELT85B-N21-2026-2`. Times `Grupo-A`, `Grupo-B`, … Repos por
+  aula: `labNN-template`, `labNN-grupo-a/b/c…`, e `labNN-grupo-n` = **repositório de
+  notas/correção** daquela aula (mesmo padrão para `projeto-*`).
+
+## Formato do documento (MDX Docusaurus)
+
+- Front matter completo (`id`, `title`, `sidebar_label`, `sidebar_position`, `slug`, `keywords`).
+- Blocos de aviso como **admonitions** (`:::info`, `:::tip`, `:::warning`, `:::danger`, `:::note`).
+- `import CommitPoint from '@site/src/components/CommitPoint';` no topo.
+- Code blocks com `title="..."`; `<Tabs>`/`<TabItem>` quando útil; diagramas em
+  bloco `mermaid` (requer `@docusaurus/theme-mermaid`).
+- **Regra MDX:** manter todo código com `<`, `>`, `{`, `}`, `&` dentro de blocos/backticks
+  e **evitar** esses caracteres nas strings `task="..."` dos CommitPoint.
+
+## Wokwi como simulador
+
+- No documento, incluir setup do Wokwi: extensão **Wokwi for VS Code**, `diagram.json`
+  (circuito) e `wokwi.toml` apontando para o firmware compilado
+  (`.pio/build/<env>/firmware.bin` e `.elf`). Fluxo: **Build** (PlatformIO) → **Wokwi: Start Simulator**.
+- Sempre recompilar antes de simular (o Wokwi roda o binário já compilado).
+- **Verificação em execução (opcional, CI):** cenário `test/*.test.yaml` com passos
+  `wait-serial: "..."` para checar a saída serial; job com `wokwi/wokwi-ci-action@v1`
+  e secret `WOKWI_CLI_TOKEN`.
+
+## Pontos de commit (componente CommitPoint)
+
+- Marcar cada tarefa avaliada com `<CommitPoint task="descrição" pontos={N} />`.
+- Numeração **automática** em ordem do documento: `T1`, `T2`, … (props opcionais:
+  `type`, `files`, `prefix`, `push`, `n`). Gera o comando
+  `git add . && git commit -m "Tn: descrição" && git push`.
+- Convenção de correção: **cada tarefa = um commit** cuja mensagem começa com `Tn:`.
+
+## Correção automática
+
+- **`grade.py`** (na `labNN-grupo-n`): lista `TAREFAS` com `token`, `nome`, `pontos` e
+  `checks`. Tipos de check: `contem`, `nao_contem`, `compila` (roda `pio run`).
+  Correção **por commit** (via `git worktree`); nota normalizada 0–10; gera
+  `GRADE.md` + `nota.csv`.
+- **Repo `labNN-grupo-n`** (autoconfigurável): deduz a aula pelo próprio nome,
+  descobre os `labNN-grupo-*`, corrige em paralelo (`grade-one.yml` reutilizável +
+  `grade-all.yml`), lê os repos dos grupos **somente leitura** (org secret
+  `STUDENTS_TOKEN`, Contents: Read) e grava os boletins em `notas/`. À prova de
+  adulteração (aluno não acessa o `-grupo-n`).
+- **`gen_grade.py`**: gera o scaffold do `grade.py` a partir dos CommitPoint do MDX
+  (`-o grade.py`) e tem modo **`--check`** que compara MDX × `grade.py` e aponta
+  divergências (token faltando/sobrando, pontos, checks vazios) — para o CI.
+
+## Fluxo ao criar uma nova aula
+
+1. Escrever a aula em MDX com `CommitPoint` em cada tarefa.
+2. `python gen_grade.py aula.mdx -o autograde/grade.py` → completar os `checks`.
+3. Copiar o scaffold para `labNN-grupo-n` (workflows idênticos; só o `grade.py` muda).
+4. (Opcional) Adicionar cenário Wokwi para checagem de saída serial no CI.
+
+## Modelo de pedido (preencher ao solicitar)
+
+- **Tema da aula / número (`labNN`):** …
+- **Objetivos de aprendizagem:** …
+- **Periféricos/circuito no Wokwi:** (LEDs, botões, sensores, I²C/SPI…) …
+- **Tarefas avaliadas** (viram `CommitPoint` T1…Tn) e **pontos** de cada: …
+- **Checagens desejadas por tarefa** (`contem`/`compila`/saída serial no Wokwi): …
+- **Desafios/gabarito?** (sim/não)
