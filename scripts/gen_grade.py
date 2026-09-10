@@ -20,6 +20,7 @@ Uso:
     # modo verificacao (CI): compara um grade.py existente com o MDX
     python gen_grade.py aula.mdx --check autograde/grade.py
     python gen_grade.py aula.mdx --check autograde/grade.py --strict
+    python scripts/gen_grade.py lab-docs/LAB03.mdx --check autograde/grade.py
 
 Observacoes:
 - A numeracao segue o componente: TODO CommitPoint consome um numero automatico;
