@@ -49,7 +49,7 @@ function useAutoNumber(): number {
 export interface CommitPointProps {
   /** Descricao da tarefa (obrigatoria). */
   task: string;
-  /** Tipo do admonition. Default: 'tip'. */
+  /** Tipo do admonition. Default: 'info'. */
   type?: AdmonitionType;
   /** Pontos da tarefa (exibidos no titulo). */
   pontos?: number;
@@ -65,6 +65,8 @@ export interface CommitPointProps {
   n?: number;
   /** Titulo opcional; sobrescreve o padrao "Ponto de commit - T<n>". */
   title?: ReactNode;
+  /** Id da ancora para deep-link. Default: o token em minusculas (ex.: "t1"). */
+  id?: string;
 }
 
 export default function CommitPoint({
@@ -77,22 +79,39 @@ export default function CommitPoint({
   push = true,
   n,
   title,
+  id,
 }: CommitPointProps): ReactNode {
   const auto = useAutoNumber();
   const numero = n != null ? n : auto;
   const token = `${prefix}${numero}`;
   const pts = pontos != null ? pontos : points;
 
+  // Id da ancora: explicito ou derivado do token (ex.: "T1" -> "t1").
+  const anchorId = (id ?? token).toLowerCase();
+
   const mensagem = `${token}: ${task}`;
   const comando =
     `git add ${files} && git commit -m "${mensagem}"` + (push ? ' && git push' : '');
 
-  const tituloPadrao = `Ponto de commit · ${token}${pts != null ? ` (${pts} pts)` : ''}`;
+  const tituloPadrao: ReactNode = (
+    <>
+      {`Ponto de commit · ${token}${pts != null ? ` (${pts} pts)` : ''}`}{' '}
+      <a
+        href={`#${anchorId}`}
+        aria-label={`Link direto para ${token}`}
+        title={`Link direto para ${token}`}
+        style={{ textDecoration: 'none', opacity: 0.55 }}>
+        #
+      </a>
+    </>
+  );
 
   return (
-    <Admonition type={type} title={title ?? tituloPadrao}>
-      <p>{task}</p>
-      <ThemeCodeBlock language="bash">{comando}</ThemeCodeBlock>
-    </Admonition>
+    <div id={anchorId} style={{ scrollMarginTop: 'var(--ifm-navbar-height, 60px)' }}>
+      <Admonition type={type} title={title ?? tituloPadrao}>
+        <p>{task}</p>
+        <ThemeCodeBlock language="bash">{comando}</ThemeCodeBlock>
+      </Admonition>
+    </div>
   );
 }

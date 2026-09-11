@@ -54,16 +54,34 @@ com a correção.
 
 ## Props
 
-| Prop     | Tipo                                                 | Padrão  | Descrição                                                       |
-| -------- | ---------------------------------------------------- | ------- | --------------------------------------------------------------- |
-| `task`   | `string`                                             | —       | Descrição da tarefa (obrigatória).                              |
-| `type`   | `'note' \| 'tip' \| 'info' \| 'warning' \| 'danger'` | `'tip'` | Tipo do admonition.                                             |
-| `pontos` | `number`                                             | —       | Pontos da tarefa; exibidos no título. (`points` também aceito.) |
-| `files`  | `string`                                             | `'.'`   | Arquivos do `git add` (ex.: `"src/main.cpp"`).                  |
-| `prefix` | `string`                                             | `'T'`   | Prefixo do token.                                               |
-| `push`   | `boolean`                                            | `true`  | Inclui `&& git push` no comando.                                |
-| `n`      | `number`                                             | auto    | Força o número, ignorando o incremento automático.              |
-| `title`  | `ReactNode`                                          | auto    | Título; sobrescreve o padrão "Ponto de commit · T<n>".          |
+| Prop     | Tipo                                                 | Padrão  | Descrição                                                              |
+| -------- | ---------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
+| `task`   | `string`                                             | —       | Descrição da tarefa (obrigatória).                                     |
+| `type`   | `'note' \| 'tip' \| 'info' \| 'warning' \| 'danger'` | `'tip'` | Tipo do admonition.                                                    |
+| `pontos` | `number`                                             | —       | Pontos da tarefa; exibidos no título. (`points` também aceito.)        |
+| `files`  | `string`                                             | `'.'`   | Arquivos do `git add` (ex.: `"src/main.cpp"`).                         |
+| `prefix` | `string`                                             | `'T'`   | Prefixo do token.                                                      |
+| `push`   | `boolean`                                            | `true`  | Inclui `&& git push` no comando.                                       |
+| `n`      | `number`                                             | auto    | Força o número, ignorando o incremento automático.                     |
+| `title`  | `ReactNode`                                          | auto    | Título; sobrescreve o padrão "Ponto de commit · T<n>".                 |
+| `id`     | `string`                                             | auto    | Id da âncora para deep-link; padrão = token em minúsculas (ex.: `t1`). |
+
+
+## Âncoras (referência rápida)
+
+Cada `CommitPoint` renderiza dentro de um elemento com `id` derivado do token em
+minúsculas (`T1` → `t1`), permitindo deep-link direto ao ponto:
+
+- Na mesma página: `[ir para T3](#t3)`
+- De outra página: `/lab/estruturas-de-controle#t3`
+
+O título exibe um `#` clicável (copia o link) e a rolagem já respeita a altura da
+navbar via `scroll-margin-top`. Para um id personalizado:
+
+```mdx
+<CommitPoint task="entrega final do projeto" id="entrega-final" pontos={20} />
+```
+
 
 ## Numeração automática
 
@@ -78,3 +96,4 @@ avaliada, use `n` para fixar o número ou `prefix` para diferenciar.
 - O botão de copiar e o destaque `bash` vêm do `@theme/CodeBlock`; nada de CSS
   próprio é necessário.
 - O componente foi verificado com `tsc --strict` sob `@types/react` 18 e 19.
+
