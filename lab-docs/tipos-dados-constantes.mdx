@@ -1,0 +1,729 @@
+---
+id: tipos-dados-constantes
+title: Tipos de Dados e Constantes no ESP32
+sidebar_label: Tipos de Dados e Constantes
+sidebar_position: 4
+description: Tipos de dados, constantes e qualificadores da linguagem Arduino no ESP32 (com tamanhos reais de 32 bits) — bool, char, int, long, float, double, array, String, const, static e volatile — com simulação no Wokwi e pontos de commit avaliados.
+slug: /lab/tipos-dados-constantes
+keywords:
+  - esp32
+  - arduino
+  - tipos de dados
+  - constantes
+  - platformio
+  - wokwi
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import CommitPoint from "@site/src/components/CommitPoint";
+
+# Aula de Laboratório — Tipos de Dados e Constantes no ESP32
+
+**Plataforma:** ESP32 · **Ambiente:** PlatformIO · **Framework:** Arduino · **Simulador:** Wokwi
+
+---
+
+## 1. Objetivos de aprendizagem
+
+Ao final desta aula, o aluno será capaz de:
+
+- Escrever **constantes** inteiras (decimal, `0x` hex, `0b` binário) e de ponto flutuante.
+- Usar as constantes da linguagem: `HIGH`/`LOW`, `true`/`false`, `INPUT`/`INPUT_PULLUP`/`OUTPUT` e `LED_BUILTIN`.
+- Escolher **tipos de dados** adequados: `bool`/`boolean`, `char`, `byte`, `int`, `short`, `long`, `word`, `size_t`, `float`, `double`.
+- Entender que os **tamanhos dependem da arquitetura** (no ESP32, `int` tem 32 bits!).
+- Trabalhar com `array`, com _strings_ de `char` e com o objeto `String()`.
+- Aplicar **qualificadores e escopo**: `const`, `static`, `volatile`, variáveis globais e locais, e o tipo `void`.
+
+:::info[Pontos de commit]
+Ao longo da aula, os cartões **"Ponto de commit"** indicam quando salvar seu progresso. Cada commit corresponde a uma tarefa avaliada automaticamente — use exatamente a mensagem sugerida (o botão copia o comando pronto).
+:::
+
+---
+
+## 2. Material necessário
+
+- 1 × placa ESP32 (ex.: ESP32 DevKit v1) — ou apenas o **simulador Wokwi**.
+- 1 × LED + 1 × resistor de 220 Ω (representa o `LED_BUILTIN`, no GPIO 2).
+- 1 × botão (push-button).
+- VS Code com **PlatformIO IDE** e **Wokwi for VS Code**.
+
+---
+
+## 3. Setup — PlatformIO e Wokwi
+
+```ini title="platformio.ini"
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+```
+
+A maioria dos experimentos usa só a **Serial Monitor** (115200 baud). As Partes 3 e o
+**projeto** usam um **LED** (no `LED_BUILTIN` = GPIO 2) e um **botão** (GPIO 4).
+
+:::info[Por que quase todo o código fica no `setup()`?]
+No Arduino/ESP32, `setup()` roda **uma vez** no boot e `loop()` roda **repetidamente** logo depois. Nos experimentos, a ideia é **demonstrar e imprimir o resultado uma única vez** para comparar com a saída esperada — por isso o código fica no `setup()` e o `loop()` fica vazio (`void loop() {}`). Já as Partes 3 e o projeto colocam a lógica no `loop()`, porque precisam **reagir continuamente** ao botão.
+:::
+
+### Arquivos do Wokwi (Parte 3 e projeto)
+
+<Tabs>
+<TabItem value="diagram" label="diagram.json" default>
+
+```json title="diagram.json"
+{
+  "version": 1,
+  "author": "Aluno",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -48,
+      "left": 110,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 20,
+      "left": 110,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 130,
+      "left": -100,
+      "attrs": { "color": "green" }
+    }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["esp:2", "r1:1", "green", []],
+    ["r1:2", "led1:A", "green", []],
+    ["led1:C", "esp:GND.1", "black", []],
+    ["esp:4", "btn1:1.l", "green", []],
+    ["btn1:2.l", "esp:GND.2", "black", []]
+  ]
+}
+```
+
+LED no **GPIO 2** (`LED_BUILTIN`) via resistor; botão entre **GPIO 4** e **GND**.
+
+</TabItem>
+<TabItem value="wokwi" label="wokwi.toml">
+
+```toml title="wokwi.toml"
+[wokwi]
+version = 1
+firmware = '.pio/build/esp32dev/firmware.bin'
+elf = '.pio/build/esp32dev/firmware.elf'
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Parte 1 — Constantes inteiras e de ponto flutuante
+
+Uma **constante inteira** pode ser escrita em várias bases; todas abaixo valem `255`. Sufixos `U` (unsigned) e `L` (long) ajudam o compilador a escolher o tipo.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  // Mesmo valor (255) em bases diferentes
+  int dec = 255;
+  int hex = 0xFF;        // hexadecimal
+  int bin = 0b11111111;  // binario
+  int oct = 0377;        // octal (comeca com 0)
+  Serial.print("dec="); Serial.print(dec);
+  Serial.print(" hex="); Serial.print(hex);
+  Serial.print(" bin="); Serial.print(bin);
+  Serial.print(" oct="); Serial.println(oct);
+
+  // Sufixo UL: 3 bilhoes nao cabe em int, mas cabe em unsigned long
+  unsigned long grande = 3000000000UL;
+  Serial.print("grande="); Serial.println(grande);
+
+  // Constantes de ponto flutuante
+  float a = 3.0;
+  float b = .5;
+  float cientifico = 2.5e3;   // 2.5 x 10^3 = 2500
+  Serial.print("a="); Serial.print(a);
+  Serial.print(" b="); Serial.print(b);
+  Serial.print(" cientifico="); Serial.println(cientifico);
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+dec=255 hex=255 bin=255 oct=255
+grande=3000000000
+a=3.00 b=0.50 cientifico=2500.00
+```
+
+:::tip[Sufixos importam]
+`3000000000` sem o `UL` seria interpretado como `int` (32 bits, máx. ~2,1 bilhões) e **estouraria**. O `UL` diz "isto é `unsigned long`".
+:::
+
+<CommitPoint
+  task="usa constantes inteiras (hex, bin, octal) e de ponto flutuante"
+  pontos={5}
+/>
+
+---
+
+## Parte 2 — Constantes lógicas e de nível: `true`/`false`, `HIGH`/`LOW`
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.print("true  = "); Serial.println(true);   // 1
+  Serial.print("false = "); Serial.println(false);  // 0
+  Serial.print("HIGH  = "); Serial.println(HIGH);   // 1
+  Serial.print("LOW   = "); Serial.println(LOW);    // 0
+
+  bool ligado = true;
+  Serial.print("ligado? "); Serial.println(ligado ? "sim" : "nao");
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+true  = 1
+false = 0
+HIGH  = 1
+LOW   = 0
+ligado? sim
+```
+
+:::note[Mesmo número, significados diferentes]
+Numericamente `HIGH == true == 1` e `LOW == false == 0`. Mas use `HIGH`/`LOW` para **níveis de pino** e `true`/`false` para **lógica** — deixa a intenção clara.
+:::
+
+<CommitPoint task="usa as constantes true, false, HIGH e LOW" pontos={5} />
+
+---
+
+## Parte 3 — Constantes de pino: `INPUT_PULLUP`, `OUTPUT` e `LED_BUILTIN`
+
+`pinMode()` recebe `INPUT`, `INPUT_PULLUP` ou `OUTPUT`. Com `INPUT_PULLUP`, um resistor **interno** mantém o pino em `HIGH` quando o botão está solto; pressionado, vai a `LOW`. Simule no **Wokwi**.
+
+```cpp
+#include <Arduino.h>
+
+const int BOTAO = 4;   // botao entre GPIO4 e GND
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);    // LED_BUILTIN = GPIO 2 no ESP32 DevKit
+  pinMode(BOTAO, INPUT_PULLUP);    // ativa o pull-up interno
+  Serial.println("Segure o botao para acender o LED.");
+}
+
+void loop() {
+  // Com INPUT_PULLUP: solto = HIGH, pressionado = LOW
+  bool pressionado = (digitalRead(BOTAO) == LOW);
+  digitalWrite(LED_BUILTIN, pressionado ? HIGH : LOW);
+  delay(50);
+}
+```
+
+**Esperado:** o LED acende enquanto o botão está pressionado.
+
+:::warning[`INPUT_PULLUP` inverte a leitura]
+Sem pressionar, `digitalRead` devolve `HIGH`; pressionado, `LOW`. Não precisa de resistor externo — o interno já resolve.
+:::
+
+<CommitPoint
+  task="configura pinos com INPUT_PULLUP e OUTPUT e usa LED_BUILTIN"
+  pontos={5}
+/>
+
+---
+
+## Parte 4 — Tipos inteiros e seus tamanhos (`sizeof`)
+
+O tamanho de cada tipo **depende da arquitetura**. O ESP32 é de 32 bits — vamos medir.
+
+```cpp
+#include <Arduino.h>
+
+void mostra(const char* nome, int bytes) {
+  Serial.print(nome); Serial.print("\t"); Serial.print(bytes); Serial.println(" byte(s)");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("Tipo\t\tTamanho (ESP32)");
+  mostra("bool",          sizeof(bool));
+  mostra("char",          sizeof(char));
+  mostra("byte",          sizeof(byte));
+  mostra("short",         sizeof(short));
+  mostra("word",          sizeof(word));
+  mostra("int",           sizeof(int));
+  mostra("unsigned int",  sizeof(unsigned int));
+  mostra("long",          sizeof(long));
+  mostra("unsigned long", sizeof(unsigned long));
+  mostra("long long",     sizeof(long long));
+  mostra("size_t",        sizeof(size_t));
+}
+
+void loop() {}
+```
+
+Saída esperada (ESP32):
+
+```text
+Tipo		Tamanho (ESP32)
+bool	1 byte(s)
+char	1 byte(s)
+byte	1 byte(s)
+short	2 byte(s)
+word	4 byte(s)
+int	4 byte(s)
+unsigned int	4 byte(s)
+long	4 byte(s)
+unsigned long	4 byte(s)
+long long	8 byte(s)
+size_t	4 byte(s)
+```
+
+:::warning[Cuidado com portabilidade]
+No **Arduino Uno** (8 bits) `int` tem **2 bytes** e `word` tem **2 bytes**. No **ESP32** (32 bits) `int` tem **4 bytes** e, curiosamente, `word` também tem **4 bytes**. Código que assume 2 bytes pode estourar ao portar — quando o tamanho importa, prefira tipos explícitos como `int16_t`/`int32_t`.
+:::
+
+Faixas úteis no ESP32: `byte`/`unsigned char` → 0 a 255; `short` → −32.768 a 32.767; `int`/`long` → cerca de ±2,1 bilhões; `unsigned int`/`unsigned long` → 0 a ~4,29 bilhões.
+
+<CommitPoint task="compara tamanhos dos tipos inteiros com sizeof" pontos={5} />
+
+---
+
+## Parte 5 — Ponto flutuante: `float` vs `double`
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.print("sizeof(float)  = "); Serial.println(sizeof(float));   // 4
+  Serial.print("sizeof(double) = "); Serial.println(sizeof(double));  // 8 no ESP32
+
+  float  f = 3.14159265358979;
+  double d = 3.14159265358979;
+
+  Serial.print("float  (10 casas): "); Serial.println(f, 10);
+  Serial.print("double (10 casas): "); Serial.println(d, 10);
+}
+
+void loop() {}
+```
+
+Saída esperada (aproximada):
+
+```text
+sizeof(float)  = 4
+sizeof(double) = 8
+float  (10 casas): 3.1415927410
+double (10 casas): 3.1415926536
+```
+
+:::note[`double` no ESP32 é de verdade]
+No Arduino Uno, `double` é **igual** a `float` (4 bytes) — sem ganho de precisão. No ESP32, `double` tem **8 bytes (64 bits)**: repare como o `float` já erra a partir da 7ª casa, enquanto o `double` mantém a precisão.
+:::
+
+<CommitPoint task="compara float e double em tamanho e precisao" pontos={5} />
+
+---
+
+## Parte 6 — `bool`/`boolean` e `char`
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  boolean b1 = true;    // 'boolean' e apelido de 'bool' no Arduino
+  bool    b2 = false;
+  Serial.print("b1="); Serial.print(b1);
+  Serial.print(" b2="); Serial.println(b2);
+
+  char letra = 'A';     // aspas SIMPLES = um caractere
+  Serial.print("letra como texto: ");  Serial.println(letra);            // A
+  Serial.print("como numero (ASCII): "); Serial.println((int)letra);     // 65
+  Serial.print("proxima letra: ");     Serial.println((char)(letra + 1)); // B
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+b1=1 b2=0
+letra como texto: A
+como numero (ASCII): 65
+proxima letra: B
+```
+
+:::tip[`char` é um número de 1 byte]
+Um `char` guarda o **código ASCII** do caractere. Por isso `'A' + 1` dá `'B'`. Aspas simples (`'A'`) = caractere; aspas duplas (`"A"`) = _string_.
+:::
+
+<CommitPoint task="usa bool, boolean e char" pontos={5} />
+
+---
+
+## Parte 7 — `array`
+
+Um `array` guarda vários valores do mesmo tipo, indexados a partir de **0**.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  int leituras[5] = {10, 20, 30, 40, 50};
+  int n = sizeof(leituras) / sizeof(leituras[0]);   // numero de elementos
+
+  Serial.print("A array tem "); Serial.print(n); Serial.println(" elementos.");
+
+  long soma = 0;
+  for (int i = 0; i < n; i++) {
+    Serial.print("leituras["); Serial.print(i); Serial.print("] = ");
+    Serial.println(leituras[i]);
+    soma += leituras[i];
+  }
+  Serial.print("Soma  = "); Serial.println(soma);
+  Serial.print("Media = "); Serial.println(soma / n);
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+A array tem 5 elementos.
+leituras[0] = 10
+leituras[1] = 20
+leituras[2] = 30
+leituras[3] = 40
+leituras[4] = 50
+Soma  = 150
+Media = 30
+```
+
+:::warning[Índices válidos: 0 a n−1]
+Em um array de 5 elementos, os índices vão de `0` a `4`. Acessar `leituras[5]` é **comportamento indefinido** (lê/escreve memória vizinha) e causa bugs difíceis.
+:::
+
+<CommitPoint task="declara e percorre um array" pontos={5} />
+
+---
+
+## Parte 8 — _String_ de `char` vs objeto `String()`
+
+Há duas formas de texto: a **string estilo C** (array de `char` terminado em `'\0'`) e o **objeto `String`** (uma classe com métodos como `length()`, `+`, `indexOf()`).
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  // 1) string estilo C
+  char nome[] = "ESP32";
+  Serial.print("nome = "); Serial.println(nome);
+  Serial.print("sizeof (com o '\\0') = "); Serial.println(sizeof(nome));   // 6
+  Serial.print("strlen (letras)     = "); Serial.println(strlen(nome));    // 5
+
+  // 2) objeto String
+  String s = "Placa: ";
+  s += nome;          // concatena
+  s = s + " v4";      // operador +
+  Serial.print("String       = "); Serial.println(s);
+  Serial.print("length()     = "); Serial.println(s.length());     // 15
+  Serial.print("indexOf('v') = "); Serial.println(s.indexOf('v'));  // 13
+  String su = s; su.toUpperCase();
+  Serial.print("toUpperCase  = "); Serial.println(su);
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+nome = ESP32
+sizeof (com o '\0') = 6
+strlen (letras)     = 5
+String       = Placa: ESP32 v4
+length()     = 15
+indexOf('v') = 13
+toUpperCase  = PLACA: ESP32 V4
+```
+
+:::warning[`String` é prático, mas cuidado com a memória]
+O objeto `String` aloca memória dinamicamente e, em uso intenso, pode **fragmentar a heap** de um microcontrolador. Para textos fixos ou código crítico, prefira arrays de `char` (e `F("...")` para literais). Para conveniência pontual, `String` é ótimo.
+:::
+
+<CommitPoint task="compara string de char e objeto String" pontos={5} />
+
+---
+
+## Parte 9 — Qualificadores e escopo: `const`, `static`, `volatile`, `void`
+
+- **`const`** — valor que não pode mudar (o compilador recusa alterações).
+- **Escopo** — onde a variável existe: **global** (todo o arquivo) ou **local** (só dentro do bloco).
+- **`static`** (local) — mantém o valor **entre chamadas** da função.
+
+```cpp
+#include <Arduino.h>
+
+const int MAX = 3;      // const: nao pode ser reatribuida
+int global = 100;       // escopo global
+
+void contador() {
+  static int chamadas = 0;   // static: sobrevive entre chamadas
+  int local = 0;             // local: recriada a cada chamada
+  chamadas++;
+  local++;
+  Serial.print("chamadas="); Serial.print(chamadas);
+  Serial.print("  local="); Serial.println(local);
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.print("MAX = "); Serial.println(MAX);
+  // MAX = 5;   // <- descomente e veja o ERRO de compilacao
+
+  for (int i = 0; i < MAX; i++) contador();
+
+  int global = 7;   // esta 'global' LOCAL sombreia a global de cima
+  Serial.print("global (local) = "); Serial.println(global);
+  Serial.print("global (::)    = "); Serial.println(::global);
+}
+
+void loop() {}
+```
+
+Saída esperada:
+
+```text
+MAX = 3
+chamadas=1  local=1
+chamadas=2  local=1
+chamadas=3  local=1
+global (local) = 7
+global (::)    = 100
+```
+
+Repare: `chamadas` (static) **cresce**; `local` sempre volta a 1.
+
+:::info[`volatile` e `void`]
+**`volatile`** avisa o compilador que a variável pode mudar "por fora" do fluxo normal — típico de variáveis compartilhadas com uma **interrupção (ISR)**. Sem `volatile`, o compilador pode "cachear" o valor e não perceber a mudança:
+
+```cpp
+volatile bool aconteceu = false;      // alterada dentro da ISR
+void IRAM_ATTR aoApertar() { aconteceu = true; }
+// ... attachInterrupt(digitalPinToInterrupt(4), aoApertar, FALLING);
+```
+
+**`void`** significa "nenhum valor": é o tipo de retorno de funções que não devolvem nada (como `setup()` e `loop()`).
+:::
+
+<CommitPoint task="aplica const, static, volatile e escopo" pontos={5} />
+
+---
+
+## 10. Projeto integrador — Contador de eventos com botão
+
+Junta **tudo**: `const` para configuração, `array` para o histórico, `static` para detectar a borda do botão, `String` para o relatório, `bool`/`unsigned long` para o estado, e `LED_BUILTIN`/`INPUT_PULLUP`/`HIGH`/`LOW` no Wokwi.
+
+```cpp
+#include <Arduino.h>
+
+const int BOTAO = 4;
+const int TAM_HIST = 5;
+const unsigned long DEBOUNCE_MS = 30;
+
+unsigned long historico[TAM_HIST];   // instantes das ultimas pressoes (ms)
+int totalPressos = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(BOTAO, INPUT_PULLUP);
+  Serial.println("Pressione o botao...");
+}
+
+void loop() {
+  static bool anterior = HIGH;          // static: lembra o estado da volta anterior
+  static unsigned long ultimoMs = 0;
+
+  bool atual = digitalRead(BOTAO);
+  digitalWrite(LED_BUILTIN, atual == LOW ? HIGH : LOW);   // LED aceso enquanto pressionado
+
+  // borda de descida (solto -> pressionado), com debounce
+  if (anterior == HIGH && atual == LOW && (millis() - ultimoMs) > DEBOUNCE_MS) {
+    ultimoMs = millis();
+    historico[totalPressos % TAM_HIST] = millis();
+    totalPressos++;
+
+    String rel = "Press #";
+    rel += totalPressos;
+    rel += " @ ";
+    rel += millis();
+    rel += " ms";
+    Serial.println(rel);
+  }
+  anterior = atual;
+}
+```
+
+**Esperado:** cada clique acende o LED e imprime uma linha como `Press #1 @ 1234 ms`; o array `historico` guarda os instantes das últimas 5 pressões.
+
+<CommitPoint
+  task="projeto integrador: contador de eventos com botao"
+  pontos={15}
+/>
+
+---
+
+## 11. Desafios
+
+Tente resolver **sem olhar o gabarito**. Faça o commit de cada desafio conforme concluir.
+
+**D1.** Escreva `float media(float v[], int n)` que retorne a média de um array de `float`. Teste com `{1.5, 2.0, 4.5, 7.0}` (média = 3.75).
+
+<CommitPoint task="desafio D1: media de um array de floats" pontos={10} />
+
+**D2.** Escreva `String inverter(String s)` que devolva a String de trás para frente. Ex.: `inverter("ESP32")` = `"23PSE"`.
+
+<CommitPoint task="desafio D2: inverte uma String" pontos={10} />
+
+**D3.** Escreva `int quantasVezes()` que use uma variável `static` para contar e **retornar** quantas vezes ela já foi chamada. Chame-a 4 vezes e mostre o resultado.
+
+<CommitPoint
+  task="desafio D3: static conta chamadas de uma funcao"
+  pontos={10}
+/>
+
+**D4.** Para cada faixa abaixo, declare uma variável do **menor tipo inteiro** que a comporta e imprima seu `sizeof`: (a) 0 a 200; (b) −100 a 100; (c) 0 a 100000. Justifique por que a faixa (c) exige mais de 2 bytes num Arduino Uno, mas cabe em um `int` no ESP32.
+
+<CommitPoint
+  task="desafio D4: escolhe o tipo inteiro certo por faixa"
+  pontos={10}
+/>
+
+---
+
+## 12. Gabarito
+
+:::danger[Spoiler]
+Só abra depois de tentar os desafios por conta própria.
+:::
+
+<details>
+<summary>Ver soluções</summary>
+
+**D1.**
+
+```cpp
+float media(float v[], int n) {
+  float soma = 0;
+  for (int i = 0; i < n; i++) soma += v[i];
+  return soma / n;
+}
+// float dados[] = {1.5, 2.0, 4.5, 7.0}; media(dados, 4) -> 3.75
+```
+
+**D2.**
+
+```cpp
+String inverter(String s) {
+  String r = "";
+  for (int i = s.length() - 1; i >= 0; i--) r += s[i];
+  return r;
+}
+```
+
+**D3.**
+
+```cpp
+int quantasVezes() {
+  static int n = 0;   // sobrevive entre as chamadas
+  n++;
+  return n;
+}
+// chamar 4x retorna 1, 2, 3, 4
+```
+
+**D4.**
+
+```cpp
+byte  a = 200;         // 0..255  -> 1 byte
+char  b = -100;        // -128..127 -> 1 byte (char e signed aqui)
+long  c = 100000;      // no Uno, int (2 bytes) NAO comporta 100000; use long/32 bits
+Serial.println(sizeof(a));  // 1
+Serial.println(sizeof(b));  // 1
+Serial.println(sizeof(c));  // 4
+```
+
+No Arduino Uno, `int` tem 2 bytes (máx. 32.767), então 100000 **não cabe** — precisa de `long`. No ESP32, `int` já tem 4 bytes e comporta 100000 tranquilamente.
+
+</details>
+
+---
+
+## 13. Checklist de encerramento
+
+- [ ] Compilei e rodei os experimentos das Partes 1 a 9.
+- [ ] Previ a saída **antes** de rodar e comparei.
+- [ ] Simulei a Parte 3 e o projeto no Wokwi (botão + LED).
+- [ ] Sei explicar por que `int` tem 4 bytes no ESP32 e 2 no Uno.
+- [ ] Sei a diferença entre `char`, `bool`, `array`, `String` e quando usar cada um.
+- [ ] Entendi `const`, `static`, escopo e para que serve `volatile`.
+- [ ] Resolvi ao menos os desafios D1 a D4.
+- [ ] Fiz o commit de cada ponto marcado (T1 a T14).
+
+---
+
+_Fim da aula._
