@@ -231,7 +231,7 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
       additionalLanguages: [
         // https://prismjs.com/#supported-languages
-        "autohotkey",
+        "toml",
         "arduino",
         "apacheconf",
         "nginx",
