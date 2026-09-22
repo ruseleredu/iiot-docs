@@ -1,0 +1,3934 @@
+[
+  {
+    "id": 31896,
+    "name": "Arduino Uno R3",
+    "description": "A programmable board you can use to build interactive circuits.",
+    "tags": [
+      "microcontroller"
+    ],
+    "thumbUrl": "/arduinoUnoR3.png",
+    "rest_id": "/components/1030685",
+    "footprint": {
+      "name": "Arduino Uno R3",
+      "id": 132521
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoBlink"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Beginner-Arduino-With-Tinkercad-Circuits/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Arduino-Class/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://docs.arduino.cc/static/ddf3b19af524334434664c2c6c8833cf/A000066-datasheet.pdf"
+      }
+    }
+  },
+  {
+    "id": 28786,
+    "name": "ATtiny",
+    "description": "Arduino-compatible ATTiny25/45/85 with 512 bytes RAM.",
+    "tags": [
+      "microcontroller",
+      "arduino"
+    ],
+    "thumbUrl": "/attiny.png",
+    "rest_id": "/components/217335",
+    "footprint": {
+      "name": "DIP-8 ATtiny",
+      "id": 116840
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterATTiny"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Program-an-ATtiny-with-Arduino/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf"
+      }
+    }
+  },
+  {
+    "id": 28787,
+    "name": "9V Battery",
+    "description": "A common battery great for higher power applications like motors.",
+    "tags": [
+      "power",
+      "voltage",
+      "supply",
+      "9volt",
+      "9 volt"
+    ],
+    "thumbUrl": "/battery9V.png",
+    "rest_id": "/components/19280",
+    "footprint": {
+      "name": "Battery Connector (forked)",
+      "id": 116841
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicDCMotor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/all-about-batteries"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=mzSnz6ZDkFE"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-battery-life"
+      }
+    }
+  },
+  {
+    "id": 54646,
+    "name": "1.5V Battery",
+    "description": "Standard AA or AAA batteries, with each battery providing 1.5V.",
+    "tags": [
+      "power",
+      "voltage",
+      "supply"
+    ],
+    "thumbUrl": "/batteryAA.png",
+    "rest_id": "/components/390593",
+    "footprint": {
+      "name": "Battery Connector AA ",
+      "id": 241925
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBatteryArray"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/all-about-batteries"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=mzSnz6ZDkFE"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-battery-life"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://www.sparkfun.com/products/12083"
+      }
+    }
+  },
+  {
+    "id": 39041,
+    "name": "Coin Cell 3V Battery",
+    "description": "A small battery great for low power applications like lighting up LEDs.",
+    "tags": [
+      "power",
+      "voltage",
+      "supply"
+    ],
+    "thumbUrl": "/batteryCoinCell.png",
+    "rest_id": "/components/1039060",
+    "footprint": {
+      "name": "20 mm coin cell holder",
+      "id": 165360
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicLEDLightUp"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/all-about-batteries/lithium-batteries-and-coin-cells"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=mzSnz6ZDkFE"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/3D-Printing-With-Circuits-Class/"
+      }
+    }
+  },
+  {
+    "id": "batteryLemonid",
+    "name": "Lemon Battery",
+    "description": "A chemical battery made from a lemon, and some copper and zinc metal.",
+    "tags": [
+      "power",
+      "voltage",
+      "supply"
+    ],
+    "thumbUrl": "/batteryLemon.png",
+    "rest_id": "/components/batteryLemon",
+    "footprint": {
+      "name": "Lemon Battery Connector",
+      "id": "batteryLemon"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterLemonBattery"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.allaboutcircuits.com/textbook/experiments/chpt-3/potato-battery/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=mzSnz6ZDkFE"
+      }
+    }
+  },
+  {
+    "id": "batteryPotatoid",
+    "name": "Potato Battery",
+    "description": "A chemical battery made from a potato, and some copper and zinc metal.",
+    "tags": [
+      "power",
+      "voltage",
+      "supply"
+    ],
+    "thumbUrl": "/batteryPotato.png",
+    "rest_id": "/components/batteryPotato",
+    "footprint": {
+      "name": "Potato Battery Connector",
+      "id": "batteryPotato"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterPotatoBattery"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.allaboutcircuits.com/textbook/experiments/chpt-3/potato-battery/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=mzSnz6ZDkFE"
+      }
+    }
+  },
+  {
+    "id": 28704,
+    "name": "Breadboard",
+    "description": "A full-size breadboard with 63 rows, 10 columns, and two pairs of power rails.",
+    "tags": [],
+    "thumbUrl": "/breadboard.png",
+    "rest_id": "/components/19301",
+    "footprint": {
+      "name": "no footprint",
+      "id": 116648
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starter7Segment"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Introducing-the-Breadboard/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Multiple-LEDs-Breadboards-With-Arduino-in-Tinkerca/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/Your-First-Experiments/"
+      }
+    }
+  },
+  {
+    "id": 28788,
+    "name": "Breadboard Mini",
+    "description": "A quarter-size breadboard with 17 rows and 10 columns.",
+    "tags": [],
+    "thumbUrl": "/breadboardMini.png",
+    "rest_id": "/components/878779",
+    "footprint": {
+      "name": "no footprint",
+      "id": 116842
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoMoisture"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Introducing-the-Breadboard/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Multiple-LEDs-Breadboards-With-Arduino-in-Tinkerca/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/Your-First-Experiments/"
+      }
+    }
+  },
+  {
+    "id": 27268,
+    "name": "Breadboard Small",
+    "description": "A half-size breadboard with 30 rows, 10 columns, and two pairs of power rails.",
+    "tags": [],
+    "thumbUrl": "/breadboardSmall.png",
+    "rest_id": "/components/822371",
+    "footprint": {
+      "name": "no footprint",
+      "id": 111211
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoToneKeyboard"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Introducing-the-Breadboard/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Multiple-LEDs-Breadboards-With-Arduino-in-Tinkerca/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/Your-First-Experiments/"
+      }
+    }
+  },
+  {
+    "id": 17910,
+    "name": "Capacitor",
+    "description": "Stores and releases electrical energy in a circuit.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/capacitor.png",
+    "rest_id": "/components/4",
+    "footprint": {
+      "name": "C1206K",
+      "id": 57752
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicCeramicCapacitor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Capacitors-2/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/circuit-playground-c-is-for-capacitor"
+      }
+    }
+  },
+  {
+    "id": 17911,
+    "name": "Polarized Capacitor",
+    "description": "A direction capacitor used to store and release electric energy in a circuit.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/capacitorPolarized.png",
+    "rest_id": "/components/5",
+    "footprint": {
+      "name": "E45-21",
+      "id": 57950
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicPolarizedCapacitor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Capacitors-2/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/circuit-playground-c-is-for-capacitor"
+      }
+    }
+  },
+  {
+    "id": 17914,
+    "name": "Diode",
+    "description": "Allows electricity to flow in only one direction.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/diode.png",
+    "rest_id": "/components/6",
+    "footprint": {
+      "name": "P6-15",
+      "id": 58320
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicDiode"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Diodes/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/circuit-playground-d-is-for-diode?view=all"
+      }
+    }
+  },
+  {
+    "id": 28708,
+    "name": "Zener Diode",
+    "description": "Like a regular diode but lets current flow in reverse if the Zener voltage is reached.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/diodeZener.png",
+    "rest_id": "/components/1538",
+    "footprint": {
+      "name": "DIODE-ZENER",
+      "id": 116655
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicZenerDiode"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Diodes/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.evilmadscientist.com/2012/basics-introduction-to-zener-diodes/"
+      }
+    }
+  },
+  {
+    "id": 35130,
+    "name": "DIP Switch DPST",
+    "description": "A single DIP switch.",
+    "tags": [
+      "input",
+      "button"
+    ],
+    "thumbUrl": "/dipSwitchDPST.png",
+    "rest_id": "/components/1262104",
+    "footprint": {
+      "name": "DIP Switch SPDT",
+      "id": 146812
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicDIPDPST"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://uk.rs-online.com/web/content/discovery/ideas-and-advice/dip-switches-guide"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.grayhill.com/documents/78-Datasheet"
+      }
+    }
+  },
+  {
+    "id": 35401,
+    "name": "DIP Switch SPST x 4",
+    "description": "Contains 4 individual switches.",
+    "tags": [
+      "input",
+      "button"
+    ],
+    "thumbUrl": "/dipSwitchSPSTx4.png",
+    "rest_id": "/components/1273797",
+    "footprint": {
+      "name": "DIP Switch 4",
+      "id": 148342
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterDIPSPSTx4"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://uk.rs-online.com/web/content/discovery/ideas-and-advice/dip-switches-guide"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.grayhill.com/documents/78-Datasheet"
+      }
+    }
+  },
+  {
+    "id": 35402,
+    "name": "DIP Switch SPST x 6",
+    "description": "Contains 6 individual switches.",
+    "tags": [
+      "input",
+      "button"
+    ],
+    "thumbUrl": "/dipSwitchSPSTx6.png",
+    "rest_id": "/components/1285762",
+    "footprint": {
+      "name": "DIP Switch 6",
+      "id": 148343
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterDIPSPSTx6"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://uk.rs-online.com/web/content/discovery/ideas-and-advice/dip-switches-guide"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.grayhill.com/documents/78-Datasheet"
+      }
+    }
+  },
+  {
+    "id": 31738,
+    "name": "7 Segment Display",
+    "description": "A single 7-segment LED for displaying a number of letter.",
+    "tags": [
+      "output",
+      "digit",
+      "number",
+      "led",
+      "light"
+    ],
+    "thumbUrl": "/display7SegmentCommonAnode.png",
+    "rest_id": "/components/1019086",
+    "footprint": {
+      "name": "5011",
+      "id": 129710
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starter7Segment"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.allaboutcircuits.com/projects/interface-a-seven-segment-display-to-an-arduino/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "http://www.kingbrightusa.com/images/catalog/SPEC/SA56-11SRWA.pdf"
+      }
+    }
+  },
+  {
+    "id": "display7SegmentI2C",
+    "name": "7-Segment Clock Display",
+    "description": "A 4-digit 7-segment LED display controlled by I2C.",
+    "tags": [
+      "output",
+      "display",
+      "i2c",
+      "led"
+    ],
+    "thumbUrl": "/display7SegmentI2C.png",
+    "rest_id": "/components/display7SegmentI2C",
+    "footprint": {
+      "name": "display7SegmentI2C",
+      "id": "display7SegmentI2C"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoVoltageMeter"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/adafruit-led-backpack?view=all#0-dot-56-seven-segment-backpack"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://github.com/adafruit/Adafruit-LED-Backpacks#readme"
+      }
+    }
+  },
+  {
+    "id": 28098,
+    "name": "LCD 16 x 2",
+    "description": "A Liquid Crystal Display capable of displaying two lines of 16 characters.",
+    "tags": [
+      "output",
+      "display"
+    ],
+    "thumbUrl": "/displayLCD16x2.png",
+    "rest_id": "/components/808494",
+    "footprint": {
+      "name": "LCD 16 x 2",
+      "id": 113878
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoLCD"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/character-lcds?view=all"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.arduino.cc/documents/datasheets/LCDscreen.PDF"
+      }
+    }
+  },
+  {
+    "id": "displayLCD16x2I2C",
+    "name": "LCD 16 x 2 (I2C)",
+    "description": "A Liquid Crystal Display capable of displaying two lines of 16 characters.",
+    "tags": [
+      "output",
+      "display",
+      "i2c"
+    ],
+    "thumbUrl": "/displayLCD16x2I2C.png",
+    "rest_id": "/components/displayLCD16x2I2C",
+    "footprint": {
+      "name": "LCD 16 x 2",
+      "id": "displayLCD16x2I2C"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoLCDI2C"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/i2c-spi-lcd-backpack?view=all"
+      },
+      "%5": {
+        "type": "link",
+        "url": "http://Adafruit-I2C-SPI-LCD-Backpack-PCB"
+      }
+    }
+  },
+  {
+    "id": 48698,
+    "name": "Function Generator",
+    "description": "Electronic test equipment that generates various voltage waveforms.",
+    "tags": [
+      "instrument",
+      "voltage",
+      "supply",
+      "oscillator"
+    ],
+    "thumbUrl": "/functionGenerator.png",
+    "rest_id": "/components/2256788",
+    "footprint": {
+      "name": "Function generator",
+      "id": 209278
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterFunctionGenerator"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.electronics-notes.com/articles/test-methods/signal-generators/function-generator.php"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=20pMUCnX4hA&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=14"
+      }
+    }
+  },
+  {
+    "id": 28789,
+    "name": "8 Pin Header",
+    "description": "A 8-pin header with 0.1\" header spacing.",
+    "tags": [
+      "connector",
+      "male",
+      "female"
+    ],
+    "thumbUrl": "/header8pin.png",
+    "rest_id": "/components/1495",
+    "footprint": {
+      "name": "1X08",
+      "id": 116859
+    }
+  },
+  {
+    "id": 28716,
+    "name": "Quad NAND gate",
+    "description": "Four logic gates that each have a HIGH output when any of their inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC00",
+      "7400"
+    ],
+    "thumbUrl": "/ic74HC00.png",
+    "rest_id": "/components/161369",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116696
+    }
+  },
+  {
+    "id": 28717,
+    "name": "Quad NOR gate",
+    "description": "Four logic gates that each have a HIGH output when all of their inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC02",
+      "7402"
+    ],
+    "thumbUrl": "/ic74HC02.png",
+    "rest_id": "/components/161453",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116698
+    }
+  },
+  {
+    "id": 28718,
+    "name": "Hex Inverter",
+    "description": "Six inverting (NOT) logic gates.",
+    "tags": [
+      "logic",
+      "74HC04",
+      "7404"
+    ],
+    "thumbUrl": "/ic74HC04.png",
+    "rest_id": "/components/165074",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116701
+    }
+  },
+  {
+    "id": 28719,
+    "name": "Quad AND gate",
+    "description": "Four logic gates that each have a HIGH output when all of their inputs are HIGH.",
+    "tags": [
+      "logic",
+      "74HC08",
+      "7408"
+    ],
+    "thumbUrl": "/ic74HC08.png",
+    "rest_id": "/components/165093",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116702
+    }
+  },
+  {
+    "id": 28720,
+    "name": "Triple 3-Input NAND gate",
+    "description": "Three logic gates that each have a HIGH output when any of their 3 inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC10",
+      "7410"
+    ],
+    "thumbUrl": "/ic74HC10.png",
+    "rest_id": "/components/165208",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116705
+    }
+  },
+  {
+    "id": 28721,
+    "name": "Triple 3-Input AND gate",
+    "description": "Three logic gates that each have a HIGH output when all of their 3 inputs are HIGH.",
+    "tags": [
+      "logic",
+      "74HC11",
+      "7411"
+    ],
+    "thumbUrl": "/ic74HC11.png",
+    "rest_id": "/components/165230",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116707
+    }
+  },
+  {
+    "id": 28733,
+    "name": "Quad NAND Schmitt Trigger",
+    "description": "Four logic gates each with HIGH output when any of their Schmitt trigger inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC132",
+      "74132"
+    ],
+    "thumbUrl": "/ic74HC132.png",
+    "rest_id": "/components/165500",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116730
+    }
+  },
+  {
+    "id": 28722,
+    "name": "Inverting Schmitt Trigger",
+    "description": "Six inverting (NOT) logic gates with Schmitt trigger inputs.",
+    "tags": [
+      "logic",
+      "74HC14",
+      "7414"
+    ],
+    "thumbUrl": "/ic74HC14.png",
+    "rest_id": "/components/165249",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116709
+    }
+  },
+  {
+    "id": 28724,
+    "name": "Dual 4-Input NAND gate",
+    "description": "Two logic gates that each have a HIGH output when any of their 4 inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC20",
+      "7420"
+    ],
+    "thumbUrl": "/ic74HC20.png",
+    "rest_id": "/components/165313",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116714
+    }
+  },
+  {
+    "id": 28725,
+    "name": "Dual 4-Input AND gate",
+    "description": "Two logic gates that each have a HIGH output when all of their 4 inputs are HIGH.",
+    "tags": [
+      "logic",
+      "74HC21",
+      "7421"
+    ],
+    "thumbUrl": "/ic74HC21.png",
+    "rest_id": "/components/165341",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116716
+    }
+  },
+  {
+    "id": 28726,
+    "name": "Triple 3-Input NOR gate",
+    "description": "Three logic gates that each have a HIGH output when all of their 3 inputs are LOW.",
+    "tags": [
+      "logic",
+      "74HC27",
+      "7427"
+    ],
+    "thumbUrl": "/ic74HC27.png",
+    "rest_id": "/components/165357",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116719
+    }
+  },
+  {
+    "id": "ic74hc283",
+    "name": "4-Bit Adder",
+    "description": "A binary adder.",
+    "tags": [
+      "logic",
+      "74HC283",
+      "74283"
+    ],
+    "thumbUrl": "/ic74HC283.png",
+    "rest_id": "/components/ic74hc283",
+    "footprint": {
+      "name": "DIP16",
+      "id": "ic74hc283"
+    }
+  },
+  {
+    "id": 28727,
+    "name": "Quad OR gate",
+    "description": "Four logic gates that each have a HIGH output when either of their inputs are HIGH.",
+    "tags": [
+      "logic",
+      "74HC32",
+      "7432"
+    ],
+    "thumbUrl": "/ic74HC32.png",
+    "rest_id": "/components/165373",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116721
+    }
+  },
+  {
+    "id": 31599,
+    "name": "Johnson Decade Counter",
+    "description": "Toggles each of 10 outputs HIGH in sequence.",
+    "tags": [
+      "logic",
+      "memory",
+      "74HC4017",
+      "744017"
+    ],
+    "thumbUrl": "/ic74HC4017.png",
+    "rest_id": "/components/1009209",
+    "footprint": {
+      "name": "DIP16",
+      "id": 129343
+    }
+  },
+  {
+    "id": 28715,
+    "name": "8-Bit Shift Register",
+    "description": "Allows you to add additional outputs to a micronctroller.",
+    "tags": [
+      "logic",
+      "memory",
+      "74HC595",
+      "74595"
+    ],
+    "thumbUrl": "/ic74HC595.png",
+    "rest_id": "/components/165539",
+    "footprint": {
+      "name": "DIP16",
+      "id": 116695
+    }
+  },
+  {
+    "id": 28729,
+    "name": "Dual J-K Flip-Flop",
+    "description": "Dual JK flip-flop with reset. Negative-edge trigger.",
+    "tags": [
+      "logic",
+      "memory",
+      "74HC73",
+      "7473"
+    ],
+    "thumbUrl": "/ic74HC73.png",
+    "rest_id": "/components/165407",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116723
+    }
+  },
+  {
+    "id": 28730,
+    "name": "Dual D Flip-Flop",
+    "description": "Two D-type flip-flops with set and reset. Positive edge trigger.",
+    "tags": [
+      "logic",
+      "memory",
+      "74HC74",
+      "7474"
+    ],
+    "thumbUrl": "/ic74HC74.png",
+    "rest_id": "/components/165386",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116725
+    }
+  },
+  {
+    "id": "ic74hc75",
+    "name": "4-Bit Latch",
+    "description": "A 4-bit binary latch.",
+    "tags": [
+      "logic",
+      "74HC75",
+      "7475"
+    ],
+    "thumbUrl": "/ic74HC75.png",
+    "rest_id": "/components/ic74hc75",
+    "footprint": {
+      "name": "DIP16",
+      "id": "ic74hc75"
+    }
+  },
+  {
+    "id": 28731,
+    "name": "Quad XOR gate",
+    "description": "Four logic gates that each have a HIGH output when only one of their inputs are HIGH.",
+    "tags": [
+      "logic",
+      "74HC86",
+      "7486"
+    ],
+    "thumbUrl": "/ic74HC86.png",
+    "rest_id": "/components/165436",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116727
+    }
+  },
+  {
+    "id": 28732,
+    "name": "4-Bit Binary Counter",
+    "description": "Used for counting up in binary.",
+    "tags": [
+      "logic",
+      "74HC93",
+      "7493"
+    ],
+    "thumbUrl": "/ic74HC93.png",
+    "rest_id": "/components/165456",
+    "footprint": {
+      "name": "DIP14",
+      "id": 116728
+    }
+  },
+  {
+    "id": 29726,
+    "name": "7-Segment Decoder",
+    "description": "Drives LED segments to illuminate numbers on a 7-segment display.",
+    "tags": [
+      "logic",
+      "CD4511"
+    ],
+    "thumbUrl": "/icCD4511.png",
+    "rest_id": "/components/911960",
+    "footprint": {
+      "name": "DIP16",
+      "id": 121827
+    }
+  },
+  {
+    "id": 63927,
+    "name": "Dual comparator",
+    "description": "LM393. Consists of two independent voltage comparators.",
+    "tags": [
+      "integrated circuit",
+      "voltage",
+      "LM393"
+    ],
+    "thumbUrl": "/icComparatorDualLM393.png",
+    "rest_id": "/components/3639391",
+    "footprint": {
+      "name": "DIP8",
+      "id": 286515
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterLM393"
+      },
+      "%4": {
+        "type": "link",
+        "url": "http://www.learningaboutelectronics.com/Articles/LM393-voltage-comparator-circuit.php"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.ti.com/lit/ds/symlink/lm393.pdf"
+      }
+    }
+  },
+  {
+    "id": 56250,
+    "name": "Quad comparator",
+    "description": "The LM339 consists of four voltage comparators, powered by a single supply.",
+    "tags": [
+      "integrated circuit",
+      "voltage",
+      "LM339"
+    ],
+    "thumbUrl": "/icComparatorQuadLM339.png",
+    "rest_id": "/components/2110730",
+    "footprint": {
+      "name": "DIL14",
+      "id": 248005
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterGasSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "http://www.learningaboutelectronics.com/Articles/LM339-quad-voltage-comparator-circuit.php"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.ti.com/lit/ds/symlink/lm339.pdf"
+      }
+    }
+  },
+  {
+    "id": 27263,
+    "name": "H-bridge Motor Driver",
+    "description": "Capable of running two DC motors or one bi-polar or uni-polar stepper motor.",
+    "tags": [
+      "power control",
+      "L293D"
+    ],
+    "thumbUrl": "/icHBridgeL293D.png",
+    "rest_id": "/components/822167",
+    "footprint": {
+      "name": "L293D DIP16",
+      "id": 112326
+    }
+  },
+  {
+    "id": 28713,
+    "name": "741 Operational Amplifier",
+    "description": "Used to amplify or filter analog signals.",
+    "tags": [
+      "integrated circuit",
+      "isolate",
+      "isolator",
+      "741"
+    ],
+    "thumbUrl": "/icOperationalAmplifier741.png",
+    "rest_id": "/components/217554",
+    "footprint": {
+      "name": "SOIC8",
+      "id": 116692
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starter741OpAmp"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.electronicshub.org/ic-741-op-amp-basics/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=ySQxyToxa_o"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://www.ti.com/lit/ds/symlink/lm741.pdf"
+      }
+    }
+  },
+  {
+    "id": 27266,
+    "name": "Optocoupler",
+    "description": "Transfers signals between two circuits using light.",
+    "tags": [
+      "integrated circuit",
+      "isolate",
+      "isolator",
+      "4N35"
+    ],
+    "thumbUrl": "/icOptocoupler4N35.png",
+    "rest_id": "/components/804913",
+    "footprint": {
+      "name": "dip6 4N35",
+      "id": 111209
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starter4N35"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.electronics-tutorials.ws/blog/optocoupler.html"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.onsemi.com/download/data-sheet/pdf/4n35-d.pdf"
+      }
+    }
+  },
+  {
+    "id": "icPCF8574",
+    "name": "8-port I2C expander",
+    "description": "Allows you to add additional inputs or outputs to a microcontroller.",
+    "thumbUrl": "/icPCF8574.png",
+    "rest_id": "/components/icPCF8574",
+    "footprint": {
+      "name": "8-port I2C expander",
+      "id": "icPCF8574"
+    },
+    "tags": [
+      "port",
+      "expander",
+      "i2c",
+      "pcf8574"
+    ]
+  },
+  {
+    "id": 28711,
+    "name": "Timer",
+    "description": "General-purpose single bipolar timer.",
+    "tags": [
+      "integrated circuit",
+      "oscillator",
+      "555"
+    ],
+    "thumbUrl": "/icTimer555.png",
+    "rest_id": "/components/217477",
+    "footprint": {
+      "name": "DIP8",
+      "id": 116689
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starter555"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/getting-to-know-the-555"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-555-timer"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.instructables.com/Integrated-Circuits-1/"
+      }
+    }
+  },
+  {
+    "id": 46936,
+    "name": "Dual Timer",
+    "description": "Combines two 555 timers in one package.",
+    "tags": [
+      "integrated circuit",
+      "oscillator",
+      "556"
+    ],
+    "thumbUrl": "/icTimer556.png",
+    "rest_id": "/components/2110632",
+    "footprint": {
+      "name": "DIL14",
+      "id": 202580
+    }
+  },
+  {
+    "id": 17913,
+    "name": "Inductor",
+    "description": "Resists change in current flow.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/inductor.png",
+    "rest_id": "/components/13",
+    "footprint": {
+      "name": "0207/10",
+      "id": 58208
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicInductor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Inductors/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-inductance"
+      }
+    }
+  },
+  {
+    "id": 33016,
+    "name": "IR remote",
+    "description": "A remote control that emits IR signals that can be decoded using an IR sensor.",
+    "tags": [
+      "output",
+      "infrared"
+    ],
+    "thumbUrl": "/infraredRemoteControl.png",
+    "rest_id": "/components/1111690",
+    "footprint": {
+      "name": "dummy",
+      "id": 138097
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%2": {
+        "type": "component",
+        "id": "starterArduinoInfraredReceiver"
+      },
+      "%3": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/ir-sensor?view=all"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://wiki.dfrobot.com/IR_Kit_SKU_DFR0107_"
+      }
+    }
+  },
+  {
+    "id": 47214,
+    "name": "Keypad 4x4",
+    "description": "A 16-button keypad with digits 0-9, letters A-D, and the * and # symbols.",
+    "tags": [
+      "input",
+      "switch",
+      "button"
+    ],
+    "thumbUrl": "/keypad.png",
+    "rest_id": "/components/2133889",
+    "footprint": {
+      "name": "1x8 header",
+      "id": 203761
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduino4x4Keypad"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://playground.arduino.cc/Code/Keypad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/matrix-keypad?view=all"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/assets/f/f/a/5/0/DS-16038.pdf"
+      }
+    }
+  },
+  {
+    "id": 17916,
+    "name": "LED",
+    "description": "Light-Emitting Diode that lights up when electricity passes through it in the correct direction.",
+    "tags": [
+      "output",
+      "light",
+      "diode",
+      "display"
+    ],
+    "thumbUrl": "/led.png",
+    "rest_id": "/components/2942",
+    "footprint": {
+      "name": "LED5MM",
+      "id": 58422
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicLEDLightUp"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/LEDs-Lesson/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Ohms-Law-4/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-led-series-resistor"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=E2WcaJySVuw&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=8"
+      }
+    }
+  },
+  {
+    "id": 17917,
+    "name": "LED RGB",
+    "description": "A type of LED that combines Red, Blue, and Green to produce any color.",
+    "tags": [
+      "output",
+      "light",
+      "diode",
+      "display"
+    ],
+    "thumbUrl": "/ledRGB.png",
+    "rest_id": "/components/19297",
+    "footprint": {
+      "name": "5MM-RGB-LED",
+      "id": 58456
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicRGBLED"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/RGB-LED-Color-Mixing-With-Arduino-in-Tinkercad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.kingbrightusa.com/images/catalog/SPEC/WP154A4SUREQBFZGC.pdf"
+      }
+    }
+  },
+  {
+    "id": 28714,
+    "name": "Light bulb",
+    "description": "A 12V / 3W incadescent light bulb.",
+    "tags": [
+      "output",
+      "display"
+    ],
+    "thumbUrl": "/lightBulb.png",
+    "rest_id": "/components/373344",
+    "footprint": {
+      "name": "2 pin",
+      "id": 116693
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterLightBulb"
+      },
+      "%4": {
+        "type": "link",
+        "url": "http://instructables.com/Light-Bulbs/"
+      }
+    }
+  },
+  {
+    "id": "microbitid",
+    "name": "micro:bit",
+    "description": "A programmable board you can use to build interactive circuits.",
+    "tags": [
+      "microbit"
+    ],
+    "thumbUrl": "/microbit.png",
+    "rest_id": "/components/microbit",
+    "footprint": {
+      "name": "micro:bit",
+      "id": "microbit"
+    }
+  },
+  {
+    "id": "microbitBreakoutid",
+    "name": "micro:bit with Breakout",
+    "description": "A programmable board you can use to build interactive circuits, with a breakout board for easy connection to a breadboard.",
+    "tags": [
+      "microbit"
+    ],
+    "thumbUrl": "/microbitBreakout.png",
+    "rest_id": "/components/microbitBreakout",
+    "footprint": {
+      "name": "micro:bit with Breakout",
+      "id": "microbitBreakout"
+    }
+  },
+  {
+    "id": 28256,
+    "name": "DC Motor",
+    "description": "A motor, which converts electrical energy into mechanical energy.",
+    "tags": [
+      "output",
+      "motion"
+    ],
+    "thumbUrl": "/motorDCArduinoKit.png",
+    "rest_id": "/components/858399",
+    "footprint": {
+      "name": "Motor Connector 2.5mm holes",
+      "id": 114158
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicDCMotor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Motors-and-Motion/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.arduino.cc/documents/datasheets/DCmotor.PDF"
+      }
+    }
+  },
+  {
+    "id": 36242,
+    "name": "DC Motor with encoder",
+    "description": "An Actobotics 3-12V planetary gear motor with encoder.",
+    "tags": [
+      "output",
+      "motion",
+      "rotary",
+      "position"
+    ],
+    "thumbUrl": "/motorDCEncoderSmall.png",
+    "rest_id": "/components/1351326",
+    "footprint": {
+      "name": "The Unnamed Footprint",
+      "id": 153670
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoMotorEncoderSmaller"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.encoder.com/article-what-is-an-encoder"
+      }
+    }
+  },
+  {
+    "id": 330000,
+    "name": "Hobby Gearmotor",
+    "description": "A geared motor that is often used to drive robot wheels.",
+    "tags": [
+      "output",
+      "motion",
+      "spin"
+    ],
+    "thumbUrl": "/motorDCHobbyGear.png",
+    "rest_id": "/components/3300000",
+    "footprint": {
+      "name": "Motor Connector 2.5mm holes",
+      "id": 330000
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterCircuitAssemblySpin"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.sparkfun.com/products/13302"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/datasheets/Robotics/DG01D.jpg"
+      }
+    }
+  },
+  {
+    "id": 71005,
+    "name": "Vibration Motor",
+    "description": "A motor that vibrates when powered.",
+    "tags": [
+      "output",
+      "motion",
+      "vibrate",
+      "move",
+      "wiggle"
+    ],
+    "thumbUrl": "/motorVibration.png",
+    "rest_id": "/components/311892",
+    "footprint": {
+      "name": "dummy",
+      "id": 311892
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterCircuitAssemblyMove"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Vibrating-Motors/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/The-Move-Circuit-Assembly/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://cdn-shop.adafruit.com/product-files/1201/P1012_datasheet.pdf"
+      }
+    }
+  },
+  {
+    "id": 28709,
+    "name": "Multimeter",
+    "description": "A tool for measuring voltage, current, and resistance in your circuit.",
+    "tags": [
+      "instrument",
+      "voltage",
+      "current",
+      "resistance",
+      "measure"
+    ],
+    "thumbUrl": "/multimeter.png",
+    "rest_id": "/components/19269",
+    "footprint": {
+      "name": "no footprint",
+      "id": 116662
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicTemperatureSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/multimeters?view=all"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.sparkfun.com/tutorials/how-to-use-a-multimeter/all"
+      }
+    }
+  },
+  {
+    "id": 17927,
+    "name": "Oscilloscope",
+    "description": "Electronic test equipment for measuring output signals.",
+    "tags": [
+      "instrument",
+      "measure",
+      "voltage",
+      "scope"
+    ],
+    "thumbUrl": "/oscilloscope.png",
+    "rest_id": "/components/195586",
+    "footprint": {
+      "name": "no footprint",
+      "id": 58630
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoPWM"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.sparkfun.com/tutorials/how-to-use-an-oscilloscope/all"
+      }
+    }
+  },
+  {
+    "id": 28734,
+    "name": "Photodiode",
+    "description": "Convert light to electric current.",
+    "tags": [
+      "input",
+      "light",
+      "detector",
+      "sensor"
+    ],
+    "thumbUrl": "/photoDiode.png",
+    "rest_id": "/components/19404",
+    "footprint": {
+      "name": "LED5MM",
+      "id": 116732
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoPhotodiode"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/articles/the-basics-of-photodiodes-and-phototransistors-and-how-to-apply-them"
+      }
+    }
+  },
+  {
+    "id": 28712,
+    "name": "Photoresistor",
+    "description": "A sensor whose resistance changes based on the amount of light it senses.",
+    "tags": [
+      "input",
+      "light",
+      "detector",
+      "sensor"
+    ],
+    "thumbUrl": "/photoResistor.png",
+    "rest_id": "/components/19285",
+    "footprint": {
+      "name": "LDR",
+      "id": 116691
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicDCMotor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Light-Sensor-Photoresistor-Arduino-Tinkercad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/photocells"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/SEN-09088.pdf"
+      }
+    }
+  },
+  {
+    "id": 33961,
+    "name": "Ambient Light Sensor [Phototransistor]",
+    "description": "Uses ambient light to control the base of an internal NPN transistor.",
+    "tags": [
+      "input",
+      "light",
+      "detector",
+      "sensor"
+    ],
+    "thumbUrl": "/photoTransistor.png",
+    "rest_id": "/components/1172639",
+    "footprint": {
+      "name": "Phototransistor",
+      "id": 142078
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicPhototransistor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/articles/the-basics-of-photodiodes-and-phototransistors-and-how-to-apply-them"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://media.digikey.com/pdf/Data%20Sheets/Everlight%20PDFs/ALS-PT243-3C,L177.pdf"
+      }
+    }
+  },
+  {
+    "id": 28211,
+    "name": "Piezo",
+    "description": "A type of buzzer that makes noise at different frequencies.",
+    "tags": [
+      "output",
+      "sound",
+      "speaker",
+      "buzzer"
+    ],
+    "thumbUrl": "/piezo.png",
+    "rest_id": "/components/808228",
+    "footprint": {
+      "name": "PIEZO 22mm DIAMETER",
+      "id": 114067
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoToneKeyboard"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://docs.arduino.cc/built-in-examples/sensors/Knock"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.arduino.cc/en/Tutorial/BuiltInExamples/toneMelody"
+      }
+    }
+  },
+  {
+    "id": 14416,
+    "name": "Potentiometer",
+    "description": "A type of resistor whose resistance changes at the turn of a knob.",
+    "tags": [
+      "input",
+      "variable",
+      "resistor",
+      "knob",
+      "dial"
+    ],
+    "thumbUrl": "/potentiometer.png",
+    "rest_id": "/components/19246",
+    "footprint": {
+      "name": "TRIM_POT_PTH",
+      "id": 45547
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicLEDDimmer"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Arduino-Potentiometer-Analog-Input-Tinkercad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Resistors/#step6"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/make-it-change-potentiometers?view=all"
+      }
+    }
+  },
+  {
+    "id": 27571,
+    "name": "Power Supply",
+    "description": "Electronic test equipment for supplying power to your circuit.",
+    "tags": [
+      "instrument",
+      "voltage"
+    ],
+    "thumbUrl": "/powerSupply.png",
+    "rest_id": "/components/838973",
+    "footprint": {
+      "name": "Power Header 0.1\" through hole 3",
+      "id": 111724
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterPowerSupply"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/power-supplies"
+      }
+    }
+  },
+  {
+    "id": 34360,
+    "name": "Pushbutton",
+    "description": "A switch that closes a circuit while pressed.",
+    "tags": [
+      "input",
+      "switch",
+      "press",
+      "key"
+    ],
+    "thumbUrl": "/pushButton.png",
+    "rest_id": "/components/1201085",
+    "footprint": {
+      "name": "TACTILE-PTH",
+      "id": 144786
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoButton"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Digital-Input-With-a-Pushbutton-With-Arduino-in-Ti/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.arduino.cc/documents/datasheets/Button.pdf"
+      }
+    }
+  },
+  {
+    "id": 48953,
+    "name": "3.3V Regulator [LD1117V33]",
+    "description": "Used to provide a fixed 3.3V output voltage.",
+    "tags": [
+      "power control",
+      "voltage"
+    ],
+    "thumbUrl": "/regulator3V.png",
+    "rest_id": "/components/2276833",
+    "footprint": {
+      "name": "TO220",
+      "id": 212156
+    }
+  },
+  {
+    "id": 48952,
+    "name": "5V Regulator [LM7805]",
+    "description": "Used to provide a fixed 5V output voltage.",
+    "tags": [
+      "power control",
+      "voltage"
+    ],
+    "thumbUrl": "/regulator5V.png",
+    "rest_id": "/components/2276719",
+    "footprint": {
+      "name": "TO220",
+      "id": 212155
+    }
+  },
+  {
+    "id": 29956,
+    "name": "Relay DPDT",
+    "description": "Miniature 5V DPDT power relay",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/relayDPDT.png",
+    "rest_id": "/components/918867",
+    "footprint": {
+      "name": "DIL16",
+      "id": 122164
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicRelayDPDT"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.campuscomponent.com/blogs/post/types-of-relays-and-how-to-use-them-spdt-dpdt-and-solid-state-relay"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://datasheetspdf.com/pdf/552658/KEST/KS2E-M-DC5/1"
+      }
+    }
+  },
+  {
+    "id": 29959,
+    "name": "Relay SPDT",
+    "description": "A 5V SPDT power relay for switching between two circuits.",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/relaySPDTBlack.png",
+    "rest_id": "/components/920272",
+    "footprint": {
+      "name": "DIL12",
+      "id": 122167
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicRelaySPDT"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.campuscomponent.com/blogs/post/types-of-relays-and-how-to-use-them-spdt-dpdt-and-solid-state-relay"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.jameco.com/Jameco/Products/ProdDS/174450.pdf"
+      }
+    }
+  },
+  {
+    "id": 16511,
+    "name": "Resistor",
+    "description": "Restricts the flow of electricity in a circuit, reducing the voltage and current as a result.",
+    "tags": [
+      "general"
+    ],
+    "thumbUrl": "/resistor.png",
+    "rest_id": "/components/3",
+    "footprint": {
+      "name": "R6332W",
+      "id": 53184
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicResistor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Resistors/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Ohms-Law-4/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.digikey.com/en/resources/conversion-calculators/conversion-calculator-resistor-color-code"
+      }
+    }
+  },
+  {
+    "id": "sensorFlexid",
+    "name": "Flex Sensor",
+    "description": "A sensor whose resistance changes as it bends.",
+    "tags": [
+      "bend",
+      "resistor"
+    ],
+    "thumbUrl": "/sensorFlex.png",
+    "rest_id": "/components/sensorFlex",
+    "footprint": {
+      "name": "Flex Sensor",
+      "id": "sensorFlex"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoFlexSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.sparkfun.com/tutorials/flex-sensor-hookup-guide/all"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/assets/9/5/b/f/7/FLEX_SENSOR_-_SPECIAL_EDITION_DATA_SHEET_v2019__Rev_A_.pdf"
+      }
+    }
+  },
+  {
+    "id": "sensorForceid",
+    "name": "Force Sensor",
+    "description": "A sensor whose resistance changes based on the amount of force applied.",
+    "tags": [
+      "pressure",
+      "resistor"
+    ],
+    "thumbUrl": "/sensorForce.png",
+    "rest_id": "/components/sensorForce",
+    "footprint": {
+      "name": "Force Sensor",
+      "id": "sensorForce"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoForceSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.sparkfun.com/tutorials/force-sensitive-resistor-hookup-guide"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/assets/8/a/1/2/0/2010-10-26-DataSheet-FSR402-Layout2.pdf"
+      }
+    }
+  },
+  {
+    "id": 53905,
+    "name": "Gas Sensor",
+    "description": "A Winsen gas sensor used to detect gas leaks like carbon monoxide, alcohol, or methane.",
+    "tags": [
+      "input",
+      "measure",
+      "air",
+      "smoke",
+      "alcohol",
+      "methane",
+      "fart"
+    ],
+    "thumbUrl": "/sensorGas.png",
+    "rest_id": "/components/2631264",
+    "footprint": {
+      "name": "MQ-4",
+      "id": 239306
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicGasSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "http://wiring.org.co/learning/basics/airqualitymq135.html"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/datasheets/Sensors/Biometric/MQ-6%20Ver1.3%20-%20Manual.pdf"
+      }
+    }
+  },
+  {
+    "id": 45398,
+    "name": "IR sensor",
+    "description": "Detects IR signals emitted by devices like remote controls.",
+    "tags": [
+      "input",
+      "infrared",
+      "remote"
+    ],
+    "thumbUrl": "/sensorInfrared.png",
+    "rest_id": "/components/1111574",
+    "footprint": {
+      "name": "TSOP41",
+      "id": 196401
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoInfraredReceiver"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/ir-sensor?view=all"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.vishay.com/docs/82737/tssp40xxss1xb.pdf"
+      }
+    }
+  },
+  {
+    "id": 52579,
+    "name": "PIR Sensor",
+    "description": "Passive infrared motion sensor used to sense motion in front of it.",
+    "tags": [
+      "input",
+      "infrared",
+      "motion",
+      "detector"
+    ],
+    "thumbUrl": "/sensorPassiveInfrared.png",
+    "rest_id": "/components/2521120",
+    "footprint": {
+      "name": "PIR Sensor",
+      "id": 234203
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicPIRSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/PIR-Motion-Sensor-With-Arduino-in-Tinkercad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/pir-passive-infrared-proximity-motion-sensor"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.parallax.com/package/pir-sensor-rev-b-product-guide/?ind=1600785426529&filename=555-28027-PIR-Sensor-Prodcut-Doc-v2.2.pdf&wpdmdl=3630&refresh=610b2862bdde31628121186"
+      }
+    }
+  },
+  {
+    "id": "sensorSoilMoistureid",
+    "name": "Soil Moisture Sensor",
+    "description": "A sensor whose signal voltage changes as it gets wet.",
+    "tags": [],
+    "thumbUrl": "/sensorSoilMoisture.png",
+    "rest_id": "/components/sensorSoilMoisture",
+    "footprint": {
+      "name": "Soil Moisture Sensor",
+      "id": "sensorSoilMoisture"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoMoisture"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.sparkfun.com/tutorials/soil-moisture-sensor-hookup-guide"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Arduino-Potentiometer-Analog-Input-Tinkercad/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.sparkfun.com/products/13322"
+      }
+    }
+  },
+  {
+    "id": 27664,
+    "name": "Temperature Sensor [TMP36]",
+    "description": "A sensor that outputs different voltages based on the ambient temperature.",
+    "tags": [
+      "input",
+      "weather"
+    ],
+    "thumbUrl": "/sensorTemperature.png",
+    "rest_id": "/components/822186",
+    "footprint": {
+      "name": "Temp Sensor 3-pin TO-92",
+      "id": 112324
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicTemperatureSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/TMP36-Temperature-Sensor-Arduino-Tinkercad/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/tmp36-temperature-sensor?view=all"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf"
+      }
+    }
+  },
+  {
+    "id": 31873,
+    "name": "Tilt Sensor",
+    "description": "Tilt-sensitive trigger switch. SW200D.",
+    "tags": [
+      "input"
+    ],
+    "thumbUrl": "/sensorTilt.png",
+    "rest_id": "/components/1028782",
+    "footprint": {
+      "name": "Tilt sensor",
+      "id": 132486
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicTiltSensor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/tilt-sensor"
+      }
+    }
+  },
+  {
+    "id": 50340,
+    "name": "Ultrasonic Distance Sensor",
+    "description": "A sensor that uses sound waves to determine how far away an object is from it.",
+    "tags": [
+      "input",
+      "transducer",
+      "measure",
+      "detector",
+      "ping"
+    ],
+    "thumbUrl": "/sensorUltrasonicDistance.png",
+    "rest_id": "/components/2373929",
+    "footprint": {
+      "name": "Ultrasonic Distance Sensor",
+      "id": 219294
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": "howItWorks.gif"
+      },
+      "%2": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%3": {
+        "type": "image",
+        "url": "howToUseIt.gif"
+      },
+      "%4": {
+        "type": "component",
+        "id": "starterArduinoUltrasonicRangeFinder"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Ultrasonic-Distance-Sensor-Arduino-Tinkercad/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://docs.arduino.cc/built-in-examples/sensors/Ping"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://www.parallax.com/package/ping-ultrasonic-distance-sensor-downloads/"
+      }
+    }
+  },
+  {
+    "id": 50341,
+    "name": "Ultrasonic Distance Sensor (4-pin)",
+    "description": "A sensor that uses sound waves to determine how far away an object is from it.",
+    "tags": [
+      "input",
+      "transducer",
+      "measure",
+      "detector",
+      "ping"
+    ],
+    "thumbUrl": "/sensorUltrasonicDistance4Pin.png",
+    "rest_id": "/components/2373929",
+    "footprint": {
+      "name": "Ultrasonic Distance Sensor (4-pin)",
+      "id": 219295
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": "howItWorks.gif"
+      },
+      "%2": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "trig.png",
+          "echo.png"
+        ]
+      },
+      "%3": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%4": {
+        "type": "component",
+        "id": "starterArduinoUltrasonicRangeFinder4Pin"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Ultrasonic-Distance-Sensor-Arduino-Tinkercad/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf"
+      }
+    }
+  },
+  {
+    "id": 17919,
+    "name": "Slideswitch",
+    "description": "A switch with two positions: open or closed.",
+    "tags": [
+      "input",
+      "button"
+    ],
+    "thumbUrl": "/slideSwitch.png",
+    "rest_id": "/components/19255",
+    "footprint": {
+      "name": "SWITCH-SPDT",
+      "id": 58458
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicLEDSwitch"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Switches/"
+      }
+    }
+  },
+  {
+    "id": "solarCellid",
+    "name": "Solar Cell",
+    "description": "A device that converts light into electrical energy.",
+    "tags": [
+      ""
+    ],
+    "thumbUrl": "/solarCell.png",
+    "rest_id": "/components/solarCell",
+    "footprint": {
+      "name": "Solar Cell",
+      "id": "solarCell"
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": {
+        "type": "image",
+        "url": "component.png"
+      },
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterSolarCell"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://www.instructables.com/Solar-Class/"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/collins-lab-solar"
+      }
+    }
+  },
+  {
+    "id": 28784,
+    "name": "Small Signal nMOS Transistor",
+    "description": "Small Signal voltage-controlled transistor.",
+    "tags": [
+      "power control",
+      "mosfet"
+    ],
+    "thumbUrl": "/transistorNMOS.png",
+    "rest_id": "/components/878739",
+    "footprint": {
+      "name": "TO92",
+      "id": 116838
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoSmallSignalNMOS"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=SWiJcfNUYTg&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=7"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://builtin.com/hardware/nmos-transistor"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://www.onsemi.com/pdf/datasheet/mmbf170-d.pdf"
+      }
+    }
+  },
+  {
+    "id": 17924,
+    "name": "nMOS Transistor (MOSFET)",
+    "description": "Large signal voltage controlled transistor.",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/transistorNMOSFET.png",
+    "rest_id": "/components/19260",
+    "footprint": {
+      "name": "TO220",
+      "id": 58627
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterNMOSTransistor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=SWiJcfNUYTg&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=7"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://builtin.com/hardware/nmos-transistor"
+      }
+    }
+  },
+  {
+    "id": 17920,
+    "name": "NPN Transistor (BJT)",
+    "description": "A component used to amplify or switch electronic signals. Commonly used with motors.",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/transistorNPN.png",
+    "rest_id": "/components/114",
+    "footprint": {
+      "name": "TO5",
+      "id": 58468
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterBasicNPN"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Transistors/"
+      }
+    }
+  },
+  {
+    "id": 28785,
+    "name": "Small Signal pMOS Transistor",
+    "description": "Small Signal voltage-controlled transistor.",
+    "tags": [
+      "power control",
+      "mosfet"
+    ],
+    "thumbUrl": "/transistorPMOS.png",
+    "rest_id": "/components/878745",
+    "footprint": {
+      "name": "TO92",
+      "id": 116839
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoSmallSignalPMOS"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=SWiJcfNUYTg&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=7"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://builtin.com/hardware/nmos-transistor"
+      }
+    }
+  },
+  {
+    "id": 18104,
+    "name": "pMOS Transistor (MOSFET)",
+    "description": "Large signal voltage-controlled transistor.",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/transistorPMOSFET.png",
+    "rest_id": "/components/19263",
+    "footprint": {
+      "name": "TO220",
+      "id": 59076
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterArduinoPMOSFET"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.youtube.com/watch?v=SWiJcfNUYTg&list=PLjF7R1fz_OOXWHQhEVEI5Jqf18TQRr5Hu&index=7"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://builtin.com/hardware/nmos-transistor"
+      }
+    }
+  },
+  {
+    "id": 17921,
+    "name": "PNP Transistor (BJT)",
+    "description": "A component used to amplify or switch electronic signals. Commonly used with motors.",
+    "tags": [
+      "power control"
+    ],
+    "thumbUrl": "/transistorPNP.png",
+    "rest_id": "/components/115",
+    "footprint": {
+      "name": "TO92-EBC",
+      "id": 58571
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterPNPTransistor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Transistors/"
+      }
+    }
+  },
+  {
+    "id": 33187,
+    "name": "TIP120",
+    "description": "A NPN Darlington transistor used for switching on high-power electronics like motors.",
+    "tags": [
+      "power control",
+      "transistor",
+      "darlington"
+    ],
+    "thumbUrl": "/transistorTIP120.png",
+    "rest_id": "/components/1125510",
+    "footprint": {
+      "name": "TIP120",
+      "id": 138714
+    },
+    "hasDetail": true,
+    "detailAutoOpenSections": [
+      "Description",
+      "Get started"
+    ],
+    "detailSkipSections": [
+      "Get started"
+    ],
+    "detailRefs": {
+      "%0": null,
+      "%1": {
+        "type": "image",
+        "url": [
+          "power.png",
+          "ground.png",
+          "signal.png"
+        ]
+      },
+      "%2": {
+        "type": "image",
+        "url": "howToUseIt.mp4"
+      },
+      "%3": {
+        "type": "component",
+        "id": "starterTIP120Transistor"
+      },
+      "%4": {
+        "type": "link",
+        "url": "https://learn.adafruit.com/transistors-101"
+      },
+      "%5": {
+        "type": "link",
+        "url": "https://www.instructables.com/Transistors/"
+      },
+      "%6": {
+        "type": "link",
+        "url": "https://adam-meyer.com/arduino/TIP120"
+      },
+      "%7": {
+        "type": "link",
+        "url": "https://cdn-shop.adafruit.com/datasheets/TIP120.pdf"
+      }
+    }
+  },
+  {
+    "id": 28710,
+    "name": "USB standard A",
+    "description": "A type A male standard USB connector.",
+    "tags": [
+      "connector",
+      "power",
+      "supply"
+    ],
+    "thumbUrl": "/usbStandardA.png",
+    "rest_id": "/components/247630",
+    "footprint": {
+      "name": "USB-A-PCB",
+      "id": 116686
+    }
+  }
+]
