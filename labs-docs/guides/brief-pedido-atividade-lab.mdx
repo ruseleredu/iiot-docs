@@ -14,20 +14,19 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 ## Formato do documento (MDX Docusaurus)
 
 - Front matter completo (`id`, `title`, `sidebar_label`, `sidebar_position`, `slug`, `keywords`).
-- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil; diagramas em `mermaid` (requer `@docusaurus/theme-mermaid`).
-- `import CommitPoint from '@site/src/components/CommitPoint';` no topo.
-- Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `<details>` atrás de `:::danger Spoiler`), Checklist.
+- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil.
+- Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `<details>` atrás de `:::danger[Spoiler]`), Checklist.
 - **Regra MDX (crítica):** todo código com `<`, `>`, `{`, `}`, `&` fica em blocos/backticks; **nunca** use esses caracteres nas strings `task="..."` dos CommitPoint (ex.: escreva "citacao e regra horizontal", não "citacao (>) e (---)"). Para _mostrar_ um bloco de código dentro de outro, use **quatro crases** no bloco externo.
 - Nota `:::info` explicando quando o código fica em `setup()` (demonstração única) vs `loop()` (comportamento contínuo). **Só em aulas embarcadas** — omitir quando não houver firmware.
 
 ## Abertura da aula (padrão fixo)
 
 - **Ambiente de desenvolvimento:** não repita comandos de instalação inline. Use os componentes reutilizáveis (fonte única de verdade):
-  - `import {LabSetup, LabLogout} from '@site/src/components/InstructionsSite';`
+  - `import {LabSetup, LabLogout} from '@site/src/components/shared/InstructionsSite';`
   - `<LabSetup />` no **topo** → admonition **"Antes de começar"** (procedimento numerado: instalar → configurar → verificar + verificação rápida `git --version && gh auth status && code -v`).
   - `<LabLogout />` no **fim** → admonition **"Ao terminar"** (logout, importante em máquina de laboratório compartilhada).
   - Distinguir **uma vez por máquina** (config) vs **a cada aula** (verificação).
-- **Âncoras estáveis** no `/lab/intro` (evita link podre ao reescrever títulos): `{#setup}`, `{#git-config}`, `{#verify}`, `{#logout}`.
+- **Âncoras estáveis** no `/labs/intro` (evita link podre ao reescrever títulos): `{/* #setup */}`, `{/* #git-config */}`, `{/* #verify */}`, `{/* #logout */}`.
 - **Clone + entrega:** `<LabTeamMembers labName="labNN" />` (cria/clona o repo do grupo) e `<LabSubmit labName="labNN" />` (envio do link no Moodle). Esses componentes são globais no site (não precisam de `import` no MDX).
 
 ## Wokwi (apenas aulas com circuito)
@@ -48,7 +47,7 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 ## Pontuação (padrão)
 
 - Somar **100 pts** (o autograder normaliza p/ 0–10). Ex.: experimentos ~5 cada, projeto 15–25, desafios ~5 cada. Ajustar conforme o nº de tarefas.
-- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info Pontuação` do fim).
+- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info[Pontuação]` do fim).
 
 ## Correção automática
 
@@ -85,7 +84,7 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 - Código com saída esperada ("preveja antes de rodar"); gabarito testável.
 - Validar o que der: extração dos CommitPoint (soma = 100, sem char proibido em `task`), alinhamento Tn × mensagem, compilação de exemplos, parsing de configs, e — em aulas de Markdown — os checks contra um artefato de exemplo.
 
-````mdx
+```mdx
 # Brief — Pedido de nova atividade de laboratório
 
 Cole este brief junto com o pedido e preencha só o que muda (tema e tarefas). Ele
@@ -102,7 +101,7 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 ## Formato do documento (MDX Docusaurus)
 
 - Front matter completo (`id`, `title`, `sidebar_label`, `sidebar_position`, `slug`, `keywords`).
-- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil; diagramas em `mermaid` (requer `@docusaurus/theme-mermaid`).
+- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil.
 - `import CommitPoint from '@site/src/components/CommitPoint';` no topo.
 - Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `<details>` atrás de `:::danger Spoiler`), Checklist.
 - **Regra MDX (crítica):** todo código com `<`, `>`, `{`, `}`, `&` fica em blocos/backticks; **nunca** use esses caracteres nas strings `task="..."` dos CommitPoint (ex.: escreva "citacao e regra horizontal", não "citacao (>) e (---)"). Para _mostrar_ um bloco de código dentro de outro, use **quatro crases** no bloco externo.
@@ -136,7 +135,7 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 ## Pontuação (padrão)
 
 - Somar **100 pts** (o autograder normaliza p/ 0–10). Ex.: experimentos ~5 cada, projeto 15–25, desafios ~5 cada. Ajustar conforme o nº de tarefas.
-- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info Pontuação` do fim).
+- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info[Pontuação]` do fim).
 
 ## Correção automática
 
@@ -172,4 +171,4 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 - Buscar detalhes de ferramentas que mudam (versões de extensões/plugins, Wokwi, `gh`, CodeRunner/Jobe) antes de afirmar.
 - Código com saída esperada ("preveja antes de rodar"); gabarito testável.
 - Validar o que der: extração dos CommitPoint (soma = 100, sem char proibido em `task`), alinhamento Tn × mensagem, compilação de exemplos, parsing de configs, e — em aulas de Markdown — os checks contra um artefato de exemplo.
-````
+```
