@@ -1,7 +1,7 @@
 ---
 id: git-github-gh
-title: "Lab 00 — Git, GitHub e gh: seu primeiro README em Markdown"
-sidebar_label: "Lab 00 · Git + gh + Markdown"
+title: "Git, GitHub e gh: seu primeiro README em Markdown"
+sidebar_label: "Git + gh + Markdown"
 sidebar_position: 0
 keywords:
   - git
@@ -17,6 +17,31 @@ keywords:
 ---
 
 # Lab 00 — Git, GitHub e gh
+
+<details>
+<summary>🗺️ Mapa de tarefas — 17 tarefas · 100 pts (clique para expandir)</summary>
+
+- **[T1](#t1)** — Salvar evidencias/git-config.txt com user.name e user.email configurados _(5 pts)_
+- **[T2](#t2)** — Criar README.md com um cabecalho H1 e um paragrafo de introducao _(5 pts)_
+- **[T3](#t3)** — Adicionar cabecalhos H2/H3, negrito, italico e codigo inline ao README.md _(6 pts)_
+- **[T4](#t4)** — Adicionar lista nao-ordenada com sublista, lista ordenada e lista de tarefas ao README.md _(6 pts)_
+- **[T5](#t5)** — Adicionar ao menos dois links e uma imagem (badge) ao README.md _(5 pts)_
+- **[T6](#t6)** — Adicionar um bloco de codigo com identificacao de linguagem (ex. bash) ao README.md _(5 pts)_
+- **[T7](#t7)** — Adicionar uma tabela Markdown com cabecalho e ao menos duas linhas ao README.md _(5 pts)_
+- **[T8](#t8)** — Adicionar uma citacao e uma regra horizontal ao README.md _(5 pts)_
+- **[T9](#t9)** — Adicionar um .gitignore que ignora arquivos temporarios e de sistema _(5 pts)_
+- **[T10](#t10)** — Criar branch, fazer merge na main e salvar evidencias/git-branch.txt _(8 pts)_
+- **[T11](#t11)** — Salvar evidencias/gh-auth.txt (login) e evidencias/gh-repo.txt (owner/nome/branch) _(5 pts)_
+- **[T12](#t12)** — Montar o README.md final com sumario de ancoras e todas as secoes integradas _(12 pts)_
+- **[T13](#release)** — Publicar o release v1.0.0 com gh release create _(8 pts)_
+- **[T14](#t14)** — Abrir um pull request com gh e salvar a URL em evidencias/gh-pr.txt _(5 pts)_
+- **[T15](#t15)** — Abrir uma issue com gh e salvar a URL em evidencias/gh-issue.txt _(5 pts)_
+- **[T16](#t16)** — Provocar e resolver um conflito de merge, mantendo as duas versoes em conflito.txt _(5 pts)_
+- **[T17](#t17)** — Usar gh api para confirmar a tag do release e salvar evidencias/gh-api.txt _(5 pts)_
+
+**Total: 100 pts**
+
+</details>
 
 import {
   LabSetup,
@@ -112,6 +137,7 @@ git commit -m "T1: registra identidade do git"
 ```
 
 <CommitPoint
+  id="t1"
   task="Salvar evidencias/git-config.txt com user.name e user.email configurados"
   pontos={5}
   files="evidencias/git-config.txt"
@@ -131,6 +157,7 @@ git commit -m "T2: cria README com titulo e introducao"
 ```
 
 <CommitPoint
+  id="t2"
   task="Criar README.md com um cabecalho H1 e um paragrafo de introducao"
   pontos={5}
   files="README.md"
@@ -165,6 +192,7 @@ git commit -m "T3: adiciona cabecalhos e enfase ao README"
 ```
 
 <CommitPoint
+  id="t3"
   task="Adicionar cabecalhos H2/H3, negrito, italico e codigo inline ao README.md"
   pontos={6}
   files="README.md"
@@ -201,6 +229,7 @@ git commit -m "T4: adiciona listas ao README"
 ```
 
 <CommitPoint
+  id="t4"
   task="Adicionar lista nao-ordenada com sublista, lista ordenada e lista de tarefas ao README.md"
   pontos={6}
   files="README.md"
@@ -225,6 +254,7 @@ git commit -m "T5: adiciona links e um badge ao README"
 ```
 
 <CommitPoint
+  id="t5"
   task="Adicionar ao menos dois links e uma imagem (badge) ao README.md"
   pontos={5}
   files="README.md"
@@ -261,6 +291,7 @@ git commit -m "T6: adiciona bloco de codigo com destaque de linguagem"
 ```
 
 <CommitPoint
+  id="t6"
   task="Adicionar um bloco de codigo com identificacao de linguagem (ex. bash) ao README.md"
   pontos={5}
   files="README.md"
@@ -294,6 +325,7 @@ git commit -m "T7: adiciona uma tabela ao README"
 ```
 
 <CommitPoint
+  id="t7"
   task="Adicionar uma tabela Markdown com cabecalho e ao menos duas linhas ao README.md"
   pontos={5}
   files="README.md"
@@ -317,6 +349,7 @@ git commit -m "T8: adiciona citacao e regra horizontal"
 ```
 
 <CommitPoint
+  id="t8"
   task="Adicionar uma citacao e uma regra horizontal ao README.md"
   pontos={5}
   files="README.md"
@@ -350,6 +383,7 @@ git commit -m "T9: adiciona .gitignore"
 ```
 
 <CommitPoint
+  id="t9"
   task="Adicionar um .gitignore que ignora arquivos temporarios e de sistema"
   pontos={5}
   files=".gitignore"
@@ -385,6 +419,7 @@ git commit -m "T10: integra branch docs na main"
 ```
 
 <CommitPoint
+  id="t10"
   task="Criar branch, fazer merge na main e salvar evidencias/git-branch.txt"
   pontos={8}
   files="evidencias/git-branch.txt"
@@ -411,6 +446,7 @@ repo=ELT85B-N21-2026-2/lab00-grupo-a branch=main
 ```
 
 <CommitPoint
+  id="t11"
   task="Salvar evidencias/gh-auth.txt (login) e evidencias/gh-repo.txt (owner/nome/branch)"
   pontos={5}
   files="evidencias/gh-auth.txt evidencias/gh-repo.txt"
@@ -455,6 +491,7 @@ git push
 ```
 
 <CommitPoint
+  id="t12"
   task="Montar o README.md final com sumario de ancoras e todas as secoes integradas"
   pontos={12}
   files="README.md"
@@ -515,6 +552,7 @@ git push
 ```
 
 <CommitPoint
+  id="t14"
   task="Abrir um pull request com gh e salvar a URL em evidencias/gh-pr.txt"
   pontos={5}
   files="evidencias/gh-pr.txt"
@@ -532,6 +570,7 @@ git push
 ```
 
 <CommitPoint
+  id="t15"
   task="Abrir uma issue com gh e salvar a URL em evidencias/gh-issue.txt"
   pontos={5}
   files="evidencias/gh-issue.txt"
@@ -553,6 +592,7 @@ git push
 ```
 
 <CommitPoint
+  id="t16"
   task="Provocar e resolver um conflito de merge, mantendo as duas versoes em conflito.txt"
   pontos={5}
   files="conflito.txt"
@@ -572,6 +612,7 @@ git push
 ```
 
 <CommitPoint
+  id="t17"
   task="Usar gh api para confirmar a tag do release e salvar evidencias/gh-api.txt"
   pontos={5}
   files="evidencias/gh-api.txt"
