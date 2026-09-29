@@ -2,7 +2,8 @@ import React from 'react';
 // Importa os componentes padrões do Docusaurus
 import MDXComponents from '@theme-original/MDXComponents';
 // Importa o seu componente customizado
-import LabTable from "@site/src/components/LabTable";
+import LabTable from "@site/src/components/shared/LabTable";
+import QuizTable from "@site/src/components/shared/QuizTable";
 import LabTeamMembers from "@site/src/components/shared/LabTeamMembers";
 import LabSubmit from "@site/src/components/LabSubmit";
 import LabFromTemplate from "@site/src/components/LabFromTemplate";
@@ -17,6 +18,7 @@ export default {
     ...MDXComponents,
     // Registra o componente globalmente
     LabTable,
+    QuizTable,
     LabTeamMembers,
     LabSubmit,
     LabFromTemplate,
