@@ -58,7 +58,7 @@ export default function LabTeamMembers({
                             <b>1.</b> Crie e entre na pasta-mãe da disciplina:
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`mkdir "%USERPROFILE%\ELT73A" & cd /d "%USERPROFILE%\ELT73A"`}
+                            {`mkdir "%USERPROFILE%\\${HOMEFOLDER}" && cd /d "%USERPROFILE%\\${HOMEFOLDER}"`}
                         </ThemeCodeBlock>
                         <p>
                             <b>2.</b> Clone e entre no repositório do laboratório:
