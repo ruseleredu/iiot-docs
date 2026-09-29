@@ -1,0 +1,434 @@
+.browser {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", sans-serif;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin: 1rem 0;
+  border: 1px solid #e1e5e9;
+  display: flex;
+  flex-direction: column;
+}
+
+.browserHeader {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #dee2e6;
+  min-height: 28px;
+}
+
+.windowControls {
+  display: flex;
+  gap: 6px;
+}
+
+.windowButton {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.browserTitle {
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  flex: 1;
+  margin: 0 20px;
+}
+
+.browserMenus {
+  width: 60px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.menuDots {
+  font-size: 16px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.navigationBar {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.navButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.navButton {
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #495057;
+  transition: all 0.2s ease;
+  min-width: 32px;
+}
+
+.navButton:hover:not(.disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.navButton.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.addressBar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 0 4px 0 12px;
+  min-height: 32px;
+}
+
+.securityIcon {
+  font-size: 14px;
+  margin-right: 8px;
+  color: #28a745;
+}
+
+.addressInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #495057;
+  background: transparent;
+  padding: 8px 4px;
+}
+
+.addressInput::placeholder {
+  color: #adb5bd;
+}
+
+.goButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.goButton:hover {
+  background: #0056b3;
+}
+
+.browserActions {
+  display: flex;
+  gap: 4px;
+}
+
+.actionButton {
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.browserContent {
+  flex: 1;
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.loadingBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #e9ecef;
+  z-index: 10;
+}
+
+.loadingProgress {
+  height: 100%;
+  background: #007bff;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.browserFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.customContent {
+  padding: 20px;
+  height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.mockPage {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  height: calc(100% - 80px);
+  overflow-y: auto;
+}
+
+.mockHeader {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.mockHeader h1 {
+  color: #212529;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.subtitle {
+  color: #6c757d;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.mockBody {
+  line-height: 1.6;
+}
+
+.mockSection {
+  margin-bottom: 32px;
+}
+
+.mockSection h2 {
+  color: #343a40;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.mockSection p {
+  color: #495057;
+  font-size: 1rem;
+  margin: 0 0 24px 0;
+}
+
+.mockButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.mockButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mockButton:hover {
+  background: #0056b3;
+}
+
+.mockButtonSecondary {
+  background: transparent;
+  color: #007bff;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mockButtonSecondary:hover {
+  background: #007bff;
+  color: white;
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.errorContent h2 {
+  color: #dc3545;
+  margin: 0 0 16px 0;
+}
+
+.errorContent p {
+  margin: 8px 0;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .browser {
+  background-color: #1e2125;
+  border-color: #404448;
+}
+
+[data-theme="dark"] .browserHeader {
+  background: linear-gradient(180deg, #2d3748 0%, #2a2f3a 100%);
+  border-color: #404448;
+}
+
+[data-theme="dark"] .browserTitle {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .menuDots {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .navigationBar {
+  background-color: #2d3748;
+  border-color: #404448;
+}
+
+[data-theme="dark"] .navButton {
+  background: #4a5568;
+  border-color: #5a6572;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .navButton:hover:not(.disabled) {
+  background-color: #5a6572;
+  border-color: #6a7485;
+}
+
+[data-theme="dark"] .addressBar {
+  background: #4a5568;
+  border-color: #5a6572;
+}
+
+[data-theme="dark"] .addressInput {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .addressInput::placeholder {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .actionButton {
+  background: #4a5568;
+  border-color: #5a6572;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .actionButton:hover {
+  background-color: #5a6572;
+  border-color: #6a7485;
+}
+
+[data-theme="dark"] .browserContent {
+  background: #1a202c;
+}
+
+[data-theme="dark"] .mockPage {
+  background: #1a202c;
+}
+
+[data-theme="dark"] .mockHeader h1 {
+  color: #f7fafc;
+}
+
+[data-theme="dark"] .mockSection h2 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .mockSection p {
+  color: #cbd5e0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .browser {
+    margin: 0.5rem 0;
+    border-radius: 6px;
+  }
+
+  .navigationBar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .addressBar {
+    min-width: 200px;
+    flex: 1 1 200px;
+  }
+
+  .mockPage {
+    padding: 20px;
+  }
+
+  .mockHeader h1 {
+    font-size: 2rem;
+  }
+
+  .mockButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mockButton,
+  .mockButtonSecondary {
+    width: 100%;
+    max-width: 200px;
+  }
+}

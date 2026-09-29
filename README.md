@@ -1,0 +1,53 @@
+# docusaurus-shared-components
+docusaurus-shared-components
+
+## Add Remote
+
+```bash
+git remote add shared-components https://github.com/ruseleredu/docusaurus-shared-components.git
+```
+
+## Add Subtrees
+
+```bash
+git subtree add --prefix=src/components/shared shared-components main --squash
+```
+
+## List existing remotes
+
+```bash
+git remote -v
+```
+
+## Pull Updates
+
+```bash
+git subtree pull --prefix=src/components/shared shared-components main --squash
+```
+
+## Push Changes
+
+```bash
+git subtree push --prefix=src/components/shared shared-components main
+```
+
+## Reset all tracked files to match the latest commit:
+
+```bash
+git reset --hard HEAD
+```
+
+## Remove remote
+
+```bash
+git remote remove shared-components
+```
+
+## Add another remote
+
+```bash
+git remote add shared-scripts https://github.com/ruseleredu/docusaurus-shared-scripts.git
+```
+
+---
+
