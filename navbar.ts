@@ -122,11 +122,11 @@ const navbarItems: NavbarItem[] = [
         items: [...quizDropdownItems],
     },
     {
-        to: "/lab/intro", // Link to a page in your LAB docs
+        to: "/labs/intro", // Link to a page in your LAB docs
         label: "LABs",
         type: "dropdown",
         position: "left",
-        activeBaseRegex: `/lab/`, // Highlight when any LAB doc is active
+        activeBaseRegex: `/labs/`, // Highlight when any LAB doc is active
         items: [...labDropdownItems],
     },
     {

@@ -49,14 +49,14 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: (
-      <Link to="/lab/intro">
+      <Link to="/labs/intro">
         Laboratório
       </Link>
     ),
     Svg: require('@site/static/img/factory-svgrepo-com.svg').default,
     description: (
       <>
-        As atividades de <Link to="/lab/intro">laboratório</Link> constituem da aplicação prática dos conteúdos vistos no <Link to="/ead/intro">ensino a distância</Link>. As atividades são realizadas de forma síncrona, com encontros semanais para a realização das atividades práticas, promovendo a interação entre os alunos e a aplicação dos conceitos vistos.
+        As atividades de <Link to="/labs/intro">laboratório</Link> constituem da aplicação prática dos conteúdos vistos no <Link to="/ead/intro">ensino a distância</Link>. As atividades são realizadas de forma síncrona, com encontros semanais para a realização das atividades práticas, promovendo a interação entre os alunos e a aplicação dos conceitos vistos.
       </>
     ),
   },

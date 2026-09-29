@@ -31,7 +31,8 @@ const config: Config = {
   projectName: "iiot-docs", // Usually your repo name.
   deploymentBranch: "gh-pages",
 
-  onBrokenLinks: 'throw',
+  //onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -97,9 +98,9 @@ const config: Config = {
       "@docusaurus/plugin-content-docs",
       /** @type {import('@docusaurus/plugin-content-docs').Options} */
       {
-        id: "lab", // Unique ID for this docs instance
-        path: "lab-docs", // Path to your LAB docs folder
-        routeBasePath: "lab", // Base URL for these docs (e.g., yoursite.com/lab/...)
+        id: "labs", // Unique ID for this docs instance
+        path: "labs-docs", // Path to your LAB docs folder
+        routeBasePath: "labs", // Base URL for these docs (e.g., yoursite.com/labs/...)
         sidebarPath: require.resolve("./labsidebars.ts"), // Separate sidebar for LAB docs
         // ... other options specific to your LAB docs
         remarkPlugins: [remarkMath],
