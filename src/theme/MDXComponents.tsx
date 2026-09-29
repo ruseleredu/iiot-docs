@@ -7,7 +7,7 @@ import QuizTable from "@site/src/components/shared/QuizTable";
 import LabTeamMembers from "@site/src/components/shared/LabTeamMembers";
 import LabSubmit from "@site/src/components/shared/LabSubmit";
 import LabFromTemplate from "@site/src/components/LabFromTemplate";
-import CommitPoint from "@site/src/components/CommitPoint";
+import CommitPoint from "@site/src/components/shared/CommitPoint";
 import FileTree from "@site/src/components/shared/FileTree";
 import SimpleFileTree from "@site/src/components/shared/SimpleFileTree";
 import Tabs from "@theme/Tabs";
