@@ -1,114 +1,93 @@
+---
+id: brief-pedido-atividade-lab
+title: "Brief — Pedido de nova atividade de laboratório"
+sidebar_label: "Brief de pedido"
+---
+
+import FileTree from '@site/src/components/shared/FileTree';
+
 # Brief — Pedido de nova atividade de laboratório
 
 Cole este brief junto com o pedido e preencha só o que muda (tema e tarefas). Ele
 define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
 
 ## Contexto e stack
-
 - **Plataforma:** ESP32 · **Ambiente:** PlatformIO (VS Code) · **Framework:** Arduino.
-- **Simulador:** **Wokwi** (sem placa física). **Broker/telemetria:** stack Docker (Mosquitto + Node-RED + MQTT Explorer).
+- **Simulador:** **Wokwi** (sem placa física) — ou **placa física**, conforme o periférico (ver "Wokwi × placa física"). **Broker/telemetria:** stack Docker (Mosquitto + Node-RED + MQTT Explorer).
 - **Documentação:** Docusaurus em **MDX**. **Entrega/correção:** Git + GitHub Actions, por commit.
 - **Organização:** `ELT85B-N21-2026-2`. Repos por aula: `labNN-template`, `labNN-grupo-a/b/c…`, e `labNN-grupo-n` = **repositório de notas/correção** daquela aula (mesmo padrão para `projeto-*`).
-- **Tipo de aula:** a maioria é **embarcada** (ESP32/Wokwi), mas há aulas **somente de ferramentas** (ex.: Lab 00 — git/GitHub/gh/Markdown). Nessas, **não** há PlatformIO/Wokwi/firmware; o "produto" é outro artefato (ex.: `README.md`). Diga no pedido qual é o caso.
+- **Tipo de aula:** a maioria é **embarcada** (ESP32/Wokwi ou placa física), mas há aulas **somente de ferramentas** (ex.: Lab 00 — git/GitHub/gh/Markdown). Nessas, **não** há PlatformIO/Wokwi/firmware; o "produto" é outro artefato (ex.: `README.md`). Diga no pedido qual é o caso.
+
+## Estrutura de pastas (padrão)
+
+Use o componente `FileTree` para mostrar a estrutura ao aluno. Códigos de ação:
+`c` criar · `r` ler · `u` editar · `d` apagar · `p` professor (infra) · `n` notas · `g` gerado.
+
+**`labNN-template` — aula embarcada (entregue ao grupo):**
+
+<FileTree
+  root="labNN-template"
+  files={[
+    "platformio.ini",
+    "src/main.cpp u",
+    "diagram.json",
+    "wokwi.toml",
+    ".gitignore",
+    ".vscode/extensions.json",
+    "evidencias/.gitkeep",
+    "README.md u"
+  ]}
+/>
+
+**`labNN-template` — aula somente de ferramentas (ex.: Lab 00):**
+
+<FileTree
+  root="lab00-template"
+  files={[
+    "README.md u",
+    ".gitignore",
+    ".vscode/extensions.json",
+    "evidencias/.gitkeep"
+  ]}
+/>
+
+**`labNN-grupo-n` — repositório de correção:**
+
+<FileTree
+  root="labNN-grupo-n"
+  files={[
+    "autograde/grade.py p",
+    "autograde/gen_grade.py p",
+    "autograde/gen_tarefas_toc.py p",
+    ".github/workflows/grade-one.yml p",
+    ".github/workflows/grade-all.yml p",
+    "notas/GRADE-grupo-a.md g",
+    "notas/nota.csv g",
+    "README.md"
+  ]}
+/>
+
+**Site de docs — onde vivem a aula e os componentes:**
+
+<FileTree
+  root="iiot-docs"
+  files={[
+    "labs-docs/labNN/labNN-....mdx c",
+    "src/components/CommitPoint.tsx p",
+    "src/components/InstructionsSite.tsx p",
+    "src/components/shared/FileTree.tsx p"
+  ]}
+/>
 
 ## Formato do documento (MDX Docusaurus)
-
 - Front matter completo (`id`, `title`, `sidebar_label`, `sidebar_position`, `slug`, `keywords`).
-- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil.
-- Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `<details>` atrás de `:::danger[Spoiler]`), Checklist.
-- **Regra MDX (crítica):** todo código com `<`, `>`, `{`, `}`, `&` fica em blocos/backticks; **nunca** use esses caracteres nas strings `task="..."` dos CommitPoint (ex.: escreva "citacao e regra horizontal", não "citacao (>) e (---)"). Para _mostrar_ um bloco de código dentro de outro, use **quatro crases** no bloco externo.
+- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `Tabs`/`TabItem` quando útil; diagramas em blocos `mermaid` (requer `@docusaurus/theme-mermaid`).
+- Imports no topo: `import CommitPoint from '@site/src/components/CommitPoint';` e, para a estrutura de pastas, `import FileTree from '@site/src/components/shared/FileTree';`.
+- Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `details` atrás de `:::danger Spoiler`), Checklist.
+- **Regra MDX (crítica):** todo código com `<`, `>`, `{`, `}`, `&` fica em blocos/backticks; **nunca** use esses caracteres nas strings `task="..."` dos CommitPoint (ex.: escreva "citacao e regra horizontal", não "citacao (>) e (---)"). Para *mostrar* um bloco de código dentro de outro, use **quatro crases** no bloco externo.
 - Nota `:::info` explicando quando o código fica em `setup()` (demonstração única) vs `loop()` (comportamento contínuo). **Só em aulas embarcadas** — omitir quando não houver firmware.
 
 ## Abertura da aula (padrão fixo)
-
-- **Ambiente de desenvolvimento:** não repita comandos de instalação inline. Use os componentes reutilizáveis (fonte única de verdade):
-  - `import {LabSetup, LabLogout} from '@site/src/components/shared/InstructionsSite';`
-  - `<LabSetup />` no **topo** → admonition **"Antes de começar"** (procedimento numerado: instalar → configurar → verificar + verificação rápida `git --version && gh auth status && code -v`).
-  - `<LabLogout />` no **fim** → admonition **"Ao terminar"** (logout, importante em máquina de laboratório compartilhada).
-  - Distinguir **uma vez por máquina** (config) vs **a cada aula** (verificação).
-- **Âncoras estáveis** no `/labs/intro` (evita link podre ao reescrever títulos): `{/* #setup */}`, `{/* #git-config */}`, `{/* #verify */}`, `{/* #logout */}`.
-- **Clone + entrega:** `<LabTeamMembers labName="labNN" />` (cria/clona o repo do grupo) e `<LabSubmit labName="labNN" />` (envio do link no Moodle). Esses componentes são globais no site (não precisam de `import` no MDX).
-
-## Wokwi (apenas aulas com circuito)
-
-- Incluir `diagram.json` (circuito) e `wokwi.toml` (`.pio/build/<env>/firmware.bin` e `.elf`). Fluxo: Build → "Wokwi: Start Simulator". Recompilar antes de simular.
-- WiFi no Wokwi: SSID `Wokwi-GUEST`, senha vazia; broker **público** (`broker.hivemq.com:1883`). Broker **local** no Wokwi exige o **IoT Gateway** (Wokwi Club). ESP32 físico → broker local direto (IP da máquina, não `localhost`).
-- (Opcional) Verificação de saída serial no CI: cenário `test/*.test.yaml` (`wait-serial`) + `WOKWI_CLI_TOKEN`.
-- **Aula sem circuito:** pular esta seção inteira. O `labNN-template` traz então só os arquivos do artefato-alvo (ex.: `README.md` inicial, `.gitignore`, `.vscode/extensions.json`, `evidencias/.gitkeep`).
-
-## Pontos de commit (componente CommitPoint)
-
-- Marcar cada tarefa avaliada: `<CommitPoint task="descrição" pontos={N} />`. Numeração **automática** T1…Tn na ordem do documento.
-- Props: `type`, `files` (multi: `files="a.cpp b.ini"`), `prefix`, `push`, `n`, `id` (âncora), `allowEmpty` (deploy/release, sem mudar arquivos), `run` (comando extra, ex.: alias de deploy).
-- Convenção: **1 tarefa = 1 commit** cuja mensagem começa com `Tn:`. Vale o commit `Tn:` mais recente; refazer > desfazer; nunca `push --force` no repo de grupo.
-- Passos de runtime (subir stack, testar MQTT, deploy, comandos git/gh) → salvar **evidência** em `evidencias/*.txt` (checável) ou `allowEmpty`.
-- **Alinhamento MDX × mensagem de commit:** o `Tn` gerado pela ordem dos `CommitPoint` **deve** casar com o `Tn:` escrito nos blocos de comando. Conferir após inserir/remover tarefas.
-
-## Pontuação (padrão)
-
-- Somar **100 pts** (o autograder normaliza p/ 0–10). Ex.: experimentos ~5 cada, projeto 15–25, desafios ~5 cada. Ajustar conforme o nº de tarefas.
-- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info[Pontuação]` do fim).
-
-## Correção automática
-
-- **`grade.py`** (no `labNN-grupo-n`): `TAREFAS` = `token`, `nome`, `pontos`, `checks`. Tipos de check: `contem`, `nao_contem`, `arquivo`, `compila` (`pio run`, só aulas embarcadas), `release` (gh api), `jobe` (executa no sandbox). Correção **por commit** (`git worktree`); gera `GRADE.md` + `nota.csv`.
-- **Aulas de Markdown/ferramentas:** usar checks de texto sobre o artefato (ex.: no `README.md` — H1/H2, ênfase, listas, links, imagem, bloco de código, tabela, citação, régua, âncoras). Regex **tolerantes** (ex.: itálico com `*` ou `_`) para não punir formatação válida.
-- Repo `labNN-grupo-n` autoconfigurável: deduz a aula pelo nome, descobre os grupos, corrige em paralelo (reutilizável `grade-one.yml` + `grade-all.yml`), lê grupos **read-only** (org secret `STUDENTS_TOKEN`), grava boletins em `notas/`. À prova de adulteração.
-- **`gen_grade.py`**: gera o scaffold do `grade.py` a partir dos CommitPoint do MDX (`-o grade.py`) e tem modo **`--check`** (compara MDX × `grade.py`, aponta divergências — para CI). O `grade.py` deve conter `assert sum(pontos) == 100`.
-- **Lógica pura no Jobe (sem Moodle):** mocks `Arduino.h`/`WiFi.h`/`PubSubClient.h` + harness + `jobe_test.py` (`--local`/`--jobe`) para avaliar comportamento (ver brief do Jobe). Firmware real → `pio run` + Wokwi.
-
-## Fluxo ao criar a aula
-
-1. Escrever a aula em MDX com `CommitPoint` em cada tarefa (validar: `gen_grade.py aula.mdx --tarefas-only` deve listar T1…Tn com os pontos certos e **somar 100**).
-2. Varrer MDX: nenhum `<`/`{` solto fora de código (só JSX de `CommitPoint`/`Tabs`/`details`/`LabSetup`/`LabLogout`/`LabTeamMembers`/`LabSubmit`); nenhum `<>{}&` em `task="..."`.
-3. Conferir alinhamento `Tn` (ordem dos CommitPoint) × `Tn:` das mensagens de commit nos blocos.
-4. Se a aula **não** for embarcada: confirmar que não sobrou resíduo de `platformio`/`wokwi`/`esp32`/`firmware`/`pio run` no texto.
-5. `gen_grade.py aula.mdx -o autograde/grade.py` → completar os `checks`.
-6. (Opcional) cenário Wokwi / check `jobe` no CI.
-
-## Modelo de pedido (preencher)
-
-- **Tema / número (`labNN`):** …
-- **Tipo:** embarcada (ESP32/Wokwi) · somente ferramentas (sem circuito) …
-- **Objetivos de aprendizagem:** …
-- **Periféricos/circuito no Wokwi:** (LEDs, botões, sensores, I²C/SPI, MQTT…) — _ou_ "sem circuito" …
-- **Artefato-alvo do template:** (firmware `src/main.cpp` · `README.md` · outro) …
-- **Tarefas avaliadas** (viram `CommitPoint` T1…Tn) e **pontos** de cada: …
-- **Checagens por tarefa** (`contem`/`compila`/`jobe`/saída serial/`release`/Markdown): …
-- **Desafios/gabarito?** (sim/não) · **Usa Docker/Node-RED?** (sim/não)
-
-## Regras de qualidade do entregável
-
-- Precisão técnica **para ESP32** (ex.: `int`/`word` = 4 bytes, `double` = 8 bytes; difere do Uno) — verificar quando o tamanho importa.
-- Buscar detalhes de ferramentas que mudam (versões de extensões/plugins, Wokwi, `gh`, CodeRunner/Jobe) antes de afirmar.
-- Código com saída esperada ("preveja antes de rodar"); gabarito testável.
-- Validar o que der: extração dos CommitPoint (soma = 100, sem char proibido em `task`), alinhamento Tn × mensagem, compilação de exemplos, parsing de configs, e — em aulas de Markdown — os checks contra um artefato de exemplo.
-
-```mdx
-# Brief — Pedido de nova atividade de laboratório
-
-Cole este brief junto com o pedido e preencha só o que muda (tema e tarefas). Ele
-define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
-
-## Contexto e stack
-
-- **Plataforma:** ESP32 · **Ambiente:** PlatformIO (VS Code) · **Framework:** Arduino.
-- **Simulador:** **Wokwi** (sem placa física). **Broker/telemetria:** stack Docker (Mosquitto + Node-RED + MQTT Explorer).
-- **Documentação:** Docusaurus em **MDX**. **Entrega/correção:** Git + GitHub Actions, por commit.
-- **Organização:** `ELT85B-N21-2026-2`. Repos por aula: `labNN-template`, `labNN-grupo-a/b/c…`, e `labNN-grupo-n` = **repositório de notas/correção** daquela aula (mesmo padrão para `projeto-*`).
-- **Tipo de aula:** a maioria é **embarcada** (ESP32/Wokwi), mas há aulas **somente de ferramentas** (ex.: Lab 00 — git/GitHub/gh/Markdown). Nessas, **não** há PlatformIO/Wokwi/firmware; o "produto" é outro artefato (ex.: `README.md`). Diga no pedido qual é o caso.
-
-## Formato do documento (MDX Docusaurus)
-
-- Front matter completo (`id`, `title`, `sidebar_label`, `sidebar_position`, `slug`, `keywords`).
-- Avisos como **admonitions** (`:::info/tip/warning/danger/note`); `<Tabs>`/`<TabItem>` quando útil.
-- `import CommitPoint from '@site/src/components/CommitPoint';` no topo.
-- Code blocks com `title="..."`. Seções típicas: Objetivos, Material, Setup, Partes (experimentos com saída esperada), Projeto integrador, Desafios D1–D4, Gabarito (em `<details>` atrás de `:::danger Spoiler`), Checklist.
-- **Regra MDX (crítica):** todo código com `<`, `>`, `{`, `}`, `&` fica em blocos/backticks; **nunca** use esses caracteres nas strings `task="..."` dos CommitPoint (ex.: escreva "citacao e regra horizontal", não "citacao (>) e (---)"). Para _mostrar_ um bloco de código dentro de outro, use **quatro crases** no bloco externo.
-- Nota `:::info` explicando quando o código fica em `setup()` (demonstração única) vs `loop()` (comportamento contínuo). **Só em aulas embarcadas** — omitir quando não houver firmware.
-
-## Abertura da aula (padrão fixo)
-
 - **Ambiente de desenvolvimento:** não repita comandos de instalação inline. Use os componentes reutilizáveis (fonte única de verdade):
   - `import {LabSetup, LabLogout} from '@site/src/components/InstructionsSite';`
   - `<LabSetup />` no **topo** → admonition **"Antes de começar"** (procedimento numerado: instalar → configurar → verificar + verificação rápida `git --version && gh auth status && code -v`).
@@ -116,59 +95,85 @@ define o padrão fixo do curso; o assistente entrega a aula pronta e validada.
   - Distinguir **uma vez por máquina** (config) vs **a cada aula** (verificação).
 - **Âncoras estáveis** no `/lab/intro` (evita link podre ao reescrever títulos): `{#setup}`, `{#git-config}`, `{#verify}`, `{#logout}`.
 - **Clone + entrega:** `<LabTeamMembers labName="labNN" />` (cria/clona o repo do grupo) e `<LabSubmit labName="labNN" />` (envio do link no Moodle). Esses componentes são globais no site (não precisam de `import` no MDX).
+- **Mapa de tarefas:** logo após o H1, insira o bloco gerado pelo `gen_tarefas_toc.py` (ver "Ferramentas de autoria"), delimitado por `<!-- TAREFAS:START -->` / `<!-- TAREFAS:END -->`.
 
-## Wokwi (apenas aulas com circuito)
+## Wokwi × placa física (escolha do periférico)
 
+Antes de definir o circuito, verifique o que o **Wokwi** simula para o chip alvo (matriz completa em [Simulation Features](https://docs.wokwi.com/guides/esp32) e nos [test-binaries](https://github.com/wokwi/esp32-test-binaries/actions/workflows/test.yml)). Resumo dos periféricos mais usados:
+
+| Periférico            | ESP32 | S3 | C3 | C6 | Observação |
+|-----------------------|:-----:|:--:|:--:|:--:|------------|
+| GPIO / ADC            | ✔️ | ✔️ | ✔️ | ✔️ | Interrupções OK |
+| I2C (master)          | ✔️ | ✔️ | ✔️ | ✔️ | Sem 10-bit; só master |
+| SPI                   | ✔️ | ✔️ | ✔️ | ✔️ | |
+| LEDC PWM              | ✔️ | ✔️ | ✔️ | ✔️ | `analogWrite()`, Servo, buzzer |
+| WiFi                  | ✔️ | ✔️ | ✔️ | ✔️ | SSID `Wokwi-GUEST` |
+| RMT (WS2812)          | 🟡 | 🟡 | 🟡 | 🟡 | Transmit-only (fitas de LED) |
+| TWAI (CAN)            | 🟡 | 🟡 | 🟡 | 🟡 | Parcial |
+| I2S                   | 🟡 | ❌ | ❌ | ❌ | Em progresso; só ESP32 |
+| USB nativo / CDC      | ❌ | ✔️ | ❌ | ❌ | ESP32 clássico não tem USB nativo |
+| Bluetooth             | ❌ | ❌ | ❌ | ❌ | **Nenhum chip simula** → placa física |
+| Hall sensor / MCPWM   | ❌ | ❌ | — | ❌ | Não implementado |
+
+Legenda: ✔️ simulado · 🟡 parcial/em progresso · ❌ não implementado · — indisponível no chip.
+
+- **Regra de decisão:** se o periférico do pedido estiver ✔️ para o chip → **Wokwi**. Se estiver 🟡/❌ (ex.: Bluetooth, I2S fora do ESP32, MCPWM, Hall) → **placa física** (ou trocar o periférico/ajustar o chip).
+- **Chip alvo** reflete-se em `platformio.ini` (`board = ...`) e na peça do `diagram.json`. Ex.: `esp32dev`, `esp32-s3-devkitc-1`, `esp32-c6-devkitc-1`.
+- **Aula em placa física:** o `pio run` (e o CI) ainda **compilam** normalmente; a evidência de execução vem de **log serial** salvo em `evidencias/*.txt` (e, se pedido, foto/vídeo). A simulação Wokwi é pulada nessas tarefas.
+
+## Wokwi (apenas aulas com circuito simulado)
 - Incluir `diagram.json` (circuito) e `wokwi.toml` (`.pio/build/<env>/firmware.bin` e `.elf`). Fluxo: Build → "Wokwi: Start Simulator". Recompilar antes de simular.
 - WiFi no Wokwi: SSID `Wokwi-GUEST`, senha vazia; broker **público** (`broker.hivemq.com:1883`). Broker **local** no Wokwi exige o **IoT Gateway** (Wokwi Club). ESP32 físico → broker local direto (IP da máquina, não `localhost`).
 - (Opcional) Verificação de saída serial no CI: cenário `test/*.test.yaml` (`wait-serial`) + `WOKWI_CLI_TOKEN`.
-- **Aula sem circuito:** pular esta seção inteira. O `labNN-template` traz então só os arquivos do artefato-alvo (ex.: `README.md` inicial, `.gitignore`, `.vscode/extensions.json`, `evidencias/.gitkeep`).
+- **Aula sem circuito:** pular esta seção; o `labNN-template` traz só os arquivos do artefato-alvo (ver "Estrutura de pastas").
 
 ## Pontos de commit (componente CommitPoint)
-
 - Marcar cada tarefa avaliada: `<CommitPoint task="descrição" pontos={N} />`. Numeração **automática** T1…Tn na ordem do documento.
 - Props: `type`, `files` (multi: `files="a.cpp b.ini"`), `prefix`, `push`, `n`, `id` (âncora), `allowEmpty` (deploy/release, sem mudar arquivos), `run` (comando extra, ex.: alias de deploy).
 - Convenção: **1 tarefa = 1 commit** cuja mensagem começa com `Tn:`. Vale o commit `Tn:` mais recente; refazer > desfazer; nunca `push --force` no repo de grupo.
-- Passos de runtime (subir stack, testar MQTT, deploy, comandos git/gh) → salvar **evidência** em `evidencias/*.txt` (checável) ou `allowEmpty`.
+- Passos de runtime (subir stack, testar MQTT, deploy, comandos git/gh, log serial) → salvar **evidência** em `evidencias/*.txt` (checável) ou `allowEmpty`.
 - **Alinhamento MDX × mensagem de commit:** o `Tn` gerado pela ordem dos `CommitPoint` **deve** casar com o `Tn:` escrito nos blocos de comando. Conferir após inserir/remover tarefas.
 
 ## Pontuação (padrão)
-
 - Somar **100 pts** (o autograder normaliza p/ 0–10). Ex.: experimentos ~5 cada, projeto 15–25, desafios ~5 cada. Ajustar conforme o nº de tarefas.
-- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info[Pontuação]` do fim).
+- Split usual: **Base T1…Tk = 80 pts · Desafios = 20 pts** (declarar na nota `:::info Pontuação` do fim).
 
-## Correção automática
-
-- **`grade.py`** (no `labNN-grupo-n`): `TAREFAS` = `token`, `nome`, `pontos`, `checks`. Tipos de check: `contem`, `nao_contem`, `arquivo`, `compila` (`pio run`, só aulas embarcadas), `release` (gh api), `jobe` (executa no sandbox). Correção **por commit** (`git worktree`); gera `GRADE.md` + `nota.csv`.
-- **Aulas de Markdown/ferramentas:** usar checks de texto sobre o artefato (ex.: no `README.md` — H1/H2, ênfase, listas, links, imagem, bloco de código, tabela, citação, régua, âncoras). Regex **tolerantes** (ex.: itálico com `*` ou `_`) para não punir formatação válida.
-- Repo `labNN-grupo-n` autoconfigurável: deduz a aula pelo nome, descobre os grupos, corrige em paralelo (reutilizável `grade-one.yml` + `grade-all.yml`), lê grupos **read-only** (org secret `STUDENTS_TOKEN`), grava boletins em `notas/`. À prova de adulteração.
-- **`gen_grade.py`**: gera o scaffold do `grade.py` a partir dos CommitPoint do MDX (`-o grade.py`) e tem modo **`--check`** (compara MDX × `grade.py`, aponta divergências — para CI). O `grade.py` deve conter `assert sum(pontos) == 100`.
-- **Lógica pura no Jobe (sem Moodle):** mocks `Arduino.h`/`WiFi.h`/`PubSubClient.h` + harness + `jobe_test.py` (`--local`/`--jobe`) para avaliar comportamento (ver brief do Jobe). Firmware real → `pio run` + Wokwi.
+## Ferramentas de autoria e correção
+- **`gen_tarefas_toc.py`** (em `autograde/`): gera o **Mapa de tarefas** a partir dos `CommitPoint`, para colar no início da aula (busca rápida pelo aluno).
+  - Padrões: `--format list` (bullets), `--anchors` **ligado** (injeta `id="tN"` p/ os links), `--details` **ligado** (bloco recolhível).
+  - `python3 autograde/gen_tarefas_toc.py aula.mdx --write` → insere/atualiza o bloco após o H1 (idempotente, entre marcadores) e injeta as âncoras.
+  - `--format table|checklist|toc`, `--no-details`, `--no-anchors`, e `--check` (CI: falha se o mapa estiver desatualizado).
+- **`grade.py`** (no `labNN-grupo-n`): `TAREFAS` = `token`, `nome`, `pontos`, `checks`. Checks: `contem`, `nao_contem`, `arquivo`, `compila` (`pio run`, aulas embarcadas), `release` (gh api), `jobe` (sandbox). Correção **por commit** (`git worktree`); gera `GRADE.md` + `nota.csv`. Deve conter `assert sum(pontos) == 100`.
+  - **Aulas de Markdown/ferramentas:** usar checks de texto sobre o artefato (ex.: no `README.md` — H1/H2, ênfase, listas, links, imagem, bloco de código, tabela, citação, régua, âncoras) com regex **tolerantes**.
+- Repo `labNN-grupo-n` autoconfigurável: deduz a aula pelo nome, descobre os grupos, corrige em paralelo (`grade-one.yml` + `grade-all.yml`), lê grupos **read-only** (org secret `STUDENTS_TOKEN`), grava boletins em `notas/`. À prova de adulteração.
+- **`gen_grade.py`**: gera o scaffold do `grade.py` a partir dos `CommitPoint` (`-o grade.py`) e tem modo **`--check`** (compara MDX × `grade.py`, aponta divergências — para CI).
+- **Lógica pura no Jobe (sem Moodle):** mocks `Arduino.h`/`WiFi.h`/`PubSubClient.h` + harness + `jobe_test.py` (`--local`/`--jobe`). Firmware real → `pio run` + Wokwi.
 
 ## Fluxo ao criar a aula
-
 1. Escrever a aula em MDX com `CommitPoint` em cada tarefa (validar: `gen_grade.py aula.mdx --tarefas-only` deve listar T1…Tn com os pontos certos e **somar 100**).
-2. Varrer MDX: nenhum `<`/`{` solto fora de código (só JSX de `CommitPoint`/`Tabs`/`details`/`LabSetup`/`LabLogout`/`LabTeamMembers`/`LabSubmit`); nenhum `<>{}&` em `task="..."`.
-3. Conferir alinhamento `Tn` (ordem dos CommitPoint) × `Tn:` das mensagens de commit nos blocos.
-4. Se a aula **não** for embarcada: confirmar que não sobrou resíduo de `platformio`/`wokwi`/`esp32`/`firmware`/`pio run` no texto.
-5. `gen_grade.py aula.mdx -o autograde/grade.py` → completar os `checks`.
-6. (Opcional) cenário Wokwi / check `jobe` no CI.
+2. Definir o tipo (embarcada/placa física/ferramentas) e conferir a matriz **Wokwi × placa física** para cada periférico.
+3. Documentar a estrutura de pastas com `FileTree` (template, correção e site).
+4. Varrer MDX: nenhum `<`/`{` solto fora de código (só JSX de `CommitPoint`/`Tabs`/`details`/`FileTree`/`LabSetup`/`LabLogout`/`LabTeamMembers`/`LabSubmit`); nenhum `<>{}&` em `task="..."`.
+5. Conferir alinhamento `Tn` (ordem dos CommitPoint) × `Tn:` das mensagens de commit.
+6. Se a aula **não** for embarcada: confirmar que não sobrou resíduo de `platformio`/`wokwi`/`esp32`/`firmware`/`pio run` no texto.
+7. `python3 autograde/gen_tarefas_toc.py aula.mdx --write` → inserir o Mapa de tarefas no topo.
+8. `gen_grade.py aula.mdx -o autograde/grade.py` → completar os `checks`.
+9. (Opcional) cenário Wokwi / check `jobe` no CI.
 
 ## Modelo de pedido (preencher)
-
 - **Tema / número (`labNN`):** …
-- **Tipo:** embarcada (ESP32/Wokwi) · somente ferramentas (sem circuito) …
+- **Tipo:** embarcada (Wokwi) · embarcada (placa física) · somente ferramentas …
+- **Chip alvo:** (esp32 · esp32-s3 · esp32-c3 · esp32-c6 · …) …
 - **Objetivos de aprendizagem:** …
-- **Periféricos/circuito no Wokwi:** (LEDs, botões, sensores, I²C/SPI, MQTT…) — _ou_ "sem circuito" …
+- **Periféricos/circuito:** (LEDs, botões, sensores, I²C/SPI, MQTT, Bluetooth…) — checar na matriz se é Wokwi ou placa física …
 - **Artefato-alvo do template:** (firmware `src/main.cpp` · `README.md` · outro) …
 - **Tarefas avaliadas** (viram `CommitPoint` T1…Tn) e **pontos** de cada: …
 - **Checagens por tarefa** (`contem`/`compila`/`jobe`/saída serial/`release`/Markdown): …
 - **Desafios/gabarito?** (sim/não) · **Usa Docker/Node-RED?** (sim/não)
 
 ## Regras de qualidade do entregável
-
 - Precisão técnica **para ESP32** (ex.: `int`/`word` = 4 bytes, `double` = 8 bytes; difere do Uno) — verificar quando o tamanho importa.
+- Ao escolher periféricos, **conferir a matriz de simulação** do Wokwi para o chip alvo antes de decidir Wokwi vs placa física.
 - Buscar detalhes de ferramentas que mudam (versões de extensões/plugins, Wokwi, `gh`, CodeRunner/Jobe) antes de afirmar.
 - Código com saída esperada ("preveja antes de rodar"); gabarito testável.
-- Validar o que der: extração dos CommitPoint (soma = 100, sem char proibido em `task`), alinhamento Tn × mensagem, compilação de exemplos, parsing de configs, e — em aulas de Markdown — os checks contra um artefato de exemplo.
-```
+- Validar o que der: extração dos CommitPoint (soma = 100, sem char proibido em `task`), Mapa de tarefas atualizado (`gen_tarefas_toc.py --check`), alinhamento Tn × mensagem, compilação de exemplos, parsing de configs, e — em aulas de Markdown — os checks contra um artefato de exemplo.
