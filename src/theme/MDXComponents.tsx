@@ -5,7 +5,7 @@ import MDXComponents from '@theme-original/MDXComponents';
 import LabTable from "@site/src/components/shared/LabTable";
 import QuizTable from "@site/src/components/shared/QuizTable";
 import LabTeamMembers from "@site/src/components/shared/LabTeamMembers";
-import LabSubmit from "@site/src/components/LabSubmit";
+import LabSubmit from "@site/src/components/shared/LabSubmit";
 import LabFromTemplate from "@site/src/components/LabFromTemplate";
 import CommitPoint from "@site/src/components/CommitPoint";
 import FileTree from "@site/src/components/shared/FileTree";
