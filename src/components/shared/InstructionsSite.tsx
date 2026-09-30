@@ -230,15 +230,33 @@ export function DevTools() {
                 </ThemeCodeBlock>
             </TabItem>
             <TabItem value="esp32-wokwi" label="Wokwi">
-                <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32, Arduino e Raspberry Pi Pico.</b></p>
+                <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32.</b></p>
                 <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> Seu código nunca sai do seu computador - o Wokwi executa a simulação dentro do VS Code, utilizando os binários de firmware do seu projeto.
+                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> executa a simulação dentro do VS Code, utilizando os binários compilados pelo PlatformIO.
                     </li>
                 </ul>
                 <ThemeCodeBlock className="language-bash">
                     code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
                 </ThemeCodeBlock>
-                <ul><li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Wokwi for Visual Studio Code.</a></li></ul>
+                <ul>
+                    <li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Gerar uma licença pessoal de 30 dias para o Wokwi VS Code.</a></li>
+                </ul>
+                <ul>
+                    <li><a href="https://docs.wokwi.com/wokwi-ci/cli-installation" target="_blank">Wokwi CLI:</a> Instale via PowerShell.</li>
+                </ul>
+                <ThemeCodeBlock className="language-powershell">
+                    iwr https://wokwi.com/ci/install.ps1 -useb | iex
+                </ThemeCodeBlock>
+                <ul>
+                    <li>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a></li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                </ThemeCodeBlock>
+                <ul>
+                    <li><a href="https://docs.wokwi.com/wokwi-ci/getting-started" target="_blank">Wokwi para CI e GitHub Actions</a></li>
+                </ul>
+
             </TabItem>
             <TabItem value="esp32-platformio" label="PlatformIO">
                 <p><b><Link to="/docs/platformio-intro">PlatformIO IDE para VSCode</Link>: Sua porta de entrada para a excelência no desenvolvimento de software embarcado.</b></p>
