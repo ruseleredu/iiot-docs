@@ -40,7 +40,7 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ol>
             <p>Verificação rápida de versão instalada:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp;&amp; gh --version &amp;&amp; code -v &amp;&amp; pio --version
+                git -v &amp;&amp; gh --version &amp;&amp; code -v &amp;&amp; pio --version &amp;&amp; wokwi-cli -V &amp;&amp; wsl --version &amp;&amp; docker --version
             </ThemeCodeBlock>
             <p>Verificação rápida de autenticação:</p>
             <ThemeCodeBlock language="bash">
@@ -224,10 +224,13 @@ export function DevTools() {
                 <ThemeCodeBlock className="language-bash">
                     code --list-extensions --profile "ESP32IO"
                 </ThemeCodeBlock>
-                <p>Inicie o projeto no PlatformIO:</p>
-                <ThemeCodeBlock className="language-bash">
-                    pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+                <p>Configurar o terminal do VS Code. No arquivo <code>.vscode/settings.json</code></p>
+                <ThemeCodeBlock className="language-json">
+                    {`{
+    "terminal.integrated.defaultProfile.windows": "Command Prompt"
+}`}
                 </ThemeCodeBlock>
+
             </TabItem>
             <TabItem value="esp32-wokwi" label="Wokwi">
                 <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32.</b></p>
@@ -246,6 +249,9 @@ export function DevTools() {
                 </ul>
                 <ThemeCodeBlock className="language-powershell">
                     iwr https://wokwi.com/ci/install.ps1 -useb | iex
+                </ThemeCodeBlock>
+                <ThemeCodeBlock className="language-bash">
+                    {`wokwi-cli -h`}
                 </ThemeCodeBlock>
                 <ul>
                     <li>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a></li>
@@ -278,7 +284,7 @@ export function DevTools() {
                     <li>
                         <p>Inicie o projeto no PlatformIO:</p>
                         <ThemeCodeBlock className="language-bash">
-                            {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code`}
+                            {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --ide vscode --sample-code`}
                         </ThemeCodeBlock>
                     </li>
                 </ul>
