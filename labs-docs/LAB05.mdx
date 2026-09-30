@@ -1,107 +1,52 @@
 ---
-id: lab05
-title: "Lab 05 — DHT22, MQTT periódico e Node-RED com SQLite"
-sidebar_label: "Laboratório 05"
+title: Laboratório 05
 sidebar_position: 8
-keywords:
-  - esp32
-  - dht22
-  - mqtt
-  - pubsubclient
-  - ticker
-  - temporizador
-  - node-red
-  - sqlite
-  - wokwi
 ---
 
-# Laboratório 05
+import { DevTools } from "@site/src/components/shared/InstructionsSite";
 
-{/* Tabela com link para atividade, inicio, fim e descrição do LAB! */}
+## Checklist — DHT22, temporizador e MQTT com Node-RED {/* #checklist */}
 
-<div style={{ display: "flex", justifyContent: "center" }}>
-  <LabTable index={5} internal={false} />
-</div>
+- [ ] `platformio.ini` com DHT, Unified Sensor e PubSubClient; `diagram.json` com DHT22 no GPIO15 (T1)
+- [ ] Leituras periódicas via `Ticker` + flag `volatile`, `NaN` descartado (T2)
+- [ ] Conexão Wi-Fi com reconexão no `loop()` (T3)
+- [ ] JSON publicado em `elt85b/lab05/grupo-X/dht` a cada 5 s, client ID único (T4)
+- [ ] Node-RED: `mqtt in` (JSON) → `debug`, fluxo exportado (T5)
+- [ ] LWT `offline` + `online` retidos em `.../status`, visíveis no Node-RED (T6)
+- [ ] Previsões P1–P4 respondidas no `README.md`
+- [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
 
----
-
-## Checklist — Sensor DHT22, Interrupções, Node-RED
-
-- [ ] Verificar `git --version`
-- [ ] Abrir o VS Code
-- [ ] Abrir a extensão PlatformIO IDE
-- [ ] Criar um projeto ESP32
-- [ ] Selecionar o framework Arduino
-- [ ] Executar o Build
-- [ ] Criar `wokwi.toml`
-- [ ] Criar `diagram.json`
-- [ ] Executar a simulação
-- [ ] Verificar o Serial Monitor
-- [ ] Atualizar o repositório no GitHub
-- [ ] Executar `git push`
-- [ ] Confirmar que o projeto está disponível no GitHub
-- [ ] Logout
-
----
-
-import {
-  LabSetup,
-  LabLogout,
-} from "@site/src/components/shared/InstructionsSite";
+:::info[Pontuação]
+**T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 20 · T5 15 ·
+T6 20. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa.
+:::
 
 <LabSetup />
 
----
+### Configuração do ambiente de desenvolvimento {/* #setup */}
 
-<LabLogout />
-
----
-
-## Clone o repositório inicial do LAB05
-
-Escolha o Grupo e entre com o comando abaixo para criar o repositório no GitHub:
-
-<LabTeamMembers labName="lab05" />
-
-## Envie o link do repositório do seu grupo no Moodle: {/* #moodle-link */}
-
-<LabSubmit labName="lab05" />
+<DevTools />
 
 ---
-
-# Lab 05 — DHT22, MQTT periódico e Node-RED com SQLite
-
-<details>
-<summary><strong>Mapa de tarefas</strong> — 8 tarefas · 100 pts</summary>
-
-- [T1 — Dependencias e circuito do DHT22](#t1) · 10 pts
-- [T2 — Leitura do DHT22 com temporizador](#t2) · 15 pts
-- [T3 — Conexao Wi-Fi](#t3) · 10 pts
-- [T4 — Publicacao MQTT periodica em JSON](#t4) · 15 pts
-- [T5 — Node-RED com o no SQLite instalado](#t5) · 10 pts
-- [T6 — Fluxo MQTT para SQLite](#t6) · 15 pts
-- [T7 — Consulta ao banco SQLite](#t7) · 10 pts
-- [T8 — Intervalo configuravel via MQTT e status LWT](#t8) · 15 pts
-
-</details>
-
-<LabSetup />
 
 Nesta aula o ESP32 vira um **nó de telemetria**: um **temporizador** dispara leituras
 periódicas do **DHT22**, o firmware publica cada leitura em **JSON via MQTT**, e o
-**Node-RED** recebe as mensagens e **grava tudo num banco SQLite** — que depois você
-consulta para provar que os dados chegaram no ritmo certo.
+**Node-RED** assina o tópico e mostra as mensagens no painel **debug**. No projeto
+integrador o nó passa a anunciar se está **online** ou **offline** usando **LWT**.
 
 ```mermaid
 flowchart LR
   DHT[DHT22] -->|1 fio, GPIO15| ESP[ESP32]
-  TMR([Ticker a cada N s]) -.->|flag| ESP
+  TMR([Ticker a cada 5 s]) -.->|flag| ESP
   ESP -->|Wi-Fi Wokwi-GUEST| BRK[(broker.hivemq.com:1883)]
-  BRK -->|elt85b/lab05/grupo-X/dht| NR[Node-RED]
-  NR -->|INSERT preparado| DB[(SQLite /data/lab05.db)]
-  NR -->|cmd/intervalo| BRK
-  BRK -->|cmd/intervalo| ESP
+  BRK -->|elt85b/lab05/grupo-X/dht| NR[Node-RED debug]
+  BRK -->|elt85b/lab05/grupo-X/status| NR
 ```
+
+:::note[Continua no Lab 06]
+No **Lab 06** o mesmo firmware é reaproveitado: o Node-RED passa a **gravar as leituras em
+SQLite** e a **mudar o intervalo** do ESP32 remotamente.
+:::
 
 ## Objetivos
 
@@ -109,30 +54,45 @@ flowchart LR
 - Usar um **temporizador** (`Ticker`) para disparar ações periódicas **sem** `delay()`
   e sem bloquear o `loop()`.
 - Conectar o ESP32 ao **Wi-Fi** e a um **broker MQTT**, publicando leituras em **JSON**.
-- No **Node-RED**, assinar o tópico, validar o payload e gravar em **SQLite** com
-  `node-red-node-sqlite` usando **prepared statement**.
-- Consultar o banco e verificar a periodicidade das leituras.
-- (Integrador) Alterar o intervalo **remotamente** via MQTT e publicar o status do nó com **LWT**.
+- No **Node-RED**, assinar o tópico, receber o JSON já convertido em objeto e
+  inspecionar os campos no **debug**.
+- (Integrador) Publicar o status do nó com **LWT** (_Last Will and Testament_).
 
 ## Material
 
 - VS Code + PlatformIO + extensão **Wokwi** (ESP32 **simulado** — sem placa física).
 - Stack Docker do curso (**Mosquitto + Node-RED + MQTT Explorer**) — nesta aula usamos o
-  **Node-RED** dela e o MQTT Explorer para inspecionar mensagens.
+  **Node-RED** e o **MQTT Explorer**.
 - Bibliotecas (baixadas pelo PlatformIO): `adafruit/DHT sensor library`,
   `adafruit/Adafruit Unified Sensor`, `knolleary/PubSubClient`. O `Ticker` já vem com o
   core Arduino do ESP32.
 
 :::info[Por que Wokwi (e não placa física)?]
 Conferindo a matriz de simulação: **GPIO** (o DHT22 usa um único pino digital) e **Wi-Fi**
-são ✔️ no ESP32 clássico — então a aula roda inteira no Wokwi. A mesma firmware funciona
+são ✔️ no ESP32 clássico — então a aula roda inteira no Wokwi. O mesmo firmware funciona
 numa placa física trocando só SSID/senha e o endereço do broker (veja a aba "Placa física"
 na [T3](#t3)).
 :::
 
-## Clonar o repositório do grupo
+## Clonar o repositório do grupo {/* #clonar */}
 
 <LabTeamMembers labName="lab05" />
+
+## Envie o link do repositório do seu grupo no Moodle: {/* #moodle-link */}
+
+<LabSubmit labName="lab05" />
+
+<details>
+<summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
+
+- [T1 — Dependencias e circuito do DHT22](#t1) · 10 pts
+- [T2 — Leitura do DHT22 com temporizador](#t2) · 20 pts
+- [T3 — Conexao Wi-Fi](#t3) · 15 pts
+- [T4 — Publicacao MQTT periodica em JSON](#t4) · 20 pts
+- [T5 — Node-RED recebendo as leituras no debug](#t5) · 15 pts
+- [T6 — Status do no com LWT](#t6) · 20 pts
+
+</details>
 
 O repositório do grupo nasce do `lab05-template`:
 
@@ -149,9 +109,8 @@ O repositório do grupo nasce do `lab05-template`:
     "evidencias/t2-serial.txt c",
     "evidencias/t3-wifi.txt c",
     "evidencias/t4-mqtt.txt c",
-    "evidencias/t5-nodered.txt c",
-    "evidencias/t7-consulta.txt c",
-    "evidencias/t8-intervalos.txt c",
+    "evidencias/t5-debug.txt c",
+    "evidencias/t6-status.txt c",
     "README.md u",
   ]}
 />
@@ -210,7 +169,7 @@ O DHT22 do Wokwi tem 4 pinos: `VCC`, `SDA` (dados), `NC` e `GND`. Ligue **VCC �
 
 :::tip[Mudando os valores durante a simulação]
 Com o simulador rodando, **clique no DHT22**: aparecem sliders de temperatura e umidade.
-É assim que você vai "esquentar" o sensor e ver os números mudarem no banco.
+É assim que você vai "esquentar" o sensor e ver os números mudarem no Node-RED.
 :::
 
 ### 1.2 Bibliotecas no `platformio.ini`
@@ -270,8 +229,7 @@ sequenceDiagram
 
 :::warning[DHT22 é lento]
 O DHT22 faz **no máximo uma leitura a cada 2 s**. A biblioteca da Adafruit respeita isso:
-se você pedir antes, ela devolve **o último valor** em cache. Por isso nosso intervalo
-mínimo será 2 s.
+se você pedir antes, ela devolve **o último valor** em cache.
 :::
 
 ### 2.2 Código
@@ -336,8 +294,8 @@ Compile (**PlatformIO: Build**) e rode **Wokwi: Start Simulator**.
 - **P1:** troque `INTERVALO_S` para `1.0` e mude o slider do sensor entre duas leituras.
   Os valores acompanham o slider a cada linha? Por quê?
 - **P2:** e se você colocasse o `Serial.printf` **dentro** de `aoEstourarTemporizador()`?
-  Pense em quem mais depende da tarefa do `esp_timer` (Wi-Fi, o próprio Ticker…) e no
-  tempo que um `printf` a 115200 baud leva.
+  Pense em quem mais depende da tarefa do `esp_timer` e no tempo que um `printf` a
+  115200 baud leva.
 
 Anote as previsões e o que observou no `README.md`. Depois **volte o intervalo para 5 s**.
 :::
@@ -348,7 +306,7 @@ Salve pelo menos **3 leituras** do monitor serial (copie do terminal do Wokwi) e
 <CommitPoint
   id="t2"
   task="Leitura do DHT22 com temporizador"
-  pontos={15}
+  pontos={20}
   files="src/main.cpp evidencias/t2-serial.txt"
 />
 
@@ -410,7 +368,7 @@ WiFi.begin(WIFI_SSID, WIFI_SENHA);
 [DHT] seq=1 t=24.5 C h=55.0 % (6120 ms)
 ```
 
-:::note[O `while` do Wi-Fi bloqueia — e tudo bem aqui]
+:::note[O while do Wi-Fi bloqueia — e tudo bem aqui]
 Enquanto não há Wi-Fi não há o que publicar, então bloquear na (re)conexão é aceitável
 nesta aula. Em produção você trocaria por uma máquina de estados não bloqueante.
 :::
@@ -420,7 +378,7 @@ Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
 <CommitPoint
   id="t3"
   task="Conexao Wi-Fi"
-  pontos={10}
+  pontos={15}
   files="src/main.cpp evidencias/t3-wifi.txt"
 />
 
@@ -432,15 +390,13 @@ Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
 
 Cada grupo publica no **seu** tópico (troque `a` pela letra do grupo):
 
-| Uso          | Tópico                               | Exemplo de payload                                          |
-| ------------ | ------------------------------------ | ----------------------------------------------------------- |
-| Leituras     | `elt85b/lab05/grupo-a/dht`           | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210}` |
-| Comando (T8) | `elt85b/lab05/grupo-a/cmd/intervalo` | `10`                                                        |
-| Status (T8)  | `elt85b/lab05/grupo-a/status`        | `online` / `offline` (retido)                               |
+| Uso         | Tópico                        | Exemplo de payload                                          |
+| ----------- | ----------------------------- | ----------------------------------------------------------- |
+| Leituras    | `elt85b/lab05/grupo-a/dht`    | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210}` |
+| Status (T6) | `elt85b/lab05/grupo-a/status` | `online` / `offline` (retido)                               |
 
-- `seq` é um contador: se o banco tiver `seq` 7, 8, 10, a mensagem 9 se perdeu.
-- `uptime_ms` (de `millis()`) mostra o intervalo **do ponto de vista do ESP32**; o Node-RED
-  vai carimbar a hora de **chegada**. Comparar os dois é o que faremos na T7.
+- `seq` é um contador: se chegarem `seq` 7, 8, 10, a mensagem 9 se perdeu.
+- `uptime_ms` (de `millis()`) mostra o instante da leitura **do ponto de vista do ESP32**.
 
 :::warning[Broker público]
 No Wokwi o ESP32 só alcança a internet, por isso usamos **`broker.hivemq.com:1883`** —
@@ -588,342 +544,151 @@ E o que aconteceria se dois grupos esquecessem de trocar o `GRUPO` e ficassem am
 <CommitPoint
   id="t4"
   task="Publicacao MQTT periodica em JSON"
-  pontos={15}
+  pontos={20}
   files="src/main.cpp evidencias/t4-mqtt.txt"
 />
 
 ---
 
-## Parte 5 — Node-RED com SQLite {/* #parte-5 */}
+## Parte 5 — Node-RED: receber e visualizar {/* #parte-5 */}
 
-### 5.1 Subir o Node-RED e instalar o nó
-
-1. Suba a stack Docker do curso (a mesma das aulas anteriores) e abra o Node-RED em
-   `http://localhost:1880`.
-2. Menu (☰) → **Manage palette** → aba **Install** → procure **`node-red-node-sqlite`**
-   → **Install**. (A versão atual é a **2.x**; ela instala um binário nativo do SQLite, pode
-   demorar um pouco.)
-3. Confira que apareceu a categoria **storage** com o nó **sqlite** na paleta.
-
-:::warning[Se o nó não carregar]
-A versão 2.x do `node-red-node-sqlite` troca a biblioteca nativa e pode faltar binário
-pré-compilado para alguma plataforma (o log mostra algo como `GLIBC ... not found` ou
-erro ao carregar `sqlite3`). Nesse caso, remova-o e instale a série 1.x pela linha de
-comando do container (substitua `NOME` pelo nome do container do Node-RED, visto em `docker ps`):
-
-```bash title="Terminal"
-docker exec -it NOME sh -c "cd /data && npm install node-red-node-sqlite@1"
-docker restart NOME
-```
-
-:::
-
-### 5.2 Evidência
-
-Descubra o nome do container (`NOME`) e registre que o módulo está instalado no diretório
-de usuário do Node-RED (`/data`):
-
-```bash title="Terminal"
-docker ps --format '{{.Names}}  {{.Image}}  {{.Status}}' | tee evidencias/t5-nodered.txt
-docker exec NOME npm ls --prefix /data node-red-node-sqlite | tee -a evidencias/t5-nodered.txt
-```
-
-**Saída esperada** (nomes e versões podem variar):
-
-```text title="evidencias/t5-nodered.txt"
-nodered  nodered/node-red:latest  Up 12 minutes
-mosquitto  eclipse-mosquitto:2  Up 12 minutes
-node-red-project@0.0.1 /data
-└── node-red-node-sqlite@2.0.1
-```
-
-:::note[Instalou mas o nó não aparece?]
-`npm ls` mostra que o pacote está no disco; se ele **não carregou**, o Node-RED avisa no
-log. Confira com `docker logs NOME 2>&1 | grep -i sqlite` e veja o aviso "Se o nó não
-carregar" acima.
-:::
-
-<CommitPoint
-  id="t5"
-  task="Node-RED com o no SQLite instalado"
-  pontos={10}
-  files="evidencias/t5-nodered.txt"
-/>
-
----
-
-## Parte 6 — Fluxo MQTT para SQLite {/* #parte-6 */}
-
-Monte o fluxo abaixo numa aba nova chamada **Lab 05**:
+Suba a stack Docker do curso e abra o Node-RED em `http://localhost:1880`. Crie uma aba
+nova chamada **Lab 05** e monte:
 
 ```mermaid
 flowchart LR
-  I1[inject: criar tabela - once] --> S1[sqlite: CREATE TABLE - fixed]
-  M[mqtt in: .../grupo-a/dht - JSON] --> F[function: monta msg.params]
-  M --> D0[debug: payload bruto]
-  F --> S2[sqlite: INSERT - prepared]
+  M[mqtt in: .../grupo-a/dht - JSON] --> D1[debug: msg.payload]
+  M --> D2[debug: msg.payload.t - tambem no status]
 ```
 
-### 6.1 Banco e tabela
+1. **mqtt in** "leituras DHT22"
+   - _Server:_ novo broker `broker.hivemq.com`, porta `1883` (o mesmo em que o ESP32 publica —
+     **não** o Mosquitto local, que o Wokwi não alcança).
+   - _Topic:_ `elt85b/lab05/grupo-a/dht` (seu grupo) · _QoS_ `0`.
+   - _Output:_ **a parsed JSON object** — o texto do payload vira um objeto JavaScript.
+2. **debug** "payload" → _Output:_ `msg.payload`.
+3. **debug** "temperatura" → _Output:_ `msg.payload.t` e marque **node status**
+   (o valor aparece embaixo do nó, no próprio editor).
+4. **Deploy.** Com o Wokwi rodando, o nó `mqtt in` deve mostrar **connected** (verde) e o painel
+   _debug_ (ícone de inseto, à direita) recebe uma mensagem a cada 5 s.
 
-1. **Config do banco** (aparece ao configurar o primeiro nó sqlite, campo _Database_):
-   caminho **`/data/lab05.db`**, modo **Read-Write-Create**. A pasta `/data` do container é
-   o volume persistente do Node-RED — o banco sobrevive a reinícios.
-2. **inject** "criar tabela" → marque _Inject once after 1 seconds_, sem repetição.
-3. **sqlite** "CREATE TABLE" → _SQL Query:_ **Fixed Statement**:
+**Saída esperada no painel debug** (uma mensagem, expandida):
 
-```sql title="SQL do no CREATE TABLE"
-CREATE TABLE IF NOT EXISTS leituras (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  recebido_em TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')),
-  grupo       TEXT    NOT NULL,
-  seq         INTEGER NOT NULL,
-  temperatura REAL    NOT NULL,
-  umidade     REAL    NOT NULL,
-  uptime_ms   INTEGER
-);
+```text title="Painel debug do Node-RED"
+29/09/2026, 18:40:12   node: payload
+elt85b/lab05/grupo-a/dht : msg.payload : Object
+▼ object
+  grupo: "a"
+  seq: 7
+  t: 24.5
+  h: 55
+  uptime_ms: 36288
 ```
 
-`recebido_em` é preenchido **pelo próprio SQLite** (horário UTC, com milissegundos) — o
-Node-RED nem precisa mandá-lo.
-
-### 6.2 Receber e gravar
-
-1. **mqtt in** → servidor `broker.hivemq.com`, porta `1883`; tópico
-   `elt85b/lab05/grupo-a/dht` (seu grupo); **Output: a parsed JSON object**. Assim
-   `msg.payload` já chega como objeto, não como texto.
-2. **function** "monta msg.params" — valida o payload e monta os parâmetros:
-
-```js title="function: monta msg.params"
-const p = msg.payload;
-if (
-  typeof p !== "object" ||
-  typeof p.t !== "number" ||
-  typeof p.h !== "number"
-) {
-  node.warn("payload invalido: " + JSON.stringify(p));
-  return null; // descarta a mensagem
-}
-msg.params = {
-  $grupo: p.grupo,
-  $seq: p.seq,
-  $t: p.t,
-  $h: p.h,
-  $uptime_ms: p.uptime_ms,
-};
-return msg;
-```
-
-3. **sqlite** "INSERT leitura" → _SQL Query:_ **Prepared Statement**:
-
-```sql title="SQL do no INSERT"
-INSERT INTO leituras (grupo, seq, temperatura, umidade, uptime_ms)
-VALUES ($grupo, $seq, $t, $h, $uptime_ms);
-```
-
-:::danger[Por que prepared statement?]
-Montar o SQL concatenando texto (`"... VALUES (" + msg.payload.t + ")"`) é **SQL injection**
-esperando acontecer — e o broker é público: qualquer um pode publicar no seu tópico.
-Com **Prepared Statement** os valores de `msg.params` são enviados **separados** do SQL e
-nunca executados como código. As chaves precisam do **`$`** — sem ele o nó reclama de
-`SQLITE_RANGE: bind or column index out of range`.
+:::tip[JSON × texto]
+Troque temporariamente o _Output_ do `mqtt in` para **a String** e faça Deploy: o debug
+passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`. Por quê?
+(Volte para **a parsed JSON object** antes de continuar.)
 :::
 
-**Deploy** e deixe a simulação do Wokwi rodando. No painel _debug_, o "payload bruto" deve
-mostrar um objeto a cada 5 s. Para testar a validação, publique no tópico (MQTT Explorer)
-o texto `oi` — deve aparecer o aviso `payload invalido` e **nada** ser gravado.
+**Evidências:**
 
-### 6.3 Exportar o fluxo
+1. No debug "payload", passe o mouse sobre **3 mensagens** → ícone **Copy value** e cole cada
+   uma numa linha de `evidencias/t5-debug.txt`:
 
-Selecione a aba **Lab 05** → menu → **Export** → _Current flow_ → **JSON formatado** →
-**Download**. Salve como `nodered/flows-lab05.json` no repositório do grupo.
+   ```json title="evidencias/t5-debug.txt"
+   {"grupo":"a","seq":7,"t":24.5,"h":55,"uptime_ms":36288}
+   {"grupo":"a","seq":8,"t":24.5,"h":55,"uptime_ms":41288}
+   {"grupo":"a","seq":9,"t":31.2,"h":48,"uptime_ms":46288}
+   ```
+
+2. Selecione a aba **Lab 05** → menu (☰) → **Export** → _Current flow_ → **JSON formatado**
+   → **Download**. Salve como `nodered/flows-lab05.json`.
 
 <CommitPoint
-  id="t6"
-  task="Fluxo MQTT para SQLite"
+  id="t5"
+  task="Node-RED recebendo as leituras no debug"
   pontos={15}
-  files="nodered/flows-lab05.json"
+  files="nodered/flows-lab05.json evidencias/t5-debug.txt"
 />
 
 ---
 
-## Parte 7 — Consultando o banco {/* #parte-7 */}
+## Projeto integrador — status do nó com LWT {/* #integrador */}
 
-Acrescente ao fluxo: **inject** "consultar" → **sqlite** (Fixed Statement) → **debug**
-(saída `msg.payload`).
+Quem olha o Node-RED não tem como saber se o ESP32 **caiu** ou só está entre duas leituras.
+O MQTT resolve isso com o **LWT** (_Last Will and Testament_): ao conectar, o cliente deixa
+com o broker uma mensagem-testamento; se a conexão cair **sem** um `DISCONNECT` educado, o
+**broker** publica essa mensagem por ele.
 
-```sql title="SQL do no SELECT"
-SELECT id, seq, recebido_em, temperatura, umidade,
-       ROUND((julianday(recebido_em) - julianday(LAG(recebido_em) OVER (ORDER BY id))) * 86400, 1) AS delta_s
-FROM leituras
-ORDER BY id DESC
-LIMIT 20;
+```mermaid
+sequenceDiagram
+  participant E as ESP32
+  participant B as Broker
+  participant N as Node-RED
+  E->>B: CONNECT (will: status = offline, retida)
+  E->>B: PUBLISH status = online (retida)
+  B->>N: online
+  Note over E: simulacao parada
+  B-->>B: detecta a queda: TCP fechado ou 1,5 x keepalive
+  B->>N: offline (publicada pelo broker)
 ```
-
-- `LAG(...) OVER (ORDER BY id)` pega o `recebido_em` da linha **anterior**; a diferença de
-  `julianday` (em dias) × 86400 dá o intervalo em **segundos** entre chegadas.
-- A linha mais antiga do resultado tem `delta_s` nulo (não há anterior).
-
-Deixe a simulação rodando pelo menos **1 minuto** (≥ 10 leituras) e clique em "consultar".
-No _debug_, passe o mouse sobre o array → ícone **Copy value** e cole em
-`evidencias/t7-consulta.txt`. **Saída esperada** (trecho):
-
-```json title="evidencias/t7-consulta.txt"
-[
-  {
-    "id": 14,
-    "seq": 14,
-    "recebido_em": "2026-09-29 20:11:42.311",
-    "temperatura": 31.2,
-    "umidade": 48,
-    "delta_s": 5
-  },
-  {
-    "id": 13,
-    "seq": 13,
-    "recebido_em": "2026-09-29 20:11:37.309",
-    "temperatura": 31.2,
-    "umidade": 48,
-    "delta_s": 5
-  },
-  {
-    "id": 12,
-    "seq": 12,
-    "recebido_em": "2026-09-29 20:11:32.320",
-    "temperatura": 24.5,
-    "umidade": 55,
-    "delta_s": 5
-  }
-]
-```
-
-:::tip[O que olhar no resultado]
-
-- `delta_s` deve ficar **em torno de 5** — pequenas variações vêm da rede, não do temporizador.
-  Compare com as diferenças de `uptime_ms` do payload: elas ficam cravadas em 5000.
-- Buracos em `seq` = mensagens perdidas (QoS 0 no `publish` do PubSubClient).
-- Se `id` e `seq` divergem, você reiniciou a simulação (o `seq` recomeça do 1, o `id` não).
-  :::
-
-Acrescente ao mesmo arquivo o resultado desta consulta resumo:
-
-```sql title="SQL de resumo"
-SELECT COUNT(*) AS total, ROUND(AVG(temperatura),1) AS t_media, ROUND(AVG(umidade),1) AS h_media
-FROM leituras;
-```
-
-Exporte o fluxo de novo por cima de `nodered/flows-lab05.json`.
-
-<CommitPoint
-  id="t7"
-  task="Consulta ao banco SQLite"
-  pontos={10}
-  files="nodered/flows-lab05.json evidencias/t7-consulta.txt"
-/>
-
----
-
-## Projeto integrador — intervalo remoto e status do nó {/* #integrador */}
-
-Hoje, para mudar o intervalo é preciso recompilar. Faça o ESP32 **aceitar o intervalo via
-MQTT** e **anunciar se está vivo**.
 
 ### Requisitos
 
 1. **Firmware**
-   - Assinar `elt85b/lab05/grupo-X/cmd/intervalo`. O payload é um número em segundos
-     (texto, ex.: `10`). Aceitar só **2 a 3600**; fora disso, logar e **ignorar**.
-   - Ao receber um valor válido, **rearmar** o temporizador com o novo período
-     (`temporizador.detach()` + `attach(...)`) e logar `[TMR] intervalo = N s`.
-   - Conectar com **LWT** (_Last Will and Testament_) em `.../status`: mensagem `offline`,
-     QoS 1, **retida**. Logo após conectar, publicar `online` **retido** no mesmo tópico.
-   - Refazer o `subscribe` a cada reconexão (a sessão MQTT não guarda assinaturas
-     quando o cliente conecta com _clean session_).
+   - Novo tópico `elt85b/lab05/grupo-X/status`.
+   - Conectar com LWT: mensagem `offline`, QoS 1, **retida**.
+   - Logo após conectar, publicar `online` **retido** no mesmo tópico.
 2. **Node-RED**
-   - Dois **inject** ("intervalo 5 s" e "intervalo 10 s", payload texto) → **mqtt out**
-     no tópico `.../cmd/intervalo`.
-   - (Opcional) um **mqtt in** em `.../status` → debug.
-3. **Evidência** — com a simulação rodando: ~1 min em 5 s, clique "intervalo 10 s",
-   mais ~1 min, e rode a consulta da T7. Salve o resultado em
-   `evidencias/t8-intervalos.txt`: deve dar para ver `delta_s` mudando de ~5 para ~10.
+   - Segundo **mqtt in** em `.../status` (_Output:_ **a String**) → **debug** com
+     **node status** ligado — o nó mostra `online`/`offline` no editor.
+   - Exporte o fluxo de novo por cima de `nodered/flows-lab05.json`.
+3. **Evidência** — deixe um `mosquitto_sub` escutando o status, inicie a simulação, espere o
+   `online`, **pare** a simulação e espere o `offline`; aí encerre com Ctrl+C:
+
+```bash title="Terminal"
+docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
+  -t 'elt85b/lab05/grupo-a/status' -v | tee evidencias/t6-status.txt
+```
 
 ### Dicas de API
 
-```cpp title="Trechos uteis (PubSubClient e Ticker)"
-// callback de mensagens recebidas
-void aoReceberMensagem(char *topico, byte *payload, unsigned int len);
-mqtt.setCallback(aoReceberMensagem);
+```cpp title="Trechos uteis (PubSubClient)"
+const char *TOPICO_STATUS = "elt85b/lab05/grupo-" GRUPO "/status";
 
 // connect com LWT: (id, willTopic, willQos, willRetain, willMessage)
-mqtt.connect(clientId, TOPICO_STATUS, 1, true, "offline");
-mqtt.publish(TOPICO_STATUS, "online", true);   // true = retida
-mqtt.subscribe(TOPICO_CMD);
-
-// o payload NAO termina em zero: copie para um buffer e feche a string
-char buf[16];
-unsigned int n = len < sizeof(buf) - 1 ? len : sizeof(buf) - 1;
-memcpy(buf, payload, n);
-buf[n] = '\0';
-long valor = atol(buf);
-
-// rearmar o temporizador
-temporizador.detach();
-temporizador.attach((float)novoIntervalo, aoEstourarTemporizador);
+if (mqtt.connect(clientId, TOPICO_STATUS, 1, true, "offline")) {
+  mqtt.publish(TOPICO_STATUS, "online", true);   // true = retida
+}
 ```
 
-:::warning[Não chame `mqtt.publish()` nem `subscribe()` de dentro do callback do Ticker]
-O callback de mensagens do PubSubClient roda **dentro de `mqtt.loop()`** — ou seja, no
-contexto do `loop()`, então rearmar o Ticker ali é seguro. Já o callback do **Ticker** continua
-restrito a levantar a flag.
-:::
+**Saída esperada:**
 
-**Saída esperada** no monitor serial ao clicar "intervalo 10 s":
-
-```text title="Monitor serial"
-[PUB] ok elt85b/lab05/grupo-a/dht -> {"grupo":"a","seq":12,"t":24.5,"h":55.0,"uptime_ms":61410}
-[MQTT] elt85b/lab05/grupo-a/cmd/intervalo -> '10'
-[TMR] intervalo = 10 s
-[PUB] ok elt85b/lab05/grupo-a/dht -> {"grupo":"a","seq":13,"t":24.5,"h":55.0,"uptime_ms":72390}
+```text title="evidencias/t6-status.txt"
+elt85b/lab05/grupo-a/status offline
+elt85b/lab05/grupo-a/status online
+elt85b/lab05/grupo-a/status offline
 ```
+
+A primeira linha pode ser `offline` ou `online` (ou nem aparecer): é a mensagem **retida** de
+uma execução anterior, entregue assim que alguém assina o tópico.
 
 :::tip[Preveja antes de rodar]
-**P4:** com o MQTT Explorer aberto em `.../status`, **pare** a simulação do Wokwi (sem
-desconectar educadamente). Quanto tempo leva para aparecer `offline`? Dica: o keepalive
-padrão do PubSubClient é **15 s**, e o broker espera 1,5 × keepalive antes de desistir.
+**P4:** depois de parar a simulação, quanto tempo leva para aparecer `offline`? Há dois
+caminhos: se a conexão TCP é **fechada**, o broker publica o testamento na hora; se ela só
+**fica muda** (ex.: cabo/Wi-Fi caiu), ele espera 1,5 × keepalive — e o keepalive padrão do
+PubSubClient é **15 s**. Qual dos dois o Wokwi provocou? E o que muda se o firmware chamasse
+`mqtt.disconnect()` antes de parar?
 :::
 
-Exporte o fluxo novamente para `nodered/flows-lab05.json`.
-
 <CommitPoint
-  id="t8"
-  task="Intervalo configuravel via MQTT e status LWT"
-  pontos={15}
-  files="src/main.cpp nodered/flows-lab05.json evidencias/t8-intervalos.txt"
+  id="t6"
+  task="Status do no com LWT"
+  pontos={20}
+  files="src/main.cpp nodered/flows-lab05.json evidencias/t6-status.txt"
 />
 
 ---
-
-## Checklist
-
-- [ ] `platformio.ini` com DHT, Unified Sensor e PubSubClient; `diagram.json` com DHT22 no GPIO15 (T1)
-- [ ] Leituras periódicas via `Ticker` + flag `volatile`, `NaN` descartado (T2)
-- [ ] Conexão Wi-Fi com reconexão no `loop()` (T3)
-- [ ] JSON publicado em `elt85b/lab05/grupo-X/dht` a cada 5 s, client ID único (T4)
-- [ ] `node-red-node-sqlite` instalado e carregado (T5)
-- [ ] Fluxo `mqtt in` (JSON) → `function` → `sqlite` (prepared) exportado (T6)
-- [ ] Consulta com `delta_s` e resumo salva, ≥ 10 leituras (T7)
-- [ ] Intervalo remoto 2–3600 s + LWT `online`/`offline` retido (T8)
-- [ ] Previsões P1–P4 respondidas no `README.md`
-- [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
-
-:::info[Pontuação]
-**T1…T8 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 10 · T4 15 · T5 10 ·
-T6 15 · T7 10 · T8 15. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente
-de cada tarefa.
-:::
-
-## Entrega
-
-<LabSubmit labName="lab05" />
 
 <LabLogout />
