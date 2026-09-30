@@ -12,6 +12,11 @@ import FileTree from "@site/src/components/shared/FileTree";
 import SimpleFileTree from "@site/src/components/shared/SimpleFileTree";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import {
+    LabSetup,
+    LabLogout,
+} from "@site/src/components/shared/InstructionsSite";
+
 
 export default {
     // Mantém os componentes padrão do MDX
@@ -27,4 +32,6 @@ export default {
     SimpleFileTree,
     Tabs,
     TabItem,
+    LabSetup,
+    LabLogout,
 };
