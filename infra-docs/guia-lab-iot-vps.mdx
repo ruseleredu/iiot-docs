@@ -1,0 +1,987 @@
+---
+id: guia-lab-iot-vps
+title: Guia do LAB IoT (Node-RED, MQTT, Gitea, Chat e VPS)
+sidebar_label: Guia do LAB IoT VPS
+description: Como gerar, subir, publicar e usar o laboratório IoT — servidor Windows 11 no laboratório com Node-RED por grupo, MQTT, Gitea e Mattermost, publicado em https://iot.adrianoruseler.com por um túnel SSH até um VPS com Apache. Instruções para o professor e para o aluno.
+keywords:
+  [
+    node-red,
+    mqtt,
+    mosquitto,
+    gitea,
+    mattermost,
+    postgresql,
+    docker,
+    apache,
+    ssh,
+    túnel reverso,
+    vps,
+    windows 11,
+    laboratório,
+    iot,
+  ]
+toc_max_heading_level: 3
+---
+
+# Guia do LAB IoT
+
+Este guia explica como montar o laboratório da disciplina com o script
+**`gen_iot_vps_portal.py`** e como usá-lo no dia a dia.
+
+- **[Parte 1 — Professor](#parte-1--professor)**: preparar o servidor do laboratório (Windows 11)
+  e o VPS, gerar o ambiente, publicar na internet e administrar o lab.
+- **[Parte 2 — Aluno](#parte-2--aluno)**: acessar no laboratório ou de casa, programar no
+  Node-RED, usar MQTT, conversar no chat e versionar no Gitea.
+
+:::info[Visão geral em uma frase]
+Todos os serviços rodam **no servidor do laboratório** (Windows 11 + Docker Desktop). Na rede do
+laboratório, o acesso é direto pelo IP (`http://192.168.0.10/`). De qualquer outro lugar, o acesso é
+por **`https://iot.adrianoruseler.com/`**: um **túnel SSH** que **sai** do laboratório leva as
+requisições do **Apache do VPS** até o portal. Nenhuma porta precisa ser aberta na rede da instituição.
+:::
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+  subgraph CASA["Fora do laboratório"]
+    REM["Navegador / Git<br/>(casa, celular)"]
+  end
+
+  subgraph VPS["VPS iot.adrianoruseler.com (Oracle Cloud · 1 GB)"]
+    AP["Apache :443<br/>HTTPS + proxy"]
+    PT["127.0.0.1:8080<br/>(ponta do túnel)"]
+    OFF["lab-offline.html"]
+  end
+
+  subgraph LAB["Rede do laboratório"]
+    ALU["PCs dos alunos<br/>(Windows 11)"]
+    ESP["ESP32 / sensores"]
+    subgraph SRV["Servidor do lab · Windows 11 · Docker Desktop"]
+      TUN["tunel<br/>(cliente SSH)"]
+      NG["nginx :80<br/>portal + caminhos"]
+      NR["Node-RED<br/>lab05-a … lab05-j, -p, -n"]
+      GT["gitea"]
+      MM["mattermost"]
+      PG[("postgres")]
+      MQ["mosquitto :1883"]
+      MQX["mqtt-explorer :3001"]
+    end
+  end
+
+  REM -- "HTTPS" --> AP
+  AP --> PT
+  AP -. "túnel fora do ar" .-> OFF
+  TUN == "SSH :22 (sai do lab)<br/>túnel reverso" ==> PT
+  PT -. "pelo túnel" .-> TUN
+  TUN --> NG
+  ALU -- "http://IP/" --> NG
+  ALU -- "http://IP:3001" --> MQX
+  ESP -- "MQTT :1883" --> MQ
+  NG --> NR & GT & MM
+  GT & MM --> PG
+  NR --> MQ
+  MQX --> MQ
+```
+
+### Dois endereços, o mesmo laboratório
+
+| Onde você está              | Endereço base                          | Observações                                     |
+| --------------------------- | -------------------------------------- | ----------------------------------------------- |
+| **Na rede do laboratório**  | `http://192.168.0.10` (IP do servidor) | mais rápido; não depende da internet nem do VPS |
+| **Em qualquer outro lugar** | `https://iot.adrianoruseler.com`       | HTTPS; só funciona com o servidor do lab ligado |
+
+Os serviços ficam em **caminhos** do endereço base, iguais nos dois casos:
+
+| Serviço              | Caminho              | No lab | De fora |
+| -------------------- | -------------------- | ------ | ------- |
+| Portal               | `/`                  | ✅     | ✅      |
+| Node-RED do grupo A  | `/lab05-a/`          | ✅     | ✅      |
+| Dashboard do grupo A | `/lab05-a/dashboard` | ✅     | ✅      |
+| Gitea                | `/git/`              | ✅     | ✅      |
+| Chat (Mattermost)    | `/chat/`             | ✅     | ✅      |
+| MQTT Explorer        | porta `3001`         | ✅     | ❌      |
+| Broker MQTT          | porta `1883`         | ✅     | ❌      |
+
+### Convenção de nomes
+
+O nome do lab (`--lab`, padrão `lab05`) é combinado com uma letra:
+
+| Item                  | Nome                    | Observação                        |
+| --------------------- | ----------------------- | --------------------------------- |
+| Grupos de alunos      | `lab05-a`, `lab05-b`, … | um por grupo (máx. 24)            |
+| Professor             | `lab05-p`               | letra **p** reservada             |
+| Painel de notas       | `lab05-n`               | letra **n** reservada             |
+| Organização no Gitea  | `lab05-grupo-a`, …      | uma por grupo                     |
+| Canal privado no chat | `lab05-a`, …            | grupo + professor                 |
+| Tópicos MQTT do grupo | `lab05-a/...`           | prefixo obrigatório por convenção |
+
+---
+
+## Parte 1 — Professor
+
+### 1. Visão geral da preparação
+
+```mermaid
+flowchart TD
+  A["Servidor do lab: WSL 2, Docker Desktop, Python"] --> B["IP fixo + firewall (80, 1883, 3001)"]
+  B --> C["py gen_iot_vps_portal.py<br/>(gera a pasta lab05)"]
+  C --> D["Gerar a chave do túnel"]
+  D --> E["Enviar vps/ + chave ao VPS"]
+  E --> F["No VPS: sudo bash setup-vps.sh"]
+  F --> G["No lab: docker compose up -d --build"]
+  G --> H{"Inits OK e<br/>túnel conectado?"}
+  H -- "sim" --> I["Entregar a cada grupo<br/>sua linha do credenciais.txt"]
+  H -- "não" --> L["docker compose logs<br/>(seção 15)"] --> G
+  I --> J["Aula 🚀"]
+```
+
+### 2. Preparar o servidor do laboratório (Windows 11)
+
+#### 2.1 Hardware recomendado
+
+| Recurso     | Mínimo                   | Recomendado       |
+| ----------- | ------------------------ | ----------------- |
+| Memória RAM | 8 GB                     | **16 GB** ou mais |
+| Disco livre | 20 GB                    | 40 GB (SSD)       |
+| Rede        | cabo, na rede dos alunos | cabo + IP fixo    |
+
+Com 10 grupos, o laboratório usa cerca de 3 a 4 GB de RAM: perto de 100 MB por Node-RED, mais o
+Mattermost (cerca de 1 GB), o PostgreSQL, o Gitea e os demais serviços.
+
+#### 2.2 Instalar os programas
+
+No **PowerShell como administrador**:
+
+```powershell
+wsl --install                          # WSL 2 (reinicie se for pedido)
+winget install -e --id Docker.DockerDesktop
+winget install -e --id Python.Python.3.12
+winget install -e --id Git.Git         # opcional
+```
+
+Reinicie o computador e abra o **Docker Desktop** uma vez. Em **Settings → General**, marque
+_Use the WSL 2 based engine_ e _Start Docker Desktop when you sign in_. Depois, num PowerShell comum:
+
+```powershell
+py -m pip install bcrypt
+docker version; docker compose version; py --version
+```
+
+:::warning[Energia e suspensão]
+O servidor não pode suspender durante a aula, nem quando os alunos acessam de casa. Em
+**Configurações → Sistema → Energia**, ajuste a suspensão para **Nunca** quando estiver na tomada.
+:::
+
+#### 2.3 Imagem do MQTT Explorer
+
+O laboratório usa a imagem local **`ruseler/mqtt-explorer:local`**, que precisa existir no servidor:
+
+```powershell
+docker image ls ruseler/mqtt-explorer          # deve listar a tag "local"
+# vinda de outro computador:
+docker save -o mqtt-explorer.tar ruseler/mqtt-explorer:local   # na origem
+docker load -i mqtt-explorer.tar                                # no servidor
+```
+
+#### 2.4 IP fixo, perfil de rede e firewall
+
+1. Descubra o IP com `ipconfig` (**Endereço IPv4**, por exemplo `192.168.0.10`).
+2. Fixe-o por **reserva de DHCP** no roteador ou em **Configurações → Rede e Internet → Ethernet →
+   Atribuição de IP → Manual**.
+3. Deixe a rede como **Privada** e libere as portas usadas **dentro do laboratório**. No PowerShell
+   como administrador:
+
+```powershell
+Set-NetConnectionProfile -InterfaceAlias "Ethernet" -NetworkCategory Private
+
+New-NetFirewallRule -DisplayName "LAB IoT - HTTP (portal)" -Direction Inbound -Protocol TCP -LocalPort 80   -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "LAB IoT - MQTT"          -Direction Inbound -Protocol TCP -LocalPort 1883 -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "LAB IoT - MQTT Explorer" -Direction Inbound -Protocol TCP -LocalPort 3001 -Action Allow -Profile Private
+```
+
+:::tip[O túnel não precisa de porta aberta]
+O túnel é uma conexão **de saída** (SSH, porta 22) do servidor do lab até o VPS. Basta que a rede da
+instituição permita sair para a porta 22 do VPS. Não é preciso redirecionar portas no roteador nem
+pedir liberação de entrada.
+:::
+
+### 3. Preparar o VPS
+
+O VPS **não roda** os serviços. Ele só recebe o HTTPS e repassa pelo túnel, o que cabe
+folgado em 1 GB de RAM.
+
+Antes de começar, confira:
+
+| Requisito                                                                        | Como verificar no VPS                                           |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Apache servindo **HTTPS** para `iot.adrianoruseler.com` (certificado do certbot) | `sudo apache2ctl -S` lista um VirtualHost `*:443` com esse nome |
+| Acesso SSH com `sudo` (usuário `ubuntu` na Oracle)                               | `ssh ubuntu@iot.adrianoruseler.com`                             |
+| Portas **22** e **443** abertas (Security List da Oracle + firewall)             | já usadas hoje para SSH e o site                                |
+| `python3` e `curl`                                                               | já vêm no Ubuntu                                                |
+
+Se ainda não houver certificado:
+
+```bash
+sudo certbot --apache -d iot.adrianoruseler.com
+```
+
+:::caution[A raiz do domínio passa a ser o laboratório]
+Depois do setup, **todo** o `https://iot.adrianoruseler.com/` é encaminhado ao laboratório. Se esse
+domínio já mostra outro conteúdo, ele deixa de aparecer. As exceções são a validação do certbot
+(`/.well-known/acme-challenge/`) e a página `lab-offline.html`.
+:::
+
+### 4. Gerar o ambiente
+
+Coloque o `gen_iot_vps_portal.py` em `C:\lab`, abra o PowerShell nessa pasta e rode:
+
+```powershell
+cd C:\lab
+py .\gen_iot_vps_portal.py --lab lab05 --grupos 10 --ip 192.168.0.10
+```
+
+O script **não sobe nada**: ele só gera os arquivos em `C:\lab\lab05`. Saída (resumida):
+
+```text
+🐳 docker-compose.yml
+🌐 nginx/nginx.conf
+🐙 gitea/init/gitea-init.sh
+🐘 postgres/init/bancos.sql
+💬 mattermost/init/
+🔐 tunel/  e  🌍 vps/ (proxy.conf, lab-offline.html, setup-vps.sh)
+
+✅ lab05: 10 grupos (lab05-a..lab05-j) + professor (lab05-p) + notas (lab05-n)
+
+  Local:   http://192.168.0.10/
+  Público: https://iot.adrianoruseler.com/   (túnel SSH -> Apache do VPS iot.adrianoruseler.com)
+
+🌍 Publicação em https://iot.adrianoruseler.com — passos (uma vez):
+   1) docker compose run --rm --no-deps --build tunel chave   (gera e mostra a chave)
+   2) ssh ubuntu@iot.adrianoruseler.com mkdir -p iot-lab
+      scp -r vps tunel/chave/id_ed25519.pub ubuntu@iot.adrianoruseler.com:iot-lab/
+   3) ssh -t ubuntu@iot.adrianoruseler.com sudo bash iot-lab/vps/setup-vps.sh iot-lab/id_ed25519.pub
+   4) docker compose up -d --build
+```
+
+:::tip[Pasta curta e sem OneDrive]
+Use uma pasta local e curta como `C:\lab`. Evite **Área de Trabalho** e **Documentos** se estiverem
+sincronizados com o OneDrive, porque a sincronização pode travar arquivos usados pelos containers.
+:::
+
+#### 4.1 Todos os parâmetros
+
+| Parâmetro                                           | Padrão                           | O que faz                                                                        |
+| --------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| `--lab`                                             | `lab05`                          | Nome do lab; prefixo de tudo (deve começar com letra).                           |
+| `--grupos`                                          | `10`                             | Quantidade de grupos (1 a 24).                                                   |
+| `--ip`                                              | `127.0.0.1`                      | **IP do servidor na rede do lab** (acesso local, MQTT, MQTT Explorer).           |
+| `--publico-url`                                     | `https://iot.adrianoruseler.com` | Endereço público servido pelo Apache do VPS.                                     |
+| `--vps-host`                                        | host da `--publico-url`          | Host ou IP do VPS para o SSH do túnel.                                           |
+| `--vps-ssh-porta`                                   | `22`                             | Porta SSH do VPS.                                                                |
+| `--vps-usuario`                                     | `tunel`                          | Usuário restrito criado no VPS para o túnel.                                     |
+| `--vps-porta-tunel`                                 | `8080`                           | Porta, **só em 127.0.0.1 do VPS**, onde o túnel entrega o portal.                |
+| `--sem-tunel`                                       | desligado                        | Sem publicação: só a rede local (`http://IP/`).                                  |
+| `--sem-gitea`                                       | desligado                        | Não inclui o Gitea.                                                              |
+| `--gitea-db`                                        | `postgres`                       | Banco do Gitea: `postgres` (compartilhado) ou `sqlite`.                          |
+| `--gitea-repo`                                      | `nodered`                        | Repositório criado em cada organização (`''` = nenhum).                          |
+| `--sem-chat`                                        | desligado                        | Não inclui o Mattermost.                                                         |
+| `--proteger-http`                                   | desligado                        | Dashboards e endpoints HTTP do Node-RED passam a pedir usuário e senha do grupo. |
+| `--novas-senhas`                                    | desligado                        | Sorteia senhas **novas** para todos (por padrão, as senhas são mantidas).        |
+| `--dominio`                                         | `iot.lab`                        | Usado só nos e-mails internos das contas (`lab05-a@iot.lab`).                    |
+| `--saida`                                           | nome do lab                      | Pasta onde tudo é gerado.                                                        |
+| `--mqtt-explorer-auth`                              | desligado                        | Exige login no MQTT Explorer.                                                    |
+| `--mqtt-explorer-usuario` / `--mqtt-explorer-senha` | `admin` / gerada                 | Credenciais do MQTT Explorer.                                                    |
+| `--mqtt-explorer-porta`                             | `3001`                           | Porta do MQTT Explorer.                                                          |
+
+:::warning[Não esqueça o --ip]
+Com o padrão `127.0.0.1`, o lab só funciona **no próprio servidor**. Sempre gere com o IP real da
+rede do laboratório.
+:::
+
+#### 4.2 Outros exemplos
+
+```powershell
+# Dashboards protegidos por senha quando acessados de fora
+py .\gen_iot_vps_portal.py --lab lab05 --ip 192.168.0.10 --proteger-http
+
+# Laboratório enxuto: sem chat e Gitea em SQLite (não cria o PostgreSQL)
+py .\gen_iot_vps_portal.py --lab lab05 --ip 192.168.0.10 --sem-chat --gitea-db sqlite
+
+# Só rede local, sem VPS
+py .\gen_iot_vps_portal.py --lab lab05 --ip 192.168.0.10 --sem-tunel
+```
+
+### 5. O que foi gerado
+
+```text
+lab05\
+├── docker-compose.yml           # todos os serviços (inclui o "tunel")
+├── Dockerfile                   # imagem do Node-RED com nós extras
+├── credenciais.txt              # ⚠️ senhas e endereços de todos
+├── .segredos.json               # ⚠️ senhas e chaves persistentes — NÃO apague
+├── nginx\nginx.conf             # um servidor, tudo em caminhos
+├── nginx\html\index.html        # portal (links relativos: valem no IP e no domínio)
+├── settings\lab05-a.js ...      # configuração de cada Node-RED
+├── data\lab05-a\ ...            # fluxos, projetos e bancos SQLite de cada grupo
+├── mosquitto\  mqtt-explorer\   # broker e explorer
+├── gitea\init\gitea-init.sh     # usuários, organizações, times e repositórios
+├── mattermost\init\             # equipe, usuários e canais do chat
+├── postgres\init\bancos.sql     # bancos do Gitea e do Mattermost
+├── tunel\                       # cliente do túnel SSH
+│   ├── Dockerfile, entrypoint.sh
+│   └── chave\                   # ⚠️ chave privada do túnel (gerada no 1º uso)
+└── vps\                         # vai para o VPS
+    ├── setup-vps.sh             # configura usuário, sshd e Apache
+    ├── proxy.conf               # trecho do Apache (proxy + WebSocket)
+    └── lab-offline.html         # página "laboratório desligado"
+```
+
+Bancos, repositórios Git e anexos do chat ficam em **volumes do Docker** (`lab05_postgres_data`,
+`lab05_gitea_data`, `lab05_mm_*`, `lab05_mosquitto_data`). O backup está na
+[seção 14](#14-operação-do-dia-a-dia).
+
+### 6. Publicar no VPS
+
+Faça isto **uma vez**, no PowerShell, dentro de `C:\lab\lab05`. O Windows 11 já traz `ssh` e `scp`.
+
+**1) Gerar a chave do túnel**
+
+```powershell
+docker compose run --rm --no-deps --build tunel chave
+```
+
+A chave fica em `tunel\chave\`. A linha `ssh-ed25519 …` exibida é a parte **pública**.
+
+- Verifique a conexão:
+
+```powershell
+ssh -i tunel/chave/id_ed25519 ubuntu@iot.adrianoruseler.com
+```
+
+**2) Enviar os arquivos ao VPS**
+
+```powershell
+scp -i tunel/chave/id_ed25519 -r vps tunel/chave/id_ed25519.pub ubuntu@iot.adrianoruseler.com:iot-lab/
+```
+
+**3) Rodar o setup no VPS**
+
+```powershell
+ssh -t -i tunel/chave/id_ed25519 ubuntu@iot.adrianoruseler.com "sudo bash ~/iot-lab/vps/setup-vps.sh ~/iot-lab/id_ed25519.pub"
+```
+
+```text
+[setup-vps] usuário tunel criado
+[setup-vps] chave do túnel autorizada (só 127.0.0.1:8080)
+[setup-vps] sshd recarregado
+[setup-vps] MPM event: limite de conexões simultâneas ajustado para 400
+[setup-vps] VirtualHost HTTPS: /etc/apache2/sites-available/000-default-le-ssl.conf
+[setup-vps] Include inserido (backup: /etc/apache2/sites-available/000-default-le-ssl.conf.bak-iot-lab-20261001154414)
+AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1. Set the 'ServerName' directive globally to suppress this message
+Syntax OK
+[setup-vps] Apache recarregado
+[setup-vps] OK: Apache pronto; o túnel ainda não está conectado (página 'laboratório desligado').
+[setup-vps] concluído. No laboratório:  docker compose up -d   e   docker compose logs -f tunel
+Connection to iot.adrianoruseler.com closed.
+```
+
+O `setup-vps.sh` pode rodar de novo quantas vezes for preciso (por exemplo, para trocar a chave).
+Ele faz o seguinte:
+
+| Etapa           | O que faz                                                                                                   | Por quê                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Usuário `tunel` | sem senha nem shell; a chave só pode abrir `127.0.0.1:8080`                                                 | se a chave vazar, não dá acesso ao VPS                  |
+| sshd            | regras só para `tunel` e detecção de conexão morta a cada 15 s                                              | libera a porta rápido após uma queda                    |
+| Apache          | liga `proxy`, `proxy_http`, `proxy_wstunnel`, `headers` e insere o `Include` no VirtualHost 443, com backup | encaminhar HTTPS e WebSocket                            |
+| MPM event       | até 400 conexões simultâneas                                                                                | cada editor, dashboard e chat aberto mantém uma conexão |
+| Validação       | `apache2ctl configtest`; se falhar, **restaura o backup**                                                   | não derrubar o site                                     |
+
+**4) Subir o laboratório** (próxima seção)
+
+#### Como uma requisição chega ao Node-RED
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as Aluno em casa
+  participant A as Apache (VPS :443)
+  participant T as Túnel SSH
+  participant N as nginx (lab :80)
+  participant R as Node-RED lab05-a
+  Note over T: aberto pelo container "tunel"<br/>(lab → VPS, porta 22)
+  U->>A: GET https://iot.adrianoruseler.com/lab05-a/
+  A->>T: http://127.0.0.1:8080/lab05-a/ (+ X-Forwarded-Proto: https)
+  T->>N: entrega no nginx do laboratório
+  N->>R: /lab05-a/ → lab05-a-nodered:1880
+  R-->>U: editor (e WebSocket /lab05-a/comms pelo mesmo caminho)
+```
+
+### 7. Subir o laboratório
+
+```powershell
+cd C:\lab\lab05
+docker compose up -d --build
+```
+
+A primeira subida leva vários minutos. A ordem de inicialização é:
+
+```mermaid
+flowchart LR
+  PG["postgres"] -->|saudável| DBI["db-init<br/>(bancos)"]
+  DBI -->|terminou OK| GT["gitea"]
+  DBI -->|terminou OK| MM["mattermost"]
+  GT -->|saudável| GTI["gitea-init"]
+  MM -->|saudável| MMI["mattermost-init"]
+  MOS["mosquitto"] --> NR["Node-RED (todos)"]
+  MOS --> MQX["mqtt-explorer"]
+  NR & GT & MM & MQX --> NG["nginx"]
+  NG --> TUN["tunel → VPS"]
+```
+
+Confira o estado e os logs:
+
+```powershell
+docker compose ps -a                       # db-init, gitea-init, mattermost-init: "exited (0)"
+docker compose logs gitea-init mattermost-init
+docker compose logs -f tunel
+```
+
+```text
+[tunel] chave pública: ssh-ed25519 AAAAC3Nza... tunel-iot-lab
+[tunel] conectando tunel@iot.adrianoruseler.com:22  (VPS 127.0.0.1:8080 -> nginx:80)
+Warning: Permanently added 'iot.adrianoruseler.com' (ED25519) to the list of known hosts.
+```
+
+Sem novas mensagens depois de "conectando", o túnel está **no ar**. Se ele cair, o container tenta
+de novo a cada 10 s.
+
+### 8. Verificar
+
+| Teste                                                 | Onde              | Esperado                                             |
+| ----------------------------------------------------- | ----------------- | ---------------------------------------------------- |
+| `http://192.168.0.10/`                                | PC na rede do lab | portal com os cartões                                |
+| `https://iot.adrianoruseler.com/`                     | celular no 4G     | o mesmo portal, com cadeado                          |
+| `https://iot.adrianoruseler.com/` com o lab desligado | qualquer lugar    | página **"O laboratório está desligado no momento"** |
+| `http://192.168.0.10:3001/`                           | rede do lab       | MQTT Explorer                                        |
+
+### 9. Credenciais
+
+O `credenciais.txt` traz as senhas e **os dois endereços** de cada serviço. **Um par
+usuário/senha por grupo** vale para Node-RED, Gitea e chat:
+
+| Usuário               | Node-RED                      | Gitea                                | Chat                                       |
+| --------------------- | ----------------------------- | ------------------------------------ | ------------------------------------------ |
+| `lab05-a`             | edita o próprio Node-RED      | escreve em `lab05-grupo-a`           | canal privado `lab05-a` + `avisos`         |
+| `lab05-a-view`        | só visualiza                  | —                                    | —                                          |
+| `lab05-p` (professor) | edita o Node-RED do professor | **administrador**                    | **administrador**, está em todos os canais |
+| `lab05-n` (notas)     | edita o painel de notas       | **leitura** em todas as organizações | —                                          |
+
+As senhas são **mantidas** quando o script roda de novo (ficam em `.segredos.json`). Para
+sortear novas, use `--novas-senhas`.
+
+:::danger[Proteja credenciais.txt, .segredos.json e tunel\chave]
+Os três contêm segredos em texto puro. Não os coloque em repositório, em OneDrive compartilhado nem
+em pasta acessível aos alunos. Para entregar a senha, copie **só a linha do grupo**.
+:::
+
+### 10. Gitea
+
+```mermaid
+flowchart LR
+  subgraph ORGA["Organização lab05-grupo-a (privada)"]
+    RA["repo nodered"]
+  end
+  subgraph ORGB["Organização lab05-grupo-b (privada)"]
+    RB["repo nodered"]
+  end
+  UA(["lab05-a"]) -- "escrita<br/>(time grupo)" --> ORGA
+  UB(["lab05-b"]) -- "escrita<br/>(time grupo)" --> ORGB
+  UN(["lab05-n · notas"]) -. "leitura<br/>(time avaliacao)" .-> ORGA & ORGB
+  UP(["lab05-p · admin"]) == "dono" ==> ORGA & ORGB
+  UA -. "✗ sem acesso" .-x ORGB
+```
+
+O `gitea-init` cria, para cada grupo, o usuário (mesma senha do Node-RED), a organização privada,
+os times `grupo` (escrita) e `avaliacao` (leitura, para `lab05-n`) e o repositório `nodered` com
+`README.md` na branch `main`. O cadastro público fica desligado e é preciso login até para ver.
+
+O endereço "oficial" do Gitea (links e URLs de clone exibidos) é o público,
+`https://iot.adrianoruseler.com/git/`. Mesmo assim, ele **funciona normalmente pelo IP** dentro do
+laboratório. Os repositórios ficam no volume `lab05_gitea_data`, e o banco, no PostgreSQL.
+
+### 11. Chat (Mattermost)
+
+```mermaid
+flowchart TB
+  subgraph TEAM["Equipe lab05 (privada)"]
+    AV["#avisos<br/>(toda a equipe)"]
+    CA["🔒 lab05-a"]
+    CB["🔒 lab05-b"]
+    CJ["🔒 …"]
+  end
+  P(["lab05-p · professor"]) --> AV & CA & CB & CJ
+  A(["lab05-a"]) --> AV & CA
+  B(["lab05-b"]) --> AV & CB
+```
+
+O `mattermost-init` cria:
+
+- a equipe privada **`lab05`**;
+- o canal **`avisos`**, com todos;
+- um canal **privado** por grupo, só com o grupo e o professor;
+- os usuários com as senhas do `credenciais.txt`. `lab05-p` é o administrador do sistema.
+
+As contas são **por grupo**: a mensagem aparece como `lab05-a`, e não com o nome do aluno. Peça aos
+alunos que assinem quando isso importar. O app **Mattermost Desktop** ou **mobile** pode ser usado
+com o servidor `https://iot.adrianoruseler.com/chat`.
+
+### 12. Painel de notas (`lab05-n`)
+
+O Node-RED de notas monta a pasta `data` de **todos** os grupos, só para leitura, em `/data_grupos`:
+
+```text
+/data_grupos/lab05-a/flows.json
+/data_grupos/lab05-a/projects/nodered/flows.json   # se o grupo usa Projects
+```
+
+Use **read file** (ou `fs` num nó `function`) para analisar os fluxos. O usuário `lab05-n` também
+tem leitura em todas as organizações do Gitea.
+
+### 13. Segurança com o laboratório na internet
+
+| Item                                        | Situação                                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editores Node-RED                           | exigem login (usuário do grupo ou `-view`)                                                                                                        |
+| Gitea e chat                                | exigem login; sem cadastro público                                                                                                                |
+| **Dashboards e endpoints HTTP do Node-RED** | **abertos** por padrão. Use `--proteger-http` para pedir a senha do grupo. Nesse caso, um ESP32 que chame endpoints HTTP também precisa enviá-la. |
+| Broker MQTT e MQTT Explorer                 | **não** são publicados; só na rede do lab                                                                                                         |
+| Chave do túnel                              | só abre `127.0.0.1:8080` no VPS; não tem shell nem outros redirecionamentos                                                                       |
+| Buscadores                                  | o Apache envia `X-Robots-Tag: noindex, nofollow`                                                                                                  |
+
+As senhas dos grupos têm 8 caracteres. Com o laboratório exposto, evite reutilizá-las em outros
+lugares e, ao final do semestre, desligue a publicação ([seção 14.3](#143-fim-do-semestre)).
+
+### 14. Operação do dia a dia
+
+No PowerShell, dentro de `C:\lab\lab05`:
+
+| Tarefa                                   | Comando                                                                          |
+| ---------------------------------------- | -------------------------------------------------------------------------------- |
+| Ver status                               | `docker compose ps -a`                                                           |
+| Logs do túnel                            | `docker compose logs -f tunel`                                                   |
+| Reiniciar o túnel                        | `docker compose restart tunel`                                                   |
+| Tirar o lab da internet (continua local) | `docker compose stop tunel`                                                      |
+| Logs de um grupo                         | `docker compose logs -f lab05-a-nodered`                                         |
+| Reiniciar um grupo                       | `docker compose restart lab05-a-nodered`                                         |
+| Parar tudo (mantém dados)                | `docker compose down`                                                            |
+| Subir de novo                            | `docker compose up -d`                                                           |
+| Ver mensagens MQTT                       | `docker exec -it lab05-mosquitto mosquitto_sub -t '#' -v`                        |
+| Recriar usuários do Gitea / chat         | `docker compose run --rm gitea-init` / `docker compose run --rm mattermost-init` |
+
+No VPS:
+
+| Tarefa                       | Comando                                    |
+| ---------------------------- | ------------------------------------------ |
+| O túnel está conectado?      | `sudo ss -ltnp` e procure `127.0.0.1:8080` |
+| Erros do Apache              | `sudo tail -f /var/log/apache2/error.log`  |
+| Tentativas de login do túnel | `sudo journalctl -u ssh -f`                |
+
+#### 14.1 Backup
+
+```powershell
+cd C:\lab\lab05
+New-Item -ItemType Directory -Force backup | Out-Null
+$d = Get-Date -Format yyyy-MM-dd
+
+# Bancos (Gitea + chat): gerado dentro do container e copiado (evita UTF-16 do PowerShell)
+docker exec lab05-postgres pg_dumpall -U postgres -f /tmp/dump.sql
+docker cp lab05-postgres:/tmp/dump.sql ".\backup\postgres_$d.sql"
+
+# Pastas locais e segredos
+tar -czf ".\backup\pastas_$d.tgz" data settings credenciais.txt .segredos.json tunel\chave
+
+# Repositórios Git e anexos do chat
+docker run --rm -v lab05_gitea_data:/v -v "${PWD}\backup:/b" alpine tar czf /b/gitea_$d.tgz -C /v .
+docker run --rm -v lab05_mm_data:/v    -v "${PWD}\backup:/b" alpine tar czf /b/mm_data_$d.tgz -C /v .
+```
+
+O prefixo `lab05_` dos volumes vem do nome da pasta. Confira com `docker volume ls`.
+
+#### 14.2 Zerar o Node-RED de um grupo
+
+```powershell
+docker compose stop lab05-a-nodered
+Rename-Item data\lab05-a lab05-a.old
+New-Item -ItemType Directory data\lab05-a | Out-Null
+docker compose start lab05-a-nodered
+```
+
+#### 14.3 Fim do semestre
+
+```powershell
+docker compose down        # para tudo e mantém dados e volumes
+docker compose down -v     # ⚠️ APAGA também os volumes (bancos, repositórios, chat)
+```
+
+Para revogar o acesso do túnel ao VPS, no VPS:
+
+```bash
+sudo truncate -s 0 /home/tunel/.ssh/authorized_keys
+```
+
+### 15. Regerar o ambiente
+
+| Item                                                 | Ao rodar o script de novo na mesma pasta        |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| Senhas dos grupos                                    | **mantidas** (use `--novas-senhas` para trocar) |
+| Senhas internas, chaves do Node-RED e do Gitea       | **mantidas** (`.segredos.json`)                 |
+| Chave do túnel (`tunel\chave`)                       | **mantida**                                     |
+| `data\` e volumes                                    | **preservados**                                 |
+| `docker-compose.yml`, `nginx\`, `settings\`, scripts | sobrescritos                                    |
+
+Depois de regerar com a turma em andamento:
+
+```powershell
+docker compose up -d --build
+docker compose run --rm gitea-init        # só necessário com --novas-senhas
+docker compose run --rm mattermost-init   # idem
+```
+
+Se você mudou `--publico-url` ou `--vps-porta-tunel`, envie a pasta `vps\` de novo e rode o
+`setup-vps.sh` outra vez.
+
+### 16. Problemas comuns
+
+<details>
+<summary>O domínio mostra "O laboratório está desligado no momento"</summary>
+
+O túnel não está conectado. No lab, rode `docker compose ps` e `docker compose logs tunel`. O
+servidor precisa estar ligado, com o Docker Desktop aberto e com acesso à internet.
+
+</details>
+
+<details>
+<summary>tunel: "Permission denied (publickey)"</summary>
+
+O VPS não reconhece a chave. Gere de novo a pública com `docker compose run --rm --no-deps tunel chave`,
+envie o `id_ed25519.pub` e rode o `setup-vps.sh` outra vez. Se o sshd do VPS usa `AllowUsers`, inclua
+`tunel` nessa lista (o setup avisa).
+
+</details>
+
+<details>
+<summary>tunel: "remote port forwarding failed for listen port 8080"</summary>
+
+O VPS ainda mantém a sessão anterior, que caiu sem avisar. O sshd a encerra em até cerca de 45 s e
+o container reconecta sozinho. Se persistir, veja se outro programa usa a porta 8080 no VPS
+(`sudo ss -ltnp | grep 8080`). Nesse caso, gere com outra `--vps-porta-tunel` e rode o setup de novo.
+
+</details>
+
+<details>
+<summary>tunel: "Connection timed out" ao conectar</summary>
+
+A rede da instituição bloqueia a saída para a porta 22. Faça o sshd do VPS escutar também em outra
+porta (por exemplo `2222`; a 443 já é do Apache), libere-a na Security List da Oracle e gere com
+`--vps-ssh-porta 2222`.
+
+</details>
+
+<details>
+<summary>setup-vps.sh: "não achei o VirtualHost *:443"</summary>
+
+O Apache ainda não tem HTTPS para o domínio. Rode `sudo certbot --apache -d iot.adrianoruseler.com` e
+execute o setup de novo.
+
+</details>
+
+<details>
+<summary>setup-vps.sh avisa sobre MPM "prefork"</summary>
+
+O Apache está em `prefork` (comum com `mod_php`). Nesse modo, cada conexão aberta ocupa um processo
+inteiro, e 1 GB de RAM não aguenta a turma. Migre para PHP-FPM + `mpm_event`, ou não use PHP nesse
+VPS, e rode o setup de novo.
+
+</details>
+
+<details>
+<summary>Funciona pelo domínio mas não pelo IP (ou o contrário)</summary>
+
+- Só o IP falha: confira o perfil de rede **Privado** e o firewall ([seção 2.4](#24-ip-fixo-perfil-de-rede-e-firewall)),
+  e se o lab foi gerado com o `--ip` correto.
+- Só o domínio falha: é o túnel ou o VPS. Veja os logs do `tunel` e `/var/log/apache2/error.log`.
+
+</details>
+
+<details>
+<summary>gitea-init ou mattermost-init terminou com erro</summary>
+
+Normalmente o serviço demorou para ficar pronto. Rode de novo: `docker compose run --rm mattermost-init`
+(ou `gitea-init`).
+
+</details>
+
+<details>
+<summary>Gitea ou chat: "password authentication failed"</summary>
+
+O `.segredos.json` foi apagado ou trocado depois que o PostgreSQL foi criado. Restaure o arquivo e rode
+`docker compose up -d`. Sem ele, só resta recriar o volume `lab05_postgres_data`, **perdendo** os
+dados do Gitea e do chat.
+
+</details>
+
+---
+
+## Parte 2 — Aluno
+
+### 1. O que você recebe do professor
+
+- A **letra do seu grupo** (ex.: `a`, então seu grupo é `lab05-a`).
+- O **usuário e a senha** do grupo. **A mesma senha vale para o Node-RED, o Gitea e o chat.**
+- Os dois endereços do laboratório:
+
+| Onde você está               | Abra                                    |
+| ---------------------------- | --------------------------------------- |
+| No laboratório               | `http://192.168.0.10/` (IP do servidor) |
+| Em casa ou em qualquer lugar | `https://iot.adrianoruseler.com/`       |
+
+Não é preciso configurar nada no Windows: nem DNS, nem arquivo `hosts`.
+
+:::tip[No laboratório, use o IP]
+Dentro do laboratório, o endereço pelo IP é mais rápido e funciona mesmo se a internet cair. O
+endereço público passa pela internet e pelo VPS.
+:::
+
+### 2. Portal e Node-RED
+
+1. Abra o endereço base. Aparecem cartões para cada grupo e para professor, notas, chat, Gitea e
+   MQTT Explorer.
+2. Clique no cartão do **seu grupo** e entre com o usuário e a senha do grupo.
+
+|                      | No laboratório                          | De fora                                            |
+| -------------------- | --------------------------------------- | -------------------------------------------------- |
+| Editor do grupo A    | `http://192.168.0.10/lab05-a/`          | `https://iot.adrianoruseler.com/lab05-a/`          |
+| Dashboard do grupo A | `http://192.168.0.10/lab05-a/dashboard` | `https://iot.adrianoruseler.com/lab05-a/dashboard` |
+
+O usuário `lab05-a-view` abre o editor **sem poder alterar nada**. Use-o para apresentar no
+projetor.
+
+:::note[Página "O laboratório está desligado no momento"]
+Se ela aparecer no endereço público, o servidor do laboratório está desligado ou sem internet.
+Isso é normal fora do horário das aulas. Tente mais tarde ou avise o professor no chat.
+:::
+
+### 3. Chat do lab
+
+Abra o cartão **Chat** (`/chat/`) e entre com o **usuário e a senha do grupo**.
+
+| Canal                         | Quem vê                      | Para quê             |
+| ----------------------------- | ---------------------------- | -------------------- |
+| `avisos`                      | todo o lab                   | recados do professor |
+| 🔒 `lab05-a` (o do seu grupo) | só o seu grupo e o professor | dúvidas e orientação |
+| mensagens diretas             | as duas pontas               | conversa direta      |
+
+Todos do grupo usam a **mesma conta**: comece com o seu nome quando importar ("**Ana:** o sensor
+parou…"). Para mostrar código, use três crases antes e depois do trecho. No celular, o app
+**Mattermost** funciona com o servidor `https://iot.adrianoruseler.com/chat`.
+
+### 4. MQTT
+
+O broker MQTT só existe **na rede do laboratório**.
+
+```mermaid
+sequenceDiagram
+  participant ESP as ESP32 (lab05-a-esp32)
+  participant B as mosquitto :1883
+  participant NR as Node-RED lab05-a
+  participant UI as Dashboard
+  ESP->>B: PUBLISH lab05-a/sensor/temperatura = 23.5
+  B->>NR: entrega (mqtt in: lab05-a/sensor/#)
+  NR->>UI: atualiza gráfico
+  UI->>NR: clique no botão "LED"
+  NR->>B: PUBLISH lab05-a/led/cmd = ON
+  B->>ESP: entrega (inscrito em lab05-a/led/cmd)
+```
+
+| Cliente                                     | Servidor (host)                 | Porta  |
+| ------------------------------------------- | ------------------------------- | ------ |
+| Node-RED do grupo (no servidor)             | `mosquitto`                     | `1883` |
+| ESP32, celular, MQTTX, Python (rede do lab) | IP do servidor (`192.168.0.10`) | `1883` |
+
+O broker não pede usuário nem senha. No Node-RED:
+
+1. Arraste um nó **mqtt in** ou **mqtt out**.
+2. Em _Server_, crie o broker com **Server** `mosquitto` e **Port** `1883`.
+3. Em _Topic_, use o prefixo do grupo (ex.: `lab05-a/sensor/#`).
+4. Clique em **Deploy**. O nó deve mostrar **connected**.
+
+Mesmo editando o Node-RED **de casa**, os nós MQTT continuam funcionando, porque eles rodam no
+servidor do laboratório. O que só funciona no laboratório é ligar dispositivos e clientes **seus** ao
+broker.
+
+```cpp
+const char* MQTT_HOST = "192.168.0.10";   // IP do servidor do laboratório
+const int   MQTT_PORT = 1883;
+
+client.setServer(MQTT_HOST, MQTT_PORT);
+client.connect("lab05-a-esp32");          // client id único por dispositivo
+client.publish("lab05-a/sensor/temperatura", "23.5");
+client.subscribe("lab05-a/led/cmd");
+```
+
+:::warning[Respeite os tópicos dos outros grupos]
+O broker é compartilhado e não bloqueia tópicos. Publicar fora do seu prefixo atrapalha os outros
+grupos e a avaliação.
+:::
+
+### 5. MQTT Explorer
+
+Na rede do laboratório, abra o cartão **MQTT Explorer** (`http://192.168.0.10:3001/`). Ele já vem
+conectado ao broker. Expanda `lab05-a` para ver as mensagens do grupo. Se pedir login, use as
+credenciais **do MQTT Explorer** informadas pelo professor.
+
+### 6. Banco de dados SQLite
+
+O nó **sqlite** está instalado. Grave o banco dentro da pasta de dados do Node-RED:
+
+```text
+Database: /data/meu_banco.db
+```
+
+### 7. Gitea: versionar o projeto
+
+Seu grupo tem a organização privada **`lab05-grupo-a`** com o repositório **`nodered`**.
+
+```mermaid
+sequenceDiagram
+  participant NR as Node-RED (lab05-a)
+  participant G as Gitea (gitea:3000)
+  participant PC as Seu PC (Git for Windows)
+  NR->>G: clone (primeira vez)
+  loop a cada funcionalidade
+    NR->>NR: Deploy + commit
+    NR->>G: push
+  end
+  PC->>G: git clone / pull (opcional, pelo IP ou pelo domínio)
+```
+
+#### 7.1 Entrar no Gitea
+
+Abra o cartão **Gitea** (`/git/`) e entre com o **mesmo usuário e senha** do grupo.
+
+#### 7.2 Ligar o Node-RED ao repositório (Projects)
+
+1. No primeiro acesso, o Node-RED abre o assistente de projetos. Informe nome e e-mail para os
+   commits (ex.: `Grupo A`, `lab05-a@iot.lab`).
+2. Escolha **Clone Repository**:
+
+   | Campo          | Valor                                         |
+   | -------------- | --------------------------------------------- |
+   | Repository URL | `http://gitea:3000/lab05-grupo-a/nodered.git` |
+   | Username       | `lab05-a`                                     |
+   | Password       | senha do grupo                                |
+
+   Use **`gitea:3000`**, o nome interno do Docker. O Node-RED roda dentro do servidor, e esse
+   endereço funciona tanto no laboratório quanto de casa.
+
+3. Defina uma **chave de criptografia das credenciais** e anote-a.
+4. Se o Node-RED avisar que faltam arquivos do projeto (`package.json` ou o arquivo de fluxos),
+   aceite criá-los.
+
+No dia a dia, use a aba **Project history**:
+
+- **commit**: em _Local changes_, marque os arquivos, clique em **commit** e escreva a mensagem;
+- **push**: clique na seta ↑ para enviar ao Gitea.
+
+:::tip[Commits pequenos e frequentes]
+Faça um commit a cada funcionalidade que funcionar ("leitura do sensor ok",
+"dashboard com gráfico"). O histórico ajuda o grupo a voltar atrás e mostra ao professor a
+evolução do trabalho.
+:::
+
+#### 7.3 Clonar no seu PC (opcional)
+
+Instale o Git for Windows (`winget install -e --id Git.Git`) e, no PowerShell:
+
+<Tabs groupId="local">
+<TabItem value="lab" label="No laboratório" default>
+
+```powershell
+git clone http://192.168.0.10/git/lab05-grupo-a/nodered.git
+```
+
+</TabItem>
+<TabItem value="fora" label="De fora">
+
+```powershell
+git clone https://iot.adrianoruseler.com/git/lab05-grupo-a/nodered.git
+```
+
+</TabItem>
+</Tabs>
+
+O **Git Credential Manager** pede o usuário (`lab05-a`) e a senha do grupo. Em computador
+compartilhado, remova a credencial ao final em **Painel de Controle → Gerenciador de Credenciais →
+Credenciais do Windows**.
+
+### 8. Boas práticas
+
+- Dê **Deploy** com frequência e teste com nós **debug**.
+- Faça commit e push no Gitea ao fim de cada aula.
+- Não guarde senhas reais em nós `function` ou `template`. Lembre que o dashboard pode estar acessível
+  pela internet.
+- Se o seu Node-RED ficar fora do ar, avise no **canal privado do grupo**.
+
+### 9. Problemas comuns
+
+| Sintoma                                   | Causa provável                            | O que fazer                                                |
+| ----------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| "O laboratório está desligado no momento" | servidor do lab desligado ou sem internet | tente mais tarde; no lab, use o IP                         |
+| O IP não abre, no laboratório             | rede diferente (ex.: Wi-Fi de visitantes) | conecte-se à rede do laboratório                           |
+| Login recusado                            | usuário ou senha errados                  | o usuário é `lab05-a` (sem `-view`); diferencia maiúsculas |
+| Nó MQTT em _disconnected_                 | servidor errado no nó                     | use `mosquitto` e porta `1883`                             |
+| ESP32 não conecta                         | fora da rede do lab ou IP errado          | o broker só existe na rede do laboratório                  |
+| MQTT Explorer não abre de casa            | ele é só local                            | use-o no laboratório                                       |
+| Clone no Node-RED falha                   | URL externa                               | use `http://gitea:3000/...` dentro do Node-RED             |
+| "Repository not found"                    | organização de outro grupo                | cada grupo só acessa a sua                                 |
+
+---
+
+## Referência rápida
+
+<Tabs groupId="papel">
+<TabItem value="prof" label="Professor" default>
+
+```powershell
+# no servidor do laboratório (uma vez)
+py -m pip install bcrypt
+cd C:\lab
+py .\gen_iot_vps_portal.py --lab lab05 --grupos 10 --ip 192.168.0.10
+cd .\lab05
+docker compose run --rm --no-deps --build tunel chave
+ssh ubuntu@iot.adrianoruseler.com mkdir -p iot-lab
+scp -r vps tunel\chave\id_ed25519.pub ubuntu@iot.adrianoruseler.com:iot-lab/
+ssh -t ubuntu@iot.adrianoruseler.com sudo bash iot-lab/vps/setup-vps.sh iot-lab/id_ed25519.pub
+docker compose up -d --build
+docker compose logs -f tunel
+notepad credenciais.txt
+```
+
+</TabItem>
+<TabItem value="aluno" label="Aluno">
+
+| O quê                       | Onde                                                |
+| --------------------------- | --------------------------------------------------- |
+| Portal (no laboratório)     | `http://192.168.0.10/`                              |
+| Portal (de fora)            | `https://iot.adrianoruseler.com/`                   |
+| Node-RED do grupo           | `/lab05-<letra>/`                                   |
+| Chat                        | `/chat/` (mesma senha)                              |
+| Gitea                       | `/git/` (mesma senha)                               |
+| Broker no Node-RED          | `mosquitto:1883`                                    |
+| Broker no ESP32 (só no lab) | `192.168.0.10:1883`                                 |
+| Tópicos                     | `lab05-<letra>/...`                                 |
+| Repositório no Node-RED     | `http://gitea:3000/lab05-grupo-<letra>/nodered.git` |
+
+</TabItem>
+</Tabs>
