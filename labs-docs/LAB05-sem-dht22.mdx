@@ -1,6 +1,5 @@
 ---
-title: Laboratório 05
-sidebar_position: 8
+title: Laboratório 05 (sem-dht22)
 ---
 
 import { DevTools } from "@site/src/components/shared/InstructionsSite";
@@ -13,6 +12,7 @@ import { DevTools } from "@site/src/components/shared/InstructionsSite";
 - [ ] JSON publicado em `elt85b/lab05/grupo-X/dht` a cada 5 s, client ID único (T4)
 - [ ] Node-RED: `mqtt in` (JSON) → `debug`, fluxo exportado (T5)
 - [ ] LWT `offline` + `online` retidos em `.../status`, visíveis no Node-RED (T6)
+- [ ] (ESP32 físico sem DHT22) `USAR_DHT22 0`, sensor virtual e toque no GPIO4 funcionando
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
 
@@ -61,6 +61,7 @@ SQLite** e a **mudar o intervalo** do ESP32 remotamente.
 ## Material
 
 - VS Code + PlatformIO + extensão **Wokwi** (ESP32 **simulado** — sem placa física).
+- **Alternativa:** ESP32 **físico** sem DHT22 — veja [ESP32 físico sem DHT22](#sem-dht22).
 - Stack Docker do curso (**Mosquitto + Node-RED + MQTT Explorer**) — nesta aula usamos o
   **Node-RED** e o **MQTT Explorer**.
 - Bibliotecas (baixadas pelo PlatformIO): `adafruit/DHT sensor library`,
@@ -71,7 +72,8 @@ SQLite** e a **mudar o intervalo** do ESP32 remotamente.
 Conferindo a matriz de simulação: **GPIO** (o DHT22 usa um único pino digital) e **Wi-Fi**
 são ✔️ no ESP32 clássico — então a aula roda inteira no Wokwi. O mesmo firmware funciona
 numa placa física trocando só SSID/senha e o endereço do broker (veja a aba "Placa física"
-na [T3](#t3)).
+na [T3](#t3)). Tem o ESP32 mas **não tem o DHT22**? Veja a
+[alternativa com sensor virtual](#sem-dht22).
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
@@ -198,6 +200,341 @@ por isso o nome do ambiente precisa continuar **`esp32dev`**.
 
 ---
 
+## Alternativa — ESP32 físico sem DHT22 {/* #sem-dht22 */}
+
+:::info[Para quem é esta seção]
+Para quem vai gravar o firmware num **ESP32 de verdade** mas **não tem o DHT22**. Se você só
+não tem o sensor, também pode simplesmente seguir a aula no **Wokwi** — lá o DHT22 é virtual.
+:::
+
+A ideia é trocar o sensor por um **sensor virtual** dentro do próprio firmware. O resto da
+aula — temporizador, Wi-Fi, MQTT, JSON, Node-RED e LWT — fica **idêntico**, porque o resto do
+código não sabe de onde vêm `t` e `h`: ele só chama `lerSensor(t, h)`.
+
+|                      | Wokwi (DHT22)               | ESP32 físico sem DHT22                                |
+| -------------------- | --------------------------- | ----------------------------------------------------- |
+| Origem dos dados     | DHT22 no GPIO15             | sensor virtual no firmware                            |
+| "Esquentar" o sensor | slider do DHT22 no Wokwi    | encostar o dedo no **GPIO4** (touch `T0`)             |
+| Leituras inválidas   | `NaN` do DHT22              | cerca de 3% de `NaN` sorteados                        |
+| Executar             | **Wokwi: Start Simulator**  | **PlatformIO: Upload** + **Serial Monitor**           |
+| Evidências           | copiar do terminal do Wokwi | copiar do Serial Monitor (115200)                     |
+| Wi-Fi                | `Wokwi-GUEST`               | rede do laboratório (aba "Placa física" da [T3](#t3)) |
+
+:::warning[Por que não o sensor de temperatura interno?]
+O ESP32 clássico tem `temperatureRead()`, mas ele usa um sensor **não documentado** que foi
+retirado das revisões mais novas do chip: na maioria das placas a leitura fica parada em
+**53,3 °C**. Não serve para a aula.
+:::
+
+### Circuito
+
+Nenhum. Opcional: prenda um **jumper** no **GPIO4** e use a ponta metálica como "botão de
+toque" maior. **Não** encoste no pino durante o boot — a referência do toque é medida no `setup()`.
+
+### `platformio.ini` e `diagram.json`
+
+Faça a **T1 igual** aos demais grupos: o `lib_deps` do DHT continua (o código compila nas duas
+opções) e o `diagram.json` continua com o DHT22 — ele só é usado no Wokwi, mas faz parte da T1.
+
+### Código da T2
+
+```cpp title="src/main.cpp (T2, sem DHT22)"
+#include <Arduino.h>
+#include <Ticker.h>
+#include <DHT.h>
+
+// 1 = DHT22 (Wokwi ou placa com sensor) | 0 = ESP32 fisico sem DHT22
+#define USAR_DHT22  0
+
+#define DHT_PIN    15
+#define DHT_TIPO   DHT22
+#define TOQUE_PIN  T0      // GPIO4: encoste o dedo para "esquentar" o sensor virtual
+
+DHT dht(DHT_PIN, DHT_TIPO);
+Ticker temporizador;
+
+volatile bool leituraPendente = false;  // setada pelo temporizador
+const float INTERVALO_S = 5.0;           // DHT22: minimo 2 s entre leituras
+uint32_t seq = 0;
+
+#if !USAR_DHT22
+float tVirtual = 24.5, hVirtual = 55.0;
+uint32_t toqueBase = 0;
+#endif
+
+// Roda no contexto do temporizador: NADA de Serial/DHT/MQTT aqui
+void aoEstourarTemporizador() {
+  leituraPendente = true;
+}
+
+void iniciarSensor() {
+#if USAR_DHT22
+  dht.begin();
+#else
+  randomSeed(esp_random());
+  toqueBase = touchRead(TOQUE_PIN);      // medido SEM o dedo no pino
+  Serial.printf("[SIM] sensor virtual, toque base = %lu\n", (unsigned long)toqueBase);
+#endif
+}
+
+// Preenche t e h; devolve false se a leitura falhou (NaN)
+bool lerSensor(float &t, float &h) {
+#if USAR_DHT22
+  t = dht.readTemperature();
+  h = dht.readHumidity();
+#else
+  bool tocando = touchRead(TOQUE_PIN) < toqueBase * 6 / 10;
+  float alvoT = tocando ? 34.0f : 24.5f;   // dedo no pino = "aquece"
+  float alvoH = tocando ? 70.0f : 55.0f;   // ... e "umedece"
+  tVirtual += 0.3f * (alvoT - tVirtual) + random(-20, 21) / 100.0f;
+  hVirtual += 0.3f * (alvoH - hVirtual) + random(-50, 51) / 100.0f;
+  hVirtual = constrain(hVirtual, 0.0f, 100.0f);
+  t = tVirtual;
+  h = hVirtual;
+  if (random(100) < 3) t = NAN;            // ~3% de falhas, como um sensor real
+#endif
+  return !(isnan(t) || isnan(h));
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.println("\n=== Lab 05 - T2: DHT22 + temporizador ===");
+  iniciarSensor();
+  temporizador.attach(INTERVALO_S, aoEstourarTemporizador);
+}
+
+void loop() {
+  if (leituraPendente) {
+    leituraPendente = false;
+    float t, h;
+    if (!lerSensor(t, h)) {
+      Serial.println("[DHT] falha na leitura (NaN) - descartada");
+      return;
+    }
+    seq++;
+    Serial.printf("[DHT] seq=%lu t=%.1f C h=%.1f %% (%lu ms)\n",
+                  (unsigned long)seq, t, h, (unsigned long)millis());
+  }
+}
+```
+
+- **`#if USAR_DHT22`** — seleção em **tempo de compilação**: o pré-processador descarta o ramo
+  não usado, e o mesmo arquivo serve para as duas opções. Com `USAR_DHT22 1` o comportamento
+  é idêntico ao da T2 principal.
+- **`lerSensor()`** isola a origem dos dados (uma "camada de hardware" mínima): trocar o sensor
+  não mexe no temporizador, no Wi-Fi nem no MQTT.
+- O sensor virtual se aproxima de um **alvo** (24,5 °C sem toque, 34 °C com toque) 30% a cada
+  leitura, mais um ruído pequeno — imita a **inércia térmica** de um sensor real.
+- No ESP32 clássico o `touchRead()` **cai** quando você encosta (ex.: ~70 → ~20). A referência é
+  medida no `setup()`, e "tocando" é qualquer valor abaixo de 60% dela.
+- `touchRead()` é chamado no `loop()` (via `lerSensor()`), **nunca** no callback do `Ticker`.
+
+**Saída esperada** no Serial Monitor (dedo no GPIO4 entre `seq=6` e `seq=10`):
+
+```text title="Serial Monitor"
+=== Lab 05 - T2: DHT22 + temporizador ===
+[SIM] sensor virtual, toque base = 72
+[DHT] seq=1 t=24.4 C h=55.2 % (5203 ms)
+[DHT] seq=2 t=24.4 C h=55.2 % (10203 ms)
+[DHT] seq=3 t=24.5 C h=54.8 % (15203 ms)
+[DHT] seq=4 t=24.3 C h=54.6 % (20203 ms)
+[DHT] seq=5 t=24.4 C h=54.4 % (25203 ms)
+[DHT] seq=6 t=27.2 C h=59.2 % (30203 ms)
+[DHT] seq=7 t=29.5 C h=62.7 % (35203 ms)
+[DHT] seq=8 t=31.0 C h=64.9 % (40203 ms)
+[DHT] falha na leitura (NaN) - descartada
+[DHT] seq=9 t=32.3 C h=67.9 % (50203 ms)
+[DHT] seq=10 t=29.9 C h=63.7 % (55203 ms)
+```
+
+Os números exatos variam (ruído e valor do toque dependem da placa e do dedo).
+
+:::tip[Preveja antes de rodar (P1 adaptada)]
+Segure o dedo no GPIO4 por três leituras e solte. A temperatura **salta** para 34 °C de uma
+vez, ou sobe aos poucos? Quantas leituras leva para voltar a ~24,5 °C? Relacione com a linha
+`tVirtual += 0.3f * ...`.
+:::
+
+### Da T3 em diante
+
+A partir da T3, use o código principal da aula com **quatro mudanças**:
+
+1. Copie para o topo os `#define` `USAR_DHT22` e `TOQUE_PIN` e as variáveis do bloco
+   `#if !USAR_DHT22 ... #endif`.
+2. Copie as funções `iniciarSensor()` e `lerSensor()` para antes de `lerEPublicar()`.
+3. Em `setup()`, troque `dht.begin();` por `iniciarSensor();`.
+4. Em `lerEPublicar()`, troque as três linhas da leitura por:
+
+   ```cpp title="src/main.cpp (lerEPublicar)"
+   float t, h;
+   if (!lerSensor(t, h)) {
+   ```
+
+E use o **SSID/senha do laboratório** (aba "Placa física" da [T3](#t3)).
+
+<details>
+<summary><strong>src/main.cpp completo da T4 — ESP32 físico sem DHT22</strong></summary>
+
+```cpp title="src/main.cpp (T4, sem DHT22, placa fisica)"
+#include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <Ticker.h>
+#include <DHT.h>
+
+#define GRUPO     "a"                    // troque pela letra do seu grupo
+// 1 = DHT22 (Wokwi ou placa com sensor) | 0 = ESP32 fisico sem DHT22
+#define USAR_DHT22  0
+
+#define DHT_PIN    15
+#define DHT_TIPO   DHT22
+#define TOQUE_PIN  T0      // GPIO4: encoste o dedo para "esquentar" o sensor virtual
+
+const char* WIFI_SSID = "IoT-Broker";
+const char* WIFI_PASS = "ESP32IoTLab";
+// MQTT: broker publico; se a rede bloquear a 1883, use o IP do PC com o Mosquitto da stack
+const char *MQTT_HOST  = "broker.hivemq.com";
+const uint16_t MQTT_PORTA = 1883;
+const char *TOPICO_DADOS = "elt85b/lab05/grupo-" GRUPO "/dht";
+
+DHT dht(DHT_PIN, DHT_TIPO);
+WiFiClient wifiClient;
+PubSubClient mqtt(wifiClient);
+Ticker temporizador;
+
+volatile bool leituraPendente = false;
+const float INTERVALO_S = 5.0;
+uint32_t seq = 0;
+char clientId[32];
+
+#if !USAR_DHT22
+float tVirtual = 24.5, hVirtual = 55.0;
+uint32_t toqueBase = 0;
+#endif
+
+void aoEstourarTemporizador() {
+  leituraPendente = true;
+}
+
+void conectarWiFi() {
+  Serial.printf("[WiFi] conectando a %s", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_SENHA);     // rede real: sem fixar canal
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(250);
+    Serial.print('.');
+  }
+  Serial.printf("\n[WiFi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+}
+
+void conectarMQTT() {
+  while (!mqtt.connected()) {
+    Serial.printf("[MQTT] conectando a %s como %s ... ", MQTT_HOST, clientId);
+    if (mqtt.connect(clientId)) {
+      Serial.println("ok");
+    } else {
+      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\n", mqtt.state());
+      delay(2000);
+    }
+  }
+}
+
+void iniciarSensor() {
+#if USAR_DHT22
+  dht.begin();
+#else
+  randomSeed(esp_random());
+  toqueBase = touchRead(TOQUE_PIN);      // medido SEM o dedo no pino
+  Serial.printf("[SIM] sensor virtual, toque base = %lu\n", (unsigned long)toqueBase);
+#endif
+}
+
+// Preenche t e h; devolve false se a leitura falhou (NaN)
+bool lerSensor(float &t, float &h) {
+#if USAR_DHT22
+  t = dht.readTemperature();
+  h = dht.readHumidity();
+#else
+  bool tocando = touchRead(TOQUE_PIN) < toqueBase * 6 / 10;
+  float alvoT = tocando ? 34.0f : 24.5f;   // dedo no pino = "aquece"
+  float alvoH = tocando ? 70.0f : 55.0f;   // ... e "umedece"
+  tVirtual += 0.3f * (alvoT - tVirtual) + random(-20, 21) / 100.0f;
+  hVirtual += 0.3f * (alvoH - hVirtual) + random(-50, 51) / 100.0f;
+  hVirtual = constrain(hVirtual, 0.0f, 100.0f);
+  t = tVirtual;
+  h = hVirtual;
+  if (random(100) < 3) t = NAN;            // ~3% de falhas, como um sensor real
+#endif
+  return !(isnan(t) || isnan(h));
+}
+
+void lerEPublicar() {
+  float t, h;
+  if (!lerSensor(t, h)) {
+    Serial.println("[DHT] falha na leitura (NaN) - descartada");
+    return;
+  }
+  seq++;
+  char payload[128];
+  snprintf(payload, sizeof(payload),
+           "{\"grupo\":\"%s\",\"seq\":%lu,\"t\":%.1f,\"h\":%.1f,\"uptime_ms\":%lu}",
+           GRUPO, (unsigned long)seq, t, h, (unsigned long)millis());
+  bool ok = mqtt.publish(TOPICO_DADOS, payload);
+  Serial.printf("[PUB] %s %s -> %s\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.println("\n=== Lab 05 - T4: sensor + MQTT ===");
+  iniciarSensor();
+
+  uint64_t mac = ESP.getEfuseMac();
+  snprintf(clientId, sizeof(clientId), "lab05-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
+
+  conectarWiFi();
+  mqtt.setServer(MQTT_HOST, MQTT_PORTA);
+  conectarMQTT();
+
+  temporizador.attach(INTERVALO_S, aoEstourarTemporizador);
+}
+
+void loop() {
+  if (WiFi.status() != WL_CONNECTED) conectarWiFi();
+  if (!mqtt.connected()) conectarMQTT();
+  mqtt.loop();
+
+  if (leituraPendente) {
+    leituraPendente = false;
+    lerEPublicar();
+  }
+}
+```
+
+</details>
+
+:::note[Broker na rede do laboratório]
+O ESP32 físico pode usar o mesmo `broker.hivemq.com`, desde que a rede libere a porta **1883**
+de saída. Se o log repetir `[MQTT] ... falhou (rc=-2)`, a conexão não sai: use o **Mosquitto
+da stack** com `MQTT_HOST` = **IP do computador** na mesma rede (não `localhost` — para o
+ESP32, `localhost` é ele mesmo). Nesse caso aponte também o `mqtt in` do Node-RED e os
+comandos `mosquitto_sub` (`-h IP-DO-PC`) para esse broker.
+:::
+
+### LWT na placa física (T6)
+
+Onde a aula diz "pare a simulação", você tem duas formas de derrubar o nó:
+
+- **Tirar o cabo USB** — a placa some sem fechar o TCP; o broker só percebe pelo keepalive
+  (1,5 × 15 s ≈ **22 s**) e então publica `offline`.
+- **Apertar EN/RST** — a placa reinicia e reconecta em poucos segundos com o **mesmo client ID**;
+  o broker derruba a sessão antiga, e o normal é ver `offline` seguido logo de `online`.
+
+Experimente as duas e use a diferença para responder a **P4**.
+
+---
+
 ## Parte 2 — DHT22 com temporizador {/* #parte-2 */}
 
 ### 2.1 Por que um temporizador?
@@ -280,6 +617,10 @@ void loop() {
 
 Compile (**PlatformIO: Build**) e rode **Wokwi: Start Simulator**.
 
+:::tip[ESP32 físico sem DHT22?]
+Use o [código da T2 com sensor virtual](#sem-dht22) e grave na placa (**PlatformIO: Upload**).
+:::
+
 **Saída esperada** (os `ms` variam um pouco):
 
 ```text title="Monitor serial"
@@ -350,8 +691,8 @@ Troque só as constantes (o resto é idêntico). O `begin()` **sem** o canal, po
 real pode estar em qualquer canal:
 
 ```cpp title="src/main.cpp (placa fisica)"
-const char* WIFI_SSID = "IoT-Broker";
-const char* WIFI_PASS = "ESP32IoTLab";
+const char *WIFI_SSID  = "SSID-DO-LAB";
+const char *WIFI_SENHA = "senha-do-lab";
 // ...
 WiFi.begin(WIFI_SSID, WIFI_SENHA);
 ```
@@ -516,6 +857,11 @@ Pontos que valem a atenção:
   Nosso payload tem ~70 bytes; se um dia passar do limite, `publish()` devolve `false`
   (e o log mostra `ERRO`) — aí use `mqtt.setBufferSize(...)`.
 
+:::tip[ESP32 físico sem DHT22?]
+Aplique as [quatro mudanças da alternativa](#sem-dht22) a este código, ou use o arquivo
+completo da T4 que está lá.
+:::
+
 ### 4.3 Verificando no broker
 
 Enquanto a simulação roda, assine o tópico. Use o **MQTT Explorer** da stack (conexão
@@ -645,7 +991,8 @@ sequenceDiagram
      **node status** ligado — o nó mostra `online`/`offline` no editor.
    - Exporte o fluxo de novo por cima de `nodered/flows-lab05.json`.
 3. **Evidência** — deixe um `mosquitto_sub` escutando o status, inicie a simulação, espere o
-   `online`, **pare** a simulação e espere o `offline`; aí encerre com Ctrl+C:
+   `online`, **pare** a simulação e espere o `offline`; aí encerre com Ctrl+C. (Placa física:
+   tire o cabo USB ou aperte EN — veja [LWT na placa física](#sem-dht22).)
 
 ```bash title="Terminal"
 docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
