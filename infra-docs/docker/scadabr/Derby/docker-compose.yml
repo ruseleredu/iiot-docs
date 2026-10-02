@@ -1,0 +1,46 @@
+name: scadabr
+
+# ScadaBR 1.2 with the embedded Derby database
+#   docker compose up -d --build
+#   http://localhost:8080/ScadaBR   (login: admin / admin)
+# See README.md for the Windows 11 serial port (COM1 -> /dev/ttyUSB0) setup.
+
+services:
+  scadabr:
+    build:
+      context: .
+      args:
+        SCADABR_REF: master          # branch or tag of github.com/ScadaBR/ScadaBR
+    image: scadabr:1.2
+    container_name: scadabr
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      TZ: America/Sao_Paulo
+      DB_TYPE: derby
+      DB_URL: /data/scadabrDB
+      CATALINA_OPTS: -Xms256m -Xmx1024m -Djava.awt.headless=true
+
+      # --- Serial port, option A (default): Windows COM1 shared over TCP by
+      # com2tcp.py running on the host. Appears in ScadaBR as /dev/ttyUSB0.
+      SERIAL_TCP: host.docker.internal:7000
+      SERIAL_DEVICE: /dev/ttyUSB0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # needed on Linux hosts; harmless on Docker Desktop
+    volumes:
+      - scadabr-data:/data                                              # Derby database
+      - scadabr-uploads:/usr/local/tomcat/webapps/ScadaBR/uploads       # graphical view images
+      - scadabr-filedata:/usr/local/tomcat/webapps/ScadaBR/WEB-INF/filedata
+      - scadabr-logs:/usr/local/tomcat/logs
+
+    # --- Serial port, option B: USB-serial adapter attached to WSL with
+    # usbipd-win. Remove SERIAL_TCP above and uncomment these lines.
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+
+volumes:
+  scadabr-data:
+  scadabr-uploads:
+  scadabr-filedata:
+  scadabr-logs:
