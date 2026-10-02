@@ -1,0 +1,1900 @@
+#!/usr/bin/env python3
+"""Gera o LAB IoT: portal nginx + Node-RED e FUXA por grupo + MQTT + Gitea + wastebin + e-mail + túnel.
+
+Tudo fica sob UM endereço, em caminhos (sem DNS, sem subdomínios):
+
+    <base>/            portal
+    <base>/lab05-a/    Node-RED do grupo A   (… um por grupo)
+    <base>/lab05-p/    Node-RED do professor
+    <base>/lab05-n/    Node-RED do painel de notas
+    <base>/git/        Gitea  (uma organização por grupo)
+    <base>/bin/        wastebin (colar e compartilhar trechos de texto/código; único)
+    <base>/mail/       Mailpit (caixa por grupo + central do professor)
+    <base>/fuxa/lab05-a/  FUXA (SCADA/HMI) do grupo A  (… um por grupo + professor)
+
+onde <base> é:
+    - na rede do laboratório:  http://<IP-do-servidor>      (sem cota, sem internet)
+    - de qualquer lugar:       https://iot.adrianoruseler.com   (VPS com Apache)
+
+Os serviços rodam no servidor do laboratório. Um container "tunel" abre um túnel SSH
+REVERSO até o VPS (sai do laboratório: não precisa abrir portas na rede da instituição),
+e o Apache do VPS encaminha o HTTPS público para esse túnel.
+
+Reservas de letras: 'p' = PROFESSOR (ex.: lab05-p) · 'n' = NOTAS (ex.: lab05-n)
+
+Gera, dentro da pasta de saída (--saida, padrão: <lab>):
+  docker-compose.yml, Dockerfile, nginx/, settings/, data/, mosquitto/, mqtt-explorer/,
+  gitea/init/, postgres/init/, fuxa/ (dados do FUXA de cada grupo), tunel/ (cliente do túnel + chave SSH),
+  vps/ (arquivos para o VPS: proxy do Apache, página offline e setup-vps.sh),
+  credenciais.txt e .segredos.json (senhas reaproveitadas entre execuções).
+
+Uso:
+  py gen_iot_vps_mail_portal.py --lab lab05 --grupos 10 --ip 192.168.0.10
+  py gen_iot_vps_mail_portal.py --sem-tunel            # só rede local (http://IP/)
+  py gen_iot_vps_mail_portal.py --novas-senhas         # sorteia senhas novas para todos
+  py gen_iot_vps_mail_portal.py --gitea-db sqlite   # sem PostgreSQL (Gitea em SQLite)
+"""
+import sys, os, re, secrets, string, argparse, json
+from urllib.parse import urlparse
+import bcrypt
+
+# Console do Windows: garante UTF-8 (acentos e emojis) mesmo com saída redirecionada
+for _st in (sys.stdout, sys.stderr):
+    try:
+        _st.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
+PUBLICO_URL_PADRAO = "https://iot.adrianoruseler.com"
+
+ap = argparse.ArgumentParser(description="Gera o LAB IoT (caminhos + túnel SSH para o VPS).")
+ap.add_argument("--lab", default="lab05", help="Nome do lab (ex.: lab05); prefixo de tudo")
+ap.add_argument("--grupos", type=int, default=10, help="Quantidade de grupos de alunos (máx. 24)")
+ap.add_argument("--ip", default="127.0.0.1",
+                help="IP do servidor na rede do laboratório (acesso local, MQTT e MQTT Explorer)")
+ap.add_argument("--dominio", default="iot.lab",
+                help="Domínio interno, usado só nos e-mails das contas (ex.: lab05-a@iot.lab)")
+ap.add_argument("--publico-url", default=PUBLICO_URL_PADRAO,
+                help="URL pública (HTTPS) servida pelo Apache do VPS")
+ap.add_argument("--vps-host", default=None,
+                help="Host/IP do VPS para o SSH (padrão: o host da --publico-url)")
+ap.add_argument("--vps-ssh-porta", type=int, default=22, help="Porta SSH do VPS")
+ap.add_argument("--vps-usuario", default="tunel", help="Usuário restrito do túnel no VPS")
+ap.add_argument("--vps-porta-tunel", type=int, default=8080,
+                help="Porta (só em 127.0.0.1 do VPS) onde o túnel entrega o portal ao Apache")
+ap.add_argument("--sem-tunel", action="store_true",
+                help="Não inclui o túnel (só rede local, http://IP/)")
+ap.add_argument("--sem-gitea", action="store_true", help="Não inclui o Gitea")
+ap.add_argument("--gitea-repo", default="nodered",
+                help="Repositório inicial criado em cada organização ('' = nenhum)")
+ap.add_argument("--gitea-db", choices=["postgres", "sqlite"], default="postgres",
+                help="Banco do Gitea: postgres (padrão, compartilhado) ou sqlite")
+ap.add_argument("--sem-wastebin", action="store_true", help="Não inclui o wastebin (/bin/)")
+ap.add_argument("--sem-fuxa", action="store_true",
+                help="Não inclui o FUXA (SCADA/HMI por grupo em /fuxa/<grupo>/)")
+ap.add_argument("--sem-mailpit", action="store_true",
+                help="Não inclui o Mailpit (caixas de e-mail de teste por grupo)")
+ap.add_argument("--proteger-http", action="store_true",
+                help="Exige login (usuário/senha do grupo) nos dashboards e endpoints HTTP do Node-RED")
+ap.add_argument("--novas-senhas", action="store_true",
+                help="Sorteia senhas novas para todos os grupos (padrão: mantém as já geradas)")
+ap.add_argument("--github-org", default="ELT85B-N21-2026-2",
+                help="Organização do GitHub com os repositórios <lab>-grupo-<letra> (para publicar os acessos)")
+ap.add_argument("--saida", default=None, help="Pasta de saída (padrão: <lab>)")
+ap.add_argument("--mqtt-explorer-auth", action="store_true", help="Exige login no MQTT Explorer")
+ap.add_argument("--mqtt-explorer-usuario", default="admin", help="Usuário do MQTT Explorer")
+ap.add_argument("--mqtt-explorer-senha", default=None, help="Senha do MQTT Explorer (gerada se omitida)")
+ap.add_argument("--mqtt-explorer-porta", type=int, default=3001, help="Porta do MQTT Explorer")
+args = ap.parse_args()
+
+LAB = args.lab.lower()
+if not re.fullmatch(r"[a-z][a-z0-9]{1,20}", LAB):
+    sys.exit("--lab deve começar com letra e ter só letras/dígitos (ex.: lab05), "
+             "pois vira caminho da URL, usuário dos serviços e prefixo MQTT.")
+N = args.grupos
+IP = args.ip
+DOMINIO = args.dominio
+
+# ---------------- pasta de saída e segredos persistentes ----------------
+SAIDA = args.saida or LAB
+os.makedirs(SAIDA, exist_ok=True)
+os.chdir(SAIDA)
+SAIDA_ABS = os.getcwd()
+
+ARQ_SEGREDOS = ".segredos.json"
+try:
+    with open(ARQ_SEGREDOS, encoding="utf-8") as _f:
+        SEGREDOS = json.load(_f)
+except (OSError, ValueError):
+    SEGREDOS = {}
+
+
+def segredo(nome, gerar, renovar=False):
+    """Valor guardado em .segredos.json; só é gerado na primeira vez (ou se renovar)."""
+    if renovar or nome not in SEGREDOS:
+        SEGREDOS[nome] = gerar()
+    return SEGREDOS[nome]
+
+
+def gerar_senha(tamanho=8):
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(caracteres) for _ in range(tamanho))
+
+
+# ---------------- endereços ----------------
+TUNEL = not args.sem_tunel
+LOCAL_URL = "http://localhost" if IP.startswith("127.") else f"http://{IP}"
+PUBLICO_URL = args.publico_url.rstrip("/")
+if TUNEL and (not PUBLICO_URL.startswith("https://") or urlparse(PUBLICO_URL).path not in ("", "/")):
+    sys.exit("--publico-url deve ser https://<host> sem caminho (ex.: https://iot.adrianoruseler.com)")
+PUBLIC_URL = PUBLICO_URL if TUNEL else LOCAL_URL        # URL "oficial" (links do Gitea)
+PUBLIC_HOST = urlparse(PUBLIC_URL).hostname
+VPS_HOST = args.vps_host or urlparse(PUBLICO_URL).hostname
+VPS_PORTA_TUNEL = args.vps_porta_tunel
+
+# ---------------- serviços opcionais ----------------
+WB = not args.sem_wastebin
+WB_IMAGEM = "quxfoo/wastebin:latest"
+MAILPIT = not args.sem_mailpit
+MAILPIT_IMAGEM = "axllent/mailpit:v1.31"
+FUXA = not args.sem_fuxa
+FUXA_IMAGEM = "frangoteam/fuxa:1.3.4"     # versão fixa (BASE_PATH para subcaminho existe desde 1.3.x)
+
+GITEA = not args.sem_gitea
+GITEA_REPO = args.gitea_repo.strip()
+GITEA_PG = GITEA and args.gitea_db == "postgres"
+
+POSTGRES = GITEA_PG
+_pg_senha = lambda: secrets.token_hex(16)
+PG_ROOT_SENHA = segredo("postgres_root", _pg_senha) if POSTGRES else None
+PG_GITEA_SENHA = segredo("postgres_gitea", _pg_senha) if GITEA_PG else None
+
+GITEA_SECRET_KEY = segredo("gitea_secret_key", lambda: secrets.token_hex(32)) if GITEA else None
+
+MQTTX_PORTA = args.mqtt_explorer_porta
+MQTTX_URL = f"{LOCAL_URL}:{MQTTX_PORTA}/"
+MQTTX_AUTH = args.mqtt_explorer_auth
+MQTTX_USER = args.mqtt_explorer_usuario
+MQTTX_SENHA = (args.mqtt_explorer_senha or segredo("mqtt_explorer_senha", lambda: gerar_senha(10))) \
+    if MQTTX_AUTH else None
+
+# ---------------- nomes ----------------
+LETRA_PROF, LETRA_NOTAS = "p", "n"
+letras = [c for c in string.ascii_lowercase if c not in (LETRA_PROF, LETRA_NOTAS)]
+if not 1 <= N <= len(letras):
+    sys.exit(f"--grupos deve ser entre 1 e {len(letras)} (letras a-z sem 'p' e 'n').")
+
+grupos_alunos = [f"{LAB}-{letras[i]}" for i in range(N)]
+prof = f"{LAB}-{LETRA_PROF}"
+notas_service = f"{LAB}-{LETRA_NOTAS}"
+todos_servicos = grupos_alunos + [prof, notas_service]
+fuxa_grupos = (grupos_alunos + [prof]) if FUXA else []   # um FUXA por grupo + professor
+
+C = LAB  # prefixo dos nomes de container (lab05-portal, lab05-postgres, ...)
+
+
+def is_prof(g):
+    return g == prof
+
+
+def is_notas(g):
+    return g == notas_service
+
+
+def letra_de(g):
+    return g.rsplit("-", 1)[-1]
+
+
+def org_de(g):
+    """Organização Gitea do grupo (não pode coincidir com o nome do usuário)."""
+    return f"{LAB}-grupo-{letra_de(g)}"
+
+
+def gravar(caminho, conteudo, executavel=False):
+    """Grava sempre em UTF-8 com quebras de linha LF (os containers são Linux)."""
+    d = os.path.dirname(caminho)
+    if d:
+        os.makedirs(d, exist_ok=True)
+    with open(caminho, "w", encoding="utf-8", newline="\n") as f:
+        f.write(conteudo)
+    if executavel:
+        os.chmod(caminho, 0o755)
+
+
+# ---------------- credenciais dos grupos (persistentes) ----------------
+credenciais_geradas = []   # (usuario, senha_admin, usuario_view, senha_view)
+for g in todos_servicos:
+    s_admin = segredo(f"senha:{g}", lambda: gerar_senha(8), renovar=args.novas_senhas)
+    s_view = segredo(f"senha:{g}-view", lambda: gerar_senha(8), renovar=args.novas_senhas)
+    credenciais_geradas.append((g, s_admin, f"{g}-view", s_view))
+SENHA = {u: s for (u, s, _uv, _sv) in credenciais_geradas}
+SENHA.update({uv: sv for (_u, _s, uv, sv) in credenciais_geradas})
+
+for g in todos_servicos:
+    os.makedirs(f"data/{g}", exist_ok=True)
+    open(f"data/{g}/.gitkeep", "a").close()
+
+# =====================================================================
+# mosquitto/mosquitto.conf
+# =====================================================================
+gravar("mosquitto/mosquitto.conf", """listener 1883
+allow_anonymous true
+persistence true
+persistence_location /mosquitto/data/
+log_dest stdout
+""")
+print("🐝 mosquitto/mosquitto.conf")
+
+# =====================================================================
+# Dockerfile (Node-RED com nós extras)
+# =====================================================================
+dockerfile = """FROM nodered/node-red:latest
+USER root
+RUN apk add --no-cache build-base python3
+USER node-red
+# Install additional Node-RED nodes
+RUN npm install --unsafe-perm --no-update-notifier --no-fund \\
+    node-red-node-sqlite \\
+    @flowfuse/node-red-dashboard \\
+    node-red-contrib-bcrypt \\
+    node-red-contrib-finite-statemachine \\
+    @flowfuse/node-red-dashboard-2-ui-led \\
+    node-red-node-serialport \\
+    node-red-node-ui-table \\
+    node-red-node-email \\
+    && npm cache clean --force
+"""
+
+gravar("Dockerfile", dockerfile)
+print("📦 Dockerfile")
+
+# =====================================================================
+# docker-compose.yml
+# =====================================================================
+c = [
+    f"# LAB IoT {LAB} — gerado por gen_iot_vps_mail_portal.py\n",
+    f"# {N} grupos + professor ({prof}) + notas ({notas_service})\n",
+    f"# Local:   {LOCAL_URL}/\n",
+    (f"# Público: {PUBLICO_URL}/   (túnel SSH -> Apache do VPS)\n" if TUNEL else ""),
+    "# Subir:   docker compose up -d --build\n",
+    "services:\n",
+    "  nginx:\n",
+    "    image: nginx:alpine\n",
+    f"    container_name: {C}-portal\n",
+    "    restart: unless-stopped\n",
+    "    ports:\n",
+    '      - "80:80"\n',
+    "    volumes:\n",
+    "      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro\n",
+    "      - ./nginx/html:/usr/share/nginx/html:ro\n",
+    "      - ./nginx/htpasswd:/etc/nginx/htpasswd:ro\n",
+    ("      - ./nginx/htpasswd.d:/etc/nginx/htpasswd.d:ro\n" if FUXA and args.proteger_http else ""),
+    "    depends_on:\n",
+]
+c += [f"      - {g}-nodered\n" for g in todos_servicos]
+c += ["      - mqtt-explorer\n"]
+if GITEA:
+    c += ["      - gitea\n"]
+if WB:
+    c += ["      - wastebin\n"]
+if MAILPIT:
+    c += ["      - mailpit\n"]
+c += [f"      - {g}-fuxa\n" for g in fuxa_grupos]
+c += ["    networks:\n", "      - labnet\n"]
+
+c += [
+    "\n  mosquitto:\n",
+    "    image: eclipse-mosquitto:latest\n",
+    f"    container_name: {C}-mosquitto\n",
+    "    restart: unless-stopped\n",
+    "    ports:\n",
+    '      - "1883:1883"\n',
+    "    volumes:\n",
+    "      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro\n",
+    "      - mosquitto_data:/mosquitto/data\n",
+    "    networks:\n",
+    "      - labnet\n",
+]
+
+for g in todos_servicos:
+    c += [
+        f"\n  {g}-nodered:\n",
+        "    build: .\n",
+        "    image: lab-nodered:latest\n",
+        f"    container_name: {g}-nodered\n",
+        "    restart: unless-stopped\n",
+        "    volumes:\n",
+        f"      - ./data/{g}:/data\n",
+        f"      - ./settings/{g}.js:/data/settings.js:ro\n",
+    ]
+    if is_notas(g):
+        c += ["      - ./data:/data_grupos:ro\n"]   # painel de notas lê os fluxos de todos
+    c += [
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        "    depends_on:\n",
+        "      - mosquitto\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+# MQTT Explorer (único; só na rede local, porta direta — não suporta subcaminho)
+c += [
+    "\n  mqtt-explorer:\n",
+    "    image: ruseler/mqtt-explorer:local\n",
+    f"    container_name: {C}-mqtt-explorer\n",
+    "    restart: unless-stopped\n",
+    "    ports:\n",
+    f'      - "{MQTTX_PORTA}:3000"\n',
+    "    environment:\n",
+    "      - TZ=America/Sao_Paulo\n",
+    "      - PORT=3000\n",
+    "      - MQTT_AUTO_CONNECT_HOST=mosquitto\n",
+    "      - MQTT_AUTO_CONNECT_PORT=1883\n",
+    f"      - ALLOWED_ORIGINS=http://{IP}:{MQTTX_PORTA},http://localhost:{MQTTX_PORTA}\n",
+]
+if MQTTX_AUTH:
+    c += [
+        "      - MQTT_EXPLORER_SKIP_AUTH=false\n",
+        f"      - MQTT_EXPLORER_USERNAME={MQTTX_USER}\n",
+        f"      - MQTT_EXPLORER_PASSWORD={MQTTX_SENHA}\n",
+    ]
+else:
+    c += ["      - MQTT_EXPLORER_SKIP_AUTH=true\n"]
+c += [
+    "    volumes:\n",
+    "      - ./mqtt-explorer/data:/app/data\n",
+    "    depends_on:\n",
+    "      - mosquitto\n",
+    "    networks:\n",
+    "      - labnet\n",
+]
+
+# PostgreSQL compartilhado + db-init (cria/atualiza bancos e senhas a cada subida)
+if POSTGRES:
+    c += [
+        "\n  postgres:\n",
+        "    image: postgres:16-alpine\n",
+        f"    container_name: {C}-postgres\n",
+        "    restart: unless-stopped\n",
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        "      - POSTGRES_USER=postgres\n",
+        f"      - POSTGRES_PASSWORD={PG_ROOT_SENHA}\n",
+        "    volumes:\n",
+        "      - postgres_data:/var/lib/postgresql/data\n",
+        "    healthcheck:\n",
+        '      test: ["CMD-SHELL", "pg_isready -U postgres"]\n',
+        "      interval: 5s\n",
+        "      timeout: 5s\n",
+        "      retries: 30\n",
+        "    networks:\n",
+        "      - labnet\n",
+        "\n  db-init:\n",
+        "    image: postgres:16-alpine\n",
+        f"    container_name: {C}-db-init\n",
+        '    restart: "no"\n',
+        "    environment:\n",
+        f"      - PGPASSWORD={PG_ROOT_SENHA}\n",
+        '    command: ["psql", "-h", "postgres", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-f", "/init/bancos.sql"]\n',
+        "    volumes:\n",
+        "      - ./postgres/init:/init:ro\n",
+        "    depends_on:\n",
+        "      postgres:\n",
+        "        condition: service_healthy\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+# Gitea (único) + gitea-init
+if GITEA:
+    c += [
+        "\n  gitea:\n",
+        "    image: gitea/gitea:28\n",
+        f"    container_name: {C}-gitea\n",
+        "    restart: unless-stopped\n",
+        "    environment:\n",
+        "      - USER_UID=1000\n",
+        "      - USER_GID=1000\n",
+        "      - TZ=America/Sao_Paulo\n",
+    ]
+    if GITEA_PG:
+        c += [
+            "      - GITEA__database__DB_TYPE=postgres\n",
+            "      - GITEA__database__HOST=postgres:5432\n",
+            "      - GITEA__database__NAME=gitea\n",
+            "      - GITEA__database__USER=gitea\n",
+            f"      - GITEA__database__PASSWD={PG_GITEA_SENHA}\n",
+            "      - GITEA__database__SSL_MODE=disable\n",
+        ]
+    else:
+        c += ["      - GITEA__database__DB_TYPE=sqlite3\n"]
+    c += [
+        f"      - GITEA__server__DOMAIN={PUBLIC_HOST}\n",
+        f"      - GITEA__server__ROOT_URL={PUBLIC_URL}/git/\n",
+        "      - GITEA__server__HTTP_PORT=3000\n",
+        "      - GITEA__server__DISABLE_SSH=true\n",
+        "      - GITEA__security__INSTALL_LOCK=true\n",
+        f"      - GITEA__security__SECRET_KEY={GITEA_SECRET_KEY}\n",
+        # acessível por http://IP (local) e https://VPS: cookie não pode exigir HTTPS
+        "      - GITEA__session__COOKIE_SECURE=false\n",
+        "      - GITEA__service__DISABLE_REGISTRATION=true\n",
+        "      - GITEA__service__REQUIRE_SIGNIN_VIEW=true\n",
+        "      - GITEA__service__DEFAULT_ORG_VISIBILITY=private\n",
+        "      - GITEA__repository__DEFAULT_PRIVATE=private\n",
+        "      - GITEA__repository__DEFAULT_BRANCH=main\n",
+        "      - GITEA__ui__DEFAULT_THEME=gitea-auto\n",
+        "      - GITEA__time__DEFAULT_UI_LOCATION=America/Sao_Paulo\n",
+        "    volumes:\n",
+        "      - gitea_data:/data\n",
+        "    healthcheck:\n",
+        '      test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]\n',
+        "      interval: 10s\n",
+        "      timeout: 5s\n",
+        "      retries: 30\n",
+    ]
+    if GITEA_PG:
+        c += [
+            "    depends_on:\n",
+            "      db-init:\n",
+            "        condition: service_completed_successfully\n",
+        ]
+    c += [
+        "    networks:\n",
+        "      - labnet\n",
+        "\n  gitea-init:\n",
+        "    image: gitea/gitea:28\n",
+        f"    container_name: {C}-gitea-init\n",
+        '    restart: "no"\n',
+        '    entrypoint: ["/bin/bash", "/init/gitea-init.sh"]\n',
+        "    volumes:\n",
+        "      - gitea_data:/data\n",
+        "      - ./gitea/init:/init:ro\n",
+        "    depends_on:\n",
+        "      gitea:\n",
+        "        condition: service_healthy\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+# wastebin (único): colar e compartilhar trechos. Não tem login próprio: o nginx exige o
+# usuário/senha de um grupo (htpasswd). Imagem "scratch" sem /data -> roda como root para
+# poder gravar no volume; TMPDIR no volume (recomendação do README do wastebin).
+if WB:
+    c += [
+        "\n  wastebin:\n",
+        f"    image: {WB_IMAGEM}\n",
+        f"    container_name: {C}-wastebin\n",
+        "    restart: unless-stopped\n",
+        '    user: "0:0"\n',
+        "    environment:\n",
+        "      - WASTEBIN_DATABASE_PATH=/data/state.db\n",
+        "      - TMPDIR=/data\n",
+        f"      - WASTEBIN_TITLE=wastebin · {LAB.upper()}\n",
+        f"      - WASTEBIN_BASE_URL={PUBLIC_URL}/bin/\n",
+        f"      - WASTEBIN_SIGNING_KEY={segredo('wastebin_signing_key', lambda: secrets.token_hex(48))}\n",
+        f"      - WASTEBIN_PASSWORD_SALT={segredo('wastebin_password_salt', lambda: secrets.token_hex(16))}\n",
+        "      - WASTEBIN_MAX_BODY_SIZE=2097152\n",
+        "      - WASTEBIN_PASTE_EXPIRATIONS=10m,1h,1d=d,7d,1M,0\n",
+        "    volumes:\n",
+        "      - wastebin_data:/data\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+# Mailpit: uma caixa ISOLADA por grupo (só o grupo e o professor veem) que encaminha
+# uma cópia para a caixa CENTRAL do professor, onde cada mensagem recebe a TAG do grupo
+# (o encaminhamento autentica com o usuário do grupo e a central usa --tags-username).
+# Nenhuma mensagem sai do laboratório: é tudo captura de teste.
+if MAILPIT:
+    smtp_central = " ".join(f"{g}:{SENHA[g]}" for g in grupos_alunos)
+    c += [
+        "\n  mailpit:\n",
+        f"    image: {MAILPIT_IMAGEM}\n",
+        f"    container_name: {C}-mailpit\n",
+        "    restart: unless-stopped\n",
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        "      - MP_DATABASE=/data/central.db\n",
+        "      - MP_MAX_MESSAGES=5000\n",
+        "      - MP_WEBROOT=/mail/\n",
+        f"      - MP_UI_AUTH={prof}:{SENHA[prof]} {notas_service}:{SENHA[notas_service]}\n",
+        f"      - MP_SMTP_AUTH={smtp_central}\n",
+        "      - MP_SMTP_AUTH_ALLOW_INSECURE=true\n",
+        "      - MP_TAGS_USERNAME=true\n",
+        "    volumes:\n",
+        "      - mailpit_data:/data\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+    for g in grupos_alunos:
+        c += [
+            f"\n  {g}-mailpit:\n",
+            f"    image: {MAILPIT_IMAGEM}\n",
+            f"    container_name: {g}-mailpit\n",
+            "    restart: unless-stopped\n",
+            "    environment:\n",
+            "      - TZ=America/Sao_Paulo\n",
+            f"      - MP_DATABASE=/data/{g}.db\n",
+            "      - MP_MAX_MESSAGES=500\n",
+            f"      - MP_WEBROOT=/mail/{g}/\n",
+            f"      - MP_UI_AUTH={g}:{SENHA[g]} {prof}:{SENHA[prof]}\n",
+            f"      - MP_SMTP_AUTH={g}:{SENHA[g]}\n",
+            "      - MP_SMTP_AUTH_ALLOW_INSECURE=true\n",
+            "      - MP_SMTP_FORWARD_HOST=mailpit\n",
+            "      - MP_SMTP_FORWARD_PORT=1025\n",
+            # LOGIN (e não PLAIN): o cliente SMTP do Go recusa PLAIN sem TLS fora de localhost
+            "      - MP_SMTP_FORWARD_AUTH=login\n",
+            f"      - MP_SMTP_FORWARD_USERNAME={g}\n",
+            f"      - MP_SMTP_FORWARD_PASSWORD={SENHA[g]}\n",
+            "      - MP_SMTP_FORWARD_ALLOW_INSECURE=true\n",
+            f"      - MP_SMTP_FORWARD_TO={g}@{DOMINIO}\n",
+            "    volumes:\n",
+            "      - mailpit_data:/data\n",
+            "    depends_on:\n",
+            "      - mailpit\n",
+            "    networks:\n",
+            "      - labnet\n",
+        ]
+
+# FUXA (SCADA/HMI/Dashboard): um por grupo + professor, em /fuxa/<grupo>/ (BASE_PATH).
+# Conversa com o Node-RED do grupo pelo broker MQTT (mosquitto:1883, tópicos <grupo>/...).
+# Usuários (grupo + professor) e o segredo do token são semeados pelo gerador em
+# fuxa/<grupo>/appdata (users.fuxap.db e mysettings.json): não existe o admin/123456 padrão.
+for g in fuxa_grupos:
+    c += [
+        f"\n  {g}-fuxa:\n",
+        f"    image: {FUXA_IMAGEM}\n",
+        f"    container_name: {g}-fuxa\n",
+        "    restart: unless-stopped\n",
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        "      - NODE_ENV=production\n",
+        f"      - BASE_PATH=/fuxa/{g}\n",
+        "    volumes:\n",
+        f"      - ./fuxa/{g}/appdata:/usr/src/app/FUXA/server/_appdata\n",
+        f"      - ./fuxa/{g}/db:/usr/src/app/FUXA/server/_db\n",
+        f"      - ./fuxa/{g}/images:/usr/src/app/FUXA/server/_images\n",
+        "    depends_on:\n",
+        "      - mosquitto\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+# túnel SSH reverso: VPS 127.0.0.1:<porta> -> nginx:80 (sai do lab; reconecta sozinho)
+if TUNEL:
+    c += [
+        "\n  tunel:\n",
+        "    build: ./tunel\n",
+        "    image: lab-tunel:latest\n",
+        f"    container_name: {C}-tunel\n",
+        "    restart: unless-stopped\n",
+        "    environment:\n",
+        f"      - VPS_HOST={VPS_HOST}\n",
+        f"      - VPS_PORTA={args.vps_ssh_porta}\n",
+        f"      - VPS_USUARIO={args.vps_usuario}\n",
+        f"      - PORTA_REMOTA={VPS_PORTA_TUNEL}\n",
+        "      - DESTINO=nginx:80\n",
+        "    volumes:\n",
+        "      - ./tunel/chave:/chave\n",
+        "    depends_on:\n",
+        "      - nginx\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
+c += ["\nvolumes:\n", "  mosquitto_data:\n"]
+if POSTGRES:
+    c += ["  postgres_data:\n"]
+if GITEA:
+    c += ["  gitea_data:\n"]
+if MAILPIT:
+    c += ["  mailpit_data:\n"]
+if WB:
+    c += ["  wastebin_data:\n"]
+c += ["\nnetworks:\n", "  labnet:\n", "    driver: bridge\n"]
+gravar("docker-compose.yml", "".join(c))
+print("🐳 docker-compose.yml")
+
+# =====================================================================
+# nginx/nginx.conf — um único servidor, tudo em caminhos
+# =====================================================================
+PROXY_OPTS = [
+    "proxy_http_version 1.1;",
+    "proxy_set_header Upgrade $http_upgrade;",
+    "proxy_set_header Connection $connection_upgrade;",
+    "proxy_set_header Host $host;",
+    "proxy_set_header X-Real-IP $remote_addr;",
+    "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;",
+    "proxy_set_header X-Forwarded-Proto $encaminhado_proto;",
+    "proxy_read_timeout 3600s;",
+    "proxy_send_timeout 3600s;",
+    "proxy_buffering off;",
+]
+
+
+def location(caminho, linhas_extra, ind="        "):
+    out = [f"{ind}location {caminho} {{\n"]
+    out += [f"{ind}    {l}\n" for l in linhas_extra]
+    out += [f"{ind}    {o}\n" for o in PROXY_OPTS]
+    out += [f"{ind}}}\n"]
+    return out
+
+
+def papel_de(g):
+    return "avaliador de notas" if is_notas(g) else "professor" if is_prof(g) else "grupo"
+
+
+n = [
+    f"# nginx.conf — gerado por gen_iot_vps_mail_portal.py ({LAB})\n",
+    "worker_processes auto;\n",
+    "events { worker_connections 1024; }\n\n",
+    "http {\n",
+    "    include       /etc/nginx/mime.types;\n",
+    "    default_type  application/octet-stream;\n",
+    "    sendfile on;\n",
+    "    # redirecionamentos relativos: funcionam em http://IP e no domínio público\n",
+    "    absolute_redirect off;\n",
+    "    # DNS interno do Docker: os nomes dos containers são resolvidos a cada acesso,\n",
+    "    # então recriar um container (novo IP) não exige reiniciar o nginx\n",
+    "    resolver 127.0.0.11 valid=10s ipv6=off;\n\n",
+    "    map $http_upgrade $connection_upgrade {\n",
+    "        default upgrade;\n",
+    "        ''      close;\n",
+    "    }\n",
+    "    # o Apache do VPS envia X-Forwarded-Proto: https; acesso local é http\n",
+    "    map $http_x_forwarded_proto $encaminhado_proto {\n",
+    "        default $http_x_forwarded_proto;\n",
+    "        ''      $scheme;\n",
+    "    }\n\n",
+    "    server {\n",
+    "        listen 80 default_server;\n",
+    "        server_name _;\n",
+    "        root /usr/share/nginx/html;\n",
+    "        index index.html;\n",
+    "        location / { }\n",
+]
+for g in todos_servicos:
+    n += [f"\n        # {g} ({papel_de(g)}) -> /{g}/\n",
+          f"        location = /{g} {{ return 301 /{g}/; }}\n"]
+    n += location(f"/{g}/", [f"set $alvo http://{g}-nodered:1880;",
+                             "proxy_pass $alvo;"])
+if GITEA:
+    # Gitea em subcaminho (ROOT_URL = .../git/); receita da documentação oficial
+    n += ["\n        # Gitea -> /git/\n",
+          "        location = /git { return 301 /git/; }\n"]
+    n += location("/git/", ["client_max_body_size 512m;",
+                            "rewrite ^ $request_uri;",
+                            "rewrite ^/git(/.*) $1 break;",
+                            "proxy_pass http://gitea:3000$uri;"])
+if WB:
+    # wastebin não suporta subcaminho (usa caminhos absolutos): o nginx retira o /bin,
+    # reescreve links/formulários (HTML), os redirecionamentos em JS, o Location e os cookies.
+    # Acesso protegido com o login de qualquer grupo (htpasswd), pois o site é público.
+    n += ["\n        # wastebin (único) -> /bin/  (login: usuário e senha do grupo)\n",
+          "        location = /bin { return 301 /bin/; }\n"]
+    n += location("/bin/", ["client_max_body_size 2m;",
+                            'auth_basic "wastebin - login do grupo";',
+                            "auth_basic_user_file /etc/nginx/htpasswd;",
+                            "set $alvo wastebin:8088;",
+                            "rewrite ^/bin(/.*)$ $1 break;",
+                            "proxy_pass http://$alvo;",
+                            'proxy_set_header Accept-Encoding "";',
+                            "proxy_redirect ~^/(?!bin/)(.*)$ /bin/$1;",
+                            "proxy_cookie_path / /bin/;",
+                            "sub_filter_types application/javascript text/javascript;",
+                            "sub_filter_once off;",
+                            """sub_filter 'href="/' 'href="/bin/';""",
+                            """sub_filter 'src="/' 'src="/bin/';""",
+                            """sub_filter 'action="/' 'action="/bin/';""",
+                            """sub_filter 'location.href = "/' 'location.href = "/bin/';"""])
+if MAILPIT:
+    # Mailpit: central do professor em /mail/ e uma caixa por grupo em /mail/<grupo>/
+    n += ["\n        # Mailpit central (professor, com tags) -> /mail/\n",
+          "        location = /mail { return 301 /mail/; }\n"]
+    n += location("/mail/", ["set $alvo http://mailpit:8025;", "proxy_pass $alvo;"])
+    for g in grupos_alunos:
+        n += [f"\n        # Mailpit do {g} (isolado) -> /mail/{g}/\n",
+              f"        location = /mail/{g} {{ return 301 /mail/{g}/; }}\n"]
+        n += location(f"/mail/{g}/", [f"set $alvo http://{g}-mailpit:8025;", "proxy_pass $alvo;"])
+for g in fuxa_grupos:
+    # FUXA com BASE_PATH=/fuxa/<grupo>: o prefixo é mantido (sem rewrite); WebSocket em
+    # /fuxa/<grupo>/socket.io/. Login próprio do FUXA (usuário/senha do grupo).
+    extra = ["client_max_body_size 100m;"]
+    if args.proteger_http:   # também exige o login do grupo antes de abrir (até para ver telas)
+        extra += [f'auth_basic "FUXA - {g}";', f"auth_basic_user_file /etc/nginx/htpasswd.d/{g};"]
+    n += [f"\n        # FUXA (SCADA/HMI) do {g} -> /fuxa/{g}/\n",
+          f"        location = /fuxa/{g} {{ return 301 /fuxa/{g}/; }}\n"]
+    n += location(f"/fuxa/{g}/", extra + [f"set $alvo http://{g}-fuxa:1881;", "proxy_pass $alvo;"])
+if fuxa_grupos:
+    n += ["        location = /fuxa { return 302 /#fuxa; }\n",
+          "        location = /fuxa/ { return 302 /#fuxa; }\n"]
+n += ["\n        # MQTT Explorer não suporta subcaminho: só na rede local, porta direta\n",
+      f"        location /mqtt {{ return 302 http://{IP}:{MQTTX_PORTA}/; }}\n",
+      "    }\n", "}\n"]
+gravar("nginx/nginx.conf", "".join(n))
+
+# htpasswd do nginx ({SSHA}: SHA-1 com sal, formato aceito pelo auth_basic):
+# todos os grupos, o professor e as notas entram com o próprio usuário/senha
+import hashlib, base64
+
+
+def _ssha(senha):
+    sal = secrets.token_bytes(8)
+    return "{SSHA}" + base64.b64encode(hashlib.sha1(senha.encode() + sal).digest() + sal).decode()
+
+
+gravar("nginx/htpasswd", "".join(f"{u}:{_ssha(SENHA[u])}\n" for u in todos_servicos))
+if FUXA and args.proteger_http:   # FUXA de cada grupo: só o grupo e o professor
+    for g in fuxa_grupos:
+        gravar(f"nginx/htpasswd.d/{g}", "".join(f"{u}:{_ssha(SENHA[u])}\n" for u in dict.fromkeys([g, prof])))
+print("🌐 nginx/nginx.conf")
+
+# =====================================================================
+# settings/<grupo>.js
+# =====================================================================
+tpl = """// settings.js do {g} — gerado automaticamente
+module.exports = {{
+    flowFile: 'flows.json',
+    credentialSecret: '{cred}',
+    editorTheme: {{
+        page: {{ title: "{titulo}" }},
+        header: {{ title: "{titulo}" }},
+        projects: {{ enabled: true }},
+    }},
+    adminAuth: {{
+        type: "credentials",
+        users: [
+            {{ username: "{g}",      password: "{hash_admin}", permissions: "*" }},
+            {{ username: "{g}-view", password: "{hash_view}",  permissions: "read" }}
+        ]
+    }},{http_auth}
+    // Node-RED vive em <base>/{g}/  (http://IP/{g}/ ou https://<publico>/{g}/)
+    httpAdminRoot: '/{g}/',
+    httpNodeRoot: '/{g}/',
+    uiPort: 1880,
+    logging: {{ console: {{ level: 'info' }} }}
+}};
+"""
+
+for g, s_admin, _uv, s_view in credenciais_geradas:
+    if is_notas(g):
+        titulo = f"{LAB.upper()} - PAINEL DE NOTAS"
+    elif is_prof(g):
+        titulo = f"{LAB.upper()} - PROFESSOR"
+    else:
+        titulo = g.upper()
+    hash_admin = bcrypt.hashpw(s_admin.encode(), bcrypt.gensalt(8)).decode()
+    hash_view = bcrypt.hashpw(s_view.encode(), bcrypt.gensalt(8)).decode()
+    http_auth = ""
+    if args.proteger_http:
+        http_auth = ("\n    // dashboards e endpoints HTTP exigem login (usuário/senha do grupo)\n"
+                     f'    httpNodeAuth: {{ user: "{g}", pass: "{hash_admin}" }},')
+    gravar(f"settings/{g}.js", tpl.format(
+        g=g,
+        # credentialSecret persistente: senão as credenciais salvas nos nós ficam ilegíveis
+        cred=segredo(f"credential_secret:{g}", lambda: secrets.token_hex(16)),
+        titulo=titulo, hash_admin=hash_admin, hash_view=hash_view, http_auth=http_auth))
+print("⚙️  settings/<grupo>.js")
+
+# =====================================================================
+# fuxa/<grupo>/appdata — usuários (users.fuxap.db) e mysettings.json
+# O FUXA só cria o admin/123456 quando o banco de usuários NÃO existe; aqui o banco já
+# nasce com o grupo e o professor (administradores, bcrypt) e o admin padrão é removido.
+# Re-executar o gerador re-sincroniza as senhas; usuários criados no FUXA são mantidos.
+# =====================================================================
+import sqlite3
+
+
+def semear_fuxa(g):
+    appdata = f"fuxa/{g}/appdata"
+    for sub in ("appdata", "db", "images"):
+        os.makedirs(f"fuxa/{g}/{sub}", exist_ok=True)
+    db = sqlite3.connect(os.path.join(appdata, "users.fuxap.db"))
+    try:
+        db.executescript(
+            "CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, fullname TEXT, "
+            "password TEXT, groups INTEGER, info TEXT);"
+            "CREATE TABLE IF NOT EXISTS roles (name TEXT PRIMARY KEY, value TEXT);")
+        contas = [(g, f"Grupo {letra_de(g).upper()} ({LAB})")] if not is_prof(g) else []
+        contas.append((prof, f"Professor ({LAB})"))
+        for usuario, nome in contas:
+            # bcryptjs (FUXA) aceita $2a$; groups = -1 -> administrador (edita o projeto)
+            h = bcrypt.hashpw(SENHA[usuario].encode(), bcrypt.gensalt(10)).decode()
+            db.execute("INSERT OR REPLACE INTO users (username, fullname, password, groups) "
+                       "VALUES (?, ?, ?, -1)", (usuario, nome, h.replace("$2b$", "$2a$", 1)))
+        db.execute("DELETE FROM users WHERE username = 'admin'")
+        db.commit()
+    finally:
+        db.close()
+    arq = os.path.join(appdata, "mysettings.json")
+    try:
+        with open(arq, encoding="utf-8") as f:
+            cfg = json.load(f)
+    except (OSError, ValueError):
+        cfg = {}
+    cfg.update({
+        "secureEnabled": True,       # editar exige login; ver as telas (HMI) não
+        "secretCode": segredo(f"fuxa_secret:{g}", lambda: secrets.token_hex(24)),
+        "tokenExpiresIn": "12h",
+        "language": "pt",
+        "nodeRedEnabled": False,     # usa o Node-RED do grupo (MQTT), não o embutido
+    })
+    gravar(arq, json.dumps(cfg, indent=2, ensure_ascii=False))
+
+
+for g in fuxa_grupos:
+    semear_fuxa(g)
+if FUXA:
+    print("🏭 fuxa/<grupo>/appdata (usuários e configurações do FUXA)")
+
+# =====================================================================
+# nginx/html/index.html (portal; links RELATIVOS: valem no IP e no domínio público)
+# =====================================================================
+PORTAL_HTML = r"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAB IoT · {{LAB}}</title>
+<style>
+  :root {
+    --bg:      #071311;
+    --panel:   #0d201c;
+    --line:    #17332c;
+    --ink:     #dcf5ec;
+    --muted:   #6f9a8d;
+    --signal:  #35e0b0;
+    --signal-dim: #1c6e57;
+    --gold:    #e0b23a;
+    --gold-dim: #6e5417;
+    --purple:  #a855f7;
+    --purple-dim: #581c87;
+    --blue:    #4aa8ff;
+    --blue-dim: #1d4f80;
+    --orange:  #f0883e;
+    --orange-dim: #7a3f12;
+    --pink:    #f472b6;
+    --pink-dim: #831843;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 44px 44px;
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 6vh 5vw;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  .head { border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 34px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--signal);
+    display: flex; align-items: center; gap: 9px;
+  }
+  .eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--signal); box-shadow: 0 0 10px var(--signal);
+  }
+  h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 650; letter-spacing: -0.02em; margin-top: 14px; }
+  .sub { color: var(--muted); margin-top: 10px; font-size: 15px; max-width: 60ch; line-height: 1.5; }
+  .sub code { font-family: var(--mono); color: var(--ink); background: var(--panel); padding: 1px 6px; border-radius: 4px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+  }
+  .node {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 18px 16px;
+    text-decoration: none;
+    color: var(--ink);
+    overflow: hidden;
+    transition: border-color .16s ease, transform .16s ease;
+  }
+  .node::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--signal-dim); transition: background .16s ease;
+  }
+  .node:hover, .node:focus-visible {
+    border-color: var(--signal);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .node:hover::before, .node:focus-visible::before { background: var(--signal); }
+  .node__idx {
+    font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .node__name { font-size: 19px; font-weight: 600; margin-top: 4px; }
+  .node__topic {
+    font-family: var(--mono); font-size: 13px; color: var(--signal);
+    margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line);
+  }
+  .node__go {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    margin-top: 10px; letter-spacing: 0.03em;
+  }
+  .node:hover .node__go, .node:focus-visible .node__go { color: var(--ink); }
+
+  /* Card do professor: destaque dourado */
+  .node--prof::before { background: var(--gold-dim); }
+  .node--prof:hover, .node--prof:focus-visible { border-color: var(--gold); }
+  .node--prof:hover::before, .node--prof:focus-visible::before { background: var(--gold); }
+  .node--prof .node__topic { color: var(--gold); }
+
+  /* Card de notas: destaque roxo */
+  .node--notas::before { background: var(--purple-dim); }
+  .node--notas:hover, .node--notas:focus-visible { border-color: var(--purple); }
+  .node--notas:hover::before, .node--notas:focus-visible::before { background: var(--purple); }
+  .node--notas .node__topic { color: var(--purple); }
+
+  /* Card do MQTT Explorer: destaque azul */
+  .node--mqtt::before { background: var(--blue-dim); }
+  .node--mqtt:hover, .node--mqtt:focus-visible { border-color: var(--blue); }
+  .node--mqtt:hover::before, .node--mqtt:focus-visible::before { background: var(--blue); }
+  .node--mqtt .node__topic { color: var(--blue); }
+
+  /* Card do Gitea: destaque laranja */
+  .node--git::before { background: var(--orange-dim); }
+  .node--git:hover, .node--git:focus-visible { border-color: var(--orange); }
+  .node--git:hover::before, .node--git:focus-visible::before { background: var(--orange); }
+  .node--git .node__topic { color: var(--orange); }
+
+  /* Card do wastebin: destaque rosa */
+  .node--bin::before { background: var(--pink-dim); }
+  .node--bin:hover, .node--bin:focus-visible { border-color: var(--pink); }
+  .node--bin:hover::before, .node--bin:focus-visible::before { background: var(--pink); }
+  .node--bin .node__topic { color: var(--pink); }
+
+  /* Card do e-mail: destaque verde-limão */
+  .node--mail::before { background: #3f5a12; }
+  .node--mail:hover, .node--mail:focus-visible { border-color: #a3e635; }
+  .node--mail:hover::before, .node--mail:focus-visible::before { background: #a3e635; }
+  .node--mail .node__topic { color: #a3e635; }
+  .mailbox { margin-top: 34px; }
+  .mailbox h2 { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+                color: #a3e635; font-weight: 500; margin-bottom: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--mono); font-size: 13px; color: var(--ink); text-decoration: none;
+          background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+  .chip:hover, .chip:focus-visible { border-color: #a3e635; outline: none; }
+
+  /* FUXA (SCADA/HMI): destaque ciano */
+  .node--fuxa::before { background: #155e75; }
+  .node--fuxa:hover, .node--fuxa:focus-visible { border-color: #22d3ee; }
+  .node--fuxa:hover::before, .node--fuxa:focus-visible::before { background: #22d3ee; }
+  .node--fuxa .node__topic { color: #22d3ee; }
+  .mailbox--fuxa h2 { color: #22d3ee; }
+  .mailbox--fuxa .chip:hover, .mailbox--fuxa .chip:focus-visible { border-color: #22d3ee; }
+
+  .foot {
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 22px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .node { transition: none; }
+    .node:hover, .node:focus-visible { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <div class="eyebrow">broker online &middot; {{LAB}}</div>
+      <h1>Painel do {{LAB}}</h1>
+      <p class="sub">Selecione seu grupo para abrir o editor Node-RED. Cada grupo
+      publica no broker MQTT sob seu próprio tópico, no formato
+      <code>{{LAB}}-&lt;letra&gt;/#</code>.</p>
+    </header>
+
+    <main class="grid">
+{{CARDS}}    </main>
+{{MAILBOX}}
+
+    <footer class="foot">
+      {{RODAPE}}
+    </footer>
+  </div>
+</body>
+</html>
+"""
+
+cards = []
+for g in todos_servicos:
+    L = letra_de(g).upper()
+    if is_notas(g):
+        nome, classe, idx = "Painel de Notas", "node node--notas", "n"
+    elif is_prof(g):
+        nome, classe, idx = "Professor", "node node--prof", "p"
+    else:
+        nome, classe, idx = f"Grupo {L}", "node", L
+    cards.append(
+        f'      <a class="{classe}" href="/{g}/">\n'
+        f'        <span class="node__idx">{idx}</span>\n'
+        f'        <span class="node__name">{nome}</span>\n'
+        f'        <span class="node__topic">{g}/#</span>\n'
+        '        <span class="node__go">abrir editor &rarr;</span>\n'
+        '      </a>\n')
+if WB:
+    cards.append(
+        '      <a class="node node--bin" href="/bin/">\n'
+        '        <span class="node__idx">bin · todo o lab</span>\n'
+        '        <span class="node__name">wastebin</span>\n'
+        '        <span class="node__topic">colar e compartilhar código</span>\n'
+        '        <span class="node__go">abrir (login do grupo) &rarr;</span>\n'
+        '      </a>\n')
+if GITEA:
+    cards.append(
+        '      <a class="node node--git" href="/git/">\n'
+        '        <span class="node__idx">git</span>\n'
+        '        <span class="node__name">Gitea</span>\n'
+        f'        <span class="node__topic">{LAB}-grupo-&lt;letra&gt;</span>\n'
+        '        <span class="node__go">abrir repositórios &rarr;</span>\n'
+        '      </a>\n')
+cards.append(
+    f'      <a class="node node--mqtt" href="{MQTTX_URL}">\n'
+    '        <span class="node__idx">mqtt · rede local</span>\n'
+    '        <span class="node__name">MQTT Explorer</span>\n'
+    '        <span class="node__topic">#  ·  broker do lab</span>\n'
+    f'        <span class="node__go">abrir explorer{" (login)" if MQTTX_AUTH else ""} &rarr;</span>\n'
+    '      </a>\n')
+
+mailbox_html = ""
+if FUXA:
+    cards.append(
+        '      <a class="node node--fuxa" href="#fuxa">\n'
+        '        <span class="node__idx">scada · por grupo</span>\n'
+        '        <span class="node__name">FUXA (SCADA/HMI)</span>\n'
+        '        <span class="node__topic">telas ligadas ao MQTT</span>\n'
+        '        <span class="node__go">escolher o grupo &darr;</span>\n'
+        '      </a>\n')
+    chips = "".join(
+        f'        <a class="chip" href="/fuxa/{g}/">{"professor" if is_prof(g) else g}</a>\n'
+        for g in fuxa_grupos)
+    mailbox_html += ('    <section class="mailbox mailbox--fuxa" id="fuxa">\n'
+                     '      <h2>FUXA (SCADA/HMI) de cada grupo</h2>\n'
+                     '      <div class="chips">\n' + chips + '      </div>\n'
+                     '    </section>\n')
+if MAILPIT:
+    cards.append(
+        '      <a class="node node--mail" href="/mail/">\n'
+        '        <span class="node__idx">mail · professor</span>\n'
+        '        <span class="node__name">E-mail (Mailpit)</span>\n'
+        '        <span class="node__topic">todas as caixas · tag por grupo</span>\n'
+        '        <span class="node__go">abrir caixa central &rarr;</span>\n'
+        '      </a>\n')
+    chips = "".join(f'        <a class="chip" href="/mail/{g}/">{g}</a>\n' for g in grupos_alunos)
+    mailbox_html += ('    <section class="mailbox">\n'
+                    '      <h2>Caixa de e-mail de cada grupo</h2>\n'
+                    '      <div class="chips">\n' + chips + '      </div>\n'
+                    '    </section>\n')
+
+rodape = [f"<span>local: {LOCAL_URL}/</span>"]
+if TUNEL:
+    rodape.append(f"<span>público: {PUBLICO_URL}/</span>")
+rodape += [f"<span>MQTT: {IP}:1883</span>", f"<span>tópico base: {LAB}-&lt;letra&gt;/</span>"]
+
+html = (PORTAL_HTML
+        .replace("{{CARDS}}", "".join(cards))
+        .replace("{{MAILBOX}}", mailbox_html)
+        .replace("{{RODAPE}}", "\n      ".join(rodape))
+        .replace("{{LAB}}", LAB))
+gravar("nginx/html/index.html", html)
+# o laboratório fica público: pede aos robôs de busca/IA que não indexem nada
+gravar("nginx/html/robots.txt", "User-agent: *\nDisallow: /\n")
+print("🏠 nginx/html/index.html")
+
+# =====================================================================
+# mqtt-explorer/data/settings.json
+# =====================================================================
+conn_id = "-".join(secrets.token_hex(k) for k in (4, 2, 2, 2, 6))
+mqttx_settings = {
+    "ConnectionManager_connections": {
+        conn_id: {
+            "configVersion": 1, "certValidation": False,
+            "clientId": f"mqtt-explorer-{secrets.token_hex(4)}",
+            "id": conn_id, "name": f"{LAB} (mosquitto)", "encryption": False,
+            "subscriptions": [{"topic": "#", "qos": 0}, {"topic": "$SYS/#", "qos": 0}],
+            "type": "mqtt", "host": "mosquitto", "port": 1883, "protocol": "mqtt",
+        }
+    },
+    "Settings": {
+        "timeLocale": "pt-BR", "topicOrder": "none", "highlightTopicUpdates": True,
+        "valueRendererDisplayMode": "diff", "selectTopicWithMouseOver": False, "theme": "light",
+    },
+}
+gravar("mqtt-explorer/data/settings.json", json.dumps(mqttx_settings, indent=2, ensure_ascii=False))
+print("🔭 mqtt-explorer/data/settings.json")
+
+# =====================================================================
+# gitea/init/gitea-init.sh
+# =====================================================================
+GITEA_INIT_TPL = r"""#!/bin/bash
+# gitea-init.sh — gerado por gen_iot_vps_mail_portal.py (lab __TURMA__)
+# Cria/atualiza no Gitea os usuarios de credenciais.txt, uma organizacao por grupo,
+# os times e o repositorio inicial. Idempotente: pode rodar quantas vezes quiser
+# (senhas existentes sao re-sincronizadas com credenciais.txt).
+#   Rodar de novo:  docker compose run --rm gitea-init
+set -u
+BASE=http://gitea:3000
+API=$BASE/api/v1
+ADMIN_USER="__ADMIN_USER__"
+ADMIN_PASS="__ADMIN_PASS__"
+ADMIN_EMAIL="__ADMIN_EMAIL__"
+REPO="__REPO__"
+units_map() {  # permissao (read|write) em todas as unidades de repositório
+  local u out=""
+  for u in repo.code repo.issues repo.pulls repo.releases repo.wiki repo.projects; do
+    out="$out\"$u\":\"$1\","
+  done
+  echo "\"units_map\":{${out%,}}"
+}
+
+log() { echo "[gitea-init] $*"; }
+
+api() {  # api METODO CAMINHO [JSON]  -> imprime o HTTP status; corpo em /tmp/resp
+  local a=(-sS -o /tmp/resp -w '%{http_code}' -u "$ADMIN_USER:$ADMIN_PASS"
+           -H 'Content-Type: application/json' -X "$1" "$API$2")
+  [ -n "${3:-}" ] && a+=(-d "$3")
+  curl "${a[@]}"
+}
+
+log "aguardando o Gitea..."
+for i in $(seq 1 90); do
+  curl -fsS "$BASE/api/healthz" >/dev/null 2>&1 && break
+  sleep 2
+done
+
+# ---- administrador (professor) via CLI ----
+if su-exec git gitea admin user list --admin 2>/dev/null | awk 'NR>1{print $2}' | grep -qx "$ADMIN_USER"; then
+  log "admin $ADMIN_USER ja existe: sincronizando senha"
+  su-exec git gitea admin user change-password --username "$ADMIN_USER" --password "$ADMIN_PASS" \
+      --must-change-password=false 2>/dev/null \
+    || su-exec git gitea admin user change-password --username "$ADMIN_USER" --password "$ADMIN_PASS"
+else
+  log "criando admin $ADMIN_USER"
+  su-exec git gitea admin user create --admin --username "$ADMIN_USER" --password "$ADMIN_PASS" \
+      --email "$ADMIN_EMAIL" --must-change-password=false
+fi
+api PATCH "/admin/users/$ADMIN_USER" \
+  "{\"login_name\":\"$ADMIN_USER\",\"source_id\":0,\"must_change_password\":false}" >/dev/null
+
+ensure_user() {  # usuario senha email nome
+  local code
+  code=$(api POST /admin/users "{\"username\":\"$1\",\"password\":\"$2\",\"email\":\"$3\",\"full_name\":\"$4\",\"must_change_password\":false}")
+  if [ "$code" = 201 ]; then log "usuario $1 criado"
+  else
+    code=$(api PATCH "/admin/users/$1" "{\"login_name\":\"$1\",\"source_id\":0,\"password\":\"$2\",\"must_change_password\":false}")
+    log "usuario $1 ja existe: senha sincronizada (HTTP $code)"
+  fi
+}
+
+ensure_org() {  # org nome_completo
+  local code
+  code=$(api POST /orgs "{\"username\":\"$1\",\"full_name\":\"$2\",\"visibility\":\"private\",\"repo_admin_change_team_access\":false}")
+  [ "$code" = 201 ] && log "organizacao $1 criada" || log "organizacao $1 ja existe (HTTP $code)"
+}
+
+ensure_team() {  # org time permissao(read|write) membro
+  local id code create=false UNITS_MAP
+  [ "$3" = write ] && create=true
+  UNITS_MAP=$(units_map "$3")
+  api GET "/orgs/$1/teams/search?q=$2" >/dev/null
+  id=$(grep -o '"id":[0-9]*' /tmp/resp | head -1 | cut -d: -f2)
+  if [ -z "$id" ]; then
+    # só units_map: o Gitea 28+ recusa "units" e "units_map" juntos
+    code=$(api POST "/orgs/$1/teams" "{\"name\":\"$2\",\"permission\":\"$3\",\"includes_all_repositories\":true,\"can_create_org_repo\":$create,$UNITS_MAP}")
+    if [ "$code" = 201 ]; then
+      id=$(grep -o '"id":[0-9]*' /tmp/resp | head -1 | cut -d: -f2)
+      log "time $1/$2 ($3) criado"
+    fi
+  else
+    # já existe: reaplica as permissões (corrige times criados com outra configuração)
+    code=$(api PATCH "/teams/$id" "{\"name\":\"$2\",\"permission\":\"$3\",\"includes_all_repositories\":true,\"can_create_org_repo\":$create,$UNITS_MAP}")
+    [ "$code" = 200 ] && log "time $1/$2 ($3) ja existe: permissoes conferidas" \
+                      || log "  ERRO ao atualizar time $1/$2 (HTTP $code): $(cat /tmp/resp)"
+  fi
+  if [ -n "$id" ]; then
+    code=$(api PUT "/teams/$id/members/$4")
+    log "  $4 -> $1/$2 (HTTP $code)"
+  else
+    log "  ERRO ao criar time $1/$2: $(cat /tmp/resp)"
+  fi
+}
+
+ensure_repo() {  # org repo
+  [ -z "$2" ] && return
+  local code
+  code=$(api POST "/orgs/$1/repos" "{\"name\":\"$2\",\"auto_init\":true,\"private\":true,\"default_branch\":\"main\",\"readme\":\"Default\",\"description\":\"Projeto Node-RED do $1\"}")
+  [ "$code" = 201 ] && log "repositorio $1/$2 criado" || log "repositorio $1/$2 ja existe (HTTP $code)"
+}
+
+# ---- usuarios, organizacoes e times ----
+__CORPO__
+log "concluido."
+"""
+
+if GITEA:
+    corpo = [f'ensure_user "{notas_service}" "{SENHA[notas_service]}" '
+             f'"{notas_service}@{DOMINIO}" "Avaliador {LAB}"']
+    for g in grupos_alunos:
+        org, L = org_de(g), letra_de(g).upper()
+        corpo += [
+            "",
+            f"# ---- {g} -> organizacao {org}",
+            f'ensure_user "{g}" "{SENHA[g]}" "{g}@{DOMINIO}" "Grupo {L} ({LAB})"',
+            f'ensure_org  "{org}" "Grupo {L} - {LAB}"',
+            f'ensure_team "{org}" "grupo" write "{g}"',
+            f'ensure_team "{org}" "avaliacao" read "{notas_service}"',
+            f'ensure_repo "{org}" "$REPO"',
+        ]
+    gravar("gitea/init/gitea-init.sh",
+           GITEA_INIT_TPL
+           .replace("__TURMA__", LAB)
+           .replace("__ADMIN_USER__", prof)
+           .replace("__ADMIN_PASS__", SENHA[prof])
+           .replace("__ADMIN_EMAIL__", f"{prof}@{DOMINIO}")
+           .replace("__REPO__", GITEA_REPO)
+           .replace("__CORPO__", "\n".join(corpo)), executavel=True)
+    print("🐙 gitea/init/gitea-init.sh")
+
+# =====================================================================
+# postgres/init/bancos.sql (idempotente; roda a cada subida no db-init)
+# =====================================================================
+if POSTGRES:
+    sql = ["-- bancos.sql — gerado por gen_iot_vps_mail_portal.py",
+           "-- Idempotente: cria usuários/bancos que faltarem e re-sincroniza as senhas.", ""]
+    bancos = []
+    if GITEA_PG:
+        bancos.append(("gitea", PG_GITEA_SENHA,
+                       "ENCODING ''UTF8'' LC_COLLATE ''C'' LC_CTYPE ''C'' TEMPLATE template0"))
+    for nome, senha, opts in bancos:
+        sql += [
+            f"-- {nome}",
+            f"SELECT 'CREATE ROLE {nome} LOGIN' WHERE NOT EXISTS "
+            f"(SELECT FROM pg_roles WHERE rolname = '{nome}')\\gexec",
+            f"ALTER ROLE {nome} WITH LOGIN PASSWORD '{senha}';",
+            f"SELECT 'CREATE DATABASE {nome} OWNER {nome} {opts}' WHERE NOT EXISTS "
+            f"(SELECT FROM pg_database WHERE datname = '{nome}')\\gexec",
+            "",
+        ]
+    gravar("postgres/init/bancos.sql", "\n".join(sql))
+    print("🐘 postgres/init/bancos.sql")
+
+# =====================================================================
+# tunel/ (cliente do túnel SSH reverso, roda no laboratório)
+# =====================================================================
+TUNEL_DOCKERFILE = """FROM alpine:3.20
+RUN apk add --no-cache openssh-client bash
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+"""
+
+TUNEL_ENTRYPOINT = r"""#!/bin/bash
+# entrypoint.sh do túnel — gerado por gen_iot_vps_mail_portal.py
+# Mantém o túnel SSH reverso:  VPS 127.0.0.1:$PORTA_REMOTA  ->  $DESTINO (nginx do lab)
+#   Ver a chave pública:  docker compose run --rm --no-deps --build tunel chave
+set -u
+CH=/chave/id_ed25519
+mkdir -p /chave ~/.ssh
+if [ ! -f "$CH" ]; then
+  ssh-keygen -q -t ed25519 -N "" -C "tunel-iot-lab" -f "$CH"
+  echo "[tunel] chave nova gerada em tunel/chave/"
+fi
+# Windows/NTFS: o arquivo montado aparece com permissões abertas e o ssh o recusaria
+install -m 600 "$CH" ~/.ssh/id_ed25519
+
+if [ "${1:-}" = chave ]; then
+  echo "[tunel] chave pública (vai para o VPS como id_ed25519.pub):"
+  cat "$CH.pub"
+  exit 0
+fi
+
+echo "[tunel] chave pública: $(cat "$CH.pub")"
+while true; do
+  echo "[tunel] conectando $VPS_USUARIO@$VPS_HOST:$VPS_PORTA  (VPS 127.0.0.1:$PORTA_REMOTA -> $DESTINO)"
+  ssh -N -T \
+      -i ~/.ssh/id_ed25519 -p "$VPS_PORTA" \
+      -o StrictHostKeyChecking=accept-new \
+      -o UserKnownHostsFile=/chave/known_hosts \
+      -o ExitOnForwardFailure=yes \
+      -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+      -o ConnectTimeout=15 \
+      -R "127.0.0.1:${PORTA_REMOTA}:${DESTINO}" \
+      "$VPS_USUARIO@$VPS_HOST"
+  echo "[tunel] conexão encerrada (código $?); nova tentativa em 10 s"
+  sleep 10
+done
+"""
+
+# =====================================================================
+# vps/ (vai para o VPS: proxy do Apache, página offline e setup)
+# =====================================================================
+VPS_PROXY_CONF = """# iot-lab — proxy do Apache para o túnel do laboratório (gerado por gen_iot_vps_mail_portal.py)
+# Incluído DENTRO do <VirtualHost *:443> de __HOST__ pelo setup-vps.sh.
+ProxyRequests Off
+ProxyPreserveHost On
+ProxyTimeout 3600
+AllowEncodedSlashes NoDecode
+RequestHeader set X-Forwarded-Proto "https"
+RequestHeader set X-Forwarded-Port "443"
+Header always set X-Robots-Tag "noindex, nofollow"
+
+# Ficam no próprio VPS: validação do certbot e a página "laboratório desligado"
+ProxyPass /.well-known/acme-challenge/ !
+ProxyPass /lab-offline.html !
+Alias /lab-offline.html /var/www/iot-lab/lab-offline.html
+<Directory /var/www/iot-lab>
+    Require all granted
+</Directory>
+ErrorDocument 502 /lab-offline.html
+ErrorDocument 503 /lab-offline.html
+
+# Todo o resto vai para o túnel (portal, Node-RED, Gitea, wastebin, e-mail), com WebSocket.
+# nocanon + AllowEncodedSlashes: o Gitea precisa receber %2F e afins sem alteração.
+ProxyPass        / http://127.0.0.1:__PORTA__/ upgrade=websocket nocanon retry=0 timeout=3600
+ProxyPassReverse / http://127.0.0.1:__PORTA__/
+"""
+
+VPS_OFFLINE_HTML = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="30">
+<title>Laboratório desligado · __LAB__</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+         background: #071311; color: #dcf5ec;
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 34rem; padding: 2rem; }
+  .tag { font-family: ui-monospace, Consolas, monospace; font-size: 12px; letter-spacing: .2em;
+         text-transform: uppercase; color: #e0b23a; }
+  h1 { font-size: 1.8rem; margin: .6rem 0; }
+  p { color: #6f9a8d; line-height: 1.55; }
+</style>
+</head>
+<body>
+<main>
+  <div class="tag">__LAB__ · offline</div>
+  <h1>O laboratório está desligado no momento</h1>
+  <p>O servidor do laboratório não está conectado. Isso é normal fora do horário das aulas.
+  Esta página tenta de novo sozinha a cada 30 segundos.</p>
+  <p>Na rede do laboratório, use o endereço local informado pelo professor.</p>
+</main>
+</body>
+</html>
+"""
+
+VPS_SETUP = r"""#!/bin/bash
+# setup-vps.sh — gerado por gen_iot_vps_mail_portal.py
+# Prepara o VPS para publicar o laboratório em https://__HOST__/
+#   Uso:  sudo bash setup-vps.sh caminho/id_ed25519.pub
+# Idempotente: pode rodar de novo (ex.: para trocar a chave).
+set -euo pipefail
+DOMINIO="__HOST__"
+USUARIO="__USUARIO__"
+PORTA="__PORTA__"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+PUB="${1:-}"
+log()  { echo "[setup-vps] $*"; }
+erro() { echo "[setup-vps] ERRO: $*" >&2; exit 1; }
+
+[ "$(id -u)" -eq 0 ] || erro "rode com sudo."
+[ -n "$PUB" ] && [ -f "$PUB" ] || erro "uso: sudo bash $0 caminho/id_ed25519.pub"
+grep -q '^ssh-ed25519 ' "$PUB" || erro "$PUB não parece uma chave pública ed25519."
+command -v apache2ctl >/dev/null || erro "Apache (apache2) não encontrado."
+
+# ---- 1) usuário restrito do túnel: só pode abrir 127.0.0.1:$PORTA, sem shell ----
+if ! id "$USUARIO" >/dev/null 2>&1; then
+  useradd --system --create-home --shell /usr/sbin/nologin "$USUARIO"
+  log "usuário $USUARIO criado"
+fi
+usermod -p '*' "$USUARIO"          # sem senha, mas não "bloqueado" (login só por chave)
+H="$(getent passwd "$USUARIO" | cut -d: -f6)"
+install -d -m 700 -o "$USUARIO" -g "$USUARIO" "$H/.ssh"
+printf 'restrict,port-forwarding,permitlisten="127.0.0.1:%s" %s\n' "$PORTA" "$(head -1 "$PUB")" \
+  > "$H/.ssh/authorized_keys"
+chown "$USUARIO:$USUARIO" "$H/.ssh/authorized_keys"
+chmod 600 "$H/.ssh/authorized_keys"
+log "chave do túnel autorizada (só 127.0.0.1:$PORTA)"
+
+# ---- 2) sshd: regras para o usuário do túnel ----
+cat > /etc/ssh/sshd_config.d/60-iot-lab.conf <<EOF
+# gerado por setup-vps.sh (iot-lab)
+Match User $USUARIO
+    AllowTcpForwarding remote
+    GatewayPorts no
+    X11Forwarding no
+    AllowAgentForwarding no
+    PermitTTY no
+    ClientAliveInterval 15
+    ClientAliveCountMax 3
+EOF
+sshd -t || erro "configuração do sshd inválida (veja /etc/ssh/sshd_config.d/60-iot-lab.conf)"
+if sshd -T -C "user=$USUARIO,host=lab,addr=192.0.2.1" 2>/dev/null | grep -qi '^allowusers '; then
+  log "ATENÇÃO: o sshd usa AllowUsers; inclua '$USUARIO' nessa lista ou o túnel será recusado."
+fi
+systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || service ssh reload || true
+log "sshd recarregado"
+
+# ---- 3) Apache: módulos, arquivos e Include no VirtualHost 443 ----
+a2enmod -q proxy proxy_http proxy_wstunnel headers ssl alias >/dev/null
+install -D -m 644 "$DIR/proxy.conf"       /etc/apache2/iot-lab/proxy.conf
+install -D -m 644 "$DIR/lab-offline.html" /var/www/iot-lab/lab-offline.html
+
+# Cada editor Node-RED, dashboard e caixa de e-mail aberta mantém um WebSocket = 1 thread do Apache.
+# MPM event: até 400 conexões simultâneas com pouca memória (8 processos x 50 threads).
+MPM="$(apache2ctl -V 2>/dev/null | awk -F': *' '/Server MPM/ {print $2}' | tr -d ' ')"
+if [ "$MPM" = "event" ]; then
+  cat > /etc/apache2/conf-available/iot-lab-mpm.conf <<'EOF2'
+# gerado por setup-vps.sh (iot-lab): mais conexões simultâneas (WebSockets)
+<IfModule mpm_event_module>
+    ServerLimit            8
+    ThreadsPerChild       50
+    MaxRequestWorkers    400
+    MaxConnectionsPerChild 0
+</IfModule>
+EOF2
+  a2enconf -q iot-lab-mpm >/dev/null
+  log "MPM event: limite de conexões simultâneas ajustado para 400"
+else
+  log "ATENÇÃO: o Apache usa o MPM '${MPM:-?}'. Com 'prefork' (comum com mod_php) cada"
+  log "  WebSocket ocupa um processo inteiro e 1 GB de RAM não aguenta a turma."
+  log "  Recomendado: PHP-FPM + MPM event (a2dismod php* mpm_prefork; a2enmod mpm_event proxy_fcgi)."
+fi
+
+VH=""
+for f in /etc/apache2/sites-enabled/*; do
+  [ -e "$f" ] || continue
+  if grep -qE "ServerName[[:space:]]+$DOMINIO([[:space:]]|$)" "$f" && grep -q ':443' "$f"; then
+    VH="$(readlink -f "$f")"; break
+  fi
+done
+[ -n "$VH" ] || erro "não achei o VirtualHost *:443 de $DOMINIO em sites-enabled.
+  Gere o certificado antes:  sudo certbot --apache -d $DOMINIO   e rode este script de novo."
+log "VirtualHost HTTPS: $VH"
+
+BKP=""
+if ! grep -q '/etc/apache2/iot-lab/proxy.conf' "$VH"; then
+  BKP="$VH.bak-iot-lab-$(date +%Y%m%d%H%M%S)"
+  cp -a "$VH" "$BKP"
+  python3 - "$VH" "$DOMINIO" <<'PY'
+import re, sys
+caminho, dominio = sys.argv[1], sys.argv[2]
+s = open(caminho, encoding="utf-8").read()
+for m in re.finditer(r"<VirtualHost[^>]*:443[^>]*>.*?</VirtualHost>", s, re.S):
+    if re.search(r"ServerName\s+" + re.escape(dominio) + r"(\s|$)", m.group(0)):
+        fim = m.end() - len("</VirtualHost>")
+        s = s[:fim] + "    Include /etc/apache2/iot-lab/proxy.conf\n" + s[fim:]
+        open(caminho, "w", encoding="utf-8").write(s)
+        sys.exit(0)
+sys.exit(2)
+PY
+  log "Include inserido (backup: $BKP)"
+else
+  log "Include já presente"
+fi
+
+if ! apache2ctl configtest; then
+  [ -n "$BKP" ] && cp -a "$BKP" "$VH" && log "configuração revertida a partir do backup"
+  erro "apache2ctl configtest falhou."
+fi
+systemctl reload apache2 2>/dev/null || apache2ctl graceful
+log "Apache recarregado"
+
+# ---- 4) teste ----
+codigo="$(curl -sk -o /dev/null -w '%{http_code}' --resolve "$DOMINIO:443:127.0.0.1" "https://$DOMINIO/" || true)"
+case "$codigo" in
+  200) log "OK: https://$DOMINIO/ já responde pelo túnel." ;;
+  502|503) log "OK: Apache pronto; o túnel ainda não está conectado (página 'laboratório desligado')." ;;
+  *) log "Resposta inesperada de https://$DOMINIO/: HTTP $codigo" ;;
+esac
+log "concluído. No laboratório:  docker compose up -d   e   docker compose logs -f tunel"
+"""
+
+if TUNEL:
+    gravar("tunel/Dockerfile", TUNEL_DOCKERFILE)
+    gravar("tunel/entrypoint.sh", TUNEL_ENTRYPOINT, executavel=True)
+    os.makedirs("tunel/chave", exist_ok=True)
+    gravar("vps/proxy.conf", VPS_PROXY_CONF.replace("__HOST__", PUBLIC_HOST)
+           .replace("__PORTA__", str(VPS_PORTA_TUNEL)))
+    gravar("vps/lab-offline.html", VPS_OFFLINE_HTML.replace("__LAB__", LAB))
+    gravar("vps/setup-vps.sh", VPS_SETUP.replace("__HOST__", PUBLIC_HOST)
+           .replace("__USUARIO__", args.vps_usuario).replace("__PORTA__", str(VPS_PORTA_TUNEL)),
+           executavel=True)
+    print("🔐 tunel/  e  🌍 vps/ (proxy.conf, lab-offline.html, setup-vps.sh)")
+
+# =====================================================================
+# .segredos.json
+# =====================================================================
+gravar(ARQ_SEGREDOS, json.dumps(SEGREDOS, indent=2))
+try:
+    os.chmod(ARQ_SEGREDOS, 0o600)
+except OSError:
+    pass
+
+# =====================================================================
+# credenciais.txt
+# =====================================================================
+def bases():
+    b = [("local (rede do lab)", LOCAL_URL)]
+    if TUNEL:
+        b.append(("público (VPS)", PUBLICO_URL))
+    return b
+
+
+L_ = []
+L_.append(f"=== CREDENCIAIS {LAB.upper()} ===\n")
+L_.append(f"{'USUÁRIO':<13} | {'SENHA':<10} | {'USUÁRIO VIEW':<15} | {'SENHA VIEW':<10}")
+L_.append("-" * 58)
+for u, s, uv, sv in credenciais_geradas:
+    L_.append(f"{u:<13} | {s:<10} | {uv:<15} | {sv:<10}")
+L_.append("\nA mesma senha do grupo vale para Node-RED, FUXA, Gitea, e-mail (Mailpit) e wastebin.")
+L_.append("\n=== ENDEREÇOS ===")
+for rot, b in bases():
+    L_.append(f"[{rot}]  portal: {b}/")
+L_.append("")
+for g in todos_servicos:
+    L_.append(f"{g:<13} " + "   ".join(f"{b}/{g}/" for _r, b in bases()))
+if GITEA:
+    L_.append(f"{'gitea':<13} " + "   ".join(f"{b}/git/" for _r, b in bases()))
+if WB:
+    L_.append(f"{'wastebin':<13} " + "   ".join(f"{b}/bin/" for _r, b in bases()))
+for g in fuxa_grupos:
+    L_.append(f"{'fuxa ' + letra_de(g):<13} " + "   ".join(f"{b}/fuxa/{g}/" for _r, b in bases()))
+L_.append(f"{'mqtt-explorer':<13} {MQTTX_URL}   (só na rede local)")
+L_.append(f"{'MQTT broker':<13} {IP}:1883   (só na rede local)")
+if GITEA:
+    L_.append("\n=== GITEA ===")
+    L_.append(f"{prof} = administrador · {notas_service} = leitura em todas as organizações")
+    for g in grupos_alunos:
+        extra = f"   repo: {org_de(g)}/{GITEA_REPO}" if GITEA_REPO else ""
+        L_.append(f"{g:<13} -> org {org_de(g)}{extra}")
+    if GITEA_REPO:
+        L_.append(f"Dentro do Node-RED (Projects): http://gitea:3000/<org>/{GITEA_REPO}.git")
+if WB:
+    L_.append("\n=== WASTEBIN (único para todo o lab) ===")
+    L_.append("Login: usuário e senha de qualquer grupo (ou do professor/notas).")
+    L_.append("API: curl -u <grupo>:<senha> -H 'Content-Type: application/json' "
+              "-d '{\"text\":\"...\"}' <base>/bin/")
+if MAILPIT:
+    L_.append("\n=== E-MAIL (Mailpit) ===")
+    L_.append(f"Caixa central (professor, tag por grupo): <base>/mail/   login {prof} ou {notas_service}")
+    L_.append("Cada grupo: caixa própria em <base>/mail/<grupo>/ (login do grupo).")
+    L_.append("Envio pelo Node-RED (nó 'e-mail'): servidor <grupo>-mailpit, porta 1025, sem TLS,")
+    L_.append(f"  usuário e senha do grupo. Ex.: {grupos_alunos[0]} -> servidor {grupos_alunos[0]}-mailpit")
+if FUXA:
+    L_.append("\n=== FUXA (SCADA/HMI; um por grupo + professor) ===")
+    L_.append(f"<base>/fuxa/<grupo>/  · login: usuário e senha do grupo (o {prof} entra em todos)")
+    L_.append("Acesso: o navegador pede o login do grupo (--proteger-http) e o FUXA pede de novo para editar."
+              if args.proteger_http else "Sem login dá para VER as telas (HMI); editar exige login.")
+    L_.append("Não existe o admin/123456 padrão do FUXA.")
+    L_.append("Ligação com o Node-RED: no FUXA, Conexões -> novo dispositivo MQTT client,")
+    L_.append("  endereço mqtt://mosquitto:1883, tópicos <grupo>/... (os mesmos do Node-RED).")
+    L_.append(f"Dados: fuxa/<grupo>/ (appdata = projeto e usuários; db = históricos; images)")
+L_.append("\n=== MQTT EXPLORER ===")
+L_.append(f"Usuário: {MQTTX_USER}  ·  Senha: {MQTTX_SENHA}" if MQTTX_AUTH else "Acesso sem login")
+if POSTGRES:
+    L_.append("\n=== POSTGRESQL (interno; só para o professor) ===")
+    L_.append(f"postgres: {PG_ROOT_SENHA}")
+    if GITEA_PG:
+        L_.append(f"gitea:      {PG_GITEA_SENHA}")
+gravar("credenciais.txt", "\n".join(L_) + "\n")
+
+# =====================================================================
+# acessos/<grupo>.md + publicar-acessos-github.sh
+# Página de acesso de cada grupo, injetada no repositório PRIVADO do grupo no GitHub
+# ({lab}-grupo-<letra>) pelo script publicar-acessos-github.sh (usa o gh).
+# =====================================================================
+MARCA_INI = f"<!-- {LAB.upper()}-ACESSO:INICIO (gerado automaticamente; não edite este bloco) -->"
+MARCA_FIM = f"<!-- {LAB.upper()}-ACESSO:FIM -->"
+
+
+def pagina_acesso(g):
+    """Página de acesso (Markdown) de um grupo, do professor (lab-p) ou das notas (lab-n)."""
+    L = letra_de(g).upper()
+    base_pub = PUBLICO_URL if TUNEL else None
+
+    def linha(servico, caminho, so_local=False):
+        loc = f"{LOCAL_URL}{caminho}"
+        pub = "— (só na rede do lab)" if (so_local or not base_pub) else f"{base_pub}{caminho}"
+        return f"| {servico} | {loc} | {pub} |"
+
+    if is_prof(g):
+        titulo, quem = "Professor", "do **professor**"
+    elif is_notas(g):
+        titulo, quem = "Painel de notas", "do **painel de notas**"
+    else:
+        titulo, quem = f"Grupo {L}", "**somente deste grupo**"
+
+    m = [MARCA_INI,
+         f"## 🔑 Acesso ao {LAB.upper()} — {titulo}",
+         "",
+         f"> ⚠️ Credenciais {quem}. Não copie para fora deste repositório nem compartilhe.",
+         "> A mesma senha vale para Node-RED, FUXA, Gitea, e-mail (Mailpit) e wastebin.",
+         "",
+         "| | Usuário | Senha |",
+         "|---|---|---|",
+         f"| Acesso principal | `{g}` | `{SENHA[g]}` |",
+         f"| Só leitura no Node-RED (projetor) | `{g}-view` | `{SENHA[g + '-view']}` |"]
+    if is_prof(g):
+        if MQTTX_AUTH:
+            m.append(f"| MQTT Explorer | `{MQTTX_USER}` | `{MQTTX_SENHA}` |")
+
+    m += ["", "### Endereços", "",
+          "| Serviço | No laboratório | De qualquer lugar |",
+          "|---|---|---|",
+          linha("Portal", "/"),
+          linha("Node-RED (editor)", f"/{g}/"),
+          linha("Dashboard", f"/{g}/dashboard")]
+    if FUXA:
+        if is_prof(g):
+            m.append(linha("FUXA (SCADA/HMI) do professor", f"/fuxa/{g}/"))
+            m.append(linha("FUXA dos grupos (mesmo login)", f"/fuxa/{LAB}-<letra>/"))
+        elif is_notas(g):
+            m.append(linha("FUXA dos grupos (só ver as telas)", f"/fuxa/{LAB}-<letra>/"))
+        else:
+            m.append(linha("FUXA (SCADA/HMI)", f"/fuxa/{g}/"))
+    if WB:
+        m.append(linha("wastebin (colar código; todo o lab)", "/bin/"))
+    if GITEA:
+        if is_prof(g) or is_notas(g):
+            m.append(linha("Gitea (todas as organizações)", "/git/explore/organizations"))
+        else:
+            m.append(linha("Gitea (organização do grupo)", f"/git/{org_de(g)}"))
+    if MAILPIT:
+        if is_prof(g) or is_notas(g):
+            m.append(linha("E-mail — caixa central (tag por grupo)", "/mail/"))
+        else:
+            m.append(linha("E-mail de teste (Mailpit)", f"/mail/{g}/"))
+    m.append(f"| MQTT Explorer | {MQTTX_URL} | — (só na rede do lab) |")
+
+    if is_prof(g):
+        m += ["", "### O que só o professor pode fazer", "",
+              "| Onde | Permissão |", "|---|---|"]
+        if GITEA:
+            m.append(f"| Gitea | **administrador** do site; dono de todas as organizações `{LAB}-grupo-*` |")
+        if MAILPIT:
+            caixas = ", ".join(f"`/mail/{x}/`" for x in grupos_alunos)
+            m.append(f"| E-mail | caixa central `/mail/` e as caixas de todos os grupos ({caixas}) |")
+        if WB:
+            m.append(f"| wastebin | sem painel web; no servidor: `docker exec {C}-wastebin /app/wastebin-ctl list` e `... delete <id>` |")
+        if FUXA:
+            m.append(f"| FUXA | **administrador** em todos (`/fuxa/{LAB}-<letra>/`), com o usuário `{g}` |")
+        m.append(f"| Node-RED | edita o próprio (`/{g}/`); as senhas de cada grupo estão no `credenciais.txt` do servidor |")
+    elif is_notas(g):
+        m += ["", "### Para a avaliação", "", "| Onde | Acesso |", "|---|---|",
+              f"| Node-RED de notas | lê os fluxos de todos os grupos em `/data_grupos/<grupo>/` |"]
+        if GITEA:
+            m.append(f"| Gitea | **leitura** em todas as organizações `{LAB}-grupo-*` (time `avaliacao`) |")
+        if MAILPIT:
+            m.append("| E-mail | caixa central `/mail/`; filtre por grupo com `tag:<grupo>` |")
+
+    m += ["", "### Configurações para usar no Node-RED", "",
+          "| Para | Valor |", "|---|---|",
+          f"| Broker MQTT (nós mqtt) | servidor `mosquitto`, porta `1883`, tópicos `{g}/...` |",
+          f"| Broker MQTT no ESP32 / PC (só na rede do lab) | `{IP}:1883` |"]
+    if MAILPIT and not (is_prof(g) or is_notas(g)):
+        m.append(f"| Nó **e-mail** | servidor `{g}-mailpit`, porta `1025`, sem TLS, usuário/senha do grupo |")
+    if GITEA and GITEA_REPO and not (is_prof(g) or is_notas(g)):
+        m.append(f"| Projects (clonar repositório) | `http://gitea:3000/{org_de(g)}/{GITEA_REPO}.git` |")
+    if FUXA and not is_notas(g):
+        alvo = g
+        m += ["", "### FUXA (SCADA/HMI) junto com o Node-RED", "",
+              "O FUXA e o Node-RED do grupo conversam pelo broker MQTT: o Node-RED publica as",
+              "medições e o FUXA mostra/comanda pelas mesmas mensagens.", "",
+              "| No FUXA (Conexões → **+** → tipo *MQTT client*) | Valor |", "|---|---|",
+              "| Endereço | `mqtt://mosquitto:1883` |",
+              f"| Tags (Navegar/Browse ou manual) | tópicos `{alvo}/...` — ex.: `{alvo}/temperatura` |",
+              f"| Comando para o Node-RED | tag com *publish* em `{alvo}/cmd/...` (nó *mqtt in* no Node-RED) |",
+              f"| Via HTTP (opcional) | dispositivo *WebAPI*: `http://{alvo}-nodered:1880/{alvo}/<endpoint>` |",
+              "", ("> Abrir o FUXA pede o login do grupo duas vezes: no navegador (proteção do lab) e no próprio FUXA."
+                   if args.proteger_http else
+                   "> Telas do FUXA são visíveis sem login (só leitura); editar exige o login do grupo."),
+              "> Não use o Node-RED embutido do FUXA: o do grupo já está integrado."]
+    m += ["", MARCA_FIM, ""]
+    return "\n".join(m)
+
+
+# grupos + professor + notas (repositórios <lab>-grupo-p e <lab>-grupo-n também recebem)
+for g in todos_servicos:
+    gravar(f"acessos/{g}.md", pagina_acesso(g))
+
+PUBLICAR_SH = r"""#!/usr/bin/env bash
+# publicar-acessos-github.sh — gerado por gen_iot_vps_mail_portal.py (__LAB__)
+#
+# Injeta a página de acesso de cada grupo (pasta acessos/) no repositório PRIVADO
+# do grupo no GitHub:  __ORG__/__LAB__-grupo-<letra>
+#
+# Modos:
+#   (padrão)    seção no topo do README.md, entre marcadores; as execuções seguintes
+#               substituem só essa seção (o resto do README fica intacto)
+#   --arquivo   arquivo separado ACESSO-__LABU__.md (README intocado)
+#   --remover   retira a seção do README e/ou apaga o arquivo (fim do semestre)
+# Outras opções:
+#   --org NOME        organização do GitHub (padrão: __ORG__)
+#   --grupos "a b c"  só esses grupos (padrão: todos de acessos/)
+#   --dry-run         mostra o que faria, sem alterar nada
+#
+# Requisitos: gh (GitHub CLI) autenticado com permissão de escrita nos repositórios:
+#   gh auth login        (Windows: rode no Git Bash: bash publicar-acessos-github.sh)
+set -euo pipefail
+
+ORG="__ORG__"
+LAB="__LAB__"
+ARQUIVO="ACESSO-__LABU__.md"
+INICIO="__INI__"
+FIM="__FIM__"
+MODO="readme"
+DRY=0
+SO_GRUPOS=""
+DIR="$(cd "$(dirname "$0")" && pwd)/acessos"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --arquivo) MODO="arquivo" ;;
+    --remover) MODO="remover" ;;
+    --dry-run) DRY=1 ;;
+    --org)     ORG="$2"; shift ;;
+    --grupos)  SO_GRUPOS="$2"; shift ;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
+    *) echo "opção desconhecida: $1" >&2; exit 1 ;;
+  esac
+  shift
+done
+
+command -v gh >/dev/null || { echo "Instale o GitHub CLI: winget install -e --id GitHub.cli" >&2; exit 1; }
+gh auth status >/dev/null 2>&1 || { echo "Faça login antes: gh auth login" >&2; exit 1; }
+
+TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+CHAVE_INI="${INICIO%% (*}"     # parte fixa do marcador (sem o comentário)
+
+b64()  { base64 < "$1" | tr -d '\r\n'; }
+sha_de() {  # sha do arquivo no repositório, ou vazio se não existir
+  local o
+  if o="$(gh api "repos/$ORG/$1/contents/$2" --jq .sha 2>/dev/null)"; then echo "$o"; fi
+}
+baixar() { gh api -H "Accept: application/vnd.github.raw" "repos/$ORG/$1/contents/$2" > "$3"; }
+
+enviar() {  # repo caminho arquivo_local sha mensagem texto_ok
+  if [ "$DRY" = 1 ]; then echo "    (dry-run) $6"; return; fi
+  local args=(--method PUT --silent "repos/$ORG/$1/contents/$2"
+              -f message="$5" -f content="$(b64 "$3")")
+  [ -n "$4" ] && args+=(-f sha="$4")
+  gh api "${args[@]}"
+  echo "    ✓ $6"
+}
+
+apagar() {  # repo caminho sha mensagem texto_ok
+  if [ "$DRY" = 1 ]; then echo "    (dry-run) $5"; return; fi
+  gh api --method DELETE --silent "repos/$ORG/$1/contents/$2" -f message="$4" -f sha="$3"
+  echo "    ✓ $5"
+}
+
+# mantém o estilo de quebra de linha do arquivo original (CRLF de templates feitos no Windows)
+igualar_fim_de_linha() {  # original arquivo_a_ajustar
+  if grep -q $'\r' "$1" 2>/dev/null; then sed -i 's/$/\r/' "$2"; fi
+}
+
+# remove o bloco antigo (entre os marcadores) de $1 e grava em $2
+sem_bloco() {
+  tr -d '\r' < "$1" | awk -v ini="$CHAVE_INI" -v fim="$FIM" '
+    index($0, ini) == 1 { dentro = 1; next }
+    dentro && index($0, fim) == 1 { dentro = 0; pula = 1; next }
+    dentro { next }
+    pula && $0 == "" { pula = 0; next }
+    { pula = 0; print }' > "$2"
+}
+
+ok=0; falhas=0
+for f in "$DIR"/"$LAB"-*.md; do
+  g="$(basename "$f" .md)"; letra="${g##*-}"
+  case "$letra" in p) quem="professor" ;; n) quem="painel de notas" ;; *) quem="grupo ${letra^^}" ;; esac
+  if [ -n "$SO_GRUPOS" ] && ! echo " $SO_GRUPOS " | grep -qi " $letra "; then continue; fi
+  repo="$LAB-grupo-$letra"
+  echo "→ $ORG/$repo"
+  if ! gh repo view "$ORG/$repo" >/dev/null 2>&1; then
+    echo "    ✗ repositório não encontrado (ou sem acesso)"; falhas=$((falhas+1)); continue
+  fi
+
+  case "$MODO" in
+    readme)
+      sha="$(sha_de "$repo" README.md)"
+      if [ -n "$sha" ]; then baixar "$repo" README.md "$TMP/atual"; else : > "$TMP/atual"; fi
+      sem_bloco "$TMP/atual" "$TMP/resto"
+      { cat "$f"; cat "$TMP/resto"; } > "$TMP/novo"
+      igualar_fim_de_linha "$TMP/atual" "$TMP/novo"
+      if [ -n "$sha" ] && cmp -s "$TMP/atual" "$TMP/novo"; then
+        echo "    = README.md já está atualizado"
+      else
+        enviar "$repo" README.md "$TMP/novo" "$sha" "$LAB: acesso ($quem) [skip ci]" \
+               "README.md atualizado"
+      fi ;;
+    arquivo)
+      sha="$(sha_de "$repo" "$ARQUIVO")"
+      if [ -n "$sha" ]; then baixar "$repo" "$ARQUIVO" "$TMP/atual"; fi
+      if [ -n "$sha" ] && cmp -s <(tr -d '\r' < "$TMP/atual") "$f"; then
+        echo "    = $ARQUIVO já está atualizado"
+      else
+        enviar "$repo" "$ARQUIVO" "$f" "$sha" "$LAB: acesso ($quem) [skip ci]" \
+               "$ARQUIVO publicado"
+      fi ;;
+    remover)
+      sha="$(sha_de "$repo" README.md)"
+      if [ -n "$sha" ]; then
+        baixar "$repo" README.md "$TMP/atual"; sem_bloco "$TMP/atual" "$TMP/novo"
+        igualar_fim_de_linha "$TMP/atual" "$TMP/novo"
+        msg="$LAB: remove acesso ($quem) [skip ci]"
+        if cmp -s "$TMP/atual" "$TMP/novo"; then
+          :
+        elif [ -z "$(tr -d '[:space:]' < "$TMP/novo")" ]; then
+          apagar "$repo" README.md "$sha" "$msg" "README.md apagado (só continha o acesso)"
+        else
+          enviar "$repo" README.md "$TMP/novo" "$sha" "$msg" "seção removida do README.md"
+        fi
+      fi
+      sha="$(sha_de "$repo" "$ARQUIVO")"
+      if [ -n "$sha" ]; then
+        apagar "$repo" "$ARQUIVO" "$sha" "$LAB: remove acesso ($quem) [skip ci]" "$ARQUIVO apagado"
+      fi ;;
+  esac
+  ok=$((ok+1))
+done
+echo ""
+echo "Concluído: $ok repositório(s) processado(s), $falhas com problema."
+[ "$falhas" -eq 0 ]
+"""
+
+gravar("publicar-acessos-github.sh",
+       PUBLICAR_SH.replace("__ORG__", args.github_org).replace("__LABU__", LAB.upper())
+       .replace("__LAB__", LAB).replace("__INI__", MARCA_INI).replace("__FIM__", MARCA_FIM),
+       executavel=True)
+print(f"🐙 acessos/<grupo>.md + publicar-acessos-github.sh (GitHub: {args.github_org})")
+
+# =====================================================================
+# relatório
+# =====================================================================
+print(f"\n✅ {LAB}: {N} grupos ({grupos_alunos[0]}..{grupos_alunos[-1]}) + "
+      f"professor ({prof}) + notas ({notas_service})")
+print(f"\n  Local:   {LOCAL_URL}/")
+if TUNEL:
+    print(f"  Público: {PUBLICO_URL}/   (túnel SSH -> Apache do VPS {VPS_HOST})")
+print(f"  Grupo A: <base>/{grupos_alunos[0]}/   ·   Gitea: <base>/git/   ·   wastebin: <base>/bin/")
+print(f"  MQTT Explorer: {MQTTX_URL}   ·   MQTT: {IP}:1883  (rede local)")
+if FUXA:
+    print(f"  FUXA:   <base>/fuxa/{grupos_alunos[0]}/ (SCADA/HMI do grupo; {len(fuxa_grupos)} instâncias)")
+if MAILPIT:
+    print(f"  E-mail: <base>/mail/ (central, professor)   ·   <base>/mail/{grupos_alunos[0]}/ (caixa do grupo)")
+print("\n🔒 Senhas em credenciais.txt " +
+      ("(NOVAS para todos)" if args.novas_senhas else "(mantidas de execuções anteriores, se houver)"))
+if IP.startswith("127."):
+    print("\n⚠️  --ip é 127.x: alunos na rede não acessam o servidor. Use o IP real (ipconfig).")
+if TUNEL:
+    print("\n🌍 Publicação em " + PUBLICO_URL + " — passos (uma vez):")
+    print("   1) docker compose run --rm --no-deps --build tunel chave   (gera e mostra a chave)")
+    print(f"   2) ssh ubuntu@{VPS_HOST} mkdir -p iot-lab")
+    print(f"      scp -r vps tunel/chave/id_ed25519.pub ubuntu@{VPS_HOST}:iot-lab/")
+    print(f"   3) ssh -t ubuntu@{VPS_HOST} sudo bash iot-lab/vps/setup-vps.sh iot-lab/id_ed25519.pub")
+    print("   4) docker compose up -d --build")
+print(f"\n🐙 Acessos nos repositórios do GitHub ({args.github_org}/{LAB}-grupo-<letra>):")
+print("   bash publicar-acessos-github.sh --dry-run    (confere)   ·   bash publicar-acessos-github.sh")
+print(f"\n📂 {SAIDA_ABS}")
+print(f"▶  cd {SAIDA_ABS}  e  docker compose up -d --build")
