@@ -1,0 +1,74 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: scada-mosquitto
+    restart: unless-stopped
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks: [scada]
+
+  node-red:
+    build: ./node-red
+    container_name: scada-node-red
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+    ports:
+      - "${NODERED_PORT:-1880}:1880"
+    volumes:
+      - ./node-red/data:/data
+    depends_on: [mosquitto]
+    networks: [scada]
+
+  fuxa:
+    image: frangoteam/fuxa:latest
+    container_name: scada-fuxa
+    restart: unless-stopped
+    ports:
+      - "${FUXA_PORT:-1881}:1881"
+    volumes:
+      - ./fuxa/appdata:/usr/src/app/FUXA/server/_appdata
+      - ./fuxa/db:/usr/src/app/FUXA/server/_db
+      - ./fuxa/logs:/usr/src/app/FUXA/server/_logs
+      - ./fuxa/images:/usr/src/app/FUXA/server/_images
+    depends_on: [mosquitto, modbus-sim, opcua-sim, s7-sim]
+    networks: [scada]
+
+  modbus-sim:
+    build: ./simulators
+    container_name: scada-modbus-sim
+    restart: unless-stopped
+    command: ["python", "/app/server.py", "modbus"]
+    ports:
+      - "${MODBUS_PORT:-502}:502"
+    networks: [scada]
+
+  opcua-sim:
+    build: ./simulators
+    container_name: scada-opcua-sim
+    restart: unless-stopped
+    command: ["python", "/app/server.py", "opcua"]
+    ports:
+      - "${OPCUA_PORT:-4840}:4840"
+    networks: [scada]
+
+  s7-sim:
+    build: ./simulators
+    container_name: scada-s7-sim
+    restart: unless-stopped
+    command: ["python", "/app/server.py", "s7"]
+    ports:
+      - "${S7_PORT:-1102}:1102"
+    networks: [scada]
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
+
+networks:
+  scada:
+    driver: bridge

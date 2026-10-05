@@ -1,0 +1,14 @@
+.env.local
+node-red/data/*.sqlite
+node-red/data/*.sqlite-shm
+node-red/data/*.sqlite-wal
+fuxa/appdata/*
+fuxa/db/*
+fuxa/logs/*
+fuxa/images/*
+mosquitto/data/*
+mosquitto/log/*
+__pycache__/
+*.pyc
+
+node-red/build/node_modules/

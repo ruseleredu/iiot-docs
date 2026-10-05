@@ -1,0 +1,33 @@
+[
+  {
+    "id":"tab1","type":"tab","label":"SCADA Lab","disabled":false,"info":"Laboratório didático multiprotocolo"
+  },
+  {
+    "id":"mqttin","type":"mqtt in","z":"tab1","name":"MQTT measurements","topic":"lab/plant/#","qos":"0","datatype":"auto-detect","broker":"broker1","nl":false,"rap":true,"rh":0,"inputs":0,"x":130,"y":100,"wires":[["normalize","debug1"]]
+  },
+  {
+    "id":"normalize","type":"function","z":"tab1","name":"Normalizar","func":"const p=(msg.topic||'').split('/');\nconst v=Number(msg.payload);\nif(!Number.isFinite(v)) return null;\nmsg.device=p[1]||'unknown';\nmsg.variable=p[2]||'value';\nmsg.value=v;\nmsg.topic='INSERT INTO measurements (device, variable, value) VALUES ($device, $variable, $value)';\nmsg.params={$device:msg.device,$variable:msg.variable,$value:v};\nreturn msg;","outputs":1,"x":350,"y":100,"wires":[["sqlite1"]]
+  },
+  {
+    "id":"sqlite1","type":"sqlite","z":"tab1","mydb":"db1","sqlquery":"msg.topic","sql":"","name":"SQLite","x":550,"y":100,"wires":[[]]
+  },
+  {
+    "id":"init","type":"inject","z":"tab1","name":"Inicializar SQLite","props":[{"p":"topic","v":"CREATE TABLE IF NOT EXISTS measurements (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, device TEXT NOT NULL, variable TEXT NOT NULL, value REAL NOT NULL);","vt":"str"}],"repeat":"","crontab":"","once":true,"onceDelay":2,"topic":"","x":140,"y":180,"wires":[["sqliteinit"]]
+  },
+  {
+    "id":"sqliteinit","type":"sqlite","z":"tab1","mydb":"db1","sqlquery":"msg.topic","sql":"","name":"Create table","x":360,"y":180,"wires":[[]]
+  },
+  {
+    "id":"injectlevel","type":"inject","z":"tab1","name":"Teste Level","props":[{"p":"payload","v":"65.5","vt":"num"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"lab/plant/level","x":130,"y":280,"wires":[["mqttout"]]
+  },
+  {
+    "id":"mqttout","type":"mqtt out","z":"tab1","name":"Publish MQTT","topic":"","qos":"0","retain":"false","respTopic":"","contentType":"","userProps":"","correl":"","expiry":"","broker":"broker1","x":360,"y":280,"wires":[]
+  },
+  {
+    "id":"debug1","type":"debug","z":"tab1","name":"MQTT debug","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","targetType":"full","statusVal":"","statusType":"auto","x":350,"y":60,"wires":[]
+  },
+  {
+    "id":"broker1","type":"mqtt-broker","name":"Mosquitto","broker":"mosquitto","port":"1883","clientid":"","autoConnect":true,"usetls":false,"protocolVersion":"4","keepalive":"60","cleansession":true,"autoUnsubscribe":true,"birthTopic":"","birthQos":"0","birthRetain":"false","birthPayload":"","closeTopic":"","closeQos":"0","closeRetain":"false","closePayload":"","willTopic":"","willQos":"0","willRetain":"false","willPayload":""},
+  {
+    "id":"db1","type":"sqlitedb","db":"/data/scada.sqlite","mode":"RWC"}
+]
