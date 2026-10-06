@@ -1,0 +1,19 @@
+services:
+  microbin:
+    image: danielszabo99/microbin:latest # https://microbin.eu/
+    container_name: microbin
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      MICROBIN_PUBLIC_PATH: ""
+      MICROBIN_QR: true
+      MICROBIN_PRIVATE: false
+      MICROBIN_HIGHLIGHTSYNTAX: true
+      MICROBIN_ETERNAL_PASTA: true
+    volumes:
+      - microbin_data:/app/pasta_data
+
+volumes:
+  microbin_data:
+  
