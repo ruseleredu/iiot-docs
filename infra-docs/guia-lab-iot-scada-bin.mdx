@@ -1,7 +1,7 @@
 ---
 id: guia-lab-iot-bin
 title: Guia do LAB IoT (Node-RED, FUXA, MQTT, Gitea, MicroBin, ntfy e VPS)
-sidebar_label: Guia do LAB IoT- Bin
+sidebar_label: Guia do LAB IoT - MicroBin
 description: Como gerar, subir, publicar e usar o laboratório IoT — servidor Windows 11 no laboratório com Node-RED e FUXA (SCADA/HMI) por grupo, MQTT, Gitea, MicroBin e ntfy (notificações push), publicado em https://iot.adrianoruseler.com por um túnel SSH até um VPS com Apache, e o kit de cada grupo para rodar na máquina do aluno. Instruções para o professor e para o aluno.
 keywords:
   [
@@ -31,10 +31,7 @@ keywords:
 toc_max_heading_level: 3
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
-# Guia do LAB IoT
+# Guia do LAB IoT (Node-RED, FUXA, MQTT, Gitea, MicroBin, ntfy e VPS)
 
 Este guia explica como montar o laboratório da disciplina com o script
 **`gen_iot_scada_portal.py`** e como usá-lo no dia a dia.
@@ -52,23 +49,6 @@ laboratório, o acesso é direto pelo IP (`http://192.168.0.102/`). De qualquer 
 por **`https://iot.adrianoruseler.com/`**: um **túnel SSH** que **sai** do laboratório leva as
 requisições do **Apache do VPS** até o portal. Nenhuma porta precisa ser aberta na rede da instituição.
 Opcionalmente, cada grupo recebe um **kit** com o mesmo ambiente para rodar na própria máquina.
-:::
-
-:::note[Para quem mantém o site Docusaurus]
-Os diagramas deste guia usam **Mermaid**, que precisa do tema oficial:
-
-```bash
-npm install --save @docusaurus/theme-mermaid
-```
-
-```js title="docusaurus.config.js"
-export default {
-  markdown: { mermaid: true },
-  themes: ["@docusaurus/theme-mermaid"],
-  // ...
-};
-```
-
 :::
 
 ## Arquitetura
