@@ -4,7 +4,7 @@ import type {
   AtividadeSincrona,
   AtividadeAssincrona,
   Procedimento,
-} from '../../types/planejamento';
+} from './types/planejamento';
 
 /**
  * TabelaPlanejamento
@@ -16,16 +16,13 @@ import type {
  * Uso em um arquivo .mdx (a parte ESM do MDX é JavaScript, sem cast de TS):
  *
  *   import disciplinas from '@site/src/data/disciplinas.json';
- *   import TabelaPlanejamento from '@site/src/components/TabelaPlanejamento';
+ *   import TabelaPlanejamento from '@site/src/components/shared/TabelaPlanejamento';
  *
  *   export const disciplina = disciplinas.disciplinas.find(
  *     (item) => item.slug === 'elt73a-s22'
  *   );
  *
  *   <TabelaPlanejamento disciplina={disciplina} />
- *
- * Em uma página .tsx (aí sim com tipos), importe PlanejamentoConsolidado de
- * '@site/src/types/planejamento' e faça o cast do JSON antes de usar.
  */
 
 interface Coluna<T> {

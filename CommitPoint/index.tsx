@@ -2,6 +2,7 @@ import { useId, useRef, useEffect, type ReactNode } from 'react';
 import { useLocation } from '@docusaurus/router';
 import ThemeCodeBlock from '@theme/CodeBlock';
 import Admonition from '@theme/Admonition';
+import useBrokenLinks from '@docusaurus/useBrokenLinks';
 
 /** Tipos de admonition suportados pelo Docusaurus. */
 export type AdmonitionType = 'note' | 'tip' | 'info' | 'warning' | 'danger';
@@ -92,6 +93,7 @@ export default function CommitPoint({
   const token = `${prefix}${numero}`;
   const pts = pontos != null ? pontos : points;
 
+  useBrokenLinks().collectAnchor(id);   // registra #tN no verificador de âncoras
   // Id da ancora: explicito ou derivado do token (ex.: "T1" -> "t1").
   const anchorId = (id ?? token).toLowerCase();
 

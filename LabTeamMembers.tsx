@@ -58,7 +58,7 @@ export default function LabTeamMembers({
                             <b>1.</b> Crie e entre na pasta-mãe da disciplina:
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`mkdir "%USERPROFILE%\ELT73A" & cd /d "%USERPROFILE%\ELT73A"`}
+                            {`mkdir "%USERPROFILE%\\${HOMEFOLDER}" & cd /d "%USERPROFILE%\\${HOMEFOLDER}"`}
                         </ThemeCodeBlock>
                         <p>
                             <b>2.</b> Clone e entre no repositório do laboratório:
@@ -67,10 +67,10 @@ export default function LabTeamMembers({
                             {`git clone ${repoUrl}.git && cd ${repoName}`}
                         </ThemeCodeBlock>
                         <p>
-                            <b>3.</b> Abra o conteúdo do repositório no perfil {`${vscodeProfile}`} do VS Code :
+                            <b>3.</b> Verifique status e abra o conteúdo do repositório no perfil {`${vscodeProfile}`} do VS Code :
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`code . --profile "${vscodeProfile}"`}
+                            {`git status && code . --profile "${vscodeProfile}"`}
                         </ThemeCodeBlock>
                     </TabItem>
                 );
