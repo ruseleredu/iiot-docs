@@ -2,7 +2,7 @@
 set -e
 
 ORG="ELT85B-N21-2026-2"
-NLAB=4
+NLAB=5
 LAB=$(printf "%02d" "$NLAB")
 REPO="lab${LAB}-template"
 
