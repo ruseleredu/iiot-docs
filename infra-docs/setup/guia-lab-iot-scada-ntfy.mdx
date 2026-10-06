@@ -1,9 +1,9 @@
 ---
-id: guia-lab-iot-ntfy
+id: lab-iot-scada-ntfy
 hide_title: true
 draft: true # <--- Use this key to mark the document as a draft
 title: Guia do LAB IoT (Node-RED, FUXA, MQTT, Gitea, wastebin, ntfy e VPS)
-sidebar_label: Guia do LAB IoT - ntfy
+sidebar_label: Guia do LAB IoT SCADA NTFY
 description: Como gerar, subir, publicar e usar o laboratório IoT — servidor Windows 11 no laboratório com Node-RED e FUXA (SCADA/HMI) por grupo, MQTT, Gitea, wastebin e ntfy (notificações push), publicado em https://iot.adrianoruseler.com por um túnel SSH até um VPS com Apache, e o kit de cada grupo para rodar na máquina do aluno. Instruções para o professor e para o aluno.
 keywords:
   [
@@ -32,10 +32,10 @@ keywords:
 toc_max_heading_level: 3
 ---
 
-# Guia do LAB IoT (Node-RED, FUXA, MQTT, Gitea, wastebin, ntfy e VPS)
+# Guia do LAB IoT
 
 Este guia explica como montar o laboratório da disciplina com o script
-**`gen_iot_scada_portal.py`** e como usá-lo no dia a dia.
+**`gen_iot_scada_ntfy_portal.py`** e como usá-lo no dia a dia.
 
 - **[Parte 1 — Professor](#parte-1--professor)**: preparar o servidor do laboratório (Windows 11)
   e o VPS, gerar o ambiente, publicar na internet, entregar os acessos pelo GitHub, gerar os kits
@@ -50,23 +50,6 @@ laboratório, o acesso é direto pelo IP (`http://192.168.0.102/`). De qualquer 
 por **`https://iot.adrianoruseler.com/`**: um **túnel SSH** que **sai** do laboratório leva as
 requisições do **Apache do VPS** até o portal. Nenhuma porta precisa ser aberta na rede da instituição.
 Opcionalmente, cada grupo recebe um **kit** com o mesmo ambiente para rodar na própria máquina.
-:::
-
-:::note[Para quem mantém o site Docusaurus]
-Os diagramas deste guia usam **Mermaid**, que precisa do tema oficial:
-
-```bash
-npm install --save @docusaurus/theme-mermaid
-```
-
-```js title="docusaurus.config.js"
-export default {
-  markdown: { mermaid: true },
-  themes: ["@docusaurus/theme-mermaid"],
-  // ...
-};
-```
-
 :::
 
 ## Arquitetura
@@ -187,7 +170,7 @@ O nome do lab (`--lab`, padrão `lab05`) é combinado com uma letra:
 ```mermaid
 flowchart TD
   A["Servidor do lab: WSL 2, Docker Desktop, Python"] --> B["IP fixo + firewall (80, 1883, 3001)"]
-  B --> C["py gen_iot_scada_portal.py<br/>(gera a pasta lab05)"]
+  B --> C["py gen_iot_scada_ntfy_portal.py<br/>(gera a pasta lab05)"]
   C --> D["Gerar a chave do túnel"]
   D --> E["Enviar vps/ + chave ao VPS"]
   E --> F["No VPS: sudo bash setup-vps.sh"]
@@ -307,11 +290,11 @@ domínio já mostra outro conteúdo, ele deixa de aparecer. As exceções são a
 
 ### 4. Gerar o ambiente
 
-Coloque o `gen_iot_scada_portal.py` em `C:\lab`, abra o PowerShell nessa pasta e rode:
+Coloque o `gen_iot_scada_ntfy_portal.py` em `C:\lab`, abra o PowerShell nessa pasta e rode:
 
 ```powershell
 cd C:\lab
-py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102
 ```
 
 O script **não sobe nada**: ele só gera os arquivos em `C:\lab\lab05`. Saída (resumida):
@@ -384,16 +367,16 @@ rede do laboratório.
 
 ```powershell
 # Dashboards e telas do FUXA protegidos por senha
-py .\gen_iot_scada_portal.py --lab lab05 --ip 192.168.0.102 --proteger-http
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --ip 192.168.0.102 --proteger-http
 
 # Laboratório enxuto: sem FUXA e Gitea em SQLite (não cria o PostgreSQL)
-py .\gen_iot_scada_portal.py --lab lab05 --ip 192.168.0.102 --sem-fuxa --gitea-db sqlite
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --ip 192.168.0.102 --sem-fuxa --gitea-db sqlite
 
 # Só rede local, sem VPS
-py .\gen_iot_scada_portal.py --lab lab05 --ip 192.168.0.102 --sem-tunel
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --ip 192.168.0.102 --sem-tunel
 
 # Kits de todos os grupos (lab05-kits\lab05-a.zip, ...)
-py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --kit todos
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --kit todos
 ```
 
 ### 5. O que foi gerado
@@ -590,7 +573,7 @@ execuções seguintes só substituem esse bloco.
 
 ```mermaid
 flowchart LR
-  G["gen_iot_scada_portal.py"] --> AC["acessos\lab05-a.md …<br/>(um por grupo + p + n)"]
+  G["gen_iot_scada_ntfy_portal.py"] --> AC["acessos\lab05-a.md …<br/>(um por grupo + p + n)"]
   AC --> PUB["publicar-acessos-github.sh<br/>(gh api)"]
   PUB --> RA["lab05-grupo-a<br/>README.md"]
   PUB --> RB["lab05-grupo-b<br/>README.md"]
@@ -853,10 +836,10 @@ flowchart TB
 **Gerar** (no servidor, em `C:\lab`, onde está a pasta `lab05`):
 
 ```powershell
-py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --kit todos      # todos os grupos
-py .\gen_iot_scada_portal.py --lab lab05 --kit a                      # só o grupo A
-py .\gen_iot_scada_portal.py --lab lab05 --kit a --ponte-mqtt 192.168.0.102   # com ponte MQTT
-py .\gen_iot_scada_portal.py --lab lab05 --kit a --porta-http 8080    # porta 80 ocupada no PC do aluno
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --kit todos      # todos os grupos
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --kit a                      # só o grupo A
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --kit a --ponte-mqtt 192.168.0.102   # com ponte MQTT
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --kit a --porta-http 8080    # porta 80 ocupada no PC do aluno
 ```
 
 ```text
@@ -967,7 +950,7 @@ docker compose start lab05-a-nodered
 # FUXA (regerar recria usuários e configurações)
 docker compose stop lab05-a-fuxa
 Rename-Item fuxa\lab05-a lab05-a.old
-cd C:\lab; py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102; cd lab05
+cd C:\lab; py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102; cd lab05
 docker compose start lab05-a-fuxa
 ```
 
@@ -1618,7 +1601,7 @@ e use `http://localhost:8080/`.
 # no servidor do laboratório (uma vez)
 py -m pip install bcrypt
 cd C:\lab
-py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --ip 192.168.0.102
 cd .\lab05
 docker compose run --rm --no-deps --build tunel chave
 ssh ubuntu@iot.adrianoruseler.com mkdir -p iot-lab
@@ -1633,7 +1616,7 @@ bash publicar-acessos-github.sh
 
 # kits dos grupos (em C:\lab)
 cd C:\lab
-py .\gen_iot_scada_portal.py --lab lab05 --grupos 10 --kit todos
+py .\gen_iot_scada_ntfy_portal.py --lab lab05 --grupos 10 --kit todos
 ```
 
 </TabItem>
