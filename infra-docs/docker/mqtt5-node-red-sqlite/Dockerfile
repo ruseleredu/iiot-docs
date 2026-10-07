@@ -25,6 +25,9 @@ RUN npm install --unsafe-perm --no-update-notifier --no-fund \
 	@flowfuse/node-red-dashboard-2-ui-led \
 	node-red-node-serialport \
 	node-red-node-ui-table \
+	node-red-contrib-modbus \
+	node-red-contrib-s7 \
+    node-red-contrib-opcua \
 	&& npm cache clean --force
 	
 # Alternative STM32-related nodes (optional, uncomment if needed)
