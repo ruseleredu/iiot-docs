@@ -1,0 +1,8 @@
+# Bibliotecas do Wokwi (Library Manager). Versões testadas: PubSubClient 2.8,
+# ArduinoJson 7.4, DHT sensor library for ESPx 1.19, Adafruit SSD1306 2.5, Adafruit GFX 1.12
+PubSubClient
+ArduinoJson
+DHT sensor library for ESPx
+Adafruit SSD1306
+Adafruit GFX Library
+Adafruit BusIO

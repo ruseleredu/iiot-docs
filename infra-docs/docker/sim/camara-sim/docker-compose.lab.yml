@@ -1,0 +1,19 @@
+# Complemento: coloca o simulador na rede do kit do grupo ou do LAB IoT
+# (gerados por gen_iot_scada_portal.py), onde estão "mosquitto", "<grupo>-nodered"
+# e "<grupo>-fuxa". Assim o Node-RED e o FUXA acham o simulador por "<grupo>-camara".
+#
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
+#
+# LAB_REDE = <pasta do kit ou do lab>_labnet   (descubra com: docker network ls)
+services:
+  camara-sim:
+    environment:
+      - MQTT_HOST=mosquitto
+    networks:
+      - default
+      - labnet
+
+networks:
+  labnet:
+    name: ${LAB_REDE:-lab05-a_labnet}
+    external: true

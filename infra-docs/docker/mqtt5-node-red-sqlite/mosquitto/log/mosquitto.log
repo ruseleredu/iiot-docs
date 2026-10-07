@@ -1,0 +1,30 @@
+1791379233: mosquitto version 2.1.2 starting
+1791379233: Config loaded from /mosquitto/config/mosquitto.conf.
+1791379233: Bridge support available.
+1791379233: Persistence support available.
+1791379233: TLS support available.
+1791379233: TLS-PSK support available.
+1791379233: Websockets support available.
+1791379233: Opening ipv4 listen socket on port 1883.
+1791379233: Opening ipv4 listen socket on port 9001.
+1791379233: Opening ipv6 listen socket on port 9001.
+1791379233: mosquitto version 2.1.2 running
+1791379235: New connection from 172.18.0.1:47674 on port 1883.
+1791379235: New client connected from 172.18.0.1:47674 as nodered86dc96a018977a30 (p5, c1, k60).
+1791379257: New connection from 172.18.0.1:60322 on port 1883.
+1791379257: New client connected from 172.18.0.1:60322 as mqtt-explorer-d10ed33b (p4, c1, k60).
+1791379266: Client mqtt-explorer-d10ed33b [172.18.0.1:60322] disconnected.
+1791379289: New connection from 172.18.0.1:39926 on port 1883.
+1791379289: New client connected from 172.18.0.1:39926 as mqtt-explorer-d10ed33b (p4, c1, k60).
+1791379291: Client mqtt-explorer-d10ed33b [172.18.0.1:39926] disconnected.
+1791379294: New connection from 172.18.0.1:39940 on port 1883.
+1791379294: New client connected from 172.18.0.1:39940 as mqtt-explorer-d10ed33b (p4, c1, k60).
+1791379301: Client mqtt-explorer-d10ed33b [172.18.0.1:39940] disconnected.
+1791379388: New connection from 172.18.0.3:37760 on port 1883.
+1791379388: New client connected from 172.18.0.3:37760 as mqtt-explorer-d10ed33b (p4, c1, k60).
+1791379390: Client mqtt-explorer-d10ed33b [172.18.0.3:37760] disconnected.
+1791379393: New connection from 172.18.0.3:37776 on port 1883.
+1791379393: New client connected from 172.18.0.3:37776 as mqtt-explorer-d10ed33b (p4, c1, k60).
+1791379401: Client mqtt-explorer-d10ed33b [172.18.0.3:37776] disconnected.
+1791380983: mosquitto version 2.1.2 terminating
+1791380983: Saving in-memory database to /mosquitto/data//mosquitto.db.

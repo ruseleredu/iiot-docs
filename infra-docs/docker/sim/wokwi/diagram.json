@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "author": "UTFPR - Câmara Climática ESP32 (LAB IoT)",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": -130,
+      "left": -150,
+      "attrs": {
+        "temperature": "25",
+        "humidity": "60"
+      }
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled",
+      "top": -150,
+      "left": 150,
+      "attrs": {
+        "i2cAddress": "0x3c"
+      }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot",
+      "top": 160,
+      "left": -160,
+      "attrs": {
+        "value": "438"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_verde",
+      "top": -10,
+      "left": 240,
+      "attrs": {
+        "color": "green",
+        "label": "Verde"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_amarelo",
+      "top": -10,
+      "left": 320,
+      "attrs": {
+        "color": "yellow",
+        "label": "Amarelo"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_vermelho",
+      "top": -10,
+      "left": 400,
+      "attrs": {
+        "color": "red",
+        "label": "Vermelho"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_aquec",
+      "top": 150,
+      "left": 240,
+      "attrs": {
+        "color": "orange",
+        "label": "Aquecedor"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_vent",
+      "top": 150,
+      "left": 400,
+      "attrs": {
+        "color": "blue",
+        "label": "Ventilador"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_verde",
+      "top": 75,
+      "left": 235.4,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_amarelo",
+      "top": 75,
+      "left": 315.4,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_vermelho",
+      "top": 75,
+      "left": 395.4,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_aquec",
+      "top": 235,
+      "left": 235.4,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_vent",
+      "top": 235,
+      "left": 395.4,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn",
+      "top": 300,
+      "left": -150,
+      "attrs": {
+        "color": "green",
+        "label": "habilitado"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "chave",
+      "top": 250,
+      "left": -30,
+      "attrs": {
+        "value": "0"
+      }
+    },
+    {
+      "type": "wokwi-logic-analyzer",
+      "id": "la",
+      "top": 330,
+      "left": 220,
+      "attrs": {
+        "channelNames": "aquecedor,ventilador",
+        "filename": "camara-pwm"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX0",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX0",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "dht:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "dht:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "dht:SDA",
+      "esp:D4",
+      "green",
+      []
+    ],
+    [
+      "oled:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "oled:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "oled:SCL",
+      "esp:D22",
+      "purple",
+      []
+    ],
+    [
+      "oled:SDA",
+      "esp:D21",
+      "blue",
+      []
+    ],
+    [
+      "pot:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "pot:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "pot:SIG",
+      "esp:D34",
+      "orange",
+      []
+    ],
+    [
+      "esp:RX2",
+      "r_verde:1",
+      "green",
+      []
+    ],
+    [
+      "r_verde:2",
+      "led_verde:A",
+      "green",
+      []
+    ],
+    [
+      "led_verde:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:TX2",
+      "r_amarelo:1",
+      "gold",
+      []
+    ],
+    [
+      "r_amarelo:2",
+      "led_amarelo:A",
+      "gold",
+      []
+    ],
+    [
+      "led_amarelo:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:D5",
+      "r_vermelho:1",
+      "red",
+      []
+    ],
+    [
+      "r_vermelho:2",
+      "led_vermelho:A",
+      "red",
+      []
+    ],
+    [
+      "led_vermelho:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:D25",
+      "r_aquec:1",
+      "orange",
+      []
+    ],
+    [
+      "r_aquec:2",
+      "led_aquec:A",
+      "orange",
+      []
+    ],
+    [
+      "led_aquec:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:D26",
+      "r_vent:1",
+      "blue",
+      []
+    ],
+    [
+      "r_vent:2",
+      "led_vent:A",
+      "blue",
+      []
+    ],
+    [
+      "led_vent:C",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "btn:1.l",
+      "esp:D14",
+      "green",
+      []
+    ],
+    [
+      "btn:2.r",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "chave:2",
+      "esp:D27",
+      "violet",
+      []
+    ],
+    [
+      "chave:1",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "la:D0",
+      "esp:D25",
+      "orange",
+      []
+    ],
+    [
+      "la:D1",
+      "esp:D26",
+      "blue",
+      []
+    ],
+    [
+      "la:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

@@ -5,7 +5,7 @@
       "certValidation": false,
       "clientId": "mqtt-explorer-d10ed33b",
       "id": "aec03d87-c5f4-431c-8b65-5e450f98ea48",
-      "name": "host.docker.internal",
+      "name": "mosquitto",
       "encryption": false,
       "subscriptions": [
         {
@@ -18,7 +18,7 @@
         }
       ],
       "type": "mqtt",
-      "host": "host.docker.internal",
+      "host": "mosquitto",
       "port": 1883,
       "protocol": "mqtt"
     },

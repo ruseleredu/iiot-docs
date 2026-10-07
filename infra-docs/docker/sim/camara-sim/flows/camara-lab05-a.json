@@ -1,0 +1,2756 @@
+[
+    {
+        "id": "b523b0000000000b",
+        "type": "mqtt-broker",
+        "name": "mosquitto (LAB IoT)",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "lab05-a/nodered/status",
+        "birthQos": "1",
+        "birthRetain": "true",
+        "birthPayload": "online",
+        "birthMsg": {},
+        "closeTopic": "lab05-a/nodered/status",
+        "closeQos": "1",
+        "closeRetain": "true",
+        "closePayload": "offline",
+        "closeMsg": {},
+        "willTopic": "lab05-a/nodered/status",
+        "willQos": "1",
+        "willRetain": "true",
+        "willPayload": "offline",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "b523d0000000000d",
+        "type": "sqlitedb",
+        "db": "/data/camara.sqlite",
+        "mode": "RWC"
+    },
+    {
+        "id": "b523a0000000000a",
+        "type": "ui-base",
+        "name": "Dashboard lab05-a",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control",
+            "ui-led"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "b523e0000000000e",
+        "type": "ui-theme",
+        "name": "Tema Câmara",
+        "colors": {
+            "surface": "#263238",
+            "primary": "#ef6c00",
+            "bgPage": "#eceff1",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cfd8dc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "6px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "b523f0000000000f",
+        "type": "ui-page",
+        "name": "Câmara Climática",
+        "ui": "b523a0000000000a",
+        "path": "/camara",
+        "icon": "thermometer",
+        "layout": "grid",
+        "theme": "b523e0000000000e",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "b523000000000001",
+        "type": "ui-group",
+        "name": "Medições (DHT22)",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000002",
+        "type": "ui-group",
+        "name": "Estado da planta",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000003",
+        "type": "ui-group",
+        "name": "Tela OLED",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000004",
+        "type": "ui-group",
+        "name": "Tendência",
+        "page": "b523f0000000000f",
+        "width": 8,
+        "height": 1,
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000005",
+        "type": "ui-group",
+        "name": "Comandos",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 5,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000006",
+        "type": "ui-group",
+        "name": "Simulação (bancada)",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 6,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000007",
+        "type": "ui-group",
+        "name": "Controle externo (Node-RED)",
+        "page": "b523f0000000000f",
+        "width": 4,
+        "height": 1,
+        "order": 7,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000008",
+        "type": "ui-group",
+        "name": "Histórico (SQLite)",
+        "page": "b523f0000000000f",
+        "width": 8,
+        "height": 1,
+        "order": 8,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b523000000000009",
+        "type": "tab",
+        "label": "Câmara - Dashboard",
+        "disabled": false,
+        "info": "Dashboard 2.0 da câmara climática. Recebe lab05-a/camara/telemetria e envia comandos em lab05-a/camara/cmd/<campo>."
+    },
+    {
+        "id": "b52300000000000a",
+        "type": "comment",
+        "z": "b523000000000009",
+        "name": "Telemetria do ESP32 (a cada 2 s) -> widgets",
+        "info": "Tópico lab05-a/camara/telemetria (JSON). Os widgets de comando só são\natualizados quando o valor muda, para não 'brigar' com o usuário.",
+        "x": 190,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "b52300000000000b",
+        "type": "mqtt in",
+        "z": "b523000000000009",
+        "name": "telemetria",
+        "topic": "lab05-a/camara/telemetria",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "b523b0000000000b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 300,
+        "wires": [
+            [
+                "b52300000000000c"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000000c",
+        "type": "function",
+        "z": "b523000000000009",
+        "name": "Distribui telemetria",
+        "func": "// Distribui a telemetria do ESP32 para os widgets do dashboard.\nconst t = msg.payload;\nif (typeof t !== \"object\" || t === null) return null;\n\n// Widgets de comando: só atualiza quando o valor mudou no equipamento\n// (evita que o slider \"pule\" enquanto o usuário arrasta).\nconst last = context.get(\"last\") || {};\nfunction seMudou(campo, valor) {\n    if (last[campo] === valor) return null;\n    last[campo] = valor;\n    return { payload: valor };\n}\nconst ALARMES = { 0: \"Nenhum\", 1: \"Sobretemperatura (≥ 60 °C)\", 2: \"Falha do sensor DHT22\",\n                  3: \"Sobretemperatura + falha do sensor\" };\n\nconst out = [\n    { payload: t.temp },                                                // 1 gauge temperatura\n    { payload: t.umid },                                                // 2 gauge umidade\n    [ { topic: \"Temperatura\", payload: t.temp },                        // 3 gráfico °C\n      { topic: \"Setpoint\",    payload: t.sp_efetivo } ],\n    [ { topic: \"Umidade (%UR)\", payload: t.umid },                      // 4 gráfico %\n      { topic: \"Aquecedor (%)\", payload: t.aquecedor_pwm },\n      { topic: \"Ventilador (%)\", payload: t.ventilador_pwm } ],\n    { payload: `${t.sp_efetivo.toFixed(1)} °C (${t.fonte_sp ? \"potenciômetro\" : \"remoto\"})` }, // 5\n    { payload: `${t.aquecedor_pwm.toFixed(0)} %  /  ${t.ventilador_pwm.toFixed(0)} %` },     // 6\n    { payload: { verde: t.led_verde, amarelo: t.led_amarelo,            // 7 LEDs de estado\n                 vermelho: t.led_vermelho } },\n    { payload: `${t.estado_txt} · modo ${t.modo_txt}` },                // 8 estado\n    { payload: ALARMES[t.alarme] || t.alarme },                         // 9 alarme\n    { payload: t.oled },                                                // 10 OLED\n    seMudou(\"habilitado\", !!t.habilitado),                              // 11\n    seMudou(\"modo\", t.modo),                                            // 12\n    seMudou(\"fonte_sp\", t.fonte_sp),                                    // 13\n    seMudou(\"setpoint\", t.setpoint),                                    // 14\n    seMudou(\"aquecedor_cmd\", t.aquecedor_cmd),                          // 15\n    seMudou(\"ventilador_cmd\", t.ventilador_cmd),                        // 16\n    seMudou(\"pot_raw\", t.pot_sim),                                      // 17\n    seMudou(\"falha_dht\", !!t.falha_dht),                                // 18\n];\ncontext.set(\"last\", last);\nreturn out;\n",
+        "outputs": 18,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 300,
+        "wires": [
+            [
+                "b52300000000000e"
+            ],
+            [
+                "b52300000000000f"
+            ],
+            [
+                "b523000000000010"
+            ],
+            [
+                "b523000000000011"
+            ],
+            [
+                "b523000000000012"
+            ],
+            [
+                "b523000000000013"
+            ],
+            [
+                "b523000000000014"
+            ],
+            [
+                "b523000000000015"
+            ],
+            [
+                "b523000000000016"
+            ],
+            [
+                "b523000000000017"
+            ],
+            [
+                "b523000000000018"
+            ],
+            [
+                "b523000000000019"
+            ],
+            [
+                "b52300000000001a"
+            ],
+            [
+                "b52300000000001b"
+            ],
+            [
+                "b52300000000001c"
+            ],
+            [
+                "b52300000000001d"
+            ],
+            [
+                "b52300000000001e"
+            ],
+            [
+                "b52300000000001f"
+            ]
+        ],
+        "outputLabels": [
+            "temp",
+            "umid",
+            "gráfico °C",
+            "gráfico %",
+            "SP efetivo",
+            "PWMs",
+            "LEDs",
+            "estado",
+            "alarme",
+            "OLED",
+            "habilitado",
+            "modo",
+            "fonte SP",
+            "setpoint",
+            "aquecedor_cmd",
+            "ventilador_cmd",
+            "pot_raw",
+            "falha_dht"
+        ]
+    },
+    {
+        "id": "b52300000000000d",
+        "type": "mqtt out",
+        "z": "b523000000000009",
+        "name": "comandos -> ESP32",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "b523b0000000000b",
+        "x": 1180,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "b52300000000000e",
+        "type": "ui-gauge",
+        "z": "b523000000000009",
+        "name": "Temperatura",
+        "group": "b523000000000001",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 2,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "rounded",
+        "title": "Temperatura",
+        "alwaysShowTitle": true,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#42a5f5"
+            },
+            {
+                "from": "30",
+                "color": "#66bb6a"
+            },
+            {
+                "from": "55",
+                "color": "#ffa726"
+            },
+            {
+                "from": "60",
+                "color": "#ef5350"
+            }
+        ],
+        "min": 0,
+        "max": 70,
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 820,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b52300000000000f",
+        "type": "ui-gauge",
+        "z": "b523000000000009",
+        "name": "Umidade",
+        "group": "b523000000000001",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 2,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "rounded",
+        "title": "Umidade",
+        "alwaysShowTitle": true,
+        "floatingTitlePosition": "top-left",
+        "units": "%UR",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#ffb74d"
+            },
+            {
+                "from": "30",
+                "color": "#66bb6a"
+            },
+            {
+                "from": "70",
+                "color": "#42a5f5"
+            }
+        ],
+        "min": 0,
+        "max": 100,
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 820,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b523000000000010",
+        "type": "ui-chart",
+        "z": "b523000000000009",
+        "name": "Temperatura e setpoint",
+        "group": "b523000000000004",
+        "label": "Temperatura e setpoint",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "°C",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "20",
+        "ymax": "65",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "false",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "15",
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#e53935",
+            "#fb8c00"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 8,
+        "height": 4,
+        "className": "",
+        "interpolation": "linear",
+        "x": 820,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "b523000000000011",
+        "type": "ui-chart",
+        "z": "b523000000000009",
+        "name": "Umidade e atuadores",
+        "group": "b523000000000004",
+        "label": "Umidade e atuadores",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "%",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "0",
+        "ymax": "100",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "false",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "15",
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1e88e5",
+            "#d81b60",
+            "#43a047"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 8,
+        "height": 4,
+        "className": "",
+        "interpolation": "linear",
+        "x": 820,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "b523000000000012",
+        "type": "ui-text",
+        "z": "b523000000000009",
+        "name": "Setpoint efetivo",
+        "group": "b523000000000001",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Setpoint efetivo",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 820,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "b523000000000013",
+        "type": "ui-text",
+        "z": "b523000000000009",
+        "name": "Aquecedor / ventilador",
+        "group": "b523000000000001",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "Aquecedor / ventilador",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 820,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "b523000000000014",
+        "type": "ui-template",
+        "z": "b523000000000009",
+        "name": "LEDs de estado",
+        "group": "b523000000000002",
+        "page": "",
+        "ui": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <!-- LEDs de estado do ESP32 (GPIO16 verde, GPIO17 amarelo, GPIO5 vermelho) -->\n  <div class=\"leds\">\n    <div v-for=\"l in leds\" :key=\"l.k\" class=\"led-row\">\n      <span class=\"led\" :style=\"estilo(l)\"></span><span>{{ l.txt }}</span>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data () {\n    return { leds: [\n      { k: 'verde', cor: '#00e676', txt: 'Verde - estável' },\n      { k: 'amarelo', cor: '#ffc400', txt: 'Amarelo - aquecendo / resfriando' },\n      { k: 'vermelho', cor: '#ff1744', txt: 'Vermelho - alarme' }\n    ] }\n  },\n  methods: {\n    estilo (l) {\n      const on = this.msg?.payload?.[l.k] === 1\n      return { background: on ? l.cor : '#455a64', boxShadow: on ? `0 0 10px 3px ${l.cor}` : 'none' }\n    }\n  }\n}\n</script>\n\n<style scoped>\n.leds { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }\n.led-row { display: flex; align-items: center; gap: 12px; }\n.led { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #263238; transition: all .3s; }\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 820,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "b523000000000015",
+        "type": "ui-text",
+        "z": "b523000000000009",
+        "name": "Estado",
+        "group": "b523000000000002",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Estado",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 820,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "b523000000000016",
+        "type": "ui-text",
+        "z": "b523000000000009",
+        "name": "Alarme",
+        "group": "b523000000000002",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Alarme",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 820,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "b523000000000017",
+        "type": "ui-template",
+        "z": "b523000000000009",
+        "name": "OLED SSD1306",
+        "group": "b523000000000003",
+        "page": "",
+        "ui": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <!-- Réplica da tela SSD1306 128x64 (2 linhas amarelas + 6 azuis no modelo bicolor) -->\n  <div class=\"oled\">\n    <div v-for=\"(l, i) in linhas\" :key=\"i\" :class=\"{ topo: i === 0 }\">{{ l || ' ' }}</div>\n  </div>\n</template>\n\n<script>\nexport default {\n  computed: {\n    linhas () {\n      return Array.isArray(this.msg?.payload) ? this.msg.payload : ['(aguardando ESP32...)']\n    }\n  }\n}\n</script>\n\n<style scoped>\n.oled {\n  background: #000; color: #5ec8ff; font-family: 'Courier New', monospace;\n  font-size: 15px; line-height: 1.3; padding: 10px 14px; border-radius: 6px;\n  border: 8px solid #1c1c1c; white-space: pre; width: fit-content; min-width: 23ch;\n  margin: 0 auto; box-shadow: inset 0 0 12px rgba(94,200,255,.15);\n}\n.topo { color: #ffd84d; border-bottom: 1px dashed #333; margin-bottom: 4px; }\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 820,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b523000000000018",
+        "type": "ui-switch",
+        "z": "b523000000000009",
+        "name": "Habilitado",
+        "label": "Habilitado",
+        "group": "b523000000000005",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": false,
+        "topic": "lab05-a/camara/cmd/habilitado",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 820,
+        "y": 540,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000019",
+        "type": "ui-dropdown",
+        "z": "b523000000000009",
+        "name": "Modo de controle",
+        "label": "Modo de controle",
+        "tooltip": "",
+        "group": "b523000000000005",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "multiple": false,
+        "chips": false,
+        "clearable": false,
+        "options": [
+            {
+                "label": "0 - MANUAL",
+                "value": 0,
+                "type": "num"
+            },
+            {
+                "label": "1 - ON/OFF",
+                "value": 1,
+                "type": "num"
+            },
+            {
+                "label": "2 - PI",
+                "value": 2,
+                "type": "num"
+            }
+        ],
+        "payload": "",
+        "topic": "lab05-a/camara/cmd/modo",
+        "topicType": "str",
+        "className": "",
+        "typeIsComboBox": true,
+        "msgTrigger": "onChange",
+        "x": 820,
+        "y": 580,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001a",
+        "type": "ui-dropdown",
+        "z": "b523000000000009",
+        "name": "Fonte do setpoint",
+        "label": "Fonte do setpoint",
+        "tooltip": "",
+        "group": "b523000000000005",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "multiple": false,
+        "chips": false,
+        "clearable": false,
+        "options": [
+            {
+                "label": "Remoto (dashboard)",
+                "value": 0,
+                "type": "num"
+            },
+            {
+                "label": "Potenciômetro",
+                "value": 1,
+                "type": "num"
+            }
+        ],
+        "payload": "",
+        "topic": "lab05-a/camara/cmd/fonte_sp",
+        "topicType": "str",
+        "className": "",
+        "typeIsComboBox": true,
+        "msgTrigger": "onChange",
+        "x": 820,
+        "y": 620,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001b",
+        "type": "ui-slider",
+        "z": "b523000000000009",
+        "name": "Setpoint (°C)",
+        "label": "Setpoint (°C)",
+        "tooltip": "",
+        "group": "b523000000000005",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "lab05-a/camara/cmd/setpoint",
+        "topicType": "str",
+        "thumbLabel": "always",
+        "showTicks": "false",
+        "min": 20,
+        "max": 55,
+        "step": 0.5,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTextField": true,
+        "x": 820,
+        "y": 660,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001c",
+        "type": "ui-slider",
+        "z": "b523000000000009",
+        "name": "Aquecedor - manual (%)",
+        "label": "Aquecedor - manual (%)",
+        "tooltip": "",
+        "group": "b523000000000005",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "lab05-a/camara/cmd/aquecedor_cmd",
+        "topicType": "str",
+        "thumbLabel": "always",
+        "showTicks": "false",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTextField": true,
+        "x": 820,
+        "y": 700,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001d",
+        "type": "ui-slider",
+        "z": "b523000000000009",
+        "name": "Ventilador - manual (%)",
+        "label": "Ventilador - manual (%)",
+        "tooltip": "",
+        "group": "b523000000000005",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "lab05-a/camara/cmd/ventilador_cmd",
+        "topicType": "str",
+        "thumbLabel": "always",
+        "showTicks": "false",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTextField": true,
+        "x": 820,
+        "y": 740,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001e",
+        "type": "ui-slider",
+        "z": "b523000000000009",
+        "name": "Potenciômetro (ADC 0..4095)",
+        "label": "Potenciômetro (ADC 0..4095)",
+        "tooltip": "",
+        "group": "b523000000000006",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "lab05-a/camara/cmd/pot_raw",
+        "topicType": "str",
+        "thumbLabel": "always",
+        "showTicks": "false",
+        "min": 0,
+        "max": 4095,
+        "step": 1,
+        "className": "",
+        "iconPrepend": "",
+        "iconAppend": "",
+        "color": "",
+        "colorTrack": "",
+        "colorThumb": "",
+        "showTextField": true,
+        "x": 820,
+        "y": 780,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000001f",
+        "type": "ui-switch",
+        "z": "b523000000000009",
+        "name": "Injetar falha no DHT22",
+        "label": "Injetar falha no DHT22",
+        "group": "b523000000000006",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": false,
+        "topic": "lab05-a/camara/cmd/falha_dht",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 820,
+        "y": 820,
+        "wires": [
+            [
+                "b52300000000000d"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000020",
+        "type": "mqtt in",
+        "z": "b523000000000009",
+        "name": "status do ESP32 (LWT)",
+        "topic": "lab05-a/camara/status",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "b523b0000000000b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 880,
+        "wires": [
+            [
+                "b523000000000021"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000021",
+        "type": "function",
+        "z": "b523000000000009",
+        "name": "formata status",
+        "func": "msg.payload = msg.payload === \"online\" ? \"🟢 online\" : \"🔴 offline (Last Will)\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 880,
+        "wires": [
+            [
+                "b523000000000022"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000022",
+        "type": "ui-text",
+        "z": "b523000000000009",
+        "name": "ESP32 (MQTT)",
+        "group": "b523000000000002",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "ESP32 (MQTT)",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 820,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "b523000000000023",
+        "type": "tab",
+        "label": "Câmara - Banco SQLite",
+        "disabled": false,
+        "info": "Grava a telemetria (1 amostra a cada 10 s) em /data/camara.sqlite."
+    },
+    {
+        "id": "b523000000000024",
+        "type": "comment",
+        "z": "b523000000000023",
+        "name": "Estrutura do banco",
+        "info": "",
+        "x": 170,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "b523000000000025",
+        "type": "sqlite",
+        "z": "b523000000000023",
+        "mydb": "b523d0000000000d",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "camara.sqlite",
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "b523000000000026"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000026",
+        "type": "debug",
+        "z": "b523000000000023",
+        "name": "resultado SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b523000000000027",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Criar tabela (automático)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.5",
+        "topic": "CREATE TABLE IF NOT EXISTS camara_dados (\n    id             INTEGER PRIMARY KEY AUTOINCREMENT,\n    timestamp      DATETIME DEFAULT (datetime('now','localtime')),\n    temp           REAL,     -- °C (DHT22)\n    umid           REAL,     -- %UR (DHT22)\n    sp_efetivo     REAL,     -- °C\n    fonte_sp       INTEGER,  -- 0 remoto, 1 potenciômetro\n    pot_raw        INTEGER,  -- ADC 0..4095\n    aquecedor_pwm  REAL,     -- %\n    ventilador_pwm REAL,     -- %\n    modo           INTEGER,  -- 0 MANUAL, 1 ON/OFF, 2 PI\n    estado         INTEGER,  -- 0 DESLIGADO .. 4 ALARME\n    estado_txt     TEXT,\n    alarme         INTEGER,  -- bit0 sobretemp, bit1 sensor\n    dht_ok         INTEGER\n);",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 170,
+        "y": 100
+    },
+    {
+        "id": "b523000000000028",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Últimos 10 registros",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "SELECT * FROM camara_dados ORDER BY id DESC LIMIT 10;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 160
+    },
+    {
+        "id": "b523000000000029",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Médias por estado (última hora)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "SELECT estado_txt, COUNT(*) AS n, ROUND(AVG(temp),2) AS temp_media, ROUND(AVG(umid),1) AS umid_media, ROUND(AVG(aquecedor_pwm),1) AS aq_medio FROM camara_dados WHERE timestamp >= datetime('now','localtime','-1 hour') GROUP BY estado_txt;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 200
+    },
+    {
+        "id": "b52300000000002a",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Erro médio |SP - T| por modo",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "SELECT modo, COUNT(*) AS n, ROUND(AVG(ABS(sp_efetivo - temp)),2) AS erro_medio, ROUND(MAX(temp),1) AS temp_max FROM camara_dados WHERE estado <> 0 GROUP BY modo;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 240
+    },
+    {
+        "id": "b52300000000002b",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Eventos de alarme",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "SELECT timestamp, temp, alarme, estado_txt FROM camara_dados WHERE alarme <> 0 ORDER BY id DESC LIMIT 20;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 280
+    },
+    {
+        "id": "b52300000000002c",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Apagar dados",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "DELETE FROM camara_dados;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 320
+    },
+    {
+        "id": "b52300000000002d",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "Apagar tabela",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "DROP TABLE IF EXISTS camara_dados;",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000025"
+            ]
+        ],
+        "x": 190,
+        "y": 360
+    },
+    {
+        "id": "b52300000000002e",
+        "type": "comment",
+        "z": "b523000000000023",
+        "name": "Gravação: telemetria -> 1 amostra/10 s -> INSERT preparado",
+        "info": "",
+        "x": 170,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "b52300000000002f",
+        "type": "mqtt in",
+        "z": "b523000000000023",
+        "name": "telemetria",
+        "topic": "lab05-a/camara/telemetria",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "b523b0000000000b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000030"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000030",
+        "type": "delay",
+        "z": "b523000000000023",
+        "name": "1 msg / 10 s",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 360,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000031"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000031",
+        "type": "function",
+        "z": "b523000000000023",
+        "name": "monta parâmetros",
+        "func": "// Statement preparado: os valores vão em msg.params (evita SQL injection\n// e problemas com aspas/ponto decimal).\nif (Date.now() - context.get(\"t0\") < 5000) return null;   // aguarda o CREATE TABLE\nconst t = msg.payload;\nmsg.params = {\n    $temp: t.temp, $umid: t.umid, $sp: t.sp_efetivo, $fonte: t.fonte_sp, $pot: t.pot_raw,\n    $aq: t.aquecedor_pwm, $ve: t.ventilador_pwm, $modo: t.modo, $estado: t.estado,\n    $estado_txt: t.estado_txt, $alarme: t.alarme, $dht_ok: t.dht_ok\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "context.set(\"t0\", Date.now());",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000032"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000032",
+        "type": "sqlite",
+        "z": "b523000000000023",
+        "mydb": "b523d0000000000d",
+        "sqlquery": "prepared",
+        "name": "INSERT",
+        "sql": "INSERT INTO camara_dados (temp, umid, sp_efetivo, fonte_sp, pot_raw, aquecedor_pwm, ventilador_pwm, modo, estado, estado_txt, alarme, dht_ok) VALUES ($temp, $umid, $sp, $fonte, $pot, $aq, $ve, $modo, $estado, $estado_txt, $alarme, $dht_ok);",
+        "x": 780,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b523000000000033",
+        "type": "comment",
+        "z": "b523000000000023",
+        "name": "Histórico no dashboard (a cada 10 s)",
+        "info": "",
+        "x": 170,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "b523000000000034",
+        "type": "sqlite",
+        "z": "b523000000000023",
+        "mydb": "b523d0000000000d",
+        "sqlquery": "fixed",
+        "name": "últimos 15",
+        "sql": "SELECT strftime('%H:%M:%S', timestamp) AS hora, temp, umid, sp_efetivo AS sp, aquecedor_pwm AS aquec, ventilador_pwm AS vent, estado_txt AS estado FROM camara_dados ORDER BY id DESC LIMIT 15;",
+        "x": 520,
+        "y": 640,
+        "wires": [
+            [
+                "b523000000000036"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000035",
+        "type": "inject",
+        "z": "b523000000000023",
+        "name": "a cada 10 s",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "3",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000034"
+            ]
+        ],
+        "x": 160,
+        "y": 640
+    },
+    {
+        "id": "b523000000000036",
+        "type": "ui-table",
+        "z": "b523000000000023",
+        "name": "Histórico",
+        "group": "b523000000000008",
+        "label": "Últimas 15 amostras",
+        "order": 1,
+        "width": 8,
+        "height": 6,
+        "maxrows": 15,
+        "passthru": false,
+        "autocols": true,
+        "showSearch": false,
+        "deselect": true,
+        "selectionType": "none",
+        "columns": [],
+        "mobileBreakpoint": "sm",
+        "mobileBreakpointType": "defaults",
+        "action": "replace",
+        "className": "",
+        "x": 760,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "b523000000000037",
+        "type": "tab",
+        "label": "Câmara - Controle Node-RED",
+        "disabled": false,
+        "info": "Exemplo de estratégia de controle implementada FORA do ESP32.\nColoca o ESP32 em modo MANUAL (0) e envia aquecedor_cmd / ventilador_cmd."
+    },
+    {
+        "id": "b523000000000038",
+        "type": "comment",
+        "z": "b523000000000037",
+        "name": "Estratégia de controle no Node-RED (edite à vontade!)",
+        "info": "1. Ative o switch 'Controle Node-RED ativo' no dashboard.\n2. O fluxo envia {modo: 0} (MANUAL) ao ESP32.\n3. A cada telemetria (2 s) a função calcula os PWMs e publica em lab05-a/camara/cmd.\n\nSugestões de atividade: trocar por controle P, PI com anti-windup, PID, fuzzy...\nCompare com os controladores internos do ESP32 (modos 1 e 2) usando o SQLite.",
+        "x": 230,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "b523000000000039",
+        "type": "mqtt in",
+        "z": "b523000000000037",
+        "name": "telemetria",
+        "topic": "lab05-a/camara/telemetria",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "b523b0000000000b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "b52300000000003a"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000003a",
+        "type": "function",
+        "z": "b523000000000037",
+        "name": "Controlador ON/OFF + ventilador P",
+        "func": "// ===== Controlador externo (roda no Node-RED, não no ESP32) =====\n// Entrada: telemetria do ESP32. Saída: comando JSON para <grupo>/camara/cmd\n// Estratégia exemplo: ON/OFF com histerese no aquecedor\n//                     + ventilador proporcional ao excesso de temperatura.\nif (!flow.get(\"ativo\")) return null;\nconst t = msg.payload;\nif (t.modo !== 0) {                         // garante modo MANUAL no ESP32\n    return { payload: { modo: 0 } };\n}\nif (!t.dht_ok || t.alarme) return null;     // proteções do ESP32 assumem\n\nconst H = 0.5;                              // histerese (°C)  <-- ajuste aqui\nconst sp = t.sp_efetivo, T = t.temp;\nlet aquecendo = context.get(\"aquecendo\") || false;\nif (T < sp - H) aquecendo = true;\nif (T > sp + H) aquecendo = false;\ncontext.set(\"aquecendo\", aquecendo);\n\nconst aq = aquecendo ? 100 : 0;\nconst ve = Math.min(100, Math.max(20, 20 + 40 * (T - sp - 1)));   // 20 % mínimo (circulação)\n\n// só publica quando algo mudou\nconst cmd = { aquecedor_cmd: aq, ventilador_cmd: Math.round(ve) };\nif (cmd.aquecedor_cmd === t.aquecedor_cmd && cmd.ventilador_cmd === t.ventilador_cmd) return null;\nnode.status({ fill: aquecendo ? \"red\" : \"blue\", shape: \"dot\",\n              text: `T=${T} SP=${sp} AQ=${aq}% VE=${cmd.ventilador_cmd}%` });\nreturn { payload: cmd };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 140,
+        "wires": [
+            [
+                "b52300000000003b",
+                "b52300000000003c"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000003b",
+        "type": "mqtt out",
+        "z": "b523000000000037",
+        "name": "cmd (JSON)",
+        "topic": "lab05-a/camara/cmd",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "b523b0000000000b",
+        "x": 700,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "b52300000000003c",
+        "type": "debug",
+        "z": "b523000000000037",
+        "name": "comandos enviados",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "b52300000000003d",
+        "type": "ui-switch",
+        "z": "b523000000000037",
+        "name": "Controle Node-RED ativo",
+        "label": "Controle Node-RED ativo",
+        "group": "b523000000000007",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": false,
+        "topic": "controle_externo",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 170,
+        "y": 300,
+        "wires": [
+            [
+                "b52300000000003e"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000003e",
+        "type": "function",
+        "z": "b523000000000037",
+        "name": "ativa / desativa",
+        "func": "flow.set(\"ativo\", msg.payload === true);\nnode.status({ fill: msg.payload ? \"green\" : \"grey\", shape: \"ring\",\n              text: msg.payload ? \"controle externo ATIVO\" : \"inativo\" });\n// ao ativar, coloca o ESP32 em MANUAL; ao desativar, volta ao PI interno\nreturn { payload: msg.payload ? { modo: 0 } : { modo: 2 } };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 300,
+        "wires": [
+            [
+                "b52300000000003b"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000003f",
+        "type": "ui-text",
+        "z": "b523000000000037",
+        "name": "estratégia",
+        "group": "b523000000000007",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Estratégia",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "Helvetica",
+        "fontSize": 14,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 430,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "b523000000000040",
+        "type": "inject",
+        "z": "b523000000000037",
+        "name": "descrição",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "",
+        "payload": "ON/OFF ±0,5 °C + ventilador P",
+        "payloadType": "str",
+        "wires": [
+            [
+                "b52300000000003f"
+            ]
+        ],
+        "x": 170,
+        "y": 360
+    },
+    {
+        "id": "b523000000000041",
+        "type": "comment",
+        "z": "b523000000000037",
+        "name": "Alarmes -> ntfy do grupo (celular)",
+        "info": "Usa NTFY_URL, NTFY_TOPIC e NTFY_TOKEN, já definidas no Node-RED do grupo pelo\ngen_iot_scada_portal.py. Fora do LAB IoT (sem essas variáveis) o nó só mostra um aviso.",
+        "x": 230,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "b523000000000042",
+        "type": "mqtt in",
+        "z": "b523000000000037",
+        "name": "telemetria",
+        "topic": "lab05-a/camara/telemetria",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "b523b0000000000b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000043"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000043",
+        "type": "function",
+        "z": "b523000000000037",
+        "name": "alarme mudou? -> ntfy",
+        "func": "// Avisa no ntfy do grupo quando o alarme da câmara muda (entra ou sai)\nconst t = msg.payload;\nconst ant = context.get(\"alarme\");\ncontext.set(\"alarme\", t.alarme);\nif (ant === undefined || ant === t.alarme) return null;\nif (!env.get(\"NTFY_URL\")) {\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"sem NTFY_URL (fora do LAB IoT)\" });\n    return null;\n}\nconst TXT = { 1: \"Sobretemperatura (≥ 60 °C)\", 2: \"Falha do sensor DHT22\",\n              3: \"Sobretemperatura + falha do DHT22\" };\nconst ativo = t.alarme !== 0;\nmsg.url = env.get(\"NTFY_URL\");\nmsg.method = \"POST\";\nmsg.headers = { \"Authorization\": \"Bearer \" + env.get(\"NTFY_TOKEN\"),\n                \"Content-Type\": \"application/json\" };\nmsg.payload = {\n    topic: env.get(\"NTFY_TOPIC\"),\n    title: ativo ? \"Câmara em ALARME\" : \"Câmara: alarme normalizado\",\n    message: ativo ? `${TXT[t.alarme]} · T=${t.temp} °C · SP=${t.sp_efetivo} °C`\n                   : `T=${t.temp} °C · estado ${t.estado_txt}`,\n    priority: ativo ? 5 : 3,\n    tags: [ativo ? \"rotating_light\" : \"white_check_mark\"]\n};\nnode.status({ fill: ativo ? \"red\" : \"green\", shape: \"dot\", text: msg.payload.title });\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000044"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000044",
+        "type": "http request",
+        "z": "b523000000000037",
+        "name": "POST ntfy",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 600,
+        "y": 500,
+        "wires": [
+            [
+                "b523000000000045"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000045",
+        "type": "debug",
+        "z": "b523000000000037",
+        "name": "resposta ntfy",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b523000000000046",
+        "type": "tab",
+        "label": "Câmara - Modbus / S7 / OPC-UA",
+        "disabled": false,
+        "info": "Mesma câmara lida pelos protocolos industriais do simulador (lab05-a-camara). Cada leitura é republicada em lab05-a/camara/via/<protocolo>."
+    },
+    {
+        "id": "b523000000000047",
+        "type": "mqtt out",
+        "z": "b523000000000046",
+        "name": "via/<protocolo>",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "b523b0000000000b",
+        "x": 1100,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "b523000000000048",
+        "type": "debug",
+        "z": "b523000000000046",
+        "name": "Modbus TCP",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.temp",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b523000000000049",
+        "type": "debug",
+        "z": "b523000000000046",
+        "name": "Modbus RTU (TCP)",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.temp",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "b52300000000004a",
+        "type": "debug",
+        "z": "b523000000000046",
+        "name": "S7",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.temp",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "b52300000000004b",
+        "type": "debug",
+        "z": "b523000000000046",
+        "name": "OPC-UA",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.temp",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "b52300000000004c",
+        "type": "comment",
+        "z": "b523000000000046",
+        "name": "Modbus - IR 0..17 (FC4), HR 0..7 comandos (ver simuladores/README.md)",
+        "info": "",
+        "x": 260,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "b52300000000004d",
+        "type": "modbus-client",
+        "name": "Câmara Modbus TCP",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "lab05-a-camara",
+        "tcpPort": "502",
+        "tcpType": "DEFAULT",
+        "serialPort": "",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "1",
+        "commandDelay": "1",
+        "clientTimeout": "1000",
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": "2000",
+        "parallelUnitIdsAllowed": true
+    },
+    {
+        "id": "b52300000000004e",
+        "type": "modbus-client",
+        "name": "Câmara Modbus RTU (sobre TCP)",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "lab05-a-camara",
+        "tcpPort": "5021",
+        "tcpType": "TELNET",
+        "serialPort": "",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "1",
+        "commandDelay": "1",
+        "clientTimeout": "1000",
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": "2000",
+        "parallelUnitIdsAllowed": true
+    },
+    {
+        "id": "b52300000000004f",
+        "type": "function",
+        "z": "b523000000000046",
+        "name": "Decodifica IR 0..17",
+        "func": "// Input registers 0..17 da câmara -> mesmo JSON da telemetria MQTT\nconst r = msg.payload;\nif (!Array.isArray(r) || r.length < 18) return null;\nconst s16 = v => (v > 0x7FFF ? v - 0x10000 : v);\nconst f32 = i => { const b = Buffer.alloc(4); b.writeUInt16BE(r[i], 0); b.writeUInt16BE(r[i+1], 2); return b.readFloatBE(0); };\nconst ESTADOS = [\"DESLIGADO\", \"AQUECENDO\", \"RESFRIANDO\", \"ESTAVEL\", \"ALARME\"];\nmsg.payload = {\n    temp: Number(f32(12).toFixed(1)),      // ou s16(r[0]) / 10\n    umid: Number(f32(14).toFixed(1)),      // ou r[1] / 10\n    sp_efetivo: s16(r[2]) / 10,\n    aquecedor_pwm: r[3], ventilador_pwm: r[4], pot_raw: r[5],\n    estado: r[6], estado_txt: ESTADOS[r[6]], alarme: r[7],\n    led_verde: r[8] & 1, led_amarelo: (r[8] >> 1) & 1, led_vermelho: (r[8] >> 2) & 1,\n    dht_erros: r[9], heartbeat: r[10], uptime: r[11],\n    aquecedor_duty: r[16], ventilador_duty: r[17]\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 140,
+        "wires": [
+            [
+                "b523000000000047",
+                "b523000000000050"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000050",
+        "type": "switch",
+        "z": "b523000000000046",
+        "name": "por protocolo",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "lab05-a/camara/via/modbus_tcp",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "lab05-a/camara/via/modbus_rtu",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "wires": [
+            [
+                "b523000000000048"
+            ],
+            [
+                "b523000000000049"
+            ]
+        ],
+        "x": 860,
+        "y": 140
+    },
+    {
+        "id": "b523000000000051",
+        "type": "modbus-read",
+        "z": "b523000000000046",
+        "name": "FC4 IR 0..17 (TCP)",
+        "topic": "lab05-a/camara/via/modbus_tcp",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "InputRegister",
+        "adr": "0",
+        "quantity": "18",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": true,
+        "startDelayTime": "3",
+        "server": "b52300000000004d",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "wires": [
+            [
+                "b52300000000004f"
+            ],
+            []
+        ],
+        "x": 380,
+        "y": 100
+    },
+    {
+        "id": "b523000000000052",
+        "type": "modbus-read",
+        "z": "b523000000000046",
+        "name": "FC4 IR 0..17 (RTU/TCP)",
+        "topic": "lab05-a/camara/via/modbus_rtu",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "InputRegister",
+        "adr": "0",
+        "quantity": "18",
+        "rate": "2",
+        "rateUnit": "s",
+        "delayOnStart": true,
+        "startDelayTime": "3",
+        "server": "b52300000000004e",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "wires": [
+            [
+                "b52300000000004f"
+            ],
+            []
+        ],
+        "x": 380,
+        "y": 140
+    },
+    {
+        "id": "b523000000000053",
+        "type": "modbus-write",
+        "z": "b523000000000046",
+        "name": "FC6 HR3 setpoint (TCP)",
+        "showStatusActivities": true,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "3",
+        "quantity": "1",
+        "server": "b52300000000004d",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "wires": [
+            [],
+            []
+        ],
+        "x": 620,
+        "y": 240
+    },
+    {
+        "id": "b523000000000054",
+        "type": "function",
+        "z": "b523000000000046",
+        "name": "°C x 10",
+        "func": "msg.payload = Math.round(Number(msg.payload) * 10);   // HR3 = °C x 10\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 240,
+        "wires": [
+            [
+                "b523000000000053"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000055",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 30 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b523000000000054"
+            ]
+        ],
+        "x": 150,
+        "y": 220
+    },
+    {
+        "id": "b523000000000056",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 45 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "45",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b523000000000054"
+            ]
+        ],
+        "x": 150,
+        "y": 260
+    },
+    {
+        "id": "b523000000000057",
+        "type": "modbus-write",
+        "z": "b523000000000046",
+        "name": "FC6 HR1 modo (TCP)",
+        "showStatusActivities": true,
+        "showErrors": true,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "1",
+        "quantity": "1",
+        "server": "b52300000000004d",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "wires": [
+            [],
+            []
+        ],
+        "x": 620,
+        "y": 300
+    },
+    {
+        "id": "b523000000000058",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "Modo ON/OFF (1)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b523000000000057"
+            ]
+        ],
+        "x": 150,
+        "y": 300
+    },
+    {
+        "id": "b523000000000059",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "Modo PI (2)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "2",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b523000000000057"
+            ]
+        ],
+        "x": 150,
+        "y": 340
+    },
+    {
+        "id": "b52300000000005a",
+        "type": "comment",
+        "z": "b523000000000046",
+        "name": "Siemens S7 - DB1 (comandos 0..17, estado 20..55)",
+        "info": "",
+        "x": 220,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "b52300000000005b",
+        "type": "s7 endpoint",
+        "transport": "iso-on-tcp",
+        "address": "lab05-a-camara",
+        "port": "102",
+        "rack": "0",
+        "slot": "1",
+        "localtsaphi": "01",
+        "localtsaplo": "00",
+        "remotetsaphi": "01",
+        "remotetsaplo": "00",
+        "connmode": "rack-slot",
+        "adapter": "",
+        "busaddr": "2",
+        "cycletime": "2000",
+        "timeout": "2000",
+        "name": "Câmara S7 (DB1)",
+        "vartable": [
+            {
+                "addr": "DB1,X0.0",
+                "name": "habilitado"
+            },
+            {
+                "addr": "DB1,X0.1",
+                "name": "fonte_sp"
+            },
+            {
+                "addr": "DB1,INT2",
+                "name": "modo"
+            },
+            {
+                "addr": "DB1,REAL4",
+                "name": "setpoint"
+            },
+            {
+                "addr": "DB1,REAL20",
+                "name": "temp"
+            },
+            {
+                "addr": "DB1,REAL24",
+                "name": "umid"
+            },
+            {
+                "addr": "DB1,REAL28",
+                "name": "sp_efetivo"
+            },
+            {
+                "addr": "DB1,REAL32",
+                "name": "aquecedor_pwm"
+            },
+            {
+                "addr": "DB1,REAL36",
+                "name": "ventilador_pwm"
+            },
+            {
+                "addr": "DB1,INT40",
+                "name": "estado"
+            },
+            {
+                "addr": "DB1,INT42",
+                "name": "alarme"
+            },
+            {
+                "addr": "DB1,X44.0",
+                "name": "led_verde"
+            },
+            {
+                "addr": "DB1,X44.1",
+                "name": "led_amarelo"
+            },
+            {
+                "addr": "DB1,X44.2",
+                "name": "led_vermelho"
+            },
+            {
+                "addr": "DB1,X44.3",
+                "name": "dht_ok"
+            },
+            {
+                "addr": "DB1,INT46",
+                "name": "pot_raw"
+            },
+            {
+                "addr": "DB1,DINT48",
+                "name": "heartbeat"
+            }
+        ]
+    },
+    {
+        "id": "b52300000000005c",
+        "type": "function",
+        "z": "b523000000000046",
+        "name": "Formata S7",
+        "func": "// \"s7 in\" (todas as variáveis) -> JSON no mesmo formato da telemetria\nconst p = msg.payload, r1 = v => Math.round(v * 10) / 10;\nconst ESTADOS = [\"DESLIGADO\", \"AQUECENDO\", \"RESFRIANDO\", \"ESTAVEL\", \"ALARME\"];\nmsg.payload = {\n    temp: r1(p.temp), umid: r1(p.umid), sp_efetivo: r1(p.sp_efetivo), setpoint: r1(p.setpoint),\n    aquecedor_pwm: r1(p.aquecedor_pwm), ventilador_pwm: r1(p.ventilador_pwm),\n    modo: p.modo, habilitado: +p.habilitado, fonte_sp: +p.fonte_sp, pot_raw: p.pot_raw,\n    estado: p.estado, estado_txt: ESTADOS[p.estado], alarme: p.alarme,\n    led_verde: +p.led_verde, led_amarelo: +p.led_amarelo, led_vermelho: +p.led_vermelho,\n    dht_ok: +p.dht_ok, heartbeat: p.heartbeat\n};\nmsg.topic = \"lab05-a/camara/via/s7\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 420,
+        "wires": [
+            [
+                "b523000000000047",
+                "b52300000000004a"
+            ]
+        ]
+    },
+    {
+        "id": "b52300000000005d",
+        "type": "s7 in",
+        "z": "b523000000000046",
+        "endpoint": "b52300000000005b",
+        "mode": "all",
+        "variable": "",
+        "diff": false,
+        "name": "Lê DB1 (todas)",
+        "wires": [
+            [
+                "b52300000000005c"
+            ]
+        ],
+        "x": 380,
+        "y": 420
+    },
+    {
+        "id": "b52300000000005e",
+        "type": "s7 out",
+        "z": "b523000000000046",
+        "endpoint": "b52300000000005b",
+        "variable": "setpoint",
+        "name": "DB1,REAL4 setpoint",
+        "x": 400,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "b52300000000005f",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 32 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "32",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b52300000000005e"
+            ]
+        ],
+        "x": 150,
+        "y": 460
+    },
+    {
+        "id": "b523000000000060",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 40 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "40",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b52300000000005e"
+            ]
+        ],
+        "x": 150,
+        "y": 500
+    },
+    {
+        "id": "b523000000000061",
+        "type": "s7 out",
+        "z": "b523000000000046",
+        "endpoint": "b52300000000005b",
+        "variable": "habilitado",
+        "name": "DB1,X0.0 habilitado",
+        "x": 400,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "b523000000000062",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "Liga",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "wires": [
+            [
+                "b523000000000061"
+            ]
+        ],
+        "x": 150,
+        "y": 540
+    },
+    {
+        "id": "b523000000000063",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "Desliga",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "wires": [
+            [
+                "b523000000000061"
+            ]
+        ],
+        "x": 150,
+        "y": 580
+    },
+    {
+        "id": "b523000000000064",
+        "type": "comment",
+        "z": "b523000000000046",
+        "name": "OPC-UA - opc.tcp://lab05-a-camara:4840/  ns=2;s=Camara.*",
+        "info": "",
+        "x": 230,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "b523000000000065",
+        "type": "OpcUa-Endpoint",
+        "name": "Câmara OPC-UA",
+        "endpoint": "opc.tcp://lab05-a-camara:4840/",
+        "secpol": "None",
+        "secmode": "None",
+        "none": true,
+        "login": false,
+        "usercert": false,
+        "usercertificate": "",
+        "userprivatekey": ""
+    },
+    {
+        "id": "b523000000000066",
+        "type": "function",
+        "z": "b523000000000046",
+        "name": "Agrupa variáveis",
+        "func": "// Junta as notificações da assinatura em um único objeto\nconst nome = String(msg.topic).split(\"Camara.\")[1];\nif (!nome) return null;\nconst v = (msg.payload && msg.payload.value !== undefined) ? msg.payload.value.value : msg.payload;\nconst d = context.get(\"d\") || {};\nd[nome] = typeof v === \"boolean\" ? +v : v;\ncontext.set(\"d\", d);\nif (nome !== \"heartbeat\" || Object.keys(d).length < 13) return null;\nconst r1 = x => Math.round(x * 10) / 10;\nreturn { topic: \"lab05-a/camara/via/opcua\",\n         payload: Object.assign({}, d, { temp: r1(d.temp), umid: r1(d.umid),\n                                         aquecedor_pwm: r1(d.aquecedor_pwm), ventilador_pwm: r1(d.ventilador_pwm) }) };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 680,
+        "wires": [
+            [
+                "b523000000000047",
+                "b52300000000004b"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000067",
+        "type": "OpcUa-Client",
+        "z": "b523000000000046",
+        "endpoint": "b523000000000065",
+        "action": "subscribe",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": 2,
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": true,
+        "name": "Assina (2 s)",
+        "applicationName": "",
+        "applicationUri": "",
+        "wires": [
+            [
+                "b523000000000066"
+            ],
+            []
+        ],
+        "x": 640,
+        "y": 680
+    },
+    {
+        "id": "b523000000000068",
+        "type": "function",
+        "z": "b523000000000046",
+        "name": "Lista de NodeIds",
+        "func": "// Uma mensagem por variável a assinar (msg.topic = NodeId)\nconst ns = 2;   // índice de \"urn:utfpr:camara-climatica\" (ver log do simulador)\nconst vars = {\n    temp: \"Double\", umid: \"Double\", sp_efetivo: \"Double\", setpoint: \"Double\",\n    aquecedor_pwm: \"Double\", ventilador_pwm: \"Double\", pot_raw: \"Int32\", modo: \"Int32\",\n    estado: \"Int32\", estado_txt: \"String\", alarme: \"Int32\", dht_ok: \"Boolean\", heartbeat: \"Int32\"\n};\nreturn [Object.entries(vars).map(([n, type]) => ({ topic: `ns=${ns};s=Camara.${n}`, datatype: type, payload: \"\" }))];\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 680,
+        "wires": [
+            [
+                "b523000000000067"
+            ]
+        ]
+    },
+    {
+        "id": "b523000000000069",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "Iniciar assinatura",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "wires": [
+            [
+                "b523000000000068"
+            ]
+        ],
+        "x": 160,
+        "y": 680
+    },
+    {
+        "id": "b52300000000006a",
+        "type": "OpcUa-Client",
+        "z": "b523000000000046",
+        "endpoint": "b523000000000065",
+        "action": "write",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": 2,
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": true,
+        "name": "Escreve",
+        "applicationName": "",
+        "applicationUri": "",
+        "wires": [
+            [],
+            []
+        ],
+        "x": 640,
+        "y": 760
+    },
+    {
+        "id": "b52300000000006b",
+        "type": "OpcUa-Item",
+        "z": "b523000000000046",
+        "item": "ns=2;s=Camara.setpoint",
+        "datatype": "Double",
+        "value": "",
+        "name": "Camara.setpoint",
+        "wires": [
+            [
+                "b52300000000006a"
+            ]
+        ],
+        "x": 400,
+        "y": 760
+    },
+    {
+        "id": "b52300000000006c",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 33 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "33",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b52300000000006b"
+            ]
+        ],
+        "x": 150,
+        "y": 740
+    },
+    {
+        "id": "b52300000000006d",
+        "type": "inject",
+        "z": "b523000000000046",
+        "name": "SP 42 °C",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "42",
+        "payloadType": "num",
+        "wires": [
+            [
+                "b52300000000006b"
+            ]
+        ],
+        "x": 150,
+        "y": 780
+    }
+]
