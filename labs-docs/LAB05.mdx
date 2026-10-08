@@ -3,8 +3,6 @@ title: Laboratório 05
 sidebar_position: 8
 ---
 
-import { DevTools } from "@site/src/components/shared/InstructionsSite";
-
 ## Checklist — DHT22, temporizador e MQTT com Node-RED {/* #checklist */}
 
 - [ ] `platformio.ini` com DHT, Unified Sensor e PubSubClient; `diagram.json` com DHT22 no GPIO15 (T1)
@@ -135,6 +133,8 @@ O DHT22 do Wokwi tem 4 pinos: `VCC`, `SDA` (dados), `NC` e `GND`. Ligue **VCC �
 **GND → GND** e **SDA → GPIO15**. O template já traz o ESP32; acrescente o sensor no
 `diagram.json`:
 
+<FileTree root="lab05-grupo-X" files={["diagram.json u"]} />
+
 ```json title="diagram.json"
 {
   "version": 1,
@@ -173,6 +173,8 @@ Com o simulador rodando, **clique no DHT22**: aparecem sliders de temperatura e 
 :::
 
 ### 1.2 Bibliotecas no `platformio.ini`
+
+<FileTree root="lab05-grupo-X" files={["platformio.ini u"]} />
 
 ```ini title="platformio.ini"
 [env:esp32dev]
@@ -233,6 +235,8 @@ se você pedir antes, ela devolve **o último valor** em cache.
 :::
 
 ### 2.2 Código
+
+<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T2)"
 #include <Arduino.h>
@@ -303,6 +307,8 @@ Anote as previsões e o que observou no `README.md`. Depois **volte o intervalo 
 Salve pelo menos **3 leituras** do monitor serial (copie do terminal do Wokwi) em
 `evidencias/t2-serial.txt`, incluindo a linha `=== Lab 05`.
 
+<FileTree root="lab05-grupo-X" files={["evidencias/t2-serial.txt c"]} />
+
 <CommitPoint
   id="t2"
   task="Leitura do DHT22 com temporizador"
@@ -316,6 +322,8 @@ Salve pelo menos **3 leituras** do monitor serial (copie do terminal do Wokwi) e
 
 Acrescente o Wi-Fi ao programa da T2. No Wokwi a rede é **`Wokwi-GUEST`**, sem senha; passar
 o **canal 6** no `begin()` pula a varredura e conecta mais rápido.
+
+<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
 
 <Tabs groupId="alvo">
 <TabItem value="wokwi" label="Wokwi (padrão)" default>
@@ -375,6 +383,8 @@ nesta aula. Em produção você trocaria por uma máquina de estados não bloque
 
 Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
 
+<FileTree root="lab05-grupo-X" files={["evidencias/t3-wifi.txt c"]} />
+
 <CommitPoint
   id="t3"
   task="Conexao Wi-Fi"
@@ -405,6 +415,8 @@ Não publique nada sensível. (Broker local no Wokwi exige o IoT Gateway do Wokw
 :::
 
 ### 4.2 Código completo até aqui
+
+<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T4)"
 #include <Arduino.h>
@@ -528,6 +540,8 @@ docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
 
 `-C 5` encerra depois de 5 mensagens. **Saída esperada:**
 
+<FileTree root="lab05-grupo-X" files={["evidencias/t4-mqtt.txt c"]} />
+
 ```text title="evidencias/t4-mqtt.txt"
 elt85b/lab05/grupo-a/dht {"grupo":"a","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288}
 elt85b/lab05/grupo-a/dht {"grupo":"a","seq":4,"t":24.5,"h":55.0,"uptime_ms":21288}
@@ -592,6 +606,11 @@ passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`.
 :::
 
 **Evidências:**
+
+<FileTree
+  root="lab05-grupo-X"
+  files={["nodered/flows-lab05.json c", "evidencias/t5-debug.txt c"]}
+/>
 
 1. No debug "payload", passe o mouse sobre **3 mensagens** → ícone **Copy value** e cole cada
    uma numa linha de `evidencias/t5-debug.txt`:
@@ -681,6 +700,11 @@ caminhos: se a conexão TCP é **fechada**, o broker publica o testamento na hor
 PubSubClient é **15 s**. Qual dos dois o Wokwi provocou? E o que muda se o firmware chamasse
 `mqtt.disconnect()` antes de parar?
 :::
+
+<FileTree
+  root="lab05-grupo-X"
+  files={["nodered/flows-lab05.json u", "evidencias/t6-status.txt c"]}
+/>
 
 <CommitPoint
   id="t6"
