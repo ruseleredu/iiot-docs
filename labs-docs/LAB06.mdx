@@ -3,8 +3,6 @@ title: Laboratório 06
 sidebar_position: 9
 ---
 
-import { DevTools } from "@site/src/components/shared/InstructionsSite";
-
 ## Checklist — SSD1306, MQTT nos dois sentidos, SQLite e dashboard {/* #checklist */}
 
 - [ ] `platformio.ini` com Adafruit SSD1306 + GFX; `diagram.json` com o OLED em SDA 21 / SCL 22 (T1)
@@ -121,13 +119,13 @@ O repositório do grupo nasce do `lab06-template`, que já traz o **firmware fin
 :::info[Tópicos do Lab 06]
 Tudo fica sob `elt85b/lab06/grupo-X/`. Troque o `X` (e o `#define GRUPO`) pela letra do seu grupo.
 
-| Tópico                    | Sentido        | Payload                                                           |
-| ------------------------- | -------------- | ----------------------------------------------------------------- |
-| `.../dht`                 | ESP32 → broker | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210,"intervalo_s":5.0}` |
-| `.../status`              | ESP32 → broker | `online` / `offline` (retido, LWT)                                |
-| `.../oled`                | ESP32 → broker | `{"linhas":["LAB06 grupo a","T: 24.5 C", ...]}` (T3)              |
-| `.../oled/fb`             | ESP32 → broker | 1024 bytes do framebuffer em **base64** (T6)                      |
-| `.../cmd/intervalo`       | broker → ESP32 | `10` (segundos, 2–60)                                             |
+| Tópico              | Sentido        | Payload                                                                       |
+| ------------------- | -------------- | ----------------------------------------------------------------------------- |
+| `.../dht`           | ESP32 → broker | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210,"intervalo_s":5.0}` |
+| `.../status`        | ESP32 → broker | `online` / `offline` (retido, LWT)                                            |
+| `.../oled`          | ESP32 → broker | `{"linhas":["LAB06 grupo a","T: 24.5 C", ...]}` (T3)                          |
+| `.../oled/fb`       | ESP32 → broker | 1024 bytes do framebuffer em **base64** (T6)                                  |
+| `.../cmd/intervalo` | broker → ESP32 | `10` (segundos, 2–60)                                                         |
 
 :::
 
@@ -141,13 +139,21 @@ O SSD1306 do Wokwi (`board-ssd1306`) é um módulo **I2C** de 4 pinos: `GND`, `V
 `SDA`. No ESP32, o I2C padrão usa **GPIO21 = SDA** e **GPIO22 = SCL**. Acrescente o display
 ao `diagram.json` do Lab 05:
 
+<FileTree root="lab06-grupo-X" files={["diagram.json u"]} />
+
 ```json title="diagram.json"
 {
   "version": 1,
   "author": "ELT85B - Lab 06",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
     {
       "type": "wokwi-dht22",
       "id": "dht1",
@@ -179,6 +185,8 @@ ao `diagram.json` do Lab 05:
 ```
 
 ### 1.2 Bibliotecas
+
+<FileTree root="lab06-grupo-X" files={["platformio.ini u"]} />
 
 ```ini title="platformio.ini"
 [env:esp32dev]
@@ -237,6 +245,8 @@ sequenceDiagram
 ### 2.2 Código
 
 Acrescente ao firmware do Lab 05:
+
+<FileTree root="lab06-grupo-X" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (trechos novos da T2)"
 #include <Wire.h>
@@ -382,6 +392,8 @@ sequenceDiagram
 - O JSON das leituras ganha `intervalo_s`, que **confirma** ao Node-RED o valor em uso.
 
 ### 3.2 Código completo até aqui
+
+<FileTree root="lab06-grupo-X" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T3)"
 // ELT85B - Lab 06 (T3): DHT22 + SSD1306 + MQTT nos dois sentidos
@@ -617,6 +629,8 @@ docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \
 
 **Saída esperada** (trecho; encerre o Terminal 1 com Ctrl+C depois de umas 8 linhas):
 
+<FileTree root="lab06-grupo-X" files={["evidencias/t3-mqtt.txt c"]} />
+
 ```text title="evidencias/t3-mqtt.txt"
 elt85b/lab06/grupo-a/status online
 elt85b/lab06/grupo-a/dht {"grupo":"a","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288,"intervalo_s":5.0}
@@ -693,22 +707,34 @@ CREATE TABLE IF NOT EXISTS leituras (
    // Leitura do ESP32 (ou injetada à mão) -> parâmetros do INSERT preparado.
    // Broker público: QUALQUER um pode publicar no seu tópico -> valide antes de gravar.
    const p = msg.payload;
-   const num = v => typeof v === "number" && isFinite(v);
-   if (!p || typeof p !== "object" || !num(p.t) || !num(p.h) ||
-       p.t < -40 || p.t > 80 || p.h < 0 || p.h > 100) {
-       node.warn("descartado (formato/faixa inválidos): " + JSON.stringify(p));
-       return null;
+   const num = (v) => typeof v === "number" && isFinite(v);
+   if (
+     !p ||
+     typeof p !== "object" ||
+     !num(p.t) ||
+     !num(p.h) ||
+     p.t < -40 ||
+     p.t > 80 ||
+     p.h < 0 ||
+     p.h > 100
+   ) {
+     node.warn("descartado (formato/faixa inválidos): " + JSON.stringify(p));
+     return null;
    }
    msg.params = {
-       $grupo: String(p.grupo ?? "?"),
-       $seq: num(p.seq) ? p.seq : null,
-       $t: p.t,
-       $h: p.h,
-       $uptime: num(p.uptime_ms) ? p.uptime_ms : null,
-       $intervalo: num(p.intervalo_s) ? p.intervalo_s : null,
-       $origem: msg.origem || "esp32"
+     $grupo: String(p.grupo ?? "?"),
+     $seq: num(p.seq) ? p.seq : null,
+     $t: p.t,
+     $h: p.h,
+     $uptime: num(p.uptime_ms) ? p.uptime_ms : null,
+     $intervalo: num(p.intervalo_s) ? p.intervalo_s : null,
+     $origem: msg.origem || "esp32",
    };
-   node.status({ fill: "green", shape: "dot", text: `seq ${p.seq}: ${p.t} °C ${p.h} %` });
+   node.status({
+     fill: "green",
+     shape: "dot",
+     text: `seq ${p.seq}: ${p.t} °C ${p.h} %`,
+   });
    return msg;
    ```
 
@@ -740,10 +766,10 @@ real, mas fica marcado como `origem = 'manual'`.
 
 Cada consulta é um **inject** com o SQL em `msg.topic`, ligado ao sqlite **Via msg.topic** → **debug**:
 
-| inject                        | SQL                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------ |
-| Últimas 10 leituras           | `SELECT id, recebido_em, seq, t, h, intervalo_s, origem FROM leituras ORDER BY id DESC LIMIT 10;` |
-| Apagar leituras manuais       | `DELETE FROM leituras WHERE origem = 'manual';`                                                   |
+| inject                  | SQL                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| Últimas 10 leituras     | `SELECT id, recebido_em, seq, t, h, intervalo_s, origem FROM leituras ORDER BY id DESC LIMIT 10;` |
+| Apagar leituras manuais | `DELETE FROM leituras WHERE origem = 'manual';`                                                   |
 
 ```sql title="Resumo por minuto"
 SELECT substr(recebido_em, 1, 16) AS minuto, COUNT(*) AS n, ROUND(AVG(t), 1) AS t_media,
@@ -792,6 +818,11 @@ com `mosquitto_pub`: o que acontece em cada caso e em qual nó?
 leituras"** (mostrando a troca de 5 s para 10 s) para `evidencias/t4-sqlite.txt`. Exporte a aba
 **Lab 06** em `nodered/flows-lab06.json`.
 
+<FileTree
+  root="lab06-grupo-X"
+  files={["src/main.cpp u", "evidencias/t4-sqlite.txt c"]}
+/>
+
 <CommitPoint
   id="t4"
   task="Node-RED gravando e consultando o SQLite"
@@ -832,21 +863,27 @@ O ESP32 manda **só o conteúdo**, e o navegador desenha com a fonte dele:
 </template>
 
 <script>
-export default {
-  computed: {
-    linhas () {
-      return this.msg?.payload?.linhas ?? ['(aguardando o ESP32...)']
-    }
-  }
-}
+  export default {
+    computed: {
+      linhas() {
+        return this.msg?.payload?.linhas ?? ["(aguardando o ESP32...)"];
+      },
+    },
+  };
 </script>
 
 <style scoped>
-.oled-txt {
-  background: #000; color: #dff3ff; font-family: 'Courier New', monospace;
-  font-size: 14px; line-height: 1.35; padding: 10px 12px; border-radius: 6px;
-  border: 6px solid #1c1c1c; white-space: pre;
-}
+  .oled-txt {
+    background: #000;
+    color: #dff3ff;
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 6px solid #1c1c1c;
+    white-space: pre;
+  }
 </style>
 ```
 
@@ -862,20 +899,24 @@ const agora = Date.now();
 const ultimo = context.get("intervalo");
 context.set("intervalo", p.intervalo_s);
 return [
-    { payload: p.t },
-    { payload: p.h },
-    { payload: [ { ts: agora, serie: "T (°C)",  valor: p.t },
-                 { ts: agora, serie: "UR (%)", valor: p.h } ] },
-    // só atualiza o slider quando o ESP32 confirma um valor novo
-    ultimo === p.intervalo_s ? null : { payload: p.intervalo_s }
+  { payload: p.t },
+  { payload: p.h },
+  {
+    payload: [
+      { ts: agora, serie: "T (°C)", valor: p.t },
+      { ts: agora, serie: "UR (%)", valor: p.h },
+    ],
+  },
+  // só atualiza o slider quando o ESP32 confirma um valor novo
+  ultimo === p.intervalo_s ? null : { payload: p.intervalo_s },
 ];
 ```
 
-| Saída | Nó                           | Configuração                                                                                   |
-| ----- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| 1     | **ui-gauge** "Temperatura"   | grupo _Leituras_, unidade `°C`, faixa −10 a 60                                                 |
-| 2     | **ui-gauge** "Umidade"       | grupo _Leituras_, unidade `%`, faixa 0 a 100                                                   |
-| 3     | **ui-chart**                 | grupo _Histórico_, _Line_; **Series** = key `serie`; **X** = key `ts` (_timescale_); **Y** = key `valor` |
+| Saída | Nó                            | Configuração                                                                                                                                                                     |
+| ----- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | **ui-gauge** "Temperatura"    | grupo _Leituras_, unidade `°C`, faixa −10 a 60                                                                                                                                   |
+| 2     | **ui-gauge** "Umidade"        | grupo _Leituras_, unidade `%`, faixa 0 a 100                                                                                                                                     |
+| 3     | **ui-chart**                  | grupo _Histórico_, _Line_; **Series** = key `serie`; **X** = key `ts` (_timescale_); **Y** = key `valor`                                                                         |
 | 4     | **ui-slider** "Intervalo (s)" | grupo _ESP32_, 2 a 60, passo 1, _Topic_ `elt85b/lab06/grupo-a/cmd/intervalo`, _Output_ **on release**, **pass-through desligado** → **mqtt out** (tópico vazio: usa `msg.topic`) |
 
 :::note[Por que o slider não "briga" com o ESP32?]
@@ -894,9 +935,13 @@ banco**, monte: **inject** (_once_, 2 s) → **sqlite** _Fixed Statement_
 ```js title="function: linhas -> pontos"
 // Linhas do SQLite -> pontos do gráfico (substitui o que havia)
 const pontos = [];
-for (const r of msg.payload.reverse()) {             // mais antigo primeiro
-    const ts = new Date(r.recebido_em.replace(" ", "T")).getTime();
-    pontos.push({ ts, serie: "T (°C)", valor: r.t }, { ts, serie: "UR (%)", valor: r.h });
+for (const r of msg.payload.reverse()) {
+  // mais antigo primeiro
+  const ts = new Date(r.recebido_em.replace(" ", "T")).getTime();
+  pontos.push(
+    { ts, serie: "T (°C)", valor: r.t },
+    { ts, serie: "UR (%)", valor: r.h },
+  );
 }
 node.status({ text: `${msg.payload.length} leituras carregadas` });
 return { payload: pontos, action: "replace" };
@@ -917,6 +962,11 @@ Abra `http://localhost:1880/dashboard/lab06`, mova o slider para 10 s e confira:
 
 **Evidências:** captura do dashboard em `evidencias/t5-dashboard.png` e o fluxo exportado de
 novo em `nodered/flows-lab06.json`.
+
+<FileTree
+  root="lab06-grupo-X"
+  files={["nodered/flows-lab06.json u", "evidencias/t5-dashboard.png c"]}
+/>
 
 <CommitPoint
   id="t5"
@@ -1004,26 +1054,40 @@ void publicarFramebuffer() {
 </template>
 
 <script>
-export default {
-  watch: { msg () { this.desenhar() } },     // roda a cada mensagem nova
-  mounted () { this.desenhar() },            // e quando a página abre
-  methods: {
-    desenhar () {
-      const b64 = this.msg?.payload
-      if (typeof b64 !== 'string' || !this.$refs.tela) return
-      const fb = atob(b64)                   // string com 1024 "bytes": fb.charCodeAt(i)
-      const ctx = this.$refs.tela.getContext('2d')
-      // 1) pinte tudo de preto
-      // 2) para cada página (0..7), coluna x (0..127) e bit (0..7):
-      //    se o bit estiver aceso, pinte um quadrado 3x3 em (x*3, (pagina*8 + bit)*3)
-    }
-  }
-}
+  export default {
+    watch: {
+      msg() {
+        this.desenhar();
+      },
+    }, // roda a cada mensagem nova
+    mounted() {
+      this.desenhar();
+    }, // e quando a página abre
+    methods: {
+      desenhar() {
+        const b64 = this.msg?.payload;
+        if (typeof b64 !== "string" || !this.$refs.tela) return;
+        const fb = atob(b64); // string com 1024 "bytes": fb.charCodeAt(i)
+        const ctx = this.$refs.tela.getContext("2d");
+        // 1) pinte tudo de preto
+        // 2) para cada página (0..7), coluna x (0..127) e bit (0..7):
+        //    se o bit estiver aceso, pinte um quadrado 3x3 em (x*3, (pagina*8 + bit)*3)
+      },
+    },
+  };
 </script>
 
 <style scoped>
-.oled-fb { display: block; width: 100%; max-width: 384px; aspect-ratio: 2 / 1;
-           image-rendering: pixelated; background: #000; border: 6px solid #1c1c1c; border-radius: 6px; }
+  .oled-fb {
+    display: block;
+    width: 100%;
+    max-width: 384px;
+    aspect-ratio: 2 / 1;
+    image-rendering: pixelated;
+    background: #000;
+    border: 6px solid #1c1c1c;
+    border-radius: 6px;
+  }
 </style>
 ```
 
@@ -1034,6 +1098,16 @@ consultar** com SQL, e qual mostra **fielmente** o que o usuário vê no display
 aconteceria se você esquecesse o `setBufferSize()`? Onde isso apareceria: no serial, no broker
 ou no dashboard?
 :::
+
+<FileTree
+  root="lab06-grupo-X"
+  files={[
+    "src/main.cpp u",
+    "nodered/flows-lab06.json u",
+    "evidencias/t6-fb.txt c",
+    "evidencias/t6-oled.png c",
+  ]}
+/>
 
 <CommitPoint
   id="t6"

@@ -15,6 +15,7 @@ import TabItem from "@theme/TabItem";
 import {
     LabSetup,
     LabLogout,
+    DevTools,
 } from "@site/src/components/shared/InstructionsSite";
 
 
@@ -34,4 +35,5 @@ export default {
     TabItem,
     LabSetup,
     LabLogout,
+    DevTools,
 };
