@@ -18,12 +18,12 @@ docker compose up -d
 
 ## Services & Ports
 
-| Service              | URL / Address              | Credentials          | Notes                              |
-|----------------------|----------------------------|----------------------|------------------------------------|
-| **Mosquitto MQTT**   | `localhost:1883`           | Anonymous            | For ESP32, Arduino, desktop apps   |
-| **Mosquitto WebSocket** | `ws://localhost:9001`   | Anonymous            | For browser clients                |
-| **MQTTX Web**        | http://localhost:8080      | —                    | Beautiful chat-style client        |
-| **MQTT Explorer**    | http://localhost:3000      | admin / admin123     | Hierarchical topic explorer        |
+| Service                 | URL / Address         | Credentials      | Notes                            |
+| ----------------------- | --------------------- | ---------------- | -------------------------------- |
+| **Mosquitto MQTT**      | `localhost:1883`      | Anonymous        | For ESP32, Arduino, desktop apps |
+| **Mosquitto WebSocket** | `ws://localhost:9001` | Anonymous        | For browser clients              |
+| **MQTTX Web**           | http://localhost:8080 | —                | Beautiful chat-style client      |
+| **MQTT Explorer**       | http://localhost:3000 | admin / admin123 | Hierarchical topic explorer      |
 
 ---
 
