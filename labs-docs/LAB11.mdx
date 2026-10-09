@@ -166,16 +166,16 @@ e não no Docker do servidor, onde estão o Gitea, o Mosquitto e os Node-RED.
 
 ```yaml title="runner/config.yaml (gerado pelo gen_iot_scada_portal.py, trecho)"
 runner:
-  capacity: 2                    # jobs ao mesmo tempo (todos os grupos)
-  timeout: 1h                    # um job que passa disso é cancelado
-  labels:                        # runs-on: ubuntu-latest  ->  esta imagem
+  capacity: 2 # jobs ao mesmo tempo (todos os grupos)
+  timeout: 1h # um job que passa disso é cancelado
+  labels: # runs-on: ubuntu-latest  ->  esta imagem
     - "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
 cache:
-  enabled: true                  # actions/cache (ex.: ~/.platformio) sem sair do lab
+  enabled: true # actions/cache (ex.: ~/.platformio) sem sair do lab
 container:
-  privileged: false              # os jobs NÃO são privilegiados (o runner é)
+  privileged: false # os jobs NÃO são privilegiados (o runner é)
   options: "--memory=3g --cpus=2"
-  valid_volumes: []              # nenhum job monta pasta do servidor
+  valid_volumes: [] # nenhum job monta pasta do servidor
 ```
 
 O rótulo tem duas partes. O **nome** (`ubuntu-latest`) é o que o Gitea compara com o `runs-on:`
@@ -205,19 +205,28 @@ do job. O resto (`docker://...`) só o runner usa: é a imagem do container. Em
    acrescentar a primeira URL de push, o `git` deixa de usar a URL normal para enviar, por isso
    a do GitHub entra de novo:
 
-   ```bash
-   git remote set-url --add --push origin https://github.com/<org>/lab11-grupo-x.git
-   git remote set-url --add --push origin http://<IP do LAB IoT>/git/lab11-grupo-x/camara-ci.git
-   git remote -v
-   ```
-
-   ```text title="Saída esperada"
-   lab     http://192.168.0.10/git/lab11-grupo-x/camara-ci.git (fetch)
-   lab     http://192.168.0.10/git/lab11-grupo-x/camara-ci.git (push)
-   origin  https://github.com/<org>/lab11-grupo-x.git (fetch)
-   origin  https://github.com/<org>/lab11-grupo-x.git (push)
-   origin  http://192.168.0.10/git/lab11-grupo-x/camara-ci.git (push)
-   ```
+<GroupCommands
+  commands={[
+    {
+      title: "1. Configurar múltiplos remotos no Git",
+      codeTitle: "Terminal",
+      language: "bash",
+      command: `git remote set-url --add --push origin https://github.com/<org>/lab11-grupo-{group}.git
+git remote set-url --add --push origin http://<IP do LAB IoT>/git/lab11-grupo-{group}/camara-ci.git
+git remote -v`,
+    },
+    {
+      title: "2. Saída Esperada",
+      codeTitle: "Saída esperada",
+      language: "text",
+      command: `lab     http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (fetch)
+lab     http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (push)
+origin  https://github.com/<org>/lab11-grupo-{group}.git (fetch)
+origin  https://github.com/<org>/lab11-grupo-{group}.git (push)
+origin  http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (push)`,
+    },
+  ]}
+/>
 
 ### 1.3 O workflow do Lab 10 no runner do lab
 
@@ -238,7 +247,12 @@ GitHub"** e o link tem uma barra a mais (`/git//lab11-grupo-x/...`). Anote: a T3
 
 <FileTree
   root="lab11-grupo-X"
-  files={["evidencias/t1-remotos.txt c", "evidencias/t1-log-runner.txt c", "evidencias/t1-gitea-actions.png c", "README.md u"]}
+  files={[
+    "evidencias/t1-remotos.txt c",
+    "evidencias/t1-log-runner.txt c",
+    "evidencias/t1-gitea-actions.png c",
+    "README.md u",
+  ]}
 />
 
 Salve `git remote -v` em `evidencias/t1-remotos.txt` e uma captura da execução no Gitea em
@@ -260,20 +274,20 @@ pergunta de segurança é: o que esse código alcança? Em vez de confiar na des
 `ci/diagnostico.yml` imprime quem o job é e testa, um a um, o que ele alcança:
 
 ```yaml title="ci/diagnostico.yml (passo central)"
-      - name: O que o job alcança
-        env:
-          NTFY_URL: ${{ vars.NTFY_URL }}
-        run: |
-          teste() { if bash -c "$2" >/dev/null 2>&1; then echo "✅ $1"; else echo "❌ $1"; fi; }
-          host="${NTFY_URL#*://}"; host="${host%%/*}"; host="${host%%:*}"
-          teste "nome 'gitea' (rede interna do lab)"      "getent hosts gitea"
-          teste "nome 'mosquitto' (rede interna do lab)"  "getent hosts mosquitto"
-          teste "Docker do servidor (/var/run/docker.sock)" "test -S /var/run/docker.sock"
-          teste "container privilegiado (mount tmpfs)"   "mount -t tmpfs none /mnt"
-          teste "Gitea pela URL oficial"                 "curl -fsS -m 5 ${GITHUB_SERVER_URL%/}/api/healthz"
-          teste "ntfy pela URL oficial"                  "curl -fsS -m 5 ${NTFY_URL%/}/v1/health"
-          teste "broker MQTT em ${host}:1883"            "timeout 3 bash -c '</dev/tcp/${host}/1883'"
-          teste "internet (github.com)"                  "curl -fsS -m 5 -o /dev/null https://github.com"
+- name: O que o job alcança
+  env:
+    NTFY_URL: ${{ vars.NTFY_URL }}
+  run: |
+    teste() { if bash -c "$2" >/dev/null 2>&1; then echo "✅ $1"; else echo "❌ $1"; fi; }
+    host="${NTFY_URL#*://}"; host="${host%%/*}"; host="${host%%:*}"
+    teste "nome 'gitea' (rede interna do lab)"      "getent hosts gitea"
+    teste "nome 'mosquitto' (rede interna do lab)"  "getent hosts mosquitto"
+    teste "Docker do servidor (/var/run/docker.sock)" "test -S /var/run/docker.sock"
+    teste "container privilegiado (mount tmpfs)"   "mount -t tmpfs none /mnt"
+    teste "Gitea pela URL oficial"                 "curl -fsS -m 5 ${GITHUB_SERVER_URL%/}/api/healthz"
+    teste "ntfy pela URL oficial"                  "curl -fsS -m 5 ${NTFY_URL%/}/v1/health"
+    teste "broker MQTT em ${host}:1883"            "timeout 3 bash -c '</dev/tcp/${host}/1883'"
+    teste "internet (github.com)"                  "curl -fsS -m 5 -o /dev/null https://github.com"
 ```
 
 O último passo mostra o que acontece com um secret no log: o valor inteiro vira `***`, mas o
@@ -311,7 +325,13 @@ que um workflow de qualquer grupo conseguiria fazer com esse socket?
 
 <FileTree
   root="lab11-grupo-X"
-  files={[".gitea/workflows/diagnostico.yml c", ".github/workflows/diagnostico.yml c", "evidencias/t2-diagnostico-gitea.txt c", "evidencias/t2-diagnostico-github.txt c", "README.md u"]}
+  files={[
+    ".gitea/workflows/diagnostico.yml c",
+    ".github/workflows/diagnostico.yml c",
+    "evidencias/t2-diagnostico-gitea.txt c",
+    "evidencias/t2-diagnostico-github.txt c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
@@ -377,39 +397,39 @@ O `softprops/action-gh-release` fala a API **do GitHub** e não serve aqui. O
 3. escreve o link no resumo do job.
 
 ```yaml title=".gitea/workflows/ci.yml (job publicar)"
-  publicar:
-    name: Release com o firmware
-    needs: [firmware, simulacao]
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write             # o GITEA_TOKEN deste job pode criar a release
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ci
+publicar:
+  name: Release com o firmware
+  needs: [firmware, simulacao]
+  if: startsWith(github.ref, 'refs/tags/v')
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write # o GITEA_TOKEN deste job pode criar a release
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: ci
 
-      - uses: actions/setup-python@v5   # o script da release só usa a biblioteca padrão
-        with:
-          python-version: "3.12"
+    - uses: actions/setup-python@v5 # o script da release só usa a biblioteca padrão
+      with:
+        python-version: "3.12"
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: firmware
-          path: saida
+    - uses: actions/download-artifact@v4
+      with:
+        name: firmware
+        path: saida
 
-      # no lugar do softprops/action-gh-release (que fala a API do GitHub): a API do Gitea
-      - name: Cria a release e anexa o firmware (API do Gitea)
-        env:
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          API: ${{ github.api_url }}/repos/${{ github.repository }}   # api_url = <ROOT_URL>api/v1
-          TAG: ${{ github.ref_name }}
-          SERVER_URL: ${{ github.server_url }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          export RUN_URL="${SERVER_URL%/}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}"
-          python3 ci/release_gitea.py "$TAG" \
-            saida/firmware.bin saida/bootloader.bin saida/partitions.bin saida/firmware.elf
+    # no lugar do softprops/action-gh-release (que fala a API do GitHub): a API do Gitea
+    - name: Cria a release e anexa o firmware (API do Gitea)
+      env:
+        GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        API: ${{ github.api_url }}/repos/${{ github.repository }} # api_url = <ROOT_URL>api/v1
+        TAG: ${{ github.ref_name }}
+        SERVER_URL: ${{ github.server_url }}
+        RUN_ID: ${{ github.run_id }}
+      run: |
+        export RUN_URL="${SERVER_URL%/}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}"
+        python3 ci/release_gitea.py "$TAG" \
+          saida/firmware.bin saida/bootloader.bin saida/partitions.bin saida/firmware.elf
 ```
 
 ### 3.3 Os secrets
@@ -426,12 +446,16 @@ git add .gitea/workflows/ci.yml && git commit -m "T3: pipeline no Gitea Actions"
 
 No Gitea, a execução precisa ficar **verde** em todos os jobs (`publicar` aparece como pulado:
 não é tag). No celular, a notificação agora abre a execução **no Gitea**. Na lista de commits,
-o commit ganha o ✓ (é um *status* por job: `CI / Testes da lógica (pio test -e native) (push)`).
+o commit ganha o ✓ (é um _status_ por job: `CI / Testes da lógica (pio test -e native) (push)`).
 No GitHub, o `.github/workflows/ci.yml` continua rodando igual.
 
 <FileTree
   root="lab11-grupo-X"
-  files={[".gitea/workflows/ci.yml c", "evidencias/t3-gitea-actions.png c", "README.md u"]}
+  files={[
+    ".gitea/workflows/ci.yml c",
+    "evidencias/t3-gitea-actions.png c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
@@ -480,7 +504,14 @@ cache é `pio-Linux-6.2.0-<hash do platformio.ini>`, a **mesma** em todos os gru
 fosse um só para o runner inteiro, o que um grupo poderia fazer com o firmware de outro?
 :::
 
-<FileTree root="lab11-grupo-X" files={[".gitea/workflows/ci.yml u", "evidencias/t4-duracoes.md c", "README.md u"]} />
+<FileTree
+  root="lab11-grupo-X"
+  files={[
+    ".gitea/workflows/ci.yml u",
+    "evidencias/t4-duracoes.md c",
+    "README.md u",
+  ]}
+/>
 
 <CommitPoint
   id="t4"
@@ -514,6 +545,7 @@ recebe os secrets da organização? E um PR vindo de um **fork**?
    ```
 
    Copie do log do job `publicar` o erro para `evidencias/t5-403.txt`.
+
 2. **A release**: devolva o `permissions:`, faça commit e crie a tag `v1.1.0`. Com as duas URLs
    de push, ela vai para os dois. O GitHub publica pelo `.github/workflows/ci.yml`, e o Gitea
    pelo `.gitea/workflows/ci.yml`:
@@ -537,7 +569,12 @@ que ele precisa.
 
 <FileTree
   root="lab11-grupo-X"
-  files={[".gitea/workflows/ci.yml u", "evidencias/t5-403.txt c", "evidencias/t5-release.png c", "README.md u"]}
+  files={[
+    ".gitea/workflows/ci.yml u",
+    "evidencias/t5-403.txt c",
+    "evidencias/t5-release.png c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
@@ -575,6 +612,7 @@ nos testes.
 
    No Gitea: **Novo pull request** (`quebra` → `main`). Quando o job de testes ficar vermelho,
    o botão de merge fica **bloqueado**. Capture a tela em `evidencias/t6-pr-bloqueado.png`.
+
 3. **A notificação**: o ❌ chega no tópico `lab11-x-ci`, com o botão **Abrir no Gitea**.
    Capture em `evidencias/t6-ntfy.png`.
 4. **Corrija e junte**: desfaça a mudança no ramo `quebra`, envie, espere ficar verde e faça o
@@ -599,7 +637,11 @@ nos testes.
 
 <FileTree
   root="lab11-grupo-X"
-  files={["evidencias/t6-pr-bloqueado.png c", "evidencias/t6-ntfy.png c", "README.md u"]}
+  files={[
+    "evidencias/t6-pr-bloqueado.png c",
+    "evidencias/t6-ntfy.png c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
