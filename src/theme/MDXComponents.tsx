@@ -10,6 +10,7 @@ import LabFromTemplate from "@site/src/components/LabFromTemplate";
 import CommitPoint from "@site/src/components/shared/CommitPoint";
 import FileTree from "@site/src/components/shared/FileTree";
 import SimpleFileTree from "@site/src/components/shared/SimpleFileTree";
+import GroupCommands from "@site/src/components/shared/GroupCommands";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import {
@@ -36,4 +37,5 @@ export default {
     LabSetup,
     LabLogout,
     DevTools,
+    GroupCommands,
 };
