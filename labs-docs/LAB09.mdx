@@ -293,13 +293,22 @@ O driver S7 do FUXA (snap7) **não resolve nomes de host**: com `lab08-a-camara`
 IP, a conexão fica vermelha, e o log do FUXA mostra `TCP : Invalid address`. Descubra o IP
 pelo próprio DNS do Docker, de dentro do contêiner do FUXA:
 
-```powershell title="Terminal"
-docker exec fuxa getent hosts lab08-a-camara
-```
-
-```text title="Saída (exemplo)"
-172.18.0.5      lab08-a-camara
-```
+<GroupCommands
+  commands={[
+    {
+      title: "1. Verificar resolução de nome no FUXA",
+      codeTitle: "Terminal",
+      language: "powershell",
+      command: `docker exec fuxa getent hosts lab08-{group}-camara`,
+    },
+    {
+      title: "2. Saída esperada",
+      codeTitle: "Saída (exemplo)",
+      language: "text",
+      command: `172.18.0.5      lab08-{group}-camara`,
+    },
+  ]}
+/>
 
 As tags usam a sintaxe do **Step 7**, não a do nodes7 do Lab 08:
 
@@ -589,134 +598,141 @@ sequenceDiagram
 
 ### Requisitos
 
-1. **Node-RED** (importe o fluxo do Lab 08 e chame a aba de **Lab 09**)
-   - O PI passa a obedecer **ao modo**, venha de onde vier: troque a primeira linha útil da
-     function "PI".
+1.  **Node-RED** (importe o fluxo do Lab 08 e chame a aba de **Lab 09**)
+    - O PI passa a obedecer **ao modo**, venha de onde vier: troque a primeira linha útil da
+      function "PI".
 
-     ```js title="function: PI — início (o resto é igual ao Lab 08)"
-     // Lab 09: atua sempre que a câmara está em modo 0 (MANUAL), não importa quem escolheu
-     // o modo (FUXA, dashboard do Node-RED, Modbus, S7...). Fora do modo 0 fica parado.
-     const p = msg.payload;
-     if (p.modo !== 0) {
-       context.set("I", 0);
-       context.set("t0", null);
-       node.status({
-         fill: "grey",
-         shape: "ring",
-         text: `parado (modo ${p.modo})`,
-       });
-       return [null, null];
-     }
-     ```
+      ```js title="function: PI — início (o resto é igual ao Lab 08)"
+      // Lab 09: atua sempre que a câmara está em modo 0 (MANUAL), não importa quem escolheu
+      // o modo (FUXA, dashboard do Node-RED, Modbus, S7...). Fora do modo 0 fica parado.
+      const p = msg.payload;
+      if (p.modo !== 0) {
+        context.set("I", 0);
+        context.set("t0", null);
+        node.status({
+          fill: "grey",
+          shape: "ring",
+          text: `parado (modo ${p.modo})`,
+        });
+        return [null, null];
+      }
+      ```
 
-   - A **2ª saída** do PI (diagnóstico) também vai para uma function e um **mqtt out**
-     `elt85b/lab09/grupo-a/scada/pi`:
+    - A **2ª saída** do PI (diagnóstico) também vai para uma function e um **mqtt out**
+      `elt85b/lab09/grupo-a/scada/pi`:
 
-     ```js title="function: estado do PI -> SCADA"
-     // Estado do PI -> FUXA. O 'seq' é o sinal de vida que o supervisor do FUXA vigia.
-     const seq = (context.get("seq") || 0) + 1;
-     context.set("seq", seq);
-     const p = msg.payload;
-     msg.payload = {
-       seq,
-       e: Number(p.e.toFixed(3)),
-       I: Number(p.I.toFixed(2)),
-       aq: p.aq,
-       ve: p.ve,
-       ts: Date.now(),
-     };
-     return msg;
-     ```
+      ```js title="function: estado do PI -> SCADA"
+      // Estado do PI -> FUXA. O 'seq' é o sinal de vida que o supervisor do FUXA vigia.
+      const seq = (context.get("seq") || 0) + 1;
+      context.set("seq", seq);
+      const p = msg.payload;
+      msg.payload = {
+        seq,
+        e: Number(p.e.toFixed(3)),
+        I: Number(p.I.toFixed(2)),
+        aq: p.aq,
+        ve: p.ve,
+        ts: Date.now(),
+      };
+      return msg;
+      ```
 
-2. **FUXA: tags novas**
-   - Na `Broker MQTT`: tópico `elt85b/lab09/grupo-a/scada/pi`, **json**, chaves `seq` (nome
-     `pi seq`), `e` (`pi erro`), `I` (`pi integral`) e `aq` (`pi aquecedor`).
-   - Na conexão **FUXA Server** (o bloco azul no topo de _Connections_), tags do tipo
-     `number`: `pi_externo_ok` (valor inicial 1), `pi_externo_idade_s` e `fallbacks`
-     (iniciais 0). Ligue o DAQ em `pi_externo_ok`.
+2.  **FUXA: tags novas**
+    - Na `Broker MQTT`: tópico `elt85b/lab09/grupo-a/scada/pi`, **json**, chaves `seq` (nome
+      `pi seq`), `e` (`pi erro`), `I` (`pi integral`) e `aq` (`pi aquecedor`).
+    - Na conexão **FUXA Server** (o bloco azul no topo de _Connections_), tags do tipo
+      `number`: `pi_externo_ok` (valor inicial 1), `pi_externo_idade_s` e `fallbacks`
+      (iniciais 0). Ligue o DAQ em `pi_externo_ok`.
 
-3. **FUXA: supervisor.** Em **Setup ▸ Scripts ▸ ＋**: nome `supervisor_pi_externo`,
-   _Execute mode_ **Server (Execute in server)** e, em _Script scheduling_, **Loop with
-   interval** de **2 s**:
+3.  **FUXA: supervisor.** Em **Setup ▸ Scripts ▸ ＋**: nome `supervisor_pi_externo`,
+    _Execute mode_ **Server (Execute in server)** e, em _Script scheduling_, **Loop with
+    interval** de **2 s**:
 
-   ```js title="script: supervisor_pi_externo"
-   // Supervisor do PI externo: roda no SERVIDOR do FUXA a cada 2 s.
-   // Se a câmara está em MANUAL (modo 0) e o Node-RED parou de publicar .../scada/pi
-   // (o seq não muda há mais de 10 s), volta ao PI interno (modo 2) e sinaliza o alarme.
-   const LIMITE_S = 10;
-   // tags pelo NOME (conexão, tag): não depende dos ids que o editor sorteia
-   const tag = (conexao, nome) => $getTagId(nome, conexao);
-   const MODO = tag("Camara OPC-UA", "modo"); // leitura do modo
-   const MODO_MB = tag("Camara Modbus", "HR1 modo"); // escrita do fallback (Modbus HR1)
-   const SEQ = tag("Broker MQTT", "pi seq"); // sinal de vida do Node-RED
-   // tags do "FUXA Server": o $getTagId não as encontra, use o id (botão de tags do editor)
-   const OK = "t_xxxxxxxx-xxxxx"; // pi_externo_ok
-   const IDADE = "t_xxxxxxxx-xxxxx"; // pi_externo_idade_s
-   const FALLBACKS = "t_xxxxxxxx-xxxxx"; // fallbacks
+    ```js title="script: supervisor_pi_externo"
+    // Supervisor do PI externo: roda no SERVIDOR do FUXA a cada 2 s.
+    // Se a câmara está em MANUAL (modo 0) e o Node-RED parou de publicar .../scada/pi
+    // (o seq não muda há mais de 10 s), volta ao PI interno (modo 2) e sinaliza o alarme.
+    const LIMITE_S = 10;
+    // tags pelo NOME (conexão, tag): não depende dos ids que o editor sorteia
+    const tag = (conexao, nome) => $getTagId(nome, conexao);
+    const MODO = tag("Camara OPC-UA", "modo"); // leitura do modo
+    const MODO_MB = tag("Camara Modbus", "HR1 modo"); // escrita do fallback (Modbus HR1)
+    const SEQ = tag("Broker MQTT", "pi seq"); // sinal de vida do Node-RED
+    // tags do "FUXA Server": o $getTagId não as encontra, use o id (botão de tags do editor)
+    const OK = "t_xxxxxxxx-xxxxx"; // pi_externo_ok
+    const IDADE = "t_xxxxxxxx-xxxxx"; // pi_externo_idade_s
+    const FALLBACKS = "t_xxxxxxxx-xxxxx"; // fallbacks
 
-   const modo = Number($getTag(MODO));
-   const seq = $getTag(SEQ);
-   const agora = Date.now();
-   const wd =
-     globalThis.wd ||
-     (globalThis.wd = { seq: seq, desde: agora, modo: modo, disparou: false });
-   // recomeça a contar quando chega seq novo OU quando o operador acabou de escolher o modo 0
-   if (seq !== wd.seq || (modo === 0 && wd.modo !== 0)) {
-     wd.seq = seq;
-     wd.desde = agora;
-     wd.disparou = false;
-   }
-   wd.modo = modo;
-   const idade = Math.round((agora - wd.desde) / 1000);
-   $setTag(IDADE, idade);
-   if (modo === 0 && idade > LIMITE_S && !wd.disparou) {
-     wd.disparou = true; // uma vez só (a leitura do modo demora um ciclo)
-     $setTag(MODO_MB, 2); // fallback: PI interno
-     $setTag(OK, 0);
-     $setTag(FALLBACKS, Number($getTag(FALLBACKS) || 0) + 1);
-     console.log(
-       "supervisor: PI externo sem resposta ha " + idade + " s -> modo 2",
-     );
-   } else if (modo === 0 && idade <= LIMITE_S) {
-     $setTag(OK, 1); // em modo 0 e o Node-RED respondendo
-   }
-   ```
+    const modo = Number($getTag(MODO));
+    const seq = $getTag(SEQ);
+    const agora = Date.now();
+    const wd =
+      globalThis.wd ||
+      (globalThis.wd = { seq: seq, desde: agora, modo: modo, disparou: false });
+    // recomeça a contar quando chega seq novo OU quando o operador acabou de escolher o modo 0
+    if (seq !== wd.seq || (modo === 0 && wd.modo !== 0)) {
+      wd.seq = seq;
+      wd.desde = agora;
+      wd.disparou = false;
+    }
+    wd.modo = modo;
+    const idade = Math.round((agora - wd.desde) / 1000);
+    $setTag(IDADE, idade);
+    if (modo === 0 && idade > LIMITE_S && !wd.disparou) {
+      wd.disparou = true; // uma vez só (a leitura do modo demora um ciclo)
+      $setTag(MODO_MB, 2); // fallback: PI interno
+      $setTag(OK, 0);
+      $setTag(FALLBACKS, Number($getTag(FALLBACKS) || 0) + 1);
+      console.log(
+        "supervisor: PI externo sem resposta ha " + idade + " s -> modo 2",
+      );
+    } else if (modo === 0 && idade <= LIMITE_S) {
+      $setTag(OK, 1); // em modo 0 e o Node-RED respondendo
+    }
+    ```
 
-   Troque os três `t_xxxxxxxx-xxxxx` pelos ids das suas tags do FUXA Server: no editor de
-   scripts, o seletor de tags insere o id. Os nomes **das conexões e das tags** usados no
-   `$getTagId` têm de ser **exatamente** os da T2.
+    Troque os três `t_xxxxxxxx-xxxxx` pelos ids das suas tags do FUXA Server: no editor de
+    scripts, o seletor de tags insere o id. Os nomes **das conexões e das tags** usados no
+    `$getTagId` têm de ser **exatamente** os da T2.
 
-4. **FUXA: alarme e tela**
-   - Alarme `Controlador externo`, tag `pi_externo_ok`, **High High** na faixa **0–0**,
-     texto "PI do Node-RED parado: supervisor voltou ao PI interno", grupo `Supervisao`,
-     _Ack by active Alarm allowed_.
-   - Painel "Supervisão do PI externo" no sinótico: LED `pi_externo_ok`, valores
-     `pi_externo_idade_s`, `pi erro`, `pi integral`, `pi aquecedor` e `fallbacks`.
+4.  **FUXA: alarme e tela**
+    - Alarme `Controlador externo`, tag `pi_externo_ok`, **High High** na faixa **0–0**,
+      texto "PI do Node-RED parado: supervisor voltou ao PI interno", grupo `Supervisao`,
+      _Ack by active Alarm allowed_.
+    - Painel "Supervisão do PI externo" no sinótico: LED `pi_externo_ok`, valores
+      `pi_externo_idade_s`, `pi erro`, `pi integral`, `pi aquecedor` e `fallbacks`.
 
-5. **Experimento** (setpoint 40 °C)
-   1. No FUXA, clique **PI Node-RED**: o painel de supervisão mostra o erro e a integral
-      mudando, e a idade fica em 0–2 s.
-   2. Pare o controlador: `docker stop node-red`. Cronometre: em cerca de 10 a 14 s, a câmara
-      volta ao **PI interno** (o botão "PI interno" acende) e entra o alarme.
-   3. `docker start node-red`, espere o Node-RED subir e clique **PI Node-RED** de novo.
+5.  **Experimento** (setpoint 40 °C)
+    1. No FUXA, clique **PI Node-RED**: o painel de supervisão mostra o erro e a integral
+       mudando, e a idade fica em 0–2 s.
+    2. Pare o controlador: `docker stop node-red`. Cronometre: em cerca de 10 a 14 s, a câmara
+       volta ao **PI interno** (o botão "PI interno" acende) e entra o alarme.
+    3. `docker start node-red`, espere o Node-RED subir e clique **PI Node-RED** de novo.
 
-6. **Evidências**
-   - `evidencias/t6-fallback.png`: o sinótico depois do fallback, com o alarme aparecendo.
-   - `evidencias/t6-log.txt`: as escritas de modo vistas pela câmara:
+6.  **Evidências**
+    - `evidencias/t6-fallback.png`: o sinótico depois do fallback, com o alarme aparecendo.
+    - `evidencias/t6-log.txt`: as escritas de modo vistas pela câmara:
 
-     ```powershell title="Terminal"
-     docker logs lab08-a-camara 2>&1 | Select-String "modo =" | Out-File -Encoding utf8 evidencias/t6-log.txt
-     ```
+      <GroupCommands
+        language="powershell"
+        commands={[
+          {
+            title: "Filtrar logs e salvar evidência",
+            codeTitle: "Terminal",
+            command: `docker logs lab08-{group}-camara 2>&1 | Select-String "modo =" | Out-File -Encoding utf8 evidencias/t6-log.txt`,
+          },
+        ]}
+      />
 
-     ```text title="evidencias/t6-log.txt (exemplo)"
-     [14:25:49] [cmd] opcua: modo = 0
-     [14:26:32] [cmd] modbus: modo = 2
-     [14:26:57] [cmd] opcua: modo = 0
-     ```
+           ```text title="evidencias/t6-log.txt (exemplo)"
+           [14:25:49] [cmd] opcua: modo = 0
+           [14:26:32] [cmd] modbus: modo = 2
+           [14:26:57] [cmd] opcua: modo = 0
+           ```
 
-     `opcua: modo = 0` é o operador (botão do FUXA), `modbus: modo = 2` é o **supervisor**.
+           `opcua: modo = 0` é o operador (botão do FUXA), `modbus: modo = 2` é o **supervisor**.
 
-   - `nodered/flows-lab09.json` (fluxo exportado) e `fuxa/projeto-lab09.json` (de novo).
+    - `nodered/flows-lab09.json` (fluxo exportado) e `fuxa/projeto-lab09.json` (de novo).
 
 :::tip[Preveja antes de rodar]
 **P4:** agora há **dois** programas que escrevem o modo: o FUXA (operador e supervisor) e o
