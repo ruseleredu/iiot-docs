@@ -66,6 +66,56 @@ Quando você conclui uma tarefa, encontra um cartão como este (numeração e po
   id="exemplo"
 />
 
+## Combined Example (Bash Command + Text Log Output)
+
+<GroupCommands
+  commands={[
+    {
+      title: "1. Executar Comando de Inscrição",
+      codeTitle: "Terminal 1 — escutar grupo-{group}",
+      language: "bash",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}/#' -v | tee evidencias/t3-mqtt.txt`,
+    },
+    {
+      title: "2. Resultado Esporado em evidencias/t3-mqtt.txt",
+      codeTitle: "evidencias/t3-mqtt.txt",
+      language: "text",
+      command: `{course}/lab06/grupo-{group}/status online
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288,"intervalo_s":5.0}
+{course}/lab06/grupo-{group}/oled {"linhas":["LAB06 grupo {group}","T: 24.5 C","UR: 55.0 %","seq 3 | 5 s","WiFi ok | MQTT ok"]}
+{course}/lab06/grupo-{group}/cmd/intervalo 10
+{course}/lab06/grupo-{group}/oled {"linhas":["LAB06 grupo {group}","T: 24.5 C","UR: 55.0 %","seq 3 | 10 s","WiFi ok | MQTT ok"]}
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":4,"t":24.5,"h":55.0,"uptime_ms":26290,"intervalo_s":10.0}
+{course}/lab06/grupo-{group}/cmd/intervalo 1
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":5,"t":24.5,"h":55.0,"uptime_ms":36290,"intervalo_s":10.0}`,
+    },
+  ]}
+/>
+
+<GroupCommands
+  language="python"
+  commands={[
+    {
+      title: "Script Paho-MQTT para {course} - Grupo {GROUP}",
+      codeTitle: "mqtt_client_{group}.py",
+      command: `import paho.mqtt.client as mqtt
+
+broker = "broker.hivemq.com"
+topic = "{course}/lab06/grupo-{group}/#"
+
+def on_message(client, userdata, msg):
+print(f"[{group.upper()}] {msg.topic}: {msg.payload.decode()}")
+
+client = mqtt.Client(client_id="{course}-grupo-{group}")
+client.on_message = on_message
+client.connect(broker, 1883)
+client.subscribe(topic)
+client.loop_forever()`
+}
+]}
+/>
+
 Clique em **Copiar** no bloco de código do cartão e cole o comando no terminal, dentro da pasta do seu repositório. Feito isso, a tarefa está entregue.
 
 ### Passo a passo
