@@ -1,0 +1,36 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT (TCP)
+      - "9001:9001" # MQTT over WebSocket
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  mqttx-web:
+    image: emqx/mqttx-web:latest
+    container_name: mqttx-web
+    restart: unless-stopped
+    ports:
+      - "8080:80" # MQTTX Web UI → http://localhost:8080
+
+  mqtt-explorer:
+    image: ghcr.io/thomasnordquist/mqtt-explorer:latest
+    container_name: mqtt-explorer
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # MQTT Explorer → http://localhost:3000
+    environment:
+      #- MQTT_EXPLORER_USERNAME=admin
+      #- MQTT_EXPLORER_PASSWORD=admin123
+      # Uncomment the line below to disable login (only use behind a secure proxy!)
+      - MQTT_EXPLORER_SKIP_AUTH=true
+    volumes:
+      - mqtt-explorer-data:/app/data
+
+volumes:
+  mqtt-explorer-data:
