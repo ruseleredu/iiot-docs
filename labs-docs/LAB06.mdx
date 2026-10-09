@@ -620,32 +620,47 @@ void loop() {
 
 Num terminal, assine **todos** os tópicos do grupo. Num segundo terminal, mande o comando:
 
-```bash title="Terminal 1 — assinar"
-docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
-  -t 'elt85b/lab06/grupo-a/#' -v | tee evidencias/t3-mqtt.txt
-```
-
-```bash title="Terminal 2 — comandar"
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \
-  -t 'elt85b/lab06/grupo-a/cmd/intervalo' -m 10
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \
-  -t 'elt85b/lab06/grupo-a/cmd/intervalo' -m 1      # fora da faixa: deve ser ignorado
-```
+<GroupCommands
+  commands={[
+    {
+      codeTitle: "Terminal 1 — Assinar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+-t '{course}/lab06/grupo-{group}/#' -v | tee evidencias/t3-mqtt.txt`,
+    },
+    {
+      codeTitle: "Terminal 2 — comandar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}/cmd/intervalo' -m 10`,
+    },
+    {
+      codeTitle: "Terminal 2 — comandar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}/cmd/intervalo' -m 1      # fora da faixa: deve ser ignorado`,
+    },
+  ]}
+/>
 
 **Saída esperada** (trecho; encerre o Terminal 1 com Ctrl+C depois de umas 8 linhas):
 
 <FileTree root="lab06-grupo-X" files={["evidencias/t3-mqtt.txt c"]} />
 
-```text title="evidencias/t3-mqtt.txt"
-elt85b/lab06/grupo-a/status online
-elt85b/lab06/grupo-a/dht {"grupo":"a","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288,"intervalo_s":5.0}
-elt85b/lab06/grupo-a/oled {"linhas":["LAB06 grupo a","T: 24.5 C","UR: 55.0 %","seq 3 | 5 s","WiFi ok | MQTT ok"]}
-elt85b/lab06/grupo-a/cmd/intervalo 10
-elt85b/lab06/grupo-a/oled {"linhas":["LAB06 grupo a","T: 24.5 C","UR: 55.0 %","seq 3 | 10 s","WiFi ok | MQTT ok"]}
-elt85b/lab06/grupo-a/dht {"grupo":"a","seq":4,"t":24.5,"h":55.0,"uptime_ms":26290,"intervalo_s":10.0}
-elt85b/lab06/grupo-a/cmd/intervalo 1
-elt85b/lab06/grupo-a/dht {"grupo":"a","seq":5,"t":24.5,"h":55.0,"uptime_ms":36290,"intervalo_s":10.0}
-```
+<GroupCommands
+  language="text"
+  commands={[
+    {
+      title: "Exemplo de Evidência de Saída",
+      codeTitle: "evidencias/t3-mqtt.txt",
+      command: `{course}/lab06/grupo-{group}/status online
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288,"intervalo_s":5.0}
+{course}/lab06/grupo-{group}/oled {"linhas":["LAB06 grupo {group}","T: 24.5 C","UR: 55.0 %","seq 3 | 5 s","WiFi ok | MQTT ok"]}
+{course}/lab06/grupo-{group}/cmd/intervalo 10
+{course}/lab06/grupo-{group}/oled {"linhas":["LAB06 grupo {group}","T: 24.5 C","UR: 55.0 %","seq 3 | 10 s","WiFi ok | MQTT ok"]}
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":4,"t":24.5,"h":55.0,"uptime_ms":26290,"intervalo_s":10.0}
+{course}/lab06/grupo-{group}/cmd/intervalo 1
+{course}/lab06/grupo-{group}/dht {"grupo":"{group}","seq":5,"t":24.5,"h":55.0,"uptime_ms":36290,"intervalo_s":10.0}`,
+    },
+  ]}
+/>
 
 No monitor serial do Wokwi aparecem `[CMD] novo intervalo: 10.0 s` e, depois,
 `[CMD] intervalo fora de 2..60 s - ignorado`.
@@ -825,7 +840,7 @@ leituras"** (mostrando a troca de 5 s para 10 s) para `evidencias/t4-sqlite.txt`
 
 <FileTree
   root="lab06-grupo-X"
-  files={["src/main.cpp u", "evidencias/t4-sqlite.txt c"]}
+  files={["nodered/flows-lab06.json c", "evidencias/t4-sqlite.txt c"]}
 />
 
 <CommitPoint
@@ -1021,10 +1036,15 @@ Como o MQTT/JSON é texto, os bytes viajam em **base64**: 3 bytes viram 4 caract
    - `evidencias/t6-oled.png`: Wokwi e dashboard **lado a lado**, mostrando a mesma tela.
    - `evidencias/t6-fb.txt`: tamanho de **uma** mensagem do framebuffer, pelo terminal:
 
-```bash title="Terminal"
-docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
-  -t 'elt85b/lab06/grupo-a/oled/fb' -C 1 | wc -c | tee evidencias/t6-fb.txt
-```
+<GroupCommands
+  commands={[
+    {
+      codeTitle: "Terminal — Assinar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}/oled/fb' -C 1 | wc -c | tee evidencias/t6-fb.txt`,
+    },
+  ]}
+/>
 
 ```text title="evidencias/t6-fb.txt"
 1369
