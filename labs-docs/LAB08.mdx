@@ -185,35 +185,51 @@ flowchart LR
 
    <FileTree root="lab08-grupo-X" files={["camara-sim/.env c"]} />
 
-   ```ini title="camara-sim/.env"
-   GRUPO=lab08-a
-   MQTT_BASE=elt85b/lab08/grupo-a/camara
-   LAB_REDE=esp32-iot_iot-network
-   SIM_SPEED=5
+ <GroupCommands
+  language="ini"
+  commands={[
+    {
+      title: "Configurasion ti File .env",
+      codeTitle: "camara-sim/.env",
+      command: `GRUPO=lab08-{group}
+MQTT_BASE={course}/lab08/grupo-{group}/camara
+LAB_REDE=esp32-iot_iot-network
+SIM_SPEED=5
 
-   PORTA_MODBUS_TCP=502
-   PORTA_MODBUS_RTU=5021
-   PORTA_S7=102
-   PORTA_OPCUA=4840
-   ```
+PORTA_MODBUS_TCP=502
+PORTA_MODBUS_RTU=5021
+PORTA_S7=102
+PORTA_OPCUA=4840`
+}
+]}
+/>
 
 3. Suba o simulador **com o complemento de rede** (`docker-compose.lab.yml`), que o liga à
    rede do stack e aponta o MQTT para `mosquitto`:
 
-   ```powershell title="Terminal (pasta camara-sim)"
-   docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
-   docker logs -f lab08-a-camara
-   ```
-
-   ```text title="Saída esperada"
-   [planta] câmara climática simulada do lab08-a, speed=5.0x
-   [s7] servidor na porta 102 (DB1, I, Q, M)
-   [modbus] TCP em 0.0.0.0:502 (unit 1)
-   [modbus] RTU sobre TCP em 0.0.0.0:5021
-   [opcua] opc.tcp://<host>:4840/  (escutando em 0.0.0.0)  'urn:utfpr:camara-climatica' = ns=2
-   [mqtt] conectando a mosquitto:1883, base 'elt85b/lab08/grupo-a/camara'
-   [mqtt] conectado; assinando elt85b/lab08/grupo-a/camara/cmd e elt85b/lab08/grupo-a/camara/cmd/+
-   ```
+<GroupCommands
+  commands={[
+    {
+      title: "1. Iniciar containers e acompanhar logs",
+      codeTitle: "Terminal (pasta camara-sim)",
+      language: "powershell",
+      command: `docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
+docker logs -f lab08-{group}-camara`,
+    },
+    {
+      title: "2. Saída Esperada",
+      codeTitle: "Saída esperada",
+      language: "text",
+      command: `[planta] câmara climática simulada do lab08-{group}, speed=5.0x
+[s7] servidor na porta 102 (DB1, I, Q, M)
+[modbus] TCP em 0.0.0.0:502 (unit 1)
+[modbus] RTU sobre TCP em 0.0.0.0:5021
+[opcua] opc.tcp://<host>:4840/  (escutando em 0.0.0.0)  'urn:utfpr:camara-climatica' = ns=2
+[mqtt] conectando a mosquitto:1883, base '{course}/lab08/grupo-{group}/camara'
+[mqtt] conectado; assinando {course}/lab08/grupo-{group}/camara/cmd e {course}/lab08/grupo-{group}/camara/cmd/+`,
+    },
+  ]}
+/>
 
 :::warning[Porta ocupada?]
 Se o `up` reclamar de _port is already allocated_, outra coisa no PC já usa a porta. O caso
@@ -227,9 +243,16 @@ e 102, porque o mapeamento só vale para quem acessa de fora (o seu PC).
 O `testar_clientes.py` **escreve** o setpoint por um protocolo e **lê** pelos outros. Rode-o
 **dentro** do contêiner, onde ele já conhece o tópico base (`MQTT_BASE`):
 
-```powershell title="Terminal"
-docker exec lab08-a-camara python testar_clientes.py --mqtt-host mosquitto
-```
+<GroupCommands
+  language="powershell"
+  commands={[
+    {
+      title: "Executar testes de clientes no container",
+      codeTitle: "Terminal",
+      command: `docker exec lab08-{group}-camara python testar_clientes.py --mqtt-host mosquitto`,
+    },
+  ]}
+/>
 
 ```text title="evidencias/t1-testar.txt (exemplo)"
 MQTT escreve SP=36.0         {'temp': 39.9, 'umid': 29.5, 'setpoint': 36.0, 'estado_txt': 'RESFRIANDO', 'aquecedor_pwm': 44.0}
@@ -250,6 +273,17 @@ Salve a saída em `evidencias/t1-testar.txt`:
 ```powershell title="Terminal"
 docker exec lab08-a-camara python testar_clientes.py --mqtt-host mosquitto | Out-File -Encoding utf8 ..\evidencias\t1-testar.txt
 ```
+
+<GroupCommands
+  language="powershell"
+  commands={[
+    {
+      title: "Executar testes de clientes no container",
+      codeTitle: "Terminal",
+      command: `docker exec lab08-{group}-camara python testar_clientes.py --mqtt-host mosquitto | Out-File -Encoding utf8 ..\evidencias\t1-testar.txt`,
+    },
+  ]}
+/>
 
 :::tip[Sem Docker?]
 O simulador também roda direto no Python (veja o `camara-sim/README.md`, forma A). Nesse caso,
