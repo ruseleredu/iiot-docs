@@ -40,11 +40,11 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ol>
             <p>Verificação rápida de versão instalada:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp;&amp; gh --version &amp;&amp; code -v &amp;&amp; pio --version &amp;&amp; wokwi-cli -V &amp;&amp; wsl --version &amp;&amp; docker --version
+                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; docker --version &amp; mqtt-cli -V
             </ThemeCodeBlock>
             <p>Verificação rápida de autenticação:</p>
             <ThemeCodeBlock language="bash">
-                git config --get-regexp ^user\. &amp;&amp; gh auth status &amp;&amp; code --list-extensions --profile "ESP32IO"
+                git config --get-regexp ^user\. &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
             </ThemeCodeBlock>
         </Admonition>
     );
