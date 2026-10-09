@@ -3,10 +3,16 @@ import React, { useState } from 'react';
 export type ActionType = 'create' | 'read' | 'update' | 'delete' | 'professor' | 'notas' | 'generated';
 
 export interface FileTreeProps {
+    /** Título do grupo/detalhes */
+    title?: string;
     /** Nome da pasta raiz principal */
     root?: string;
     /** Array de caminhos relativos com ações opcionais. Ex: ["wokwi.toml u", ".github/workflows/grade.yml d"] */
     files: string[];
+    /** Se deve envolver em uma tag <details> */
+    details?: boolean;
+    /** Se o <details> deve iniciar aberto */
+    defaultOpen?: boolean;
 }
 
 interface TreeNode {
@@ -165,7 +171,13 @@ function RenderBranch({ nodes, copiedPath, onCopy }: { nodes: TreeNode[]; copied
     );
 }
 
-export default function FileTree({ root = '', files }: FileTreeProps): React.JSX.Element {
+export default function FileTree({
+    title,
+    root = '',
+    files,
+    details = false,
+    defaultOpen = true
+}: FileTreeProps): React.JSX.Element {
     const [copiedPath, setCopiedPath] = useState<string | null>(null);
     const treeRoot = buildTree(files);
     const displayNodes = Object.values(treeRoot.children);
@@ -176,16 +188,21 @@ export default function FileTree({ root = '', files }: FileTreeProps): React.JSX
         setTimeout(() => setCopiedPath(null), 2000);
     };
 
-    return (
+    const content = (
         <div style={{
-            margin: '1rem 0',
+            margin: details ? 0 : '1rem 0',
             padding: '1rem',
             borderRadius: 'var(--ifm-global-radius)',
-            border: '1px solid var(--ifm-color-emphasis-300)',
+            border: details ? 'none' : '1px solid var(--ifm-color-emphasis-300)',
             backgroundColor: 'var(--ifm-background-surface-color)',
             fontFamily: 'var(--ifm-font-family-monospace)',
             fontSize: '0.9rem'
         }}>
+            {!details && title && (
+                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    {title}
+                </div>
+            )}
             {root && (
                 <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
                     📂 {root}/
@@ -194,4 +211,27 @@ export default function FileTree({ root = '', files }: FileTreeProps): React.JSX
             <RenderBranch nodes={displayNodes} copiedPath={copiedPath} onCopy={handleCopy} />
         </div>
     );
+
+    if (details) {
+        return (
+            <details open={defaultOpen} style={{
+                marginBottom: '1rem',
+                padding: '1rem',
+                borderRadius: 'var(--ifm-global-radius)',
+                border: '1px solid var(--ifm-color-emphasis-300)',
+                backgroundColor: 'var(--ifm-background-surface-color)'
+            }}>
+                {title && (
+                    <summary style={{ cursor: 'pointer', fontWeight: 'bold', outline: 'none' }}>
+                        {title}
+                    </summary>
+                )}
+                <div style={{ marginTop: title ? '0.75rem' : 0 }}>
+                    {content}
+                </div>
+            </details>
+        );
+    }
+
+    return content;
 }
