@@ -378,6 +378,8 @@ Anote as previsões e o que observou no `README.md`.
 **Evidência:** salve o serial girando o potenciômetro de um extremo ao outro (pelo menos 5
 linhas `[ADC]`) em `evidencias/t2-serial.txt`.
 
+<FileTree root="lab07-grupo-X" files={["evidencias/t2-serial.txt c"]} />
+
 <CommitPoint
   id="t2"
   task="Leitura do potenciometro com o ADC"
@@ -512,6 +514,8 @@ um relé de estado sólido a 25 kHz? Qual a **maior resolução** possível a 25
 
 **Evidência:** captura do PulseView ou do Surfer com os dois canais e as medições, em
 `evidencias/t3-pwm.png`.
+
+<FileTree root="lab07-grupo-X" files={["evidencias/t3-pwm.png c"]} />
 
 <CommitPoint
   id="t3"
@@ -1059,37 +1063,52 @@ void loop() {
 
 ### 4.2 Testando pelo terminal
 
-```bash title="Terminal 1 — assinar (sem o framebuffer)"
-docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
-  -t 'elt85b/lab07/grupo-a/adc' -t 'elt85b/lab07/grupo-a/pwm' \
-  -t 'elt85b/lab07/grupo-a/cmd/#' -v | tee evidencias/t4-mqtt.txt
-```
-
-```bash title="Terminal 2 — comandar"
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/modo -m remoto
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/aquecedor -m 30
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/ventilador -m 80
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/aquecedor -m 150   # fora da faixa
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/modo -m turbo      # modo inválido
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t elt85b/lab07/grupo-a/cmd/modo -m pot
-```
+<GroupCommands
+  language="bash"
+  commands={[
+    {
+      title: "1. Assinar tópicos (sem o framebuffer)",
+      codeTitle: "Terminal 1 — assinar (sem o framebuffer)",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+  -t '{course}/lab07/grupo-{group}/adc' -t '{course}/lab07/grupo-{group}/pwm' \\
+  -t '{course}/lab07/grupo-{group}/cmd/#' -v | tee evidencias/t4-mqtt.txt`,
+    },
+    {
+      title: "2. Comandar via MQTT",
+      codeTitle: "Terminal 2 — comandar",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m remoto
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/aquecedor -m 30
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/ventilador -m 80
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/aquecedor -m 150   # fora da faixa
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m turbo      # modo inválido
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m pot`,
+    },
+  ]}
+/>
 
 **Saída esperada** (gire o potenciômetro antes dos comandos):
 
-```text title="evidencias/t4-mqtt.txt"
-elt85b/lab07/grupo-a/adc {"raw":3000,"mv":2420,"sp":45.5}
-elt85b/lab07/grupo-a/pwm {"modo":"pot","estado":"MANUAL","aq":73,"ve":73,"aq_duty":186,"ve_duty":186,"sp":45.5,"t":24.5}
-elt85b/lab07/grupo-a/cmd/modo remoto
-elt85b/lab07/grupo-a/pwm {"modo":"remoto","estado":"REMOTO","aq":0,"ve":0,"aq_duty":0,"ve_duty":0,"sp":45.5,"t":24.5}
-elt85b/lab07/grupo-a/cmd/aquecedor 30
-elt85b/lab07/grupo-a/pwm {"modo":"remoto","estado":"REMOTO","aq":30,"ve":0,"aq_duty":77,"ve_duty":0,"sp":45.5,"t":24.5}
-elt85b/lab07/grupo-a/cmd/ventilador 80
-elt85b/lab07/grupo-a/pwm {"modo":"remoto","estado":"REMOTO","aq":30,"ve":80,"aq_duty":77,"ve_duty":204,"sp":45.5,"t":24.5}
-elt85b/lab07/grupo-a/cmd/aquecedor 150
-elt85b/lab07/grupo-a/cmd/modo turbo
-elt85b/lab07/grupo-a/cmd/modo pot
-elt85b/lab07/grupo-a/pwm {"modo":"pot","estado":"MANUAL","aq":73,"ve":73,"aq_duty":186,"ve_duty":186,"sp":45.5,"t":24.5}
-```
+<GroupCommands
+  language="text"
+  commands={[
+    {
+      title: "Exemplo de Evidência de Saída",
+      codeTitle: "evidencias/t4-mqtt.txt",
+      command: `{course}/lab07/grupo-{group}/adc {"raw":3000,"mv":2420,"sp":45.5}
+{course}/lab07/grupo-{group}/pwm {"modo":"pot","estado":"MANUAL","aq":73,"ve":73,"aq_duty":186,"ve_duty":186,"sp":45.5,"t":24.5}
+{course}/lab07/grupo-{group}/cmd/modo remoto
+{course}/lab07/grupo-{group}/pwm {"modo":"remoto","estado":"REMOTO","aq":0,"ve":0,"aq_duty":0,"ve_duty":0,"sp":45.5,"t":24.5}
+{course}/lab07/grupo-{group}/cmd/aquecedor 30
+{course}/lab07/grupo-{group}/pwm {"modo":"remoto","estado":"REMOTO","aq":30,"ve":0,"aq_duty":77,"ve_duty":0,"sp":45.5,"t":24.5}
+{course}/lab07/grupo-{group}/cmd/ventilador 80
+{course}/lab07/grupo-{group}/pwm {"modo":"remoto","estado":"REMOTO","aq":30,"ve":80,"aq_duty":77,"ve_duty":204,"sp":45.5,"t":24.5}
+{course}/lab07/grupo-{group}/cmd/aquecedor 150
+{course}/lab07/grupo-{group}/cmd/modo turbo
+{course}/lab07/grupo-{group}/cmd/modo pot
+{course}/lab07/grupo-{group}/pwm {"modo":"pot","estado":"MANUAL","aq":73,"ve":73,"aq_duty":186,"ve_duty":186,"sp":45.5,"t":24.5}`,
+    },
+  ]}
+/>
 
 Repare que `aquecedor 150` e `modo turbo` **não** geram `.../pwm`: o ESP32 recusou os dois.
 
@@ -1099,6 +1118,11 @@ real**, com o potenciômetro parado? E no Wokwi, cujo ADC não tem ruído? Por q
 banda morta, vale publicar `.../adc` a cada 10 s? Pense no dashboard aberto **depois** da
 última mudança.
 :::
+
+<FileTree
+  root="lab07-grupo-X"
+  files={["src/main.cpp u", "evidencias/t4-mqtt.txt c"]}
+/>
 
 <CommitPoint
   id="t4"
