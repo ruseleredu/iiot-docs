@@ -533,22 +533,33 @@ Pontos que valem a atenção:
 Enquanto a simulação roda, assine o tópico. Use o **MQTT Explorer** da stack (conexão
 `broker.hivemq.com`, porta `1883`) ou, pelo terminal, um `mosquitto_sub` descartável em Docker:
 
-```bash title="Terminal"
-docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
-  -t 'elt85b/lab05/grupo-a/#' -v -C 5 | tee evidencias/t4-mqtt.txt
-```
+<GroupCommands
+  commands={[
+    {
+      codeTitle: "Terminal — Assinar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}/#' -v -C 5 | tee evidencias/t4-mqtt.txt`,
+    },
+  ]}
+/>
 
 `-C 5` encerra depois de 5 mensagens. **Saída esperada:**
 
 <FileTree root="lab05-grupo-X" files={["evidencias/t4-mqtt.txt c"]} />
 
-```text title="evidencias/t4-mqtt.txt"
-elt85b/lab05/grupo-a/dht {"grupo":"a","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288}
-elt85b/lab05/grupo-a/dht {"grupo":"a","seq":4,"t":24.5,"h":55.0,"uptime_ms":21288}
-elt85b/lab05/grupo-a/dht {"grupo":"a","seq":5,"t":31.2,"h":48.0,"uptime_ms":26288}
-elt85b/lab05/grupo-a/dht {"grupo":"a","seq":6,"t":31.2,"h":48.0,"uptime_ms":31288}
-elt85b/lab05/grupo-a/dht {"grupo":"a","seq":7,"t":31.2,"h":48.0,"uptime_ms":36288}
-```
+<GroupCommands
+  language="text"
+  commands={[
+    {
+      codeTitle: "evidencias/t4-mqtt.txt",
+      command: `{course}/lab05/grupo-{group}/dht {"grupo":"{group}","seq":3,"t":24.5,"h":55.0,"uptime_ms":16288}
+{course}/lab05/grupo-{group}/dht {"grupo":"{group}","seq":4,"t":24.5,"h":55.0,"uptime_ms":21288}
+{course}/lab05/grupo-{group}/dht {"grupo":"{group}","seq":5,"t":31.2,"h":48.0,"uptime_ms":26288}
+{course}/lab05/grupo-{group}/dht {"grupo":"{group}","seq":6,"t":31.2,"h":48.0,"uptime_ms":31288}
+{course}/lab05/grupo-{group}/dht {"grupo":"{group}","seq":7,"t":31.2,"h":48.0,"uptime_ms":36288}`,
+    },
+  ]}
+/>
 
 :::tip[Preveja antes de rodar]
 **P3:** o que aparece se você assinar `elt85b/lab05/+/dht` (com `+` no lugar do grupo)?
@@ -615,14 +626,19 @@ passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`.
 1. No debug "payload", passe o mouse sobre **3 mensagens** → ícone **Copy value** e cole cada
    uma numa linha de `evidencias/t5-debug.txt`:
 
-   ```json title="evidencias/t5-debug.txt"
-   {"grupo":"a","seq":7,"t":24.5,"h":55,"uptime_ms":36288}
-   {"grupo":"a","seq":8,"t":24.5,"h":55,"uptime_ms":41288}
-   {"grupo":"a","seq":9,"t":31.2,"h":48,"uptime_ms":46288}
-   ```
-
-2. Selecione a aba **Lab 05** → menu (☰) → **Export** → _Current flow_ → **JSON formatado**
-   → **Download**. Salve como `nodered/flows-lab05.json`.
+<GroupCommands
+  language="json"
+  commands={[
+    {
+      codeTitle: "evidencias/t5-debug.txt",
+      command: `{"grupo":"{group}","seq":7,"t":24.5,"h":55,"uptime_ms":36288}
+{"grupo":"{group}","seq":8,"t":24.5,"h":55,"uptime_ms":41288}
+{"grupo":"{group}","seq":9,"t":31.2,"h":48,"uptime_ms":46288}`,
+    },
+  ]}
+/>
+2. Selecione a aba **Lab 05** → menu (☰) → **Export** → _Current flow_ → **JSON
+formatado** → **Download**. Salve como `nodered/flows-lab05.json`.
 
 <CommitPoint
   id="t5"
@@ -666,10 +682,15 @@ sequenceDiagram
 3. **Evidência** — deixe um `mosquitto_sub` escutando o status, inicie a simulação, espere o
    `online`, **pare** a simulação e espere o `offline`; aí encerre com Ctrl+C:
 
-```bash title="Terminal"
-docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \
-  -t 'elt85b/lab05/grupo-a/status' -v | tee evidencias/t6-status.txt
-```
+<GroupCommands
+  commands={[
+    {
+      codeTitle: "Terminal — Assinar via Docker",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
+  -t '{course}/lab06/grupo-{group}' -v | tee evidencias/t6-status.txt`,
+    },
+  ]}
+/>
 
 ### Dicas de API
 
