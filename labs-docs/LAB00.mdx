@@ -77,7 +77,7 @@ import {
 **Objetivo:** usar o repositório do grupo (criado a partir do template), praticar o fluxo Git e verificar o **Autograde (CI)** que compõe a nota de entrega.
 
 **Organização:** `ELT85B-N21-2026-2`  
-**Seu repositório:** `lab00-grupo-<sua-letra>` (ex.: `lab00-grupo-a`)  
+**Seu repositório:** `lab00-grupo-<sua-letra>` (ex.: `lab00-grupo-x`)  
 **Time:** `Grupo-<LETRA>`
 
 ---
@@ -162,8 +162,8 @@ No GitHub: Actions (CI) roda o Autograde a cada push.
 Substitua `a` pela letra do seu grupo.
 
 ```bash
-gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
-cd lab00-grupo-a
+gh repo clone ELT85B-N21-2026-2/lab00-grupo-x
+cd lab00-grupo-x
 code . --profile "ESP32IO"
 ```
 
@@ -341,7 +341,7 @@ Modelo simples usado neste lab:
 O professor pode coletar o status com:
 
 ```bash
-gh run list -R ELT85B-N21-2026-2/lab00-grupo-a -L 1
+gh run list -R ELT85B-N21-2026-2/lab00-grupo-x -L 1
 ```
 
 **Importante:** CI verde valida o **pipeline de entrega** (template → git → GitHub → Actions). Não substitui, sozinho, toda a correção técnica dos labs seguintes.
@@ -351,7 +351,7 @@ gh run list -R ELT85B-N21-2026-2/lab00-grupo-a -L 1
 ## 9. Comandos de bolso
 
 ```text
-clone   →  gh repo clone ELT85B-N21-2026-2/lab00-grupo-a
+clone   →  gh repo clone ELT85B-N21-2026-2/lab00-grupo-x
 status  →  git status
 salvar  →  git add . && git commit -m "msg" && git push
 web     →  gh repo view --web
@@ -398,7 +398,7 @@ ci      →  gh run list
 
 # Exemplos — nova branch e release
 
-Contexto: repo do grupo `ELT85B-N21-2026-2/lab00-grupo-a` (troque a letra).
+Contexto: repo do grupo `ELT85B-N21-2026-2/lab00-grupo-x` (troque a letra).
 
 ---
 
@@ -839,8 +839,8 @@ git config --global user.email "seu@email.com"
 ## 2. Abrir o projeto do lab
 
 ```bash
-gh repo clone ELT73A-S22-2026-2/lab00-grupo-a
-cd lab00-grupo-a
+gh repo clone ELT73A-S22-2026-2/lab00-grupo-x
+cd lab00-grupo-x
 code .
 ```
 
@@ -849,7 +849,7 @@ No VS Code, aceite abrir como projeto **PlatformIO** (ícone de formiga na barra
 ### Estrutura esperada (template)
 
 ```text
-lab00-grupo-a/
+lab00-grupo-x/
 ├── platformio.ini          ← ambiente ESP32 + Arduino
 ├── src/main.cpp            ← setup() / loop()
 ├── include/

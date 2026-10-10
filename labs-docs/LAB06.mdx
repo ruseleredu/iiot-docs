@@ -722,7 +722,7 @@ CREATE TABLE IF NOT EXISTS leituras (
 
 ### 4.2 Gravar cada leitura (INSERT preparado)
 
-1. **mqtt in** `elt85b/lab06/grupo-a/dht`, _Output_ **a parsed JSON object**, mesmo broker
+1. **mqtt in** `elt85b/lab06/grupo-x/dht`, _Output_ **a parsed JSON object**, mesmo broker
    do Lab 05 (`broker.hivemq.com:1883`).
 2. **function** "valida e monta parâmetros":
 
@@ -940,7 +940,7 @@ return [
 | 1     | **ui-gauge** "Temperatura"    | grupo _Leituras_, unidade `°C`, faixa −10 a 60                                                                                                                                   |
 | 2     | **ui-gauge** "Umidade"        | grupo _Leituras_, unidade `%`, faixa 0 a 100                                                                                                                                     |
 | 3     | **ui-chart**                  | grupo _Histórico_, _Line_; **Series** = key `serie`; **X** = key `ts` (_timescale_); **Y** = key `valor`                                                                         |
-| 4     | **ui-slider** "Intervalo (s)" | grupo _ESP32_, 2 a 60, passo 1, _Topic_ `elt85b/lab06/grupo-a/cmd/intervalo`, _Output_ **on release**, **pass-through desligado** → **mqtt out** (tópico vazio: usa `msg.topic`) |
+| 4     | **ui-slider** "Intervalo (s)" | grupo _ESP32_, 2 a 60, passo 1, _Topic_ `elt85b/lab06/grupo-x/cmd/intervalo`, _Output_ **on release**, **pass-through desligado** → **mqtt out** (tópico vazio: usa `msg.topic`) |
 
 :::note[Por que o slider não "briga" com o ESP32?]
 Com **pass-through desligado**, uma mensagem que **chega** no slider só move o cursor: ela

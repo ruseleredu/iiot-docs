@@ -145,7 +145,7 @@ Troque o `a` pela letra do seu grupo em **todos** os nomes abaixo.
 | O quê                      | Valor                                   |
 | -------------------------- | --------------------------------------- |
 | Contêiner e host na rede   | `lab08-a-camara`                        |
-| Tópico base MQTT           | `elt85b/lab08/grupo-a/camara`           |
+| Tópico base MQTT           | `elt85b/lab08/grupo-x/camara`           |
 | Rede do stack do curso     | `esp32-iot_iot-network`                 |
 | Banco SQLite (no Node-RED) | `/data/sqlite/lab08.sqlite`             |
 | Dashboard                  | `http://localhost:1880/dashboard/lab08` |
@@ -734,7 +734,7 @@ flowchart LR
 ### 5.1 Tabela comparativa
 
 Ligue as saídas de "decodifica IR", "arredonda" e "junta variáveis" a uma nova function. Para
-o MQTT, use um **mqtt in** `elt85b/lab08/grupo-a/camara/telemetria` (_a parsed JSON object_,
+o MQTT, use um **mqtt in** `elt85b/lab08/grupo-x/camara/telemetria` (_a parsed JSON object_,
 broker `mosquitto:1883`), seguido de uma function que só faz `msg.topic = "mqtt"`.
 
 ```js title="function: tabela comparativa"
@@ -807,7 +807,7 @@ _Max rows_ 6) no primeiro grupo.
 | 1     | function "°C → HR3 (×10)" da T2 (que já leva ao FC6 HR3) |
 | 2     | **s7 out** `setpoint` da T3                              |
 | 3     | **OpcUa-Item** `Camara.setpoint` da T4                   |
-| 4     | **mqtt out** `elt85b/lab08/grupo-a/camara/cmd/setpoint`  |
+| 4     | **mqtt out** `elt85b/lab08/grupo-x/camara/cmd/setpoint`  |
 
 Escolha cada protocolo, mova o slider e veja **as cinco linhas** da tabela convergirem para o
 novo SP. A coluna **idade** mostra há quanto tempo cada caminho foi atualizado: o RTU, lido a

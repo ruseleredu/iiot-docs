@@ -359,7 +359,7 @@ pio test
 | Change team / org settings                    | No                       |
 | Access `lab00-template` (if private)          | Only if granted          |
 
-Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin.
+Your access comes from the **team** (`grupo-x`, etc.), not from being repo admin.
 
 ---
 
@@ -367,16 +367,16 @@ Your access comes from the **team** (`grupo-a`, etc.), not from being repo admin
 
 | Lab     | Repository                          |
 | ------- | ----------------------------------- |
-| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-a`   |
-| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-a`   |
-| Projeto | `ELT85B-N21-2026-2/projeto-grupo-a` |
+| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-x`   |
+| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-x`   |
+| Projeto | `ELT85B-N21-2026-2/projeto-grupo-x` |
 
 Replace `a` with your group letter (`b`, `c`, …).
 
 Clone pattern:
 
 ```bash
-gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
+gh repo clone ELT85B-N21-2026-2/lab05-grupo-x
 ```
 
 ---
@@ -392,7 +392,7 @@ gh repo clone ELT85B-N21-2026-2/lab05-grupo-a
 **Repo not found**
 
 ```bash
-gh repo view ELT85B-N21-2026-2/lab00-grupo-a
+gh repo view ELT85B-N21-2026-2/lab00-grupo-x
 ```
 
 If 404: wrong name, or you are not a member of the org/team yet.
@@ -430,7 +430,7 @@ git clean -fd
 ## 10. One-liner cheat card
 
 ```text
-clone   →  gh repo clone ORG/lab00-grupo-a
+clone   →  gh repo clone ORG/lab00-grupo-x
 update  →  git pull
 save    →  git add . && git commit -m "msg" && git push
 web     →  gh repo view --web

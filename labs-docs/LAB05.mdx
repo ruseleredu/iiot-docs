@@ -405,8 +405,8 @@ Cada grupo publica no **seu** tópico (troque `a` pela letra do grupo):
 
 | Uso         | Tópico                        | Exemplo de payload                                          |
 | ----------- | ----------------------------- | ----------------------------------------------------------- |
-| Leituras    | `elt85b/lab05/grupo-a/dht`    | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210}` |
-| Status (T6) | `elt85b/lab05/grupo-a/status` | `online` / `offline` (retido)                               |
+| Leituras    | `elt85b/lab05/grupo-x/dht`    | `{"grupo":"a","seq":7,"t":24.5,"h":55.0,"uptime_ms":35210}` |
+| Status (T6) | `elt85b/lab05/grupo-x/status` | `online` / `offline` (retido)                               |
 
 - `seq` é um contador: se chegarem `seq` 7, 8, 10, a mensagem 9 se perdeu.
 - `uptime_ms` (de `millis()`) mostra o instante da leitura **do ponto de vista do ESP32**.
@@ -585,14 +585,14 @@ nova chamada **Lab 05** e monte:
 
 ```mermaid
 flowchart LR
-  M[mqtt in: .../grupo-a/dht - JSON] --> D1[debug: msg.payload]
+  M[mqtt in: .../grupo-x/dht - JSON] --> D1[debug: msg.payload]
   M --> D2[debug: msg.payload.t - tambem no status]
 ```
 
 1. **mqtt in** "leituras DHT22"
    - _Server:_ novo broker `broker.hivemq.com`, porta `1883` (o mesmo em que o ESP32 publica —
      **não** o Mosquitto local, que o Wokwi não alcança).
-   - _Topic:_ `elt85b/lab05/grupo-a/dht` (seu grupo) · _QoS_ `0`.
+   - _Topic:_ `elt85b/lab05/grupo-x/dht` (seu grupo) · _QoS_ `0`.
    - _Output:_ **a parsed JSON object** — o texto do payload vira um objeto JavaScript.
 2. **debug** "payload" → _Output:_ `msg.payload`.
 3. **debug** "temperatura" → _Output:_ `msg.payload.t` e marque **node status**
@@ -604,7 +604,7 @@ flowchart LR
 
 ```text title="Painel debug do Node-RED"
 29/09/2026, 18:40:12   node: payload
-elt85b/lab05/grupo-a/dht : msg.payload : Object
+elt85b/lab05/grupo-x/dht : msg.payload : Object
 ▼ object
   grupo: "a"
   seq: 7
@@ -709,9 +709,9 @@ if (mqtt.connect(clientId, TOPICO_STATUS, 1, true, "offline")) {
 **Saída esperada:**
 
 ```text title="evidencias/t6-status.txt"
-elt85b/lab05/grupo-a/status offline
-elt85b/lab05/grupo-a/status online
-elt85b/lab05/grupo-a/status offline
+elt85b/lab05/grupo-x/status offline
+elt85b/lab05/grupo-x/status online
+elt85b/lab05/grupo-x/status offline
 ```
 
 A primeira linha pode ser `offline` ou `online` (ou nem aparecer): é a mensagem **retida** de

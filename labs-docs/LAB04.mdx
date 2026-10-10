@@ -358,7 +358,7 @@ Se falhar, `mqtt.state()` dá a pista: `-2` = não alcançou o servidor (host/po
 Publique uma mensagem a cada 2 s, sem `delay()` bloqueante (usando `millis()`). Adicione o tópico e troque o prefixo pelo do **seu grupo**:
 
 ```cpp
-const char* TOPIC_TELEMETRIA = "elt85b/grupo-a/telemetria";  // troque 'grupo-a'!
+const char* TOPIC_TELEMETRIA = "elt85b/grupo-x/telemetria";  // troque 'grupo-x'!
 ```
 
 E use este `loop()`:
@@ -391,7 +391,7 @@ Publicado: {"n":2,"temp":27.00}
 Publicado: {"n":3,"temp":28.00}
 ```
 
-Veja as mensagens chegando: no **MQTT Explorer** (`http://localhost:3000`, broker Docker local) ou no **HiveMQ Web Client** (broker público), assinando `elt85b/grupo-a/telemetria`.
+Veja as mensagens chegando: no **MQTT Explorer** (`http://localhost:3000`, broker Docker local) ou no **HiveMQ Web Client** (broker público), assinando `elt85b/grupo-x/telemetria`.
 
 <CommitPoint task="publica telemetria periodica num topico" pontos={8} />
 

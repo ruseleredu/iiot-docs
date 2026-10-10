@@ -196,7 +196,7 @@ Monte o fluxo numa aba nova chamada **Lab 06**:
 ```mermaid
 flowchart LR
   I1[inject: criar tabela - once] --> S1[sqlite: CREATE TABLE - fixed]
-  M[mqtt in: .../grupo-a/dht - JSON] --> F[function: monta msg.params]
+  M[mqtt in: .../grupo-x/dht - JSON] --> F[function: monta msg.params]
   M --> D0[debug: payload bruto]
   F --> S2[sqlite: INSERT - prepared]
 ```
@@ -227,7 +227,7 @@ Node-RED nem precisa mandá-lo.
 ### 2.2 Receber e gravar
 
 1. **mqtt in** → servidor `broker.hivemq.com`, porta `1883`; tópico
-   `elt85b/lab06/grupo-a/dht` (seu grupo); **Output: a parsed JSON object**.
+   `elt85b/lab06/grupo-x/dht` (seu grupo); **Output: a parsed JSON object**.
 2. **function** "monta msg.params" — valida o payload e monta os parâmetros:
 
 ```js title="function: monta msg.params"
@@ -410,17 +410,17 @@ Com o Wokwi rodando, publique um comando pelo MQTT Explorer ou pelo terminal:
 
 ```bash title="Terminal"
 docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \
-  -t 'elt85b/lab06/grupo-a/cmd/intervalo' -m 10
+  -t 'elt85b/lab06/grupo-x/cmd/intervalo' -m 10
 ```
 
 **Saída esperada** no monitor serial (envie também um valor inválido, como `1`):
 
 ```text title="evidencias/t4-serial.txt"
-[PUB] ok elt85b/lab06/grupo-a/dht -> {"grupo":"a","seq":12,"t":24.5,"h":55.0,"uptime_ms":61410}
-[MQTT] elt85b/lab06/grupo-a/cmd/intervalo -> '10'
+[PUB] ok elt85b/lab06/grupo-x/dht -> {"grupo":"a","seq":12,"t":24.5,"h":55.0,"uptime_ms":61410}
+[MQTT] elt85b/lab06/grupo-x/cmd/intervalo -> '10'
 [TMR] intervalo = 10 s
-[PUB] ok elt85b/lab06/grupo-a/dht -> {"grupo":"a","seq":13,"t":24.5,"h":55.0,"uptime_ms":74630}
-[MQTT] elt85b/lab06/grupo-a/cmd/intervalo -> '1'
+[PUB] ok elt85b/lab06/grupo-x/dht -> {"grupo":"a","seq":13,"t":24.5,"h":55.0,"uptime_ms":74630}
+[MQTT] elt85b/lab06/grupo-x/cmd/intervalo -> '1'
 [MQTT] intervalo invalido (use 2..3600)
 ```
 
