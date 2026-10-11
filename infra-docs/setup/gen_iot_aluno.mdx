@@ -1,0 +1,53 @@
+---
+id: gen_iot_aluno
+title: gen_iot_aluno
+sidebar_label: gen_iot_aluno
+---
+
+Gera o LAB IoT completo na máquina do aluno (sem servidor e sem VPS).
+
+## Usage
+
+```bash
+usage: gen_iot_aluno.py [-h] [--lab LAB] [--grupo GRUPO] [--ip IP] [--porta-http PORTA_HTTP] [--saida SAIDA] [--segredos SEGREDOS] [--novas-senhas] [--dominio DOMINIO] [--proteger-http] [--sem-gitea]
+                        [--gitea-repo GITEA_REPO] [--gitea-db {sqlite,postgres}] [--sem-runner] [--runner-capacidade RUNNER_CAPACIDADE] [--runner-imagem RUNNER_IMAGEM] [--ci-rede {nginx,ip}]
+                        [--wokwi-token WOKWI_TOKEN] [--sem-microbin] [--sem-fuxa] [--sem-ntfy] [--sem-mqtt-explorer] [--ponte-mqtt HOST[:PORTA]] [--mqtt-explorer-porta MQTT_EXPLORER_PORTA]
+
+```
+
+```bash
+options:
+  -h, --help            show this help message and exit
+  --lab LAB             Nome do lab (ex.: lab05); prefixo de tudo, como no laboratório
+  --grupo GRUPO         Letra do grupo (ex.: a ou lab05-a): a conta vira <lab>-<letra>
+  --ip IP               IP desta máquina na rede local (ESP32, celular); 'auto' descobre sozinho
+  --porta-http PORTA_HTTP
+                        Porta do portal nesta máquina (padrão 80; use 8080 se a 80 estiver ocupada)
+  --saida SAIDA         Pasta de saída (padrão: <lab>-<letra>)
+  --segredos SEGREDOS   .segredos.json do laboratório: reaproveita a senha e o credentialSecret do grupo
+  --novas-senhas        Sorteia senhas novas
+  --dominio DOMINIO     Domínio dos e-mails das contas (só no Gitea)
+  --proteger-http       Exige login nos dashboards e endpoints HTTP do Node-RED e para ver o FUXA (útil se outras pessoas usam a mesma rede)
+  --sem-gitea           Não inclui o Gitea (nem o CI)
+  --gitea-repo GITEA_REPO
+                        Repositório inicial na organização ('' = nenhum)
+  --gitea-db {sqlite,postgres}
+                        Banco do Gitea (padrão sqlite: mais leve; postgres como no laboratório)
+  --sem-runner          Gitea sem Actions (sem runner)
+  --runner-capacidade RUNNER_CAPACIDADE
+                        Jobs simultâneos no runner (padrão 1; cada job de ESP32 usa ~1 CPU e 2 GB)
+  --runner-imagem RUNNER_IMAGEM
+                        Imagem do runner (Docker-in-Docker)
+  --ci-rede {nginx,ip}  Como os jobs do CI chegam ao Gitea: 'nginx' (padrão: o runner divide a rede do nginx e tudo usa http://localhost) ou 'ip' (como no laboratório: http://<IP-da-máquina>; muda se a máquina
+                        trocar de rede)
+  --wokwi-token WOKWI_TOKEN
+                        Seu token do Wokwi CI: vira o secret WOKWI_CLI_TOKEN da organização ('-' remove)
+  --sem-microbin        Não inclui o MicroBin (/bin/)
+  --sem-fuxa            Não inclui o FUXA
+  --sem-ntfy            Não inclui o ntfy (/ntfy/ e /avisos/)
+  --sem-mqtt-explorer   Não inclui o MQTT Explorer
+  --ponte-mqtt HOST[:PORTA]
+                        Liga (bridge) o broker desta máquina ao do laboratório, só com os tópicos do grupo
+  --mqtt-explorer-porta MQTT_EXPLORER_PORTA
+                        Porta do MQTT Explorer
+```
