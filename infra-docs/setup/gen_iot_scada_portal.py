@@ -216,16 +216,16 @@ VPS_PORTA_TUNEL = args.vps_porta_tunel
 # ---------------- serviços opcionais ----------------
 WB = not args.sem_microbin and not KIT
 MQTTX = not KIT            # MQTT Explorer (imagem local do professor) só no laboratório
-WB_IMAGEM = "danielszabo99/microbin:2.1.4"
+WB_IMAGEM = "danielszabo99/microbin:latest" # latest
 # MicroBin visto pelo Node-RED: no lab, direto no container; no kit, o do lab (público, com login)
 WB_NR = WB or (KIT is not None and not args.sem_microbin)
 WB_NR_URL = "http://microbin:8080" if WB else f"{PUBLICO_URL}/bin"
 WB_LINK = f"{PUBLICO_URL}/bin" if (KIT or TUNEL) else f"{LOCAL_URL}/bin"   # link para abrir no celular
 NTFY = not args.sem_ntfy
-NTFY_IMAGEM = "binwiederhier/ntfy:v2.28.0"
+NTFY_IMAGEM = "binwiederhier/ntfy:latest" # docker pull binwiederhier/ntfy:latest
 NTFY_AVISOS = f"{LAB}-avisos"          # tópico de avisos do professor (todos leem)
 FUXA = not args.sem_fuxa
-FUXA_IMAGEM = "frangoteam/fuxa:1.3.4"     # versão fixa (BASE_PATH para subcaminho existe desde 1.3.x)
+FUXA_IMAGEM = "frangoteam/fuxa:latest"     # versão fixa (BASE_PATH para subcaminho existe desde 1.3.x)
 
 GITEA = not args.sem_gitea and not KIT
 # no kit, o Gitea é o do laboratório (público): Projects do Node-RED clona/envia por HTTPS

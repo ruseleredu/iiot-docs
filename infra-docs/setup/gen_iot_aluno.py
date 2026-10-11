@@ -170,12 +170,12 @@ PROTEGER = args.proteger_http
 # ---------------- serviços ----------------
 WB = not args.sem_microbin
 WB_NR = WB
-WB_IMAGEM = "danielszabo99/microbin:2.1.4"
+WB_IMAGEM = "danielszabo99/microbin:latest" # docker pull danielszabo99/microbin:latest
 NTFY = not args.sem_ntfy
-NTFY_IMAGEM = "binwiederhier/ntfy:v2.28.0"
+NTFY_IMAGEM = "binwiederhier/ntfy:latest" # latest
 NTFY_AVISOS = None                   # sem professor: não há tópico de avisos da turma
 FUXA = not args.sem_fuxa
-FUXA_IMAGEM = "frangoteam/fuxa:1.3.4"
+FUXA_IMAGEM = "frangoteam/fuxa:latest" # docker pull frangoteam/fuxa:latest
 MQTTX = not args.sem_mqtt_explorer
 MQTTX_IMAGEM = "ghcr.io/thomasnordquist/mqtt-explorer:latest"
 MQTTX_PORTA = args.mqtt_explorer_porta
