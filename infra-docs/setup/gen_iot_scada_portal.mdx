@@ -1,0 +1,86 @@
+---
+id: gen_iot_scada_portal
+title: gen_iot_scada_portal
+sidebar_label: gen_iot_scada_portal
+---
+
+## Help
+
+```bash
+py gen_iot_scada_portal.py --help
+```
+
+```bash
+usage: gen_iot_scada_portal.py [-h] [--lab LAB] [--grupos GRUPOS] [--ip IP] [--dominio DOMINIO] [--publico-url PUBLICO_URL] [--vps-host VPS_HOST] [--vps-ssh-porta VPS_SSH_PORTA] [--vps-usuario VPS_USUARIO]
+                               [--vps-porta-tunel VPS_PORTA_TUNEL] [--sem-tunel] [--sem-gitea] [--gitea-repo GITEA_REPO] [--gitea-db {postgres,sqlite}] [--sem-runner] [--runner-capacidade RUNNER_CAPACIDADE]
+                               [--runner-imagem RUNNER_IMAGEM] [--runner-dns IP[,IP]] [--wokwi-token WOKWI_TOKEN] [--sem-microbin] [--sem-fuxa] [--sem-ntfy] [--proteger-http] [--novas-senhas]
+                               [--github-org GITHUB_ORG] [--saida SAIDA] [--kit GRUPO] [--ponte-mqtt HOST[:PORTA]] [--porta-http PORTA_HTTP] [--segredos SEGREDOS] [--mqtt-explorer-auth]
+                               [--mqtt-explorer-usuario MQTT_EXPLORER_USUARIO] [--mqtt-explorer-senha MQTT_EXPLORER_SENHA] [--mqtt-explorer-porta MQTT_EXPLORER_PORTA]
+
+Gera o LAB IoT (caminhos + túnel SSH para o VPS).
+
+options:
+  -h, --help            show this help message and exit
+  --lab LAB             Nome do lab (ex.: lab05); prefixo de tudo
+  --grupos GRUPOS       Quantidade de grupos de alunos (máx. 24)
+  --ip IP               IP do servidor na rede do laboratório (acesso local, MQTT e MQTT Explorer)
+  --dominio DOMINIO     Domínio interno, usado só nos e-mails das contas (ex.: lab05-a@iot.lab)
+  --publico-url PUBLICO_URL
+                        URL pública (HTTPS) servida pelo Apache do VPS
+  --vps-host VPS_HOST   Host/IP do VPS para o SSH (padrão: o host da --publico-url)
+  --vps-ssh-porta VPS_SSH_PORTA
+                        Porta SSH do VPS
+  --vps-usuario VPS_USUARIO
+                        Usuário restrito do túnel no VPS
+  --vps-porta-tunel VPS_PORTA_TUNEL
+                        Porta (só em 127.0.0.1 do VPS) onde o túnel entrega o portal ao Apache
+  --sem-tunel           Não inclui o túnel (só rede local, http://IP/)
+  --sem-gitea           Não inclui o Gitea
+  --gitea-repo GITEA_REPO
+                        Repositório inicial criado em cada organização ('' = nenhum)
+  --gitea-db {postgres,sqlite}
+                        Banco do Gitea: postgres (padrão, compartilhado) ou sqlite
+  --sem-runner          Não inclui o runner do Gitea Actions (e desliga o Actions no Gitea)
+  --runner-capacidade RUNNER_CAPACIDADE
+                        Jobs simultâneos no runner do lab (padrão 2; cada job de ESP32 usa ~1 CPU e 2 GB)
+  --runner-imagem RUNNER_IMAGEM
+                        Imagem do runner (Docker-in-Docker; padrão docker.io/gitea/runner:3-dind)
+  --runner-dns IP[,IP]  DNS para os containers dos jobs (padrão: o do Docker, 8.8.8.8; use o da instituição se o 53 externo for bloqueado)
+  --wokwi-token WOKWI_TOKEN
+                        Token do Wokwi CI do professor: vira o secret WOKWI_CLI_TOKEN de cada organização (guardado em .segredos.json; '-' remove)
+  --sem-microbin        Não inclui o MicroBin (/bin/)
+  --sem-fuxa            Não inclui o FUXA (SCADA/HMI por grupo em /fuxa/<grupo>/)
+  --sem-ntfy            Não inclui o ntfy (notificações push por grupo em /ntfy/ e /avisos/)
+  --proteger-http       Exige login (usuário/senha do grupo) nos dashboards e endpoints HTTP do Node-RED
+  --novas-senhas        Sorteia senhas novas para todos os grupos (padrão: mantém as já geradas)
+  --github-org GITHUB_ORG
+                        Organização do GitHub com os repositórios <lab>-grupo-<letra> (para publicar os acessos)
+  --saida SAIDA         Pasta de saída (padrão: <lab>; com --kit: <lab>-kits/<grupo>; com --kit todos: pasta base)
+  --kit GRUPO           Gera o kit de UM grupo para a máquina do aluno (ex.: a ou lab05-a; 'todos' = um por grupo)
+  --ponte-mqtt HOST[:PORTA]
+                        Kit: liga (bridge) o broker do kit ao broker do lab, só com os tópicos do grupo
+  --porta-http PORTA_HTTP
+                        Kit: porta do portal na máquina do aluno (padrão 80; use 8080 se a 80 estiver ocupada)
+  --segredos SEGREDOS   Kit: .segredos.json do lab para reaproveitar as senhas (padrão: <lab>/.segredos.json)
+  --mqtt-explorer-auth  Exige login no MQTT Explorer
+  --mqtt-explorer-usuario MQTT_EXPLORER_USUARIO
+                        Usuário do MQTT Explorer
+  --mqtt-explorer-senha MQTT_EXPLORER_SENHA
+                        Senha do MQTT Explorer (gerada se omitida)
+  --mqtt-explorer-porta MQTT_EXPLORER_PORTA
+                        Porta do MQTT Explorer
+```
+
+---
+
+## Deploy
+
+### LAB 04
+
+```bash
+py gen_iot_scada_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
+```
+
+```bash
+py .\gen_iot_scada_ntfy_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-ntfy --sem-fuxa --gitea-db sqlite
+```
