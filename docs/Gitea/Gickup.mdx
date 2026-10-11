@@ -1,0 +1,203 @@
+---
+id: mirror-github-orgs-to-gitea
+title: Mirror GitHub Organizations to Gitea with gickup
+sidebar_label: GitHub orgs → Gitea (gickup)
+description: Use gickup to mirror one or more GitHub organizations to Gitea as live pull mirrors, with per-org repository filtering.
+---
+
+:::warning[Needs to be tested]
+
+These configs have **not been verified end to end** against a live Gitea instance yet.
+Validate the token scopes, the per-org filtering behavior, and the mirror sync on a
+throwaway org before relying on them in production. Run once without `cron` first and
+check the log output.
+
+:::
+
+[gickup](https://github.com/cooperspencer/gickup) clones/mirrors repositories from one
+git host to another. This page covers mirroring **GitHub organizations to Gitea** as
+**pull mirrors** — [Gitea](https://docs.gitea.io/en-us/) keeps re-fetching the git content on a schedule so the copies
+stay current.
+
+## Concept
+
+There are two behaviors to keep straight:
+
+- **One-time copy** — [gickup](https://gickup.dev/) clones and pushes once.
+- **Pull mirror** (`mirror.enabled: true`) — [gickup](https://gickup.dev/) registers the repo in Gitea as a
+  mirror that re-pulls on its own interval.
+
+Only **git content and releases** are kept in sync by the mirror. Issues and PRs are not
+continuously mirrored.
+
+## Prerequisites
+
+- A **GitHub personal access token** with repo read access (and `read:org` to enumerate
+  org repos).
+- A **Gitea access token** (Settings → Applications) with repo + org write.
+- `curl`/`docker` to run gickup (binary or the provided `docker-compose.yml`).
+
+## Single organization
+
+```yaml title="conf.yml"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cooperspencer/gickup/refs/heads/main/gickup_spec.json
+source:
+  github:
+    - token: ghp_xxxxxxxxxxxxxxxx # GitHub PAT with repo read access
+      includeorgs:
+        - your-github-org # the org whose repos you want
+      wiki: true # mirror wikis too
+
+destination:
+  gitea:
+    - token: xxxxxxxxxxxxxxxx # Gitea access token
+      url: https://gitea.example.com
+      createorg: true # create the Gitea org if missing
+      lfs: false # set true if any repos use Git LFS
+      mirror:
+        enabled: true # makes these live pull mirrors
+        mirrorinterval: 1h0m0s # how often Gitea re-pulls from GitHub
+      visibility:
+        repositories: private # private | public
+        organizations: private # private | limited | public
+
+cron: 0 */6 * * * # how often gickup re-scans for NEW repos
+```
+
+:::info[Two separate schedules]
+
+`mirror.mirrorinterval` is **Gitea's** pull cadence (how fresh existing repos stay).
+`cron` is how often **gickup itself** runs, which only matters for picking up repos added
+to the org since the last run. Omit `cron` and gickup runs once, then exits.
+
+:::
+
+## Multiple organizations (one token)
+
+`includeorgs` is a list, so add every org in a single source block. With `createorg: true`
+and no `user:` on the destination, each GitHub org is recreated as a same-named Gitea org.
+
+```yaml title="conf.yml"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cooperspencer/gickup/refs/heads/main/gickup_spec.json
+source:
+  github:
+    - token: ghp_xxxxxxxxxxxxxxxx
+      includeorgs:
+        - first-org
+        - second-org
+        - third-org
+      wiki: true
+
+destination:
+  gitea:
+    - token: xxxxxxxxxxxxxxxx
+      url: https://gitea.example.com
+      createorg: true
+      lfs: false
+      mirror:
+        enabled: true
+        mirrorinterval: 1h0m0s
+      visibility:
+        repositories: private
+        organizations: private
+
+cron: 0 */6 * * *
+```
+
+## Multiple organizations with per-org filtering
+
+:::caution[`include` / `exclude` / `filter` are per source _entry_]
+
+These filters apply to the **whole github source block**, not to individual orgs inside a
+single `includeorgs` list. To filter each org differently, give each org its **own source
+entry**. They can all reuse the **same token** — it's still one token and one file, just
+several source blocks.
+
+:::
+
+```yaml title="conf.yml"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cooperspencer/gickup/refs/heads/main/gickup_spec.json
+source:
+  github:
+    # first-org: only repos whose name starts with "api-"
+    - token: ghp_xxxxxxxxxxxxxxxx
+      includeorgs:
+        - first-org
+      include:
+        - "api-*"
+      wiki: true
+
+    # second-org: everything except a couple of repos, and skip forks/archived
+    - token: ghp_xxxxxxxxxxxxxxxx # same token
+      includeorgs:
+        - second-org
+      exclude:
+        - sandbox
+        - "*-archive"
+      filter:
+        excludeforks: true
+        excludearchived: true
+      wiki: true
+
+    # third-org: only repos with activity in the last year
+    - token: ghp_xxxxxxxxxxxxxxxx # same token
+      includeorgs:
+        - third-org
+      filter:
+        lastactivity: 1y
+      wiki: true
+
+destination:
+  gitea:
+    - token: xxxxxxxxxxxxxxxx
+      url: https://gitea.example.com
+      createorg: true # each source org → matching Gitea org
+      lfs: false
+      mirror:
+        enabled: true
+        mirrorinterval: 1h0m0s
+      visibility:
+        repositories: private
+        organizations: private
+
+cron: 0 */6 * * *
+```
+
+## Filter reference
+
+| Key                           | Scope        | Effect                                                                           |
+| ----------------------------- | ------------ | -------------------------------------------------------------------------------- |
+| `include`                     | source entry | Whitelist of repo names (wildcards `*` allowed). If set, only matches are taken. |
+| `exclude`                     | source entry | Blacklist of repo names, applied on top of `include`.                            |
+| `includeorgs` / `excludeorgs` | source entry | Which orgs to pull from / skip.                                                  |
+| `filter.excludeforks`         | source entry | Skip forked repos.                                                               |
+| `filter.excludearchived`      | source entry | Skip archived repos.                                                             |
+| `filter.lastactivity`         | source entry | Only repos active within the window (e.g. `1y`, `6mo`).                          |
+| `filter.stars`                | source entry | Minimum star count.                                                              |
+| `filter.languages`            | source entry | Only repos of the listed languages.                                              |
+
+Name filters and the `filter` block stack together.
+
+## Running it
+
+```bash
+# binary
+./gickup conf.yml
+
+# or docker compose
+wget https://raw.githubusercontent.com/cooperspencer/gickup/main/docker-compose.yml
+docker compose up
+```
+
+## Caveats
+
+- **Issues / PRs are not continuously mirrored** — only git content and releases stay in
+  sync, same as Gitea's underlying migration mechanism.
+- **Rate limits.** Repeating the same token across per-org blocks means several
+  independent passes against the GitHub API. The `filter` settings help by trimming what
+  gets enumerated and cloned.
+- **Secrets.** Point `token:` at an environment variable, or use `token_file:`, so the
+  token isn't duplicated as a literal across blocks.
+- **No collisions.** With `createorg: true` and no destination `user:`, each org lands in
+  its own same-named Gitea org, keeping per-org filter sets scoped and repo names from
+  clashing across orgs.

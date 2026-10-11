@@ -1,0 +1,473 @@
+---
+title: tea
+description: Command line tool to interact with Gitea
+---
+
+# tea
+
+`tea` is a productivity helper for Gitea. It can be used to manage most entities on one or multiple Gitea instances & provides local helpers like `tea pr checkout`.
+
+`tea` tries to make use of context provided by the repository in `$PWD` if available. `tea` works best in an upstream/fork workflow, when the local main branch tracks the upstream repo. `tea` assumes that local git state is published on the remote before doing operations with `tea`. Configuration is persisted in `$XDG_CONFIG_HOME/tea`.
+
+**Usage**:
+
+```bash
+tea [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
+
+```
+
+## Commands
+
+### logins, login
+
+Log in to a Gitea server
+
+- **list, ls**: List Gitea logins
+
+- `--output, -o=""`: Output format (simple, table, csv, tsv, yaml, json)
+
+- **add**: Add a Gitea login
+
+- `--client-id=""`: OAuth client ID (for use with `--oauth`)
+
+- `--git-credentials, --helper, -j`: Register `tea` as a git credential helper for this login's URL
+
+- `--insecure, -i`: Disable TLS verification
+
+- `--name, -n=""`: Login name
+
+- `--no-version-check, --nv`: Do not check version of Gitea instance
+
+- `--oauth, -o`: Use interactive OAuth2 flow for authentication
+
+- `--otp=""`: OTP token for auth, if necessary
+
+- `--password, --pwd=""`: Password for basic auth (will create token)
+
+- `--redirect-url=""`: OAuth redirect URL (for use with `--oauth`)
+
+- `--scopes=""`: Token scopes to add when creating a new token, separated by a comma
+
+- `--ssh-agent-key, -a=""`: Use SSH public key or SSH fingerprint to login
+
+- `--ssh-agent-principal, -c=""`: Use SSH certificate with specified principal to login
+
+- `--ssh-key, -s=""`: Path to a SSH key/certificate to use, overrides auto-discovery
+
+- `--token, -t=""`: Access token (obtained from Settings > Applications)
+
+- `--url, -u=""`: Server URL (default: `"https://gitea.com"`)
+
+- `--user=""`: User for basic auth (will create token)
+
+- **edit, e**: Edit Gitea logins
+
+- `--output, -o=""`: Output format (simple, table, csv, tsv, yaml, json)
+
+- **delete, rm**: Remove a Gitea login
+
+- **default**: Get or Set Default Login
+
+- `--output, -o=""`: Output format (simple, table, csv, tsv, yaml, json)
+
+- **helper, git-credential**: Act as a git credential helper for stored Gitea logins
+
+- **store, erase**: No-op (git credential protocol store/erase)
+
+- **setup**: Register `tea` as a git credential helper for every configured login
+
+- **get**: Return the stored token for a URL (git credential protocol)
+
+- `--login, -l=""`: Use a specific login
+
+- **oauth-refresh**: Refresh an OAuth token
+
+- **status**: Show authentication status for Gitea logins
+
+- `--output, -o=""`: Output format (simple, table, csv, tsv, yaml, json)
+
+### logout
+
+Log out from a Gitea server
+
+### whoami
+
+Show current logged in user
+
+### issues, issue, i
+
+List, create and update issues
+
+- `--assignee, -a=""`
+
+- `--author, -A=""`
+
+- `--comments`: Whether to display comments
+
+- `--fields, -f=""`: Comma-separated list of fields to print (default: `"index,title,state,author,milestone,labels,owner,repo"`)
+
+- `--from, -F=""`: Filter by activity after this date
+
+- `--keyword, -k=""`: Filter by search string
+
+- `--kind, -K=""`: Whether to return `issues`, `pulls`, or `all`
+
+- `--labels, -L=""`: Comma-separated list of labels to match issues against
+
+- `--limit, --lm=""`: Specify limit of items per page (default: 30)
+
+- `--login, -l=""`: Use a different Gitea Login
+
+- `--mentions, -M=""`
+
+- `--milestones, -m=""`: Comma-separated list of milestones to match issues against
+
+- `--output, -o=""`: Output format (simple, table, csv, tsv, yaml, json)
+
+- `--owner, --org=""`
+
+- `--page, -p=""`: Specify page (default: 1)
+
+- `--remote, -R=""`: Discover Gitea login from remote
+
+- `--repo, -r=""`: Override local repository path or gitea repository slug
+
+- `--state=""`: Filter by state (`all`|`open`|`closed`)
+
+- `--until, -u=""`: Filter by activity before this date
+
+Subcommands:
+
+- **list, ls**: List issues of the repository
+
+- **create, c**: Create an issue on repository
+
+- **edit, e**: Edit one or more issues
+
+- **reopen, open**: Change state of one or more issues to 'open'
+
+- **close**: Change state of one or more issues to 'closed'
+
+### pulls, pull, pr
+
+Manage and checkout pull requests
+
+Subcommands:
+
+- **list, ls**: List pull requests of the repository
+
+- **checkout, co**: Locally check out the given PR
+
+- `--branch, -b`: Create a local branch if it doesn't exist yet
+
+- **clean**: Deletes local & remote feature-branches for a closed pull request
+
+- `--ignore-sha`: Find the local branch by name instead of commit hash
+
+- **create, c**: Create a pull-request
+
+- `--agit`: Create an agit flow pull request
+
+- `--allow-maintainer-edits, --edits`: Enable maintainers to push to the base branch
+
+- `--draft`: Create as a draft
+
+- `--head=""`: Branch name of the PR source
+
+- **close**: Change state of pull requests to 'closed'
+
+- **reopen, open**: Change state of pull requests to 'open'
+
+- **edit, e**: Edit one or more pull requests
+
+- **review**: Interactively review a pull request
+
+- **approve, lgtm, a**: Approve a pull request
+
+- **reject**: Request changes to a pull request
+
+- **merge, m**: Merge a pull request
+
+- `--style, -s=""`: Kind of merge to perform (`merge`, `rebase`, `squash`, `rebase-merge`) (default: `"merge"`)
+
+- **reply**: Reply to a pull request review comment
+
+- **review-comments, rc**: List review comments on a pull request
+
+- **resolve**: Resolve a review comment on a pull request
+
+- **unresolve**: Unresolve a review comment on a pull request
+
+### labels, label
+
+Manage issue labels
+
+Subcommands:
+
+- **list, ls**: List labels
+
+- **create, c**: Create a label
+
+- `--color=""`: Label color value
+
+- `--description=""`: Label description
+
+- `--file=""`: Indicate a label file
+
+- `--name=""`: Label name
+
+- **update**: Update a label
+
+- **delete, rm**: Delete a label
+
+### milestones, milestone, ms
+
+List and create milestones
+
+Subcommands:
+
+- **list, ls**: List milestones of the repository
+
+- **create, c**: Create a milestone on repository
+
+- `--deadline, --expires, -x=""`: Set milestone deadline
+
+- **close**: Change state of milestones to 'closed'
+
+- `--force, -f`: Delete milestone
+
+- **delete, rm**: Delete a milestone
+
+- **reopen, open**: Change state of milestones to 'open'
+
+- **issues, i**: Manage issue/pull of a milestone
+
+- **add, a**: Add an issue/pull to a milestone
+
+- **remove, r**: Remove an issue/pull from a milestone
+
+### releases, release, r
+
+Manage releases
+
+Subcommands:
+
+- **list, ls**: List releases
+
+- **create, c**: Create a release
+
+- `--asset, -a=""`: Path to file attachment (can be specified multiple times)
+
+- `--draft, -d`: Is a draft
+
+- `--prerelease, -p`: Is a pre-release
+
+- `--tag=""`: Tag name
+
+- `--target=""`: Target branch name or commit hash
+
+- **delete, rm**: Delete one or more releases
+
+- `--confirm, -y`: Confirm deletion (required)
+
+- `--delete-tag`: Also delete the git tag for this release
+
+- **edit, e**: Edit one or more releases
+
+- **assets, asset, a**: Manage release assets
+
+- **list, ls**: List release attachments
+
+- **create, c**: Create one or more release attachments
+
+- **delete, rm**: Delete one or more release attachments
+
+### times, time, t
+
+Operate on tracked times of a repository's issues & pulls
+
+Subcommands:
+
+- **add, a**: Track spent time on an issue (`tea times add <issue> <duration>`)
+
+- **delete, rm**: Delete a single tracked time on an issue (`tea times delete <issue> <time ID>`)
+
+- **reset**: Reset tracked time on an issue (`tea times reset <issue>`)
+
+- **list, ls**: List tracked times on issues & pulls
+
+### organizations, organization, org
+
+List, create, delete organizations
+
+Subcommands:
+
+- **list, ls**: List organizations
+
+- **create, c**: Create an organization
+
+- **delete, rm**: Delete users organizations
+
+### repos, repo
+
+Manage repositories
+
+Subcommands:
+
+- **list, ls**: List repositories you have access to
+
+- **search, s**: Find any repo on a Gitea instance
+
+- **create, c**: Create a repository
+
+- **create-from-template, ct**: Create a repository based on an existing template
+
+- **fork, f**: Fork an existing repository
+
+- **migrate, m**: Migrate a repository
+
+- **delete, rm**: Delete an existing repository
+
+- **edit, e**: Edit repository properties
+
+### branches, branch, b
+
+Consult branches
+
+Subcommands:
+
+- **list, ls**: List branches of the repository
+
+- **protect, P**: Protect branches
+
+- **unprotect, U**: Unprotect branches
+
+- **rename, rn**: Rename a branch
+
+### actions, action
+
+Manage repository actions
+
+Subcommands:
+
+- **secrets, secret**: Manage repository action secrets (`list`, `create`, `delete`)
+
+- **variables, variable, vars, var**: Manage repository action variables (`list`, `set`, `delete`)
+
+- **runs, run**: Manage workflow runs (`list`, `view`, `delete`, `logs`)
+
+- **workflows, workflow**: Manage repository workflows (`list`, `view`, `dispatch`, `enable`, `disable`)
+
+### wiki
+
+Manage repository wiki pages
+
+Subcommands:
+
+- **list, ls**: List wiki pages of the repository
+
+- **view**: View a wiki page
+
+- **revisions, history**: List revisions of a wiki page
+
+- **create, c**: Create a wiki page
+
+- **edit, e**: Edit a wiki page
+
+- **delete, rm**: Delete a wiki page
+
+### webhooks, webhook, hooks, hook
+
+Manage webhooks
+
+Subcommands:
+
+- **list, ls**: List webhooks
+
+- **create, c**: Create a webhook
+
+- **delete, rm**: Delete a webhook
+
+- **update, edit, u**: Update a webhook
+
+### comments, comment, c
+
+Manage comments on issues and pull requests
+
+Subcommands:
+
+- **add, a**: Add a comment to an issue or pull request
+
+- **list, ls**: List comments on an issue or pull request
+
+- **edit, e**: Edit the body of an existing comment
+
+- **delete, rm**: Delete one or more comments by ID
+
+### open, o
+
+Open something of the repository in web browser
+
+### notifications, notification, n
+
+Show notifications
+
+Subcommands:
+
+- **ls, list**: List notifications
+
+- **read, r**: Mark notifications as read
+
+- **unread, u**: Mark notifications as unread
+
+- **pin, p**: Mark notifications as pinned
+
+- **unpin**: Unpin notifications
+
+### clone, C
+
+Clone a repository locally
+
+- `--depth, -d=""`: Number of commits to fetch (default: 0)
+
+- `--login, -l=""`: Use a different Gitea Login
+
+### ssh-keys, ssh-key
+
+Manage SSH public keys
+
+Subcommands:
+
+- **list, ls**: List SSH keys
+
+- **add**: Add an SSH public key
+
+- **delete, rm**: Delete an SSH key
+
+### admin, a
+
+Operations requiring admin access on the Gitea instance
+
+Subcommands:
+
+- **users, u**: Manage registered users (`list`, `create`, `edit`, `delete`)
+
+### api
+
+Make an authenticated API request
+
+- `--Field, -F=""`: Add a typed field to the request body (`key=value`, `@file`, or `@-` for stdin)
+
+- `--data, -d=""`: Raw JSON request body
+
+- `--field, -f=""`: Add a string field to the request body (`key=value`)
+
+- `--header, -H=""`: Add a custom header (`key:value`)
+
+- `--include, -i`: Include HTTP status and response headers in output
+
+- `--login, -l=""`: Use a different Gitea Login
+
+- `--method, -X=""`: HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) (default: `"GET"`)
+
+- `--output, -o=""`: Write response body to file instead of stdout
