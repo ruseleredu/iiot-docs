@@ -13,6 +13,7 @@ para UMA conta (o aluno ou o grupo). Fica só nesta máquina e na rede local (se
     <base>/bin/            MicroBin (colar código e enviar arquivos)
     http://localhost:3001  MQTT Explorer (só nesta máquina / rede local)
     <IP-da-máquina>:1883   broker MQTT (Mosquitto) para o ESP32 na mesma rede
+    captura/*.pcap         (com --captura) tráfego da rede do lab, para abrir no Wireshark
 
 onde <base> é:
     - nesta máquina:          http://localhost
@@ -26,6 +27,8 @@ Uso (Windows: "py"; Linux/macOS: "python3"):
   py gen_iot_aluno.py --lab lab05 --grupo a --porta-http 8080   # se a porta 80 estiver ocupada
   py gen_iot_aluno.py --segredos ..\\lab05\\.segredos.json       # mesma senha do grupo no laboratório
   py gen_iot_aluno.py --ponte-mqtt 192.168.0.10                  # liga o MQTT ao broker do laboratório
+  py gen_iot_aluno.py --captura                                  # grava os pacotes (netshoot) para o Wireshark
+  py gen_iot_aluno.py --captura --captura-filtro "port 1883"     # só o MQTT
   cd lab05-a  e  docker compose up -d --build
 
 Requisitos: Docker Desktop (Windows/macOS) ou Docker Engine (Linux); Python 3 com "pip install bcrypt".
@@ -82,6 +85,18 @@ ap.add_argument("--sem-mqtt-explorer", action="store_true", help="Não inclui o 
 ap.add_argument("--ponte-mqtt", default=None, metavar="HOST[:PORTA]",
                 help="Liga (bridge) o broker desta máquina ao do laboratório, só com os tópicos do grupo")
 ap.add_argument("--mqtt-explorer-porta", type=int, default=3001, help="Porta do MQTT Explorer")
+# captura de pacotes (netshoot + tcpdump -> Wireshark)
+ap.add_argument("--captura", action="store_true",
+                help="Inclui o netshoot gravando o tráfego da rede do lab (labnet) em captura/*.pcap "
+                     "e o script wireshark-ao-vivo para ver os pacotes em tempo real")
+ap.add_argument("--captura-filtro", default="", metavar="BPF",
+                help="Filtro de captura do tcpdump (ex.: 'port 1883' ou 'tcp port 1883 or port 1880'); "
+                     "padrão: tudo")
+ap.add_argument("--captura-minutos", type=int, default=10,
+                help="Um arquivo .pcap novo a cada N minutos (padrão 10)")
+ap.add_argument("--captura-arquivos", type=int, default=36,
+                help="Quantos .pcap manter; os mais antigos são apagados (padrão 36 = 6 h com 10 min)")
+ap.add_argument("--netshoot-imagem", default="nicolaka/netshoot:latest", help="Imagem do netshoot")
 args = ap.parse_args()
 
 LAB = args.lab.lower()
@@ -180,6 +195,16 @@ MQTTX = not args.sem_mqtt_explorer
 MQTTX_IMAGEM = "ghcr.io/thomasnordquist/mqtt-explorer:latest"
 MQTTX_PORTA = args.mqtt_explorer_porta
 MQTTX_URL = f"http://localhost:{MQTTX_PORTA}/"
+
+# captura de pacotes: o netshoot fica na rede do HOST do Docker (no Docker Desktop, a VM),
+# onde existe a ponte (bridge) da labnet; a ponte ganha um nome fixo para o tcpdump achá-la.
+# Na ponte passa TODO o tráfego entre os containers (Node-RED <-> mosquitto, nginx <-> serviços,
+# CI <-> Gitea) e o que chega pelas portas publicadas (ESP32 -> 1883, navegador -> portal).
+CAPTURA = args.captura
+CAPTURA_IF = f"br-{G}"[:15]          # nome de interface no Linux: no máximo 15 caracteres
+if CAPTURA and (args.captura_minutos < 1 or args.captura_arquivos < 1):
+    sys.exit("--captura-minutos e --captura-arquivos devem ser >= 1.")
+NETSHOOT_IMAGEM = args.netshoot_imagem
 
 GITEA = not args.sem_gitea
 GITEA_REPO = args.gitea_repo.strip()
@@ -691,6 +716,32 @@ for g in fuxa_grupos:
         "      - labnet\n",
     ]
 
+# netshoot: tcpdump na ponte da labnet, gravando em ./captura (abrir no Wireshark).
+# network_mode: host = rede do host do Docker, onde a ponte br-<grupo> existe.
+if CAPTURA:
+    c += [
+        "\n  netshoot:\n",
+        f"    image: {NETSHOOT_IMAGEM}\n",
+        f"    container_name: {C}-netshoot\n",
+        "    restart: unless-stopped\n",
+        "    network_mode: host               # vê a ponte da labnet (e não usa a labnet)\n",
+        "    cap_add:\n",
+        "      - NET_ADMIN\n",
+        "      - NET_RAW\n",
+        '    entrypoint: ["/bin/bash", "/netshoot/captura.sh"]\n',
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        f"      - CAPTURA_IF={CAPTURA_IF}\n",
+        f"      - CAPTURA_PREFIXO={G}\n",
+        f"      - CAPTURA_MINUTOS={args.captura_minutos}\n",
+        f"      - CAPTURA_ARQUIVOS={args.captura_arquivos}\n",
+        # aspas simples do YAML: o filtro BPF pode ter espaços, '&', '[' ... ('' = aspa literal)
+        "      - 'CAPTURA_FILTRO=" + args.captura_filtro.replace("'", "''") + "'\n",
+        "    volumes:\n",
+        "      - ./netshoot:/netshoot:ro\n",
+        "      - ./captura:/captura\n",
+    ]
+
 c += ["\nvolumes:\n", "  mosquitto_data:\n"]
 if POSTGRES:
     c += ["  postgres_data:\n"]
@@ -703,8 +754,80 @@ if NTFY:
 if WB:
     c += ["  microbin_data:\n"]
 c += ["\nnetworks:\n", "  labnet:\n", "    driver: bridge\n"]
+if CAPTURA:   # nome fixo da ponte: o tcpdump do netshoot captura nela
+    c += ["    driver_opts:\n", f"      com.docker.network.bridge.name: {CAPTURA_IF}\n"]
 gravar("docker-compose.yml", "".join(c))
 print("🐳 docker-compose.yml")
+
+# =====================================================================
+# netshoot/captura.sh + wireshark-ao-vivo.(cmd|sh) — captura de pacotes
+# =====================================================================
+CAPTURA_SH = r"""#!/bin/bash
+# captura.sh — gerado por gen_iot_aluno.py (__G__)
+# Grava o tráfego da ponte da labnet ($CAPTURA_IF) em /captura (= pasta captura/ do lab):
+# um .pcap novo a cada $CAPTURA_MINUTOS min; mantém só os $CAPTURA_ARQUIVOS mais recentes.
+set -u
+DIR=/captura
+mkdir -p "$DIR"
+
+echo "[captura] aguardando a interface $CAPTURA_IF..."
+until [ -e "/sys/class/net/$CAPTURA_IF" ]; do sleep 2; done
+
+# limpeza: apaga os .pcap mais antigos (o arquivo em gravação é sempre o mais novo)
+(
+  while true; do
+    ls -1t "$DIR"/*.pcap 2>/dev/null | tail -n +"$((CAPTURA_ARQUIVOS + 1))" | xargs -r rm -f
+    sleep 60
+  done
+) &
+
+echo "[captura] gravando $CAPTURA_IF em captura/ (um arquivo a cada $CAPTURA_MINUTOS min;" \
+     "filtro: ${CAPTURA_FILTRO:-tudo})"
+# -U: grava pacote a pacote (o arquivo em uso já abre no Wireshark)
+# -Z root: escreve na pasta montada sem trocar de usuário
+exec tcpdump -i "$CAPTURA_IF" -n -U -s 0 -Z root \
+     -G "$((CAPTURA_MINUTOS * 60))" \
+     -w "$DIR/${CAPTURA_PREFIXO}_%Y-%m-%d_%H-%M-%S.pcap" \
+     ${CAPTURA_FILTRO:+"$CAPTURA_FILTRO"}
+"""
+
+WIRESHARK_CMD = r"""@echo off
+rem wireshark-ao-vivo.cmd — gerado por gen_iot_aluno.py (__G__)
+rem Abre o Wireshark recebendo AO VIVO os pacotes da rede do lab (via netshoot).
+rem   wireshark-ao-vivo.cmd                     tudo
+rem   wireshark-ao-vivo.cmd port 1883           só o MQTT
+rem   wireshark-ao-vivo.cmd port 1883 or port 1880
+rem Use no Prompt de Comando ou no PowerShell (o pipe do cmd preserva os bytes do pcap).
+setlocal
+set "WS=%ProgramFiles%\Wireshark\Wireshark.exe"
+if not exist "%WS%" set "WS=Wireshark.exe"
+docker exec __C__-netshoot tcpdump -i __IF__ -n -U -s 0 -w - %* | "%WS%" -k -i -
+"""
+
+WIRESHARK_SH = r"""#!/bin/sh
+# wireshark-ao-vivo.sh — gerado por gen_iot_aluno.py (__G__)
+# Abre o Wireshark recebendo AO VIVO os pacotes da rede do lab (via netshoot).
+#   ./wireshark-ao-vivo.sh                  tudo
+#   ./wireshark-ao-vivo.sh port 1883        só o MQTT
+WS=wireshark
+[ -x /Applications/Wireshark.app/Contents/MacOS/Wireshark ] && WS=/Applications/Wireshark.app/Contents/MacOS/Wireshark
+docker exec __C__-netshoot tcpdump -i __IF__ -n -U -s 0 -w - "$@" | "$WS" -k -i -
+"""
+
+if CAPTURA:
+    def _subst(t):
+        return t.replace("__G__", G).replace("__C__", C).replace("__IF__", CAPTURA_IF)
+    gravar("netshoot/captura.sh", _subst(CAPTURA_SH), executavel=True)
+    os.makedirs("captura", exist_ok=True)
+    # .cmd do Windows: CRLF (gravar() usa LF)
+    with open("wireshark-ao-vivo.cmd", "w", encoding="utf-8", newline="\r\n") as _f:
+        _f.write(_subst(WIRESHARK_CMD))
+    gravar("wireshark-ao-vivo.sh", _subst(WIRESHARK_SH), executavel=True)
+    print("🦈 netshoot/captura.sh + wireshark-ao-vivo.cmd/.sh")
+else:   # captura desligada: some com os scripts (os .pcap já gravados ficam)
+    for _arq in ("netshoot/captura.sh", "wireshark-ao-vivo.cmd", "wireshark-ao-vivo.sh"):
+        if os.path.exists(_arq):
+            os.remove(_arq)
 
 # =====================================================================
 # nginx/nginx.conf — um único servidor, tudo em caminhos
@@ -1896,6 +2019,8 @@ if MQTTX:
 cred.append(f"MQTT:       mosquitto:1883 (Node-RED/FUXA)  ·  {IP}:1883 (ESP32 na mesma rede)")
 if PONTE:
     cred.append(f"Ponte MQTT: {G}/# <-> {PONTE} (broker do laboratório)")
+if CAPTURA:
+    cred.append(f"Captura:    captura/*.pcap (interface {CAPTURA_IF}) · ao vivo: wireshark-ao-vivo.cmd / .sh")
 gravar("credenciais.txt", "\n".join(cred) + "\n")
 
 
@@ -2015,6 +2140,50 @@ if PONTE:
              f"O broker daqui está ligado ao do laboratório (`{PONTE}`) **só nos tópicos `{G}/#`**, nos",
              "dois sentidos. Funciona com esta máquina na rede do laboratório; fora dela, tudo segue",
              "normal (a ponte tenta reconectar sozinha)."]
+if CAPTURA:
+    _proj = re.sub(r"[^a-z0-9_-]", "", os.path.basename(SAIDA_ABS).lower())
+    _filtro = args.captura_filtro or "tudo"
+    leia += ["", "## Captura de pacotes (Wireshark)", "",
+             f"O container `{C}-netshoot` grava **todo o tráfego da rede do lab** (a ponte `{CAPTURA_IF}`):",
+             "Node-RED ↔ mosquitto, FUXA ↔ mosquitto, nginx ↔ serviços, ESP32 → 1883, navegador → portal"
+             + (", CI ↔ Gitea" if RUNNER else "") + ".",
+             f"Filtro de captura: `{_filtro}`. Um arquivo novo a cada {args.captura_minutos} min em "
+             f"`captura/`, guardando os {args.captura_arquivos} mais recentes.", "",
+             "Instale o **Wireshark** (https://www.wireshark.org/download.html).", "",
+             "**Arquivo gravado:** Wireshark → *File → Open* → `captura/" + G + "_<data>_<hora>.pcap`",
+             "(o mais novo é o que está sendo gravado; *View → Reload* (Ctrl+R) traz os pacotes novos).", "",
+             "**Ao vivo:** o Wireshark abre recebendo os pacotes do netshoot (feche-o para parar):", "",
+             "```powershell",
+             ".\\wireshark-ao-vivo.cmd                  # tudo",
+             ".\\wireshark-ao-vivo.cmd port 1883        # só o MQTT",
+             "```", "",
+             "Linux/macOS: `./wireshark-ao-vivo.sh port 1883`.", "",
+             "**Sem Wireshark, no terminal:**", "",
+             "```powershell",
+             f"docker exec -it {C}-netshoot termshark -i {CAPTURA_IF} port 1883     # Wireshark em modo texto",
+             f"docker exec {C}-netshoot tcpdump -i {CAPTURA_IF} -n -A port 1883     # conteúdo das mensagens",
+             "```", "",
+             "Quem é quem (os pacotes mostram os IPs dos containers):", "",
+             "```powershell",
+             f"docker network inspect {_proj}_labnet --format '{{{{range .Containers}}}}{{{{.IPv4Address}}}}  {{{{.Name}}}}{{{{println}}}}{{{{end}}}}'",
+             "```", ""]
+    leia += tab(("Filtro de exibição no Wireshark", "Mostra"), [
+        ("`mqtt`", "todo o MQTT (CONNECT, SUBSCRIBE, PUBLISH...)"),
+        ("`mqtt.msgtype == 3`", "só os PUBLISH (as mensagens)"),
+        (f"`mqtt.topic contains \"{G}/\"`", "mensagens dos tópicos do grupo"),
+        ("`http.request`", "requisições HTTP (portal, Node-RED, FUXA, Gitea...)"),
+        ("`websocket`", "editor e dashboard do Node-RED, telas do FUXA"),
+        ("`tcp.port == 1883 && tcp.flags.syn == 1`", "quem está conectando no broker")])
+    leia += ["",
+             "Dentro da rede do lab o HTTP usa portas que o Wireshark não reconhece sozinho: em",
+             "*Edit → Preferences → Protocols → HTTP → TCP port(s)* acrescente `1880,1881,3000,8080`",
+             "(Node-RED, FUXA, Gitea/MQTT Explorer, MicroBin) — ou *Analyze → Decode As… → HTTP*.", "",
+             "> ⚠️ Nada aqui é criptografado: os `.pcap` contêm **senhas e tokens** (login do Node-RED,",
+             "> do MicroBin, tokens do ntfy). Não compartilhe; apague `captura/` quando terminar.", "",
+             "> No Docker Desktop (Windows/macOS), o que vem de fora (ESP32, celular) aparece com o IP do",
+             "> gateway da labnet, não com o IP real do aparelho: o Docker Desktop repassa a conexão.", "",
+             "> Ligou ou desligou a captura? O nome da ponte muda: rode `docker compose down` e depois",
+             "> `docker compose up -d --remove-orphans` (os dados ficam)."]
 leia += ["", "## Levar o trabalho para o laboratório (e trazer de volta)", "",
          "**Node-RED → arquivo.** Menu → *Export* → *All flows* → *Download*; do outro lado, *Import*.", "",
          "**FUXA → arquivo.** Editor do FUXA: menu → *Salvar projeto como*; do outro lado, *Abrir projeto*.", "",
@@ -2027,6 +2196,8 @@ if RUNNER:
     leia.append("| Ver o runner do CI | `docker compose logs -f gitea-runner` |")
 if GITEA:
     leia.append("| Refazer usuário/organização/secrets do Gitea | `docker compose run --rm gitea-init` |")
+if CAPTURA:
+    leia.append("| Ver a captura (netshoot) | `docker compose logs -f netshoot` |")
 leia += ["| Parar (os dados ficam) | `docker compose down` |",
          "| Atualizar imagens | `docker compose pull`, `docker compose build --pull` e `docker compose up -d` |",
          "| Mudou alguma opção | rode o gerador de novo (mesma pasta) e `docker compose up -d --build` |", "",
@@ -2041,8 +2212,10 @@ gravar("LEIA-ME.md", "\n".join(leia))
 print(f"\n✅ LAB IoT do {G}: Node-RED" + (" + FUXA" if FUXA else "") + " + MQTT"
       + (" + Gitea" if GITEA else "") + (" (Actions)" if RUNNER else "")
       + (" + ntfy" if NTFY else "") + (" + MicroBin" if WB else "")
-      + (" + MQTT Explorer" if MQTTX else ""))
+      + (" + MQTT Explorer" if MQTTX else "") + (" + captura (netshoot)" if CAPTURA else ""))
 print(f"\n  Nesta máquina: {LOCAL_URL}/")
+if CAPTURA:
+    print(f"  Captura:       captura/*.pcap  ·  ao vivo: wireshark-ao-vivo.cmd  (interface {CAPTURA_IF})")
 if LAN_URL:
     print(f"  Rede local:    {LAN_URL}/   ·   MQTT {IP}:1883")
 print(f"\n🔒 Usuário {G} · senha em credenciais.txt" +
