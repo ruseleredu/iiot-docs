@@ -1,7 +1,7 @@
 ---
 title: LAB IoT na sua máquina — guia do aluno
 sidebar_label: LAB IoT na sua máquina
-description: Como gerar e usar no seu computador o LAB IoT completo (Node-RED, FUXA, MQTT, Gitea com CI, ntfy e MicroBin) com o gen_iot_aluno.py, como falar com o Gitea pelo tea e como deixar o Git no Windows sem sustos.
+description: Como gerar e usar no seu computador o LAB IoT completo (Node-RED, FUXA, MQTT, Gitea com CI, ntfy e MicroBin) com o gen_iot_aluno.py, como falar com o Gitea pelo tea, como capturar os pacotes da rede do lab para o Wireshark e como deixar o Git no Windows sem sustos.
 ---
 
 O **`gen_iot_aluno.py`** monta no seu computador o mesmo LAB IoT do laboratório: Node-RED,
@@ -11,7 +11,8 @@ e MQTT Explorer. Os **caminhos e nomes são os mesmos** do laboratório (`/lab05
 casa funcionam no laboratório sem mudança, e vice-versa.
 
 Tudo roda em containers Docker e fica **só na sua máquina e na sua rede local** (Wi-Fi). Nada
-fica exposto na internet.
+fica exposto na internet. Com `--captura`, um container extra (netshoot) grava os pacotes que
+passam entre os serviços para você analisar no **Wireshark** ([seção 10](#captura)).
 
 ```mermaid
 flowchart LR
@@ -27,6 +28,7 @@ flowchart LR
   NR --> M
   FX --> M
   G --> R["runner do CI<br/>Docker-in-Docker"]
+  NS["netshoot (--captura)<br/>tcpdump na rede do lab"] -. "captura/*.pcap<br/>ou ao vivo" .-> W["Wireshark"]
 ```
 
 ## 1. Instalar (uma vez) {/* #instalar */}
@@ -41,7 +43,12 @@ winget install --id Docker.DockerDesktop -e
 winget install --id Python.Python.3.12 -e
 winget install --id Git.Git -e
 winget install --id Gitea.tea -e
+winget install --id WiresharkFoundation.Wireshark -e   # opcional: só para a captura de pacotes
 ```
+
+O Wireshark aqui só **lê** os pacotes que o netshoot captura. Se o instalador oferecer o
+**Npcap**, ele é dispensável para o LAB IoT (serve para capturar as placas de rede do próprio
+Windows).
 
 Depois:
 
@@ -62,6 +69,8 @@ Depois:
 - `python3 -m pip install bcrypt` (no Linux, pode ser preciso `--user` ou um venv).
 - `git` do sistema; `tea` pelo `brew install tea` (macOS) ou pelo binário em
   [dl.gitea.com/tea](https://dl.gitea.com/tea/) (Linux).
+- Opcional, para a captura de pacotes: Wireshark (`sudo apt install wireshark` ou
+  `brew install --cask wireshark`).
 - Troque `py` por `python3` nos comandos deste guia.
 
 </TabItem>
@@ -90,6 +99,9 @@ O gerador cria a pasta `lab05-a` com tudo: `docker-compose.yml`, configurações
 | `--wokwi-token TOKEN`                                                                              | o seu token do Wokwi CI, já cadastrado como secret do Gitea                             |
 | `--ponte-mqtt IP-DO-LAB`                                                                           | liga o seu broker ao do laboratório, só nos tópicos do grupo                            |
 | `--proteger-http`                                                                                  | exige login também nos dashboards do Node-RED e para ver o FUXA                         |
+| `--captura`                                                                                        | grava os pacotes da rede do lab para o Wireshark ([seção 10](#captura))                 |
+| `--captura-filtro "port 1883"`                                                                     | captura só o que passa no filtro (BPF do tcpdump); padrão: tudo                         |
+| `--captura-minutos 10`, `--captura-arquivos 36`                                                    | um `.pcap` novo a cada N minutos; quantos guardar (os mais antigos são apagados)        |
 | `--sem-gitea`, `--sem-runner`, `--sem-fuxa`, `--sem-ntfy`, `--sem-microbin`, `--sem-mqtt-explorer` | deixa o serviço de fora (máquina mais leve)                                             |
 | `--gitea-db postgres`                                                                              | Gitea com PostgreSQL (padrão: SQLite, mais leve)                                        |
 | `--novas-senhas`                                                                                   | sorteia senhas novas                                                                    |
@@ -413,7 +425,137 @@ Confira com `git ls-remote https://github.com/git/git`: deve responder sem o avi
   do grupo que o professor passar. As credenciais salvas nos nós do Node-RED continuam
   legíveis nos dois lugares.
 
-## 10. Dia a dia {/* #dia-a-dia */}
+## 10. Captura de pacotes com o Wireshark {/* #captura */}
+
+Gerado com `--captura`, o LAB IoT ganha o container **`lab05-a-netshoot`**
+([netshoot](https://github.com/nicolaka/netshoot), uma caixa de ferramentas de rede). Ele roda
+o `tcpdump` na **ponte da rede do lab** (`br-lab05-a`), por onde passa todo o tráfego entre os
+serviços:
+
+- Node-RED e FUXA ↔ Mosquitto (o MQTT de verdade: CONNECT, SUBSCRIBE, PUBLISH);
+- ESP32 e celular → broker `IP:1883` e portal `http://IP/`;
+- nginx ↔ Node-RED, FUXA, Gitea, ntfy e MicroBin (HTTP e WebSocket);
+- jobs do CI ↔ Gitea e ntfy.
+
+```powershell
+cd C:\iot
+py gen_iot_aluno.py --lab lab05 --grupo a --captura
+cd lab05-a
+docker compose down
+docker compose up -d --build
+docker compose logs netshoot      # "[captura] gravando br-lab05-a em captura/ ..."
+```
+
+:::warning[Ligou ou desligou a captura? `down` antes do `up`]
+A captura dá um nome fixo à ponte da rede (`br-lab05-a`), e o Docker só aplica isso
+recriando a rede. Por isso, ao **ligar ou desligar** o `--captura`, rode `docker compose down`
+antes do `docker compose up -d` (os dados ficam). Para desligar, gere de novo **sem** o
+`--captura` e use `docker compose up -d --remove-orphans`, que também remove o netshoot.
+:::
+
+### 10.1 Abrir os arquivos gravados
+
+O netshoot grava na pasta **`captura/`**, um arquivo a cada 10 minutos
+(`lab05-a_2026-10-13_14-30-00.pcap`), e guarda os 36 mais recentes (cerca de 6 horas). No
+Wireshark: _File → Open_ → `C:\iot\lab05-a\captura\...`. O arquivo mais novo é o que está
+sendo gravado: com ele aberto, _View → Reload_ (**Ctrl+R**) traz os pacotes que chegaram
+depois.
+
+Para guardar menos, ou só o que interessa:
+
+```powershell
+py gen_iot_aluno.py --lab lab05 --grupo a --captura --captura-filtro "port 1883"
+py gen_iot_aluno.py --lab lab05 --grupo a --captura --captura-minutos 5 --captura-arquivos 12
+```
+
+O filtro de captura usa a sintaxe **BPF** do tcpdump (`port 1883`, `host 172.18.0.5`,
+`tcp port 1883 or tcp port 1880`), que é diferente dos filtros de exibição do Wireshark
+([10.4](#captura-filtros)).
+
+### 10.2 Ao vivo
+
+O gerador cria um script que abre o Wireshark já recebendo os pacotes do netshoot, em tempo
+real. Fechar o Wireshark encerra a captura ao vivo (a gravação em `captura/` continua).
+
+<Tabs groupId="so">
+<TabItem value="win" label="Windows 11" default>
+
+No PowerShell ou no cmd, na pasta `lab05-a`:
+
+```powershell
+.\wireshark-ao-vivo.cmd                          # tudo
+.\wireshark-ao-vivo.cmd port 1883                # só o MQTT
+.\wireshark-ao-vivo.cmd port 1883 or port 1880   # MQTT e o Node-RED
+```
+
+O script é um `.cmd` de propósito: o pipe do cmd entrega os bytes do pcap intactos, e o do
+Windows PowerShell 5.1 os corrompe.
+
+</TabItem>
+<TabItem value="nix" label="Linux / macOS">
+
+```bash
+./wireshark-ao-vivo.sh
+./wireshark-ao-vivo.sh port 1883
+```
+
+</TabItem>
+</Tabs>
+
+**Sem Wireshark**, direto no terminal (o netshoot já traz o `termshark`, um Wireshark em modo
+texto):
+
+```powershell
+docker exec -it lab05-a-netshoot termshark -i br-lab05-a port 1883
+docker exec lab05-a-netshoot tcpdump -i br-lab05-a -n -A port 1883   # mostra o conteúdo das mensagens
+```
+
+### 10.3 Quem é quem
+
+Nos pacotes aparecem os **IPs dos containers** (`172.x.x.x`), não os nomes. Para saber qual é
+qual:
+
+```powershell
+docker network inspect lab05-a_labnet --format '{{range .Containers}}{{.IPv4Address}}  {{.Name}}{{println}}{{end}}'
+```
+
+Os IPs podem mudar quando um container é recriado: confira de novo se algo parecer estranho.
+
+:::note[ESP32 e celular no Docker Desktop]
+No Windows e no macOS, o Docker Desktop repassa as conexões que chegam de fora. Por isso, o
+ESP32 e o celular aparecem com o IP do **gateway** da rede do lab (em geral terminado em `.1`),
+e não com o IP real do aparelho. No Linux, aparece o IP real.
+:::
+
+### 10.4 Filtros e portas no Wireshark {/* #captura-filtros */}
+
+| Filtro de exibição                                  | Mostra                                                |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| `mqtt`                                              | todo o MQTT                                           |
+| `mqtt.msgtype == 3`                                 | só os PUBLISH (as mensagens)                          |
+| `mqtt.topic contains "lab05-a/"`                    | mensagens dos tópicos do grupo                        |
+| `mqtt.msgtype == 1`                                 | os CONNECT (quem se conecta ao broker e com qual id)  |
+| `tcp.port == 1883 && tcp.flags.syn == 1 && !tcp.flags.ack` | tentativas de conexão no broker (útil se o ESP32 não conecta) |
+| `http.request`                                      | requisições HTTP (portal, Node-RED, FUXA, Gitea…)     |
+| `websocket`                                         | editor e dashboard do Node-RED, telas do FUXA         |
+
+O MQTT na porta 1883 o Wireshark reconhece sozinho. O HTTP **dentro** da rede do lab usa
+outras portas: em _Edit → Preferences → Protocols → HTTP → TCP port(s)_, acrescente
+`1880,1881,3000,8080` (Node-RED, FUXA, Gitea e MQTT Explorer, MicroBin). Outra saída é
+_Analyze → Decode As…_ → _HTTP_ numa conversa específica.
+
+Para ver uma conversa inteira, clique num pacote com o botão direito → _Follow → TCP Stream_.
+_Statistics → Conversations_ mostra quem fala com quem e quanto.
+
+:::danger[Os `.pcap` têm senhas]
+Nada no LAB IoT é criptografado (é HTTP e MQTT puros, dentro da sua máquina). Por isso, os
+arquivos de captura contêm **senhas e tokens**: o login do Node-RED, do FUXA e do MicroBin,
+os tokens do ntfy e do CI. Não envie esses arquivos para ninguém nem os coloque em
+repositório; apague a pasta `captura/` quando terminar. Para mostrar uma captura, filtre antes
+(_File → Export Specified Packets_ só com o `mqtt`, por exemplo) e confira o que ficou.
+:::
+
+## 11. Dia a dia {/* #dia-a-dia */}
 
 | Para                                          | Comando (na pasta `lab05-a`)                                                            |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -424,6 +566,8 @@ Confira com `git ls-remote https://github.com/git/git`: deve responder sem o avi
 | Parar (os dados ficam)                        | `docker compose down`                                                                   |
 | Atualizar as imagens                          | `docker compose pull`, depois `docker compose build --pull` e `docker compose up -d`    |
 | Liberar espaço do CI                          | `docker compose down`, `docker volume rm lab05-a_runner_docker`, `docker compose up -d` |
+| Ver a captura de pacotes                      | `docker compose logs -f netshoot`                                                       |
+| Apagar as capturas antigas                    | apague os `.pcap` da pasta `captura/` (o mais novo está em uso)                         |
 
 **Backup:** copie a pasta `lab05-a` inteira, principalmente `data/`, `fuxa/` e
 `.segredos.json`. O Gitea, o ntfy e o MicroBin guardam os dados em volumes do Docker
@@ -434,7 +578,7 @@ O `-v` **apaga os volumes**: os repositórios do Gitea, o histórico do ntfy e o
 só se quiser recomeçar do zero.
 :::
 
-## 11. Problemas comuns {/* #problemas */}
+## 12. Problemas comuns {/* #problemas */}
 
 | Sintoma                                                    | O que fazer                                                                                            |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -449,3 +593,9 @@ só se quiser recomeçar do zero.
 | Job falha no `actions/checkout`                            | veja o quadro da [seção 7](#ci) (`--ci-rede ip`)                                                       |
 | Script `.sh` falha no CI com `\r`                          | quebras de linha CRLF: [seção 8.2](#git-windows)                                                       |
 | Esqueci a senha                                            | está em `credenciais.txt` na pasta `lab05-a`                                                           |
+| `up` reclama que a rede `lab05-a_labnet` precisa ser recriada | ligou ou desligou o `--captura`: `docker compose down` e depois `docker compose up -d`              |
+| `captura/` vazia; log do netshoot parado em "aguardando a interface" | a rede foi criada antes do `--captura`: `docker compose down` e `docker compose up -d`      |
+| `.pcap` sem nada do que você procura                       | o `--captura-filtro` deixou de fora? veja o filtro em `docker compose logs netshoot`                   |
+| `wireshark-ao-vivo.cmd`: "Wireshark.exe não é reconhecido" | instale o Wireshark (seção 1) ou ponha a pasta dele no `PATH`                                          |
+| Wireshark ao vivo abre e acusa arquivo corrompido          | rodou o `tcpdump ... -w -` com pipe do PowerShell 5.1: use o `wireshark-ao-vivo.cmd`                   |
+| HTTP aparece só como TCP no Wireshark                      | portas 1880, 1881, 3000, 8080 como HTTP: [seção 10.4](#captura-filtros)                                |
