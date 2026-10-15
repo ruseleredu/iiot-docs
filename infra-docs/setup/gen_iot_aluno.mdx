@@ -51,3 +51,33 @@ options:
   --mqtt-explorer-porta MQTT_EXPLORER_PORTA
                         Porta do MQTT Explorer
 ```
+
+## Deploy
+
+Uso (Windows: "py"; Linux/macOS: "python3"):
+
+```bash
+  py gen_iot_aluno.py --lab lab05 --grupo a
+  py gen_iot_aluno.py --lab lab05 --grupo a --porta-http 8080   # se a porta 80 estiver ocupada
+  py gen_iot_aluno.py --segredos ..\\lab05\\.segredos.json       # mesma senha do grupo no laboratório
+  py gen_iot_aluno.py --ponte-mqtt 192.168.0.10                  # liga o MQTT ao broker do laboratório
+  py gen_iot_aluno.py --captura                                  # grava os pacotes (netshoot) para o Wireshark
+  py gen_iot_aluno.py --captura --captura-filtro "port 1883"     # só o MQTT
+  cd lab05-a  e  docker compose up -d --build
+```
+
+### LAB 04
+
+```bash
+py gen_iot_aluno.py --lab lab04 --grupo x
+```
+
+### LAB 07
+
+```bash
+py gen_iot_aluno.py --lab lab07 --grupo x --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
+```
+
+```bash
+cd lab07-x && docker compose up -d --build
+```
