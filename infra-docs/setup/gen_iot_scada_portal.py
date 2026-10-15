@@ -423,6 +423,7 @@ print("🐝 mosquitto/mosquitto.conf")
 dockerfile = """FROM nodered/node-red:latest
 USER root
 RUN apk add --no-cache build-base python3
+RUN mkdir -p /data/sqlite && chown -R node-red:node-red /data/sqlite
 USER node-red
 # Install additional Node-RED nodes
 RUN npm install --unsafe-perm --no-update-notifier --no-fund \\
