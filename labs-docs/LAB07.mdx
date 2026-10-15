@@ -338,7 +338,7 @@ void lerAdc() {
 //     lerAdc();
 //     if (abs(adcRaw - rawPublicado) > ADC_BANDA) {   // banda morta: ignora o ruído
 //       rawPublicado = adcRaw;
-//       Serial.printf("[ADC] raw=%4d  %4d mV  SP=%.1f C\n", adcRaw, adcMv, setpoint);
+//       Serial.printf("[ADC] raw=%4d  %4d mV  SP=%.1f C\r\n", adcRaw, adcMv, setpoint);
 //       telaSuja = true;
 //     }
 //   }
@@ -483,7 +483,7 @@ void controlar() {
   estado = "MANUAL";
   pwmEscrever(AQ_PIN, AQ_CANAL, dutyDe(aqPct));
   pwmEscrever(VE_PIN, VE_CANAL, dutyDe(vePct));
-  Serial.printf("[PWM] aq=%.0f%% (duty %lu)  ve=%.0f%% (duty %lu)\n",
+  Serial.printf("[PWM] aq=%.0f%% (duty %lu)  ve=%.0f%% (duty %lu)\r\n",
                 aqPct, (unsigned long)dutyDe(aqPct), vePct, (unsigned long)dutyDe(vePct));
   telaSuja = true;
 }
@@ -592,7 +592,7 @@ void publicarPwm() {
            NOME_MODO[modo], estado, aqPct, vePct,
            (unsigned long)dutyDe(aqPct), (unsigned long)dutyDe(vePct), setpoint, t);
   mqtt.publish(TOPICO_PWM, payload);
-  Serial.printf("[PWM] %s\n", payload);
+  Serial.printf("[PWM] %s\r\n", payload);
 }
 
 void controlar() {
@@ -874,7 +874,7 @@ void publicarPwm() {
            NOME_MODO[modo], estado, aqPct, vePct,
            (unsigned long)dutyDe(aqPct), (unsigned long)dutyDe(vePct), setpoint, t);
   mqtt.publish(TOPICO_PWM, payload);
-  Serial.printf("[PWM] %s\n", payload);
+  Serial.printf("[PWM] %s\r\n", payload);
 }
 
 // ------------------------------------------------- decisão dos atuadores (T3/T4)
@@ -911,7 +911,7 @@ void aoReceberMensagem(char *topico, byte *payload, unsigned int tam) {
   size_t n = tam < sizeof(txt) - 1 ? tam : sizeof(txt) - 1;
   memcpy(txt, payload, n);
   txt[n] = '\0';
-  Serial.printf("[CMD] %s <- '%s'\n", topico, txt);
+  Serial.printf("[CMD] %s <- '%s'\r\n", topico, txt);
 
   if (strcmp(topico, TOPICO_INTERVALO) == 0) {
     float v = atof(txt);
@@ -957,7 +957,7 @@ void conectarWiFi() {
     delay(250);
     Serial.print('.');
   }
-  Serial.printf("\n[WiFi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
 }
 
 void conectarMQTT() {
@@ -974,7 +974,7 @@ void conectarMQTT() {
       publicarPwm();
       telaSuja = true;
     } else {
-      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\n", mqtt.state());
+      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\r\n", mqtt.state());
       delay(2000);
     }
   }
@@ -995,14 +995,14 @@ void lerEPublicar() {
            "{\"grupo\":\"%s\",\"seq\":%lu,\"t\":%.1f,\"h\":%.1f,\"uptime_ms\":%lu,\"intervalo_s\":%.1f}",
            GRUPO, (unsigned long)seq, t, h, (unsigned long)millis(), intervaloS);
   bool ok = mqtt.publish(TOPICO_DADOS, payload);
-  Serial.printf("[PUB] %s %s -> %s\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
+  Serial.printf("[PUB] %s %s -> %s\r\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
   telaSuja = true;
 }
 
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\n=== Lab 07 - ADC + PWM + MQTT ===");
+  Serial.println("\r\n=== Lab 07 - ADC + PWM + MQTT ===");
   dht.begin();
 
   analogReadResolution(12);              // 0..4095

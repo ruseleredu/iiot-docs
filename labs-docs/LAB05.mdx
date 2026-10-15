@@ -264,7 +264,7 @@ void aoEstourarTemporizador() {
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\n=== Lab 05 - T2: DHT22 + temporizador ===");
+  Serial.println("\r\n=== Lab 05 - T2: DHT22 + temporizador ===");
   dht.begin();
   temporizador.attach(INTERVALO_S, aoEstourarTemporizador);
 }
@@ -279,7 +279,7 @@ void loop() {
       return;
     }
     seq++;
-    Serial.printf("[DHT] seq=%lu t=%.1f C h=%.1f %% (%lu ms)\n",
+    Serial.printf("[DHT] seq=%lu t=%.1f C h=%.1f %% (%lu ms)\r\n",
                   (unsigned long)seq, t, h, (unsigned long)millis());
   }
 }
@@ -345,7 +345,7 @@ void conectarWiFi() {
     delay(250);
     Serial.print('.');
   }
-  Serial.printf("\n[WiFi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
 }
 
 // em setup(), depois de dht.begin():
@@ -460,7 +460,7 @@ void conectarWiFi() {
     delay(250);
     Serial.print('.');
   }
-  Serial.printf("\n[WiFi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
 }
 
 void conectarMQTT() {
@@ -469,7 +469,7 @@ void conectarMQTT() {
     if (mqtt.connect(clientId)) {
       Serial.println("ok");
     } else {
-      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\n", mqtt.state());
+      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\r\n", mqtt.state());
       delay(2000);
     }
   }
@@ -488,13 +488,13 @@ void lerEPublicar() {
            "{\"grupo\":\"%s\",\"seq\":%lu,\"t\":%.1f,\"h\":%.1f,\"uptime_ms\":%lu}",
            GRUPO, (unsigned long)seq, t, h, (unsigned long)millis());
   bool ok = mqtt.publish(TOPICO_DADOS, payload);
-  Serial.printf("[PUB] %s %s -> %s\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
+  Serial.printf("[PUB] %s %s -> %s\r\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
 }
 
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\n=== Lab 05 - T4: DHT22 + MQTT ===");
+  Serial.println("\r\n=== Lab 05 - T4: DHT22 + MQTT ===");
   dht.begin();
 
   uint64_t mac = ESP.getEfuseMac();

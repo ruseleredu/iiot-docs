@@ -145,9 +145,9 @@ void setup() {
     // Aguarda um instante para a estabilização da conexão Serial
     delay(1000);
 
-    Serial.println("\n==============================================");
+    Serial.println("\r\n==============================================");
     Serial.println("   ESP32 Lab: Teste de Logs e Blink de LED   ");
-    Serial.println("==============================================\n");
+    Serial.println("==============================================\r\n");
 
     // Mensagens de Log do ESP32 (requer CORE_DEBUG_LEVEL > 0 no platformio.ini)
     log_v("Log de Verbose: Informação detalhada/baixa relevância.");

@@ -307,7 +307,7 @@ void conectaWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) { delay(300); Serial.print("."); }
-  Serial.print("\nWiFi OK, IP: "); Serial.println(WiFi.localIP());
+  Serial.print("\r\nWiFi OK, IP: "); Serial.println(WiFi.localIP());
 }
 
 void conectaMQTT() {

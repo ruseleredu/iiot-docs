@@ -197,12 +197,14 @@ platform = espressif32
 board = esp32dev
 framework = arduino
 monitor_speed = 115200
+#highlight-start
 lib_deps =
     adafruit/DHT sensor library@^1.4.6
     adafruit/Adafruit Unified Sensor@^1.1.14
     knolleary/PubSubClient@^2.8
     adafruit/Adafruit SSD1306@^2.5.13
     adafruit/Adafruit GFX Library@^1.11.11
+#highlight-end
 ```
 
 A **GFX** é a biblioteca de desenho (texto, linhas, retângulos, círculos). A **SSD1306** guarda
@@ -516,7 +518,7 @@ void aoReceberMensagem(char *topico, byte *payload, unsigned int tam) {
   size_t n = tam < sizeof(txt) - 1 ? tam : sizeof(txt) - 1;
   memcpy(txt, payload, n);
   txt[n] = '\0';
-  Serial.printf("[CMD] %s <- '%s'\n", topico, txt);
+  Serial.printf("[CMD] %s <- '%s'\r\n", topico, txt);
 
   if (strcmp(topico, TOPICO_INTERVALO) == 0) {
     float v = atof(txt);
@@ -527,7 +529,7 @@ void aoReceberMensagem(char *topico, byte *payload, unsigned int tam) {
     intervaloS = v;
     temporizador.detach();
     temporizador.attach(intervaloS, aoEstourarTemporizador);
-    Serial.printf("[CMD] novo intervalo: %.1f s\n", intervaloS);
+    Serial.printf("[CMD] novo intervalo: %.1f s\r\n", intervaloS);
     telaSuja = true;
   }
 }
@@ -541,7 +543,7 @@ void conectarWiFi() {
     delay(250);
     Serial.print('.');
   }
-  Serial.printf("\n[WiFi] conectado, IP %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
 }
 
 void conectarMQTT() {
@@ -553,7 +555,7 @@ void conectarMQTT() {
       mqtt.subscribe(TOPICO_INTERVALO);  // (re)assina a cada conexão
       telaSuja = true;
     } else {
-      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\n", mqtt.state());
+      Serial.printf("falhou (rc=%d), nova tentativa em 2 s\r\n", mqtt.state());
       delay(2000);
     }
   }
@@ -574,14 +576,14 @@ void lerEPublicar() {
            "{\"grupo\":\"%s\",\"seq\":%lu,\"t\":%.1f,\"h\":%.1f,\"uptime_ms\":%lu,\"intervalo_s\":%.1f}",
            GRUPO, (unsigned long)seq, t, h, (unsigned long)millis(), intervaloS);
   bool ok = mqtt.publish(TOPICO_DADOS, payload);
-  Serial.printf("[PUB] %s %s -> %s\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
+  Serial.printf("[PUB] %s %s -> %s\r\n", ok ? "ok" : "ERRO", TOPICO_DADOS, payload);
   telaSuja = true;
 }
 
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\n=== Lab 06 - DHT22 + SSD1306 + MQTT ===");
+  Serial.println("\r\n=== Lab 06 - DHT22 + SSD1306 + MQTT ===");
   dht.begin();
 
   Wire.begin(OLED_SDA, OLED_SCL);

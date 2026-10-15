@@ -240,7 +240,7 @@ void executarComando(const char *nome, const char *valor) {
   } // ... "intervalo"
 }
 
-void lerSerial() {                       // junta caracteres até '\n' e separa "<nome> <valor>"
+void lerSerial() {                       // junta caracteres até '\r\n' e separa "<nome> <valor>"
   // ... strchr(linha, ' ') -> executarComando(linha, esp + 1)
 }
 
@@ -440,7 +440,7 @@ int main() { return rodarTestes(); }
 | `dutyDe`                | 0, 100, 50 (arredondamento), saturação                                             |
 | `decidir`               | pot, remoto (com saturação), a sequência do Lab 07, `SEM DHT`, ventilador em 100 % |
 | `interpretarModo`       | os 3 modos, maiúsculas, vazio, prefixo ("au"), palavra maior, `nullptr`            |
-| `interpretarPercentual` | válidos, `"12.5\n"`, fora da faixa, lixo, `"50abc"`, vazio                         |
+| `interpretarPercentual` | válidos, `"12.5\r\n"`, fora da faixa, lixo, `"50abc"`, vazio                       |
 | `formatarPwm`           | JSON exato, `t` = NAN vira `null`, buffer pequeno não estoura                      |
 
 ```powershell title="Terminal do PlatformIO"
@@ -626,7 +626,7 @@ os `Ticker`, a banda morta do ADC, o DHT22, a serial e o LEDC funcionando juntos
 | -------------- | ------------------------------------ | -------------------------------------------------- |
 | `wait-serial`  | espera um trecho na saída serial     | `wait-serial: '[BOOT] pronto'`                     |
 | `set-control`  | mexe num componente                  | `part-id: pot1`, `control: position`, `value: 0.5` |
-| `write-serial` | digita na serial do ESP32            | `write-serial: "modo auto\n"`                      |
+| `write-serial` | digita na serial do ESP32            | `write-serial: "modo auto\r\n"`                    |
 | `expect-pin`   | confere o nível de um pino **agora** | `part-id: esp`, `pin: '25'`, `value: 0`            |
 | `delay`        | espera (com unidade!)                | `delay: 1500ms`                                    |
 
@@ -671,14 +671,14 @@ steps:
 
   # ---------------------------------------------------------- modo auto (Lab 07, T6)
   - name: DHT22 a cada 2 s
-    write-serial: "intervalo 2\n"
+    write-serial: "intervalo 2\r\n"
   - name: Setpoint 37,5 °C pelo potenciômetro
     set-control:
       part-id: pot1
       control: position
       value: 0.5
   - name: Liga o modo auto (o DHT22 começa em 24,5 °C, atributo do diagram.json)
-    write-serial: "modo auto\n"
+    write-serial: "modo auto\r\n"
   - name: Aquece
     wait-serial: '"modo":"auto","estado":"AQUECENDO","aq":100,"ve":0'
 
@@ -699,7 +699,7 @@ steps:
     wait-serial: '"estado":"RESFRIANDO","aq":0,"ve":63,"aq_duty":0,"ve_duty":161'
 
   - name: Comando inválido não derruba o firmware
-    write-serial: "modo turbo\n"
+    write-serial: "modo turbo\r\n"
   - name: Resposta de erro
     wait-serial: "modo invalido"
 ```
@@ -1089,8 +1089,8 @@ manda uma notificação para o celular.
              *)         titulo="⚠️ ${REPO##*/}: CI ${resultado} em ${REF_NAME}" ;;
            esac
            # shellcheck disable=SC2016  # as crases são Markdown, não substituição de comando
-           mensagem="$(printf '**testes:** %s · **firmware:** %s · **simulação:** %s · **release:** %s\n`%s` por %s: %s' \
-             "$R_TESTES" "$R_FIRMWARE" "$sim" "$R_PUBLICAR" "${SHA:0:7}" "$ATOR" "${COMMIT_MSG%%$'\n'*}")"
+           mensagem="$(printf '**testes:** %s · **firmware:** %s · **simulação:** %s · **release:** %s\r\n`%s` por %s: %s' \
+             "$R_TESTES" "$R_FIRMWARE" "$sim" "$R_PUBLICAR" "${SHA:0:7}" "$ATOR" "${COMMIT_MSG%%$'\r\n'*}")"
            bash ci/notificar.sh "$resultado" "$titulo" "$mensagem"
    ```
 
