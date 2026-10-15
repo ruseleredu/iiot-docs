@@ -22,18 +22,23 @@ export default function LabTeamMembers({
         <Tabs>
             {GROUPS.map((group) => {
                 const groupLower = group.toLowerCase();
+                const labNameUpper = labName.toUpperCase();
                 const repoName = `${labName}-grupo-${groupLower}`;
                 const fullRepo = `${ORG}/${repoName}`;
                 const repoUrl = `https://github.com/${fullRepo}`;
                 const teamsUrl = `https://github.com/orgs/${ORG}/teams/grupo-${groupLower}`;
                 const CommitsUrl = `https://github.com/${fullRepo}/commits/main/`;
                 const teamSlug = `grupo-${groupLower}`;
+                const passUrl = `${repoUrl}/blob/main/ACESSO-${labNameUpper}.md`;
 
                 return (
                     <TabItem key={group} value={groupLower} label={group}>
                         <ul>
                             <li>
-                                <b>Grupo:</b> Grupo-{group} (slug: <code>{teamSlug}</code>)
+                                <b>Grupo:</b>{" "}
+                                <a href={teamsUrl} target="_blank" rel="noopener noreferrer">
+                                    Grupo-{group} (slug: <code>{teamSlug}</code>)
+                                </a>
                             </li>
                             <li>
                                 <b>Repositório:</b>{" "}
@@ -48,9 +53,9 @@ export default function LabTeamMembers({
                                 </a>
                             </li>
                             <li>
-                                <b>Time:</b>{" "}
-                                <a href={teamsUrl} target="_blank" rel="noopener noreferrer">
-                                    {teamsUrl}
+                                <b>Acessos:</b>{" "}
+                                <a href={passUrl} target="_blank" rel="noopener noreferrer">
+                                    {passUrl}
                                 </a>
                             </li>
                         </ul>
