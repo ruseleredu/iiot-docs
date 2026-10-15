@@ -55,7 +55,7 @@ export default function LabTeamMembers({
                             <li>
                                 <b>Acessos:</b>{" "}
                                 <a href={passUrl} target="_blank" rel="noopener noreferrer">
-                                    {passUrl}
+                                    {`ACESSO-${labNameUpper}.md`}
                                 </a>
                             </li>
                         </ul>
