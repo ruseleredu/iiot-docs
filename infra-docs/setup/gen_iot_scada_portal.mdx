@@ -81,6 +81,24 @@ options:
 py gen_iot_scada_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
 ```
 
+### LAB 07
+
 ```bash
-py .\gen_iot_scada_ntfy_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-ntfy --sem-fuxa --gitea-db sqlite
+py gen_iot_scada_portal.py --lab lab07 --grupos 13 --ip 192.168.0.102 --sem-fuxa --sem-ntfy
+```
+
+### LAB 07
+
+```bash
+py gen_iot_scada_portal.py --lab lab07 --grupos 13 --ip 192.168.0.102 --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
+```
+
+```bash
+cd lab07 && docker compose up -d --build
+```
+
+Windows: rode no Git Bash: bash publicar-acessos-github.sh --arquivo # arquivo separado ACESSO-LAB04.md (README intocado)
+
+```bash
+./publicar-acessos-github.sh --arquivo
 ```
