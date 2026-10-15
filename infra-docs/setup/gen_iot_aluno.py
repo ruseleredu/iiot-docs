@@ -281,6 +281,10 @@ SENHA.update({uv: sv for (_u, _s, uv, sv) in credenciais_geradas})
 for g in todos_servicos:
     os.makedirs(f"data/{g}", exist_ok=True)
     open(f"data/{g}/.gitkeep", "a").close()
+    # data/<grupo> é montado em /data e esconde o que a imagem tem lá dentro;
+    # por isso a pasta do SQLite (/data/sqlite) precisa existir aqui no host.
+    os.makedirs(f"data/{g}/sqlite", exist_ok=True)
+    open(f"data/{g}/sqlite/.gitkeep", "a").close()
 
 # =====================================================================
 # ntfy/server.yml — UM ntfy para todo o lab, isolado por ACL:
@@ -381,10 +385,9 @@ print("🐝 mosquitto/mosquitto.conf")
 dockerfile = """FROM nodered/node-red:latest
 USER root
 RUN apk add --no-cache build-base python3
-RUN mkdir -p /data/sqlite && chown -R node-red:node-red /data/sqlite
 USER node-red
 # Install additional Node-RED nodes
-RUN npm install --unsafe-perm --no-update-notifier --no-fund \\
+RUN npm install --no-update-notifier --no-fund \\
     node-red-node-sqlite \\
     @flowfuse/node-red-dashboard \\
     node-red-contrib-bcrypt \\
