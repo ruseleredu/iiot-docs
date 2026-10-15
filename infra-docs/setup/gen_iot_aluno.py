@@ -58,6 +58,8 @@ ap.add_argument("--saida", default=None, help="Pasta de saída (padrão: <lab>-<
 ap.add_argument("--segredos", default=None,
                 help=".segredos.json do laboratório: reaproveita a senha e o credentialSecret do grupo")
 ap.add_argument("--novas-senhas", action="store_true", help="Sorteia senhas novas")
+ap.add_argument("--mqtt-sem-anonimo", action="store_true",
+                help="Mosquitto exige usuário/senha de todos (padrão: allow_anonymous true)")
 ap.add_argument("--dominio", default="iot.lab", help="Domínio dos e-mails das contas (só no Gitea)")
 ap.add_argument("--proteger-http", action="store_true",
                 help="Exige login nos dashboards e endpoints HTTP do Node-RED e para ver o FUXA "
@@ -352,8 +354,47 @@ if NTFY:
 # =====================================================================
 # mosquitto/mosquitto.conf
 # =====================================================================
-mosq = """listener 1883
-allow_anonymous true
+
+# ---------------- usuários e ACL do mosquitto ----------------
+# Cada grupo entra no broker com o mesmo usuário/senha dos outros serviços e só
+# lê/escreve em <grupo>/#. O professor e "servicos" acessam tudo; as notas só leem.
+# Padrão: allow_anonymous true (sem login continua com acesso livre, como antes);
+# --mqtt-sem-anonimo exige login de todos (Node-RED, FUXA, ESP32...).
+MQTT_ANONIMO = not args.mqtt_sem_anonimo
+MQTT_SERV_USER = "servicos"
+MQTT_SERV_SENHA = segredo("senha:mqtt-servicos", lambda: gerar_senha(12), renovar=args.novas_senhas)
+
+
+def mosq_hash(senha):
+    """Hash igual ao do mosquitto_passwd 2.x: $7$<iterações>$<sal>$<hash> (PBKDF2-SHA512)."""
+    sal = secrets.token_bytes(12)
+    h = hashlib.pbkdf2_hmac("sha512", senha.encode(), sal, 101, 64)
+    return f"$7$101${base64.b64encode(sal).decode()}${base64.b64encode(h).decode()}"
+
+
+mosq_passwd = [f"{MQTT_SERV_USER}:{mosq_hash(MQTT_SERV_SENHA)}"]
+mosq_acl = ["# mosquitto/acl — gerado automaticamente (usuários em mosquitto/passwd)", ""]
+if MQTT_ANONIMO:
+    mosq_acl += ["# Clientes sem login (allow_anonymous true): acesso livre, como sem ACL",
+                 "topic readwrite #", "topic read $SYS/#", ""]
+mosq_acl += [f"user {MQTT_SERV_USER}", "topic readwrite #", "topic read $SYS/#", ""]
+for g in todos_servicos:
+    mosq_passwd.append(f"{g}:{mosq_hash(SENHA[g])}")
+    mosq_acl.append(f"user {g}")
+    if is_prof(g):
+        mosq_acl += ["topic readwrite #", "topic read $SYS/#"]
+    elif is_notas(g):
+        mosq_acl += ["topic read #"]
+    else:
+        mosq_acl += [f"topic readwrite {g}/#"]
+    mosq_acl.append("")
+gravar("mosquitto/passwd", "\n".join(mosq_passwd) + "\n")
+gravar("mosquitto/acl", "\n".join(mosq_acl))
+
+mosq = f"""listener 1883
+allow_anonymous {'true' if MQTT_ANONIMO else 'false'}
+password_file /mosquitto/config/passwd
+acl_file /mosquitto/config/acl
 persistence true
 persistence_location /mosquitto/data/
 log_dest stdout
@@ -376,6 +417,8 @@ restart_timeout 10 60
 notifications false
 try_private true
 """
+    if SEGREDOS_LAB and not args.novas_senhas:   # mesma senha do laboratório: a ponte entra como o grupo
+        mosq += f"remote_username {KIT}\nremote_password {SENHA[KIT]}\n"
 gravar("mosquitto/mosquitto.conf", mosq)
 print("🐝 mosquitto/mosquitto.conf")
 
@@ -436,7 +479,11 @@ c += [
     '      - "1883:1883"\n',
     "    volumes:\n",
     "      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro\n",
+    "      - ./mosquitto/passwd:/seguranca/passwd:ro\n",
+    "      - ./mosquitto/acl:/seguranca/acl:ro\n",
     "      - mosquitto_data:/mosquitto/data\n",
+    "    # passwd/acl copiados com dono mosquitto e modo 0700 (o mosquitto recusa/avisa arquivos abertos)\n",
+    '    command: ["sh", "-c", "install -m 0700 -o mosquitto -g mosquitto /seguranca/passwd /mosquitto/config/passwd && install -m 0700 -o mosquitto -g mosquitto /seguranca/acl /mosquitto/config/acl && exec mosquitto -c /mosquitto/config/mosquitto.conf"]\n',
     "    networks:\n",
     "      - labnet\n",
 ]
@@ -2021,6 +2068,8 @@ if WB:
 if MQTTX:
     cred.append(f"MQTT Explorer: {MQTTX_URL}")
 cred.append(f"MQTT:       mosquitto:1883 (Node-RED/FUXA)  ·  {IP}:1883 (ESP32 na mesma rede)")
+cred.append(f"MQTT login: <grupo>/<senha do grupo> (só tópicos <grupo>/#)  ·  {MQTT_SERV_USER}/{MQTT_SERV_SENHA} (tudo)"
+            + ("  ·  sem login: liberado" if MQTT_ANONIMO else "  ·  sem login: recusado"))
 if PONTE:
     cred.append(f"Ponte MQTT: {G}/# <-> {PONTE} (broker do laboratório)")
 if CAPTURA:
