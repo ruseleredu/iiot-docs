@@ -1,6 +1,6 @@
 ---
 title: LAB IoT na sua máquina — guia do aluno
-sidebar_label: LAB IoT na sua máquina
+sidebar_label: LAB IoT na sua máquina (old)
 description: Como gerar e usar no seu computador o LAB IoT completo (Node-RED, FUXA, MQTT, Gitea com CI, ntfy e MicroBin) com o gen_iot_aluno.py, como falar com o Gitea pelo tea, como capturar os pacotes da rede do lab para o Wireshark e como deixar o Git no Windows sem sustos.
 ---
 
@@ -529,15 +529,15 @@ e não com o IP real do aparelho. No Linux, aparece o IP real.
 
 ### 10.4 Filtros e portas no Wireshark {/* #captura-filtros */}
 
-| Filtro de exibição                                  | Mostra                                                |
-| --------------------------------------------------- | ----------------------------------------------------- |
-| `mqtt`                                              | todo o MQTT                                           |
-| `mqtt.msgtype == 3`                                 | só os PUBLISH (as mensagens)                          |
-| `mqtt.topic contains "lab05-a/"`                    | mensagens dos tópicos do grupo                        |
-| `mqtt.msgtype == 1`                                 | os CONNECT (quem se conecta ao broker e com qual id)  |
+| Filtro de exibição                                         | Mostra                                                        |
+| ---------------------------------------------------------- | ------------------------------------------------------------- |
+| `mqtt`                                                     | todo o MQTT                                                   |
+| `mqtt.msgtype == 3`                                        | só os PUBLISH (as mensagens)                                  |
+| `mqtt.topic contains "lab05-a/"`                           | mensagens dos tópicos do grupo                                |
+| `mqtt.msgtype == 1`                                        | os CONNECT (quem se conecta ao broker e com qual id)          |
 | `tcp.port == 1883 && tcp.flags.syn == 1 && !tcp.flags.ack` | tentativas de conexão no broker (útil se o ESP32 não conecta) |
-| `http.request`                                      | requisições HTTP (portal, Node-RED, FUXA, Gitea…)     |
-| `websocket`                                         | editor e dashboard do Node-RED, telas do FUXA         |
+| `http.request`                                             | requisições HTTP (portal, Node-RED, FUXA, Gitea…)             |
+| `websocket`                                                | editor e dashboard do Node-RED, telas do FUXA                 |
 
 O MQTT na porta 1883 o Wireshark reconhece sozinho. O HTTP **dentro** da rede do lab usa
 outras portas: em _Edit → Preferences → Protocols → HTTP → TCP port(s)_, acrescente
@@ -580,22 +580,22 @@ só se quiser recomeçar do zero.
 
 ## 12. Problemas comuns {/* #problemas */}
 
-| Sintoma                                                    | O que fazer                                                                                            |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `Ports are not available` / porta 80 em uso                | outro programa usa a 80 (IIS, Skype, outro servidor): gere com `--porta-http 8080`                     |
-| `ModuleNotFoundError: bcrypt`                              | `py -m pip install bcrypt`                                                                             |
-| `docker: command not found` / erro de conexão com o Docker | abra o Docker Desktop e espere ele ficar _running_                                                     |
-| Celular ou ESP32 não conectam                              | mesma rede? IP certo (`ipconfig`)? firewall liberado para redes privadas?                              |
-| `502 Bad Gateway` num caminho                              | o serviço ainda está subindo ou caiu: `docker compose logs <serviço>`                                  |
-| `tea login add` falha                                      | o Gitea está no ar (`http://localhost/git/`)? a URL termina em `/git`, sem barra no fim?               |
-| `git push` pede senha toda hora                            | refaça o `tea login add ... --git-credentials` e a configuração da [seção 8.3](#git-credenciais)       |
-| Job do CI parado em "Esperando"                            | `docker compose logs gitea-runner`; o runner aparece em `http://localhost/git/-/admin/actions/runners` |
-| Job falha no `actions/checkout`                            | veja o quadro da [seção 7](#ci) (`--ci-rede ip`)                                                       |
-| Script `.sh` falha no CI com `\r`                          | quebras de linha CRLF: [seção 8.2](#git-windows)                                                       |
-| Esqueci a senha                                            | está em `credenciais.txt` na pasta `lab05-a`                                                           |
-| `up` reclama que a rede `lab05-a_labnet` precisa ser recriada | ligou ou desligou o `--captura`: `docker compose down` e depois `docker compose up -d`              |
-| `captura/` vazia; log do netshoot parado em "aguardando a interface" | a rede foi criada antes do `--captura`: `docker compose down` e `docker compose up -d`      |
-| `.pcap` sem nada do que você procura                       | o `--captura-filtro` deixou de fora? veja o filtro em `docker compose logs netshoot`                   |
-| `wireshark-ao-vivo.cmd`: "Wireshark.exe não é reconhecido" | instale o Wireshark (seção 1) ou ponha a pasta dele no `PATH`                                          |
-| Wireshark ao vivo abre e acusa arquivo corrompido          | rodou o `tcpdump ... -w -` com pipe do PowerShell 5.1: use o `wireshark-ao-vivo.cmd`                   |
-| HTTP aparece só como TCP no Wireshark                      | portas 1880, 1881, 3000, 8080 como HTTP: [seção 10.4](#captura-filtros)                                |
+| Sintoma                                                              | O que fazer                                                                                            |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `Ports are not available` / porta 80 em uso                          | outro programa usa a 80 (IIS, Skype, outro servidor): gere com `--porta-http 8080`                     |
+| `ModuleNotFoundError: bcrypt`                                        | `py -m pip install bcrypt`                                                                             |
+| `docker: command not found` / erro de conexão com o Docker           | abra o Docker Desktop e espere ele ficar _running_                                                     |
+| Celular ou ESP32 não conectam                                        | mesma rede? IP certo (`ipconfig`)? firewall liberado para redes privadas?                              |
+| `502 Bad Gateway` num caminho                                        | o serviço ainda está subindo ou caiu: `docker compose logs <serviço>`                                  |
+| `tea login add` falha                                                | o Gitea está no ar (`http://localhost/git/`)? a URL termina em `/git`, sem barra no fim?               |
+| `git push` pede senha toda hora                                      | refaça o `tea login add ... --git-credentials` e a configuração da [seção 8.3](#git-credenciais)       |
+| Job do CI parado em "Esperando"                                      | `docker compose logs gitea-runner`; o runner aparece em `http://localhost/git/-/admin/actions/runners` |
+| Job falha no `actions/checkout`                                      | veja o quadro da [seção 7](#ci) (`--ci-rede ip`)                                                       |
+| Script `.sh` falha no CI com `\r`                                    | quebras de linha CRLF: [seção 8.2](#git-windows)                                                       |
+| Esqueci a senha                                                      | está em `credenciais.txt` na pasta `lab05-a`                                                           |
+| `up` reclama que a rede `lab05-a_labnet` precisa ser recriada        | ligou ou desligou o `--captura`: `docker compose down` e depois `docker compose up -d`                 |
+| `captura/` vazia; log do netshoot parado em "aguardando a interface" | a rede foi criada antes do `--captura`: `docker compose down` e `docker compose up -d`                 |
+| `.pcap` sem nada do que você procura                                 | o `--captura-filtro` deixou de fora? veja o filtro em `docker compose logs netshoot`                   |
+| `wireshark-ao-vivo.cmd`: "Wireshark.exe não é reconhecido"           | instale o Wireshark (seção 1) ou ponha a pasta dele no `PATH`                                          |
+| Wireshark ao vivo abre e acusa arquivo corrompido                    | rodou o `tcpdump ... -w -` com pipe do PowerShell 5.1: use o `wireshark-ao-vivo.cmd`                   |
+| HTTP aparece só como TCP no Wireshark                                | portas 1880, 1881, 3000, 8080 como HTTP: [seção 10.4](#captura-filtros)                                |

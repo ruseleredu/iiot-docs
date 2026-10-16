@@ -1,0 +1,582 @@
+---
+id: guia-lab-iot-aluno
+title: LAB IoT na sua máquina
+sidebar_label: LAB IoT na sua máquina (new)
+description: Como preparar o computador, gerar o LAB IoT com o gen_iot_aluno.py e trabalhar com Docker no dia a dia.
+keywords: [docker, node-red, mqtt, fuxa, gitea, esp32, lab iot]
+---
+
+# LAB IoT na sua máquina
+
+O script `gen_iot_aluno.py` monta no seu computador **o mesmo LAB IoT do laboratório**: Node-RED,
+broker MQTT, FUXA (SCADA/HMI), Gitea com CI, ntfy (avisos no celular), MicroBin e MQTT Explorer.
+Tudo roda em **containers Docker**, com os mesmos caminhos e nomes do laboratório. Um fluxo ou uma
+tela feita em casa funciona no laboratório sem mudar nada.
+
+Este guia tem quatro partes:
+
+1. [Verificar o computador](#1-verificar-o-computador) antes de começar;
+2. [Gerar e subir o lab](#2-gerar-e-subir-o-lab);
+3. [Trabalhar com Docker](#3-trabalhar-com-docker) no dia a dia;
+4. [Resolver problemas comuns](#4-problemas-comuns).
+
+:::info[Nos exemplos]
+O lab se chama `lab07` e o grupo é `x`, então a conta (e a pasta) é **`lab07-x`**. Troque pelos
+dados que o professor passou.
+:::
+
+---
+
+## 1. Verificar o computador
+
+### 1.1 O que é necessário
+
+| Item                                           | Mínimo                                                  | Para que serve                                               |
+| ---------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
+| Sistema                                        | Windows 10/11 64 bits com **WSL 2**, macOS 12+ ou Linux | O Docker roda sobre o WSL 2 no Windows                       |
+| Virtualização                                  | Ligada na BIOS/UEFI (Intel VT-x / AMD-V)                | Sem ela o Docker Desktop não inicia                          |
+| Memória RAM                                    | 8 GB no PC (16 GB recomendado)                          | O Docker precisa de **4 GB** só para ele (**6 GB** com o CI) |
+| Disco livre                                    | 15 GB (30 GB com o CI)                                  | Imagens dos containers e dados                               |
+| **Docker Desktop** (ou Docker Engine no Linux) | Versão com `docker compose` (v2)                        | Roda os serviços                                             |
+| **Python 3**                                   | 3.9 ou mais novo                                        | Roda o gerador                                               |
+| Pacote **bcrypt** do Python                    | qualquer versão atual                                   | Gera as senhas protegidas (hash)                             |
+| Porta **80** livre                             | ou outra, com `--porta-http`                            | Portal e serviços web                                        |
+| Porta **1883** livre                           |                                                         | Broker MQTT (ESP32)                                          |
+| Porta **3001** livre                           | ou outra, com `--mqtt-explorer-porta`                   | MQTT Explorer                                                |
+| Git (opcional)                                 |                                                         | Enviar projetos para o Gitea                                 |
+| Wireshark (opcional)                           |                                                         | Só com a opção `--captura`                                   |
+
+### 1.2 Instalar o que falta
+
+<Tabs groupId="so">
+<TabItem value="win" label="Windows" default>
+
+No **PowerShell como administrador**:
+
+```powershell
+# 1. WSL 2 (reinicie o PC depois, se ele pedir)
+wsl --install
+wsl --set-default-version 2
+
+# 2. Python 3 e Git (se ainda não tiver)
+winget install -e --id Python.Python.3.12
+winget install -e --id Git.Git
+
+# 3. Docker Desktop
+winget install -e --id Docker.DockerDesktop
+```
+
+Depois, **num PowerShell comum** (feche e abra de novo para ele achar o Python):
+
+```powershell
+py -m pip install --upgrade pip bcrypt
+```
+
+Abra o **Docker Desktop**, aceite os termos e espere a baleia ficar parada (verde) na bandeja.
+Em _Settings → Resources → Advanced_ (ou no arquivo `.wslconfig`) deixe pelo menos **4 GB** de
+memória.
+
+:::tip[Memória do Docker no Windows (WSL 2)]
+Se o Docker Desktop não mostrar o controle de memória, crie o arquivo
+`C:\Users\<seu-usuário>\.wslconfig` com:
+
+```ini
+[wsl2]
+memory=6GB
+```
+
+e rode `wsl --shutdown`. O Docker Desktop reinicia com o novo limite.
+:::
+
+</TabItem>
+<TabItem value="linux" label="Linux">
+
+```bash
+# Docker Engine + plugin compose (Ubuntu/Debian)
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER      # saia e entre de novo na sessão
+
+# Python e bcrypt
+sudo apt install -y python3 python3-pip git
+python3 -m pip install --user bcrypt     # ou: sudo apt install python3-bcrypt
+```
+
+</TabItem>
+<TabItem value="mac" label="macOS">
+
+```bash
+brew install --cask docker      # abra o Docker.app uma vez depois de instalar
+brew install python git
+python3 -m pip install bcrypt
+```
+
+Em _Docker Desktop → Settings → Resources_ deixe pelo menos **4 GB** de memória.
+
+</TabItem>
+</Tabs>
+
+### 1.3 Conferir tudo de uma vez
+
+Rode o script de verificação. Ele **não muda nada** no computador, só mostra o que está ok (✅)
+e o que falta (❌).
+
+<Tabs groupId="so">
+<TabItem value="win" label="Windows (PowerShell)" default>
+
+Salve como `verificar.ps1` e rode com `powershell -ExecutionPolicy Bypass -File .\verificar.ps1`:
+
+```powershell
+function ok($t)   { Write-Host "  [OK]   $t" -ForegroundColor Green }
+function erro($t) { Write-Host "  [FALTA] $t" -ForegroundColor Red }
+function aviso($t){ Write-Host "  [ATENCAO] $t" -ForegroundColor Yellow }
+
+Write-Host "`n== Python =="
+$py = (py --version) 2>$null
+if ($py) { ok $py } else { erro "Python 3 nao encontrado (instale e reabra o PowerShell)" }
+py -c "import bcrypt" 2>$null
+if ($LASTEXITCODE -eq 0) { ok "bcrypt instalado" } else { erro "bcrypt: rode  py -m pip install bcrypt" }
+
+Write-Host "`n== WSL e virtualizacao =="
+$virt = (Get-CimInstance Win32_Processor).VirtualizationFirmwareEnabled
+if ($virt -contains $true) { ok "Virtualizacao ligada" } else { aviso "Virtualizacao parece desligada na BIOS (ou o Hyper-V ja esta usando)" }
+wsl --status *> $null
+if ($LASTEXITCODE -eq 0) { ok "WSL instalado" } else { erro "WSL: rode  wsl --install  (como administrador)" }
+
+Write-Host "`n== Docker =="
+$dv = (docker --version) 2>$null
+if ($dv) { ok $dv } else { erro "Docker nao encontrado" }
+$cv = (docker compose version) 2>$null
+if ($cv) { ok $cv } else { erro "docker compose (v2) nao encontrado" }
+docker info *> $null
+if ($LASTEXITCODE -eq 0) {
+  ok "Docker Desktop rodando"
+  $mem = [math]::Round((docker info --format '{{.MemTotal}}') / 1GB, 1)
+  if ($mem -ge 4) { ok "Memoria do Docker: $mem GB" } else { aviso "Memoria do Docker: $mem GB (o minimo e 4 GB; 6 GB com CI)" }
+} else { erro "Docker Desktop parado: abra-o e espere a baleia ficar verde" }
+
+Write-Host "`n== Portas =="
+foreach ($p in 80, 1883, 3001) {
+  $uso = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
+  if (-not $uso) { ok "Porta $p livre" }
+  else {
+    $proc = (Get-Process -Id $uso[0].OwningProcess -ErrorAction SilentlyContinue).ProcessName
+    if ($proc -match "com.docker|wslrelay|vpnkit") { aviso "Porta $p ja usada pelo Docker (o lab ja esta rodando?)" }
+    else { erro "Porta $p ocupada por '$proc'" }
+  }
+}
+
+Write-Host "`n== Disco =="
+$livre = [math]::Round((Get-PSDrive C).Free / 1GB)
+if ($livre -ge 15) { ok "Disco C: $livre GB livres" } else { aviso "Disco C: so $livre GB livres (recomendado 15 GB ou mais)" }
+
+Write-Host "`n== Opcionais =="
+if (Get-Command git -ErrorAction SilentlyContinue) { ok (git --version) } else { aviso "Git nao instalado (so precisa para o Gitea)" }
+Write-Host ""
+```
+
+</TabItem>
+<TabItem value="unix" label="Linux / macOS (bash)">
+
+Salve como `verificar.sh` e rode com `bash verificar.sh`:
+
+```bash
+#!/usr/bin/env bash
+ok()   { printf "  \033[32m[OK]\033[0m    %s\n" "$*"; }
+erro() { printf "  \033[31m[FALTA]\033[0m %s\n" "$*"; }
+aviso(){ printf "  \033[33m[ATENCAO]\033[0m %s\n" "$*"; }
+
+echo "== Python =="
+command -v python3 >/dev/null && ok "$(python3 --version)" || erro "Python 3 não encontrado"
+python3 -c "import bcrypt" 2>/dev/null && ok "bcrypt instalado" || erro "bcrypt: python3 -m pip install bcrypt"
+
+echo "== Docker =="
+command -v docker >/dev/null && ok "$(docker --version)" || erro "Docker não encontrado"
+docker compose version >/dev/null 2>&1 && ok "$(docker compose version)" || erro "docker compose (v2) não encontrado"
+if docker info >/dev/null 2>&1; then
+  ok "Docker rodando"
+  mem=$(( $(docker info --format '{{.MemTotal}}') / 1024 / 1024 / 1024 ))
+  [ "$mem" -ge 4 ] && ok "Memória do Docker: ${mem} GB" || aviso "Memória do Docker: ${mem} GB (mínimo 4 GB)"
+else
+  erro "Docker parado (ou seu usuário não está no grupo docker)"
+fi
+
+echo "== Portas =="
+for p in 80 1883 3001; do
+  if (ss -ltn 2>/dev/null || netstat -an 2>/dev/null) | grep -qE "[:.]$p[[:space:]]"; then
+    erro "Porta $p ocupada"
+  else
+    ok "Porta $p livre"
+  fi
+done
+
+echo "== Disco =="
+livre=$(df -Pk . | awk 'NR==2{print int($4/1024/1024)}')
+[ "$livre" -ge 15 ] && ok "${livre} GB livres" || aviso "Só ${livre} GB livres (recomendado 15 GB ou mais)"
+
+echo "== Opcionais =="
+command -v git >/dev/null && ok "$(git --version)" || aviso "Git não instalado (só para o Gitea)"
+```
+
+</TabItem>
+</Tabs>
+
+:::warning[Só siga em frente com tudo ✅]
+Os itens **[FALTA]** impedem o lab de subir. Os **[ATENÇÃO]** costumam ter solução simples. Veja a
+[seção 4](#4-problemas-comuns).
+:::
+
+---
+
+## 2. Gerar e subir o lab
+
+### 2.1 Escolher a pasta
+
+Use uma pasta **sem espaços e sem acentos**, de preferência **fora** do OneDrive/Dropbox. Por
+exemplo, `C:\iot`. Coloque o `gen_iot_aluno.py` dentro dela.
+
+:::danger[Não use pastas sincronizadas]
+OneDrive, Google Drive e Dropbox travam os arquivos dos bancos de dados (SQLite) enquanto
+sincronizam. O Node-RED e o Gitea passam a dar erros estranhos.
+:::
+
+### 2.2 Gerar
+
+```powershell
+cd C:\iot
+py gen_iot_aluno.py --lab lab07 --grupo x
+```
+
+O script cria a pasta `lab07-x` com tudo pronto:
+
+```text
+lab07-x/
+├── docker-compose.yml     ← a "receita" de todos os containers
+├── Dockerfile             ← a imagem do Node-RED com os nós extras
+├── credenciais.txt        ← usuário, senha e endereços
+├── LEIA-ME.md             ← instruções específicas do seu lab
+├── .segredos.json         ← senhas e chaves (guarde! não publique)
+├── data/lab07-x/          ← fluxos e arquivos do Node-RED (inclui sqlite/)
+├── fuxa/lab07-x/          ← projeto e históricos do FUXA
+├── settings/  nginx/  mosquitto/  ntfy/  gitea/  runner/  mqtt-explorer/
+```
+
+**Opções mais usadas:**
+
+| Opção                                                               | Quando usar                                                         |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `--porta-http 8080`                                                 | A porta 80 está ocupada. O portal vira `http://localhost:8080`      |
+| `--segredos ..\lab07\.segredos.json`                                | Usar **a mesma senha do laboratório** (arquivo dado pelo professor) |
+| `--sem-gitea` / `--sem-runner`                                      | PC com pouca memória: tira o Gitea ou só o CI (economiza 2 a 3 GB)  |
+| `--sem-fuxa`, `--sem-ntfy`, `--sem-microbin`, `--sem-mqtt-explorer` | Tirar serviços que você não vai usar                                |
+| `--ponte-mqtt 192.168.0.10`                                         | Ligar o seu broker ao do laboratório (só os tópicos `lab07-x/#`)    |
+| `--wokwi-token SEU_TOKEN`                                           | Simular o ESP32 no CI com o Wokwi                                   |
+| `--captura`                                                         | Gravar os pacotes da rede do lab para abrir no Wireshark            |
+| `--sem-senha`                                                       | Nenhum serviço pede login (veja o aviso abaixo)                     |
+| `--novas-senhas`                                                    | Sortear senhas novas                                                |
+
+:::caution[`--sem-senha`]
+Com esta opção **qualquer pessoa na mesma rede (Wi-Fi)** pode abrir, editar e apagar seus fluxos,
+telas e repositórios. Use só em casa, numa rede de confiança. Para voltar ao login, gere de novo sem
+a opção e rode `docker compose up -d --build`.
+:::
+
+Rodar o gerador de novo na mesma pasta é **seguro**: as senhas são reaproveitadas (do
+`.segredos.json`) e os seus dados não são tocados.
+
+### 2.3 Subir
+
+```powershell
+cd lab07-x
+docker compose up -d --build
+```
+
+A primeira vez demora de 5 a 15 minutos: o Docker monta a imagem do Node-RED e baixa as outras.
+Depois, o Docker Desktop sobe tudo sozinho quando o computador liga.
+
+### 2.4 Verificar se subiu
+
+```powershell
+docker compose ps
+```
+
+Todos os serviços devem estar **`running`** (ou `Up`). O `gitea-init` é a exceção: ele roda uma vez,
+cria o seu usuário e a organização no Gitea e termina (**`exited (0)`** é o normal).
+
+Abra no navegador:
+
+| Serviço             | Endereço                           |
+| ------------------- | ---------------------------------- |
+| Portal              | http://localhost/                  |
+| Node-RED (editor)   | http://localhost/lab07-x/          |
+| Dashboard           | http://localhost/lab07-x/dashboard |
+| FUXA                | http://localhost/fuxa/lab07-x/     |
+| Gitea               | http://localhost/git/              |
+| Avisos (ntfy)       | http://localhost/avisos/           |
+| MicroBin            | http://localhost/bin/              |
+| MQTT Explorer       | http://localhost:3001/             |
+| Broker MQTT (ESP32) | `IP-do-seu-PC:1883`                |
+
+O usuário e a senha estão no `credenciais.txt`. **A mesma senha vale para todos os serviços.**
+
+**Teste rápido do MQTT** (sem instalar nada, usando o próprio container do broker):
+
+```powershell
+# Terminal 1: escutar
+docker compose exec mosquitto mosquitto_sub -t "lab07-x/#" -v
+
+# Terminal 2: publicar
+docker compose exec mosquitto mosquitto_pub -t "lab07-x/teste" -m "ola"
+```
+
+Se `lab07-x/teste ola` aparecer no terminal 1, o broker está funcionando.
+
+### 2.5 ESP32 e celular na mesma rede
+
+No ESP32, o broker é o **IP do seu PC** (aparece no `credenciais.txt` e no rodapé do portal; ou rode
+`ipconfig` e procure o _Endereço IPv4_ do Wi-Fi), porta `1883`.
+
+```cpp
+const char* MQTT_HOST = "192.168.0.102";   // IP do seu PC
+const int   MQTT_PORT = 1883;
+```
+
+:::tip[Firewall do Windows]
+Na primeira vez que o Docker abrir as portas, o Windows pergunta se libera o acesso. Marque **Redes
+privadas**. E confirme que o seu Wi-Fi está como _Rede privada_ (Configurações → Rede e Internet →
+Wi-Fi → propriedades). Em rede _Pública_, o ESP32 e o celular não conseguem conectar.
+:::
+
+:::note[O IP do PC muda]
+Ao trocar de rede (casa → laboratório), o IP do PC muda. Rode o gerador de novo (ele descobre o IP
+novo sozinho) e depois `docker compose up -d`. No ESP32, atualize o `MQTT_HOST`.
+:::
+
+---
+
+## 3. Trabalhar com Docker
+
+### 3.1 Os conceitos em 1 minuto
+
+| Conceito                   | O que é                                                                           | No LAB IoT                                                     |
+| -------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Imagem**                 | Um "molde" pronto, só leitura, baixado da internet ou montado por um `Dockerfile` | `nodered/node-red`, `eclipse-mosquitto`, `gitea/gitea`…        |
+| **Container**              | Um programa rodando a partir de uma imagem, isolado do PC                         | `lab07-x-nodered`, `lab07-x-mosquitto`…                        |
+| **Volume / pasta montada** | Onde os dados **sobrevivem** quando o container é recriado                        | `data/`, `fuxa/` (pastas) e volumes `gitea_data`, `ntfy_data`… |
+| **Rede**                   | Rede interna entre os containers, onde um acha o outro **pelo nome**              | `labnet`: o Node-RED chega ao broker em `mosquitto:1883`       |
+| **Compose**                | Um arquivo (`docker-compose.yml`) que descreve todos os containers juntos         | Um único comando sobe o lab inteiro                            |
+
+:::info[Regra de ouro]
+Um container pode ser **apagado e recriado a qualquer momento**: tudo o que está **dentro** dele se
+perde, menos o que está numa pasta montada ou num volume. Por isso os seus fluxos ficam em
+`data/lab07-x/` (no seu PC), e não "dentro" do Node-RED.
+:::
+
+:::tip[Nome do serviço × nome do container]
+Os comandos `docker compose …` usam o **nome do serviço** (o que está no `docker-compose.yml`:
+`mosquitto`, `nginx`, `gitea`, `lab07-x-nodered`, `lab07-x-fuxa`…). Os comandos `docker …` sem
+_compose_ usam o **nome do container** (`lab07-x-mosquitto`, `lab07-x-portal`…). Rode
+`docker compose ps` para ver os dois.
+:::
+
+### 3.2 Comandos do dia a dia
+
+Sempre **dentro da pasta `lab07-x`**:
+
+| Para…                                       | Comando                                  |
+| ------------------------------------------- | ---------------------------------------- |
+| Subir tudo (ou aplicar mudanças)            | `docker compose up -d`                   |
+| Subir remontando a imagem do Node-RED       | `docker compose up -d --build`           |
+| Ver o que está rodando                      | `docker compose ps`                      |
+| Ver o uso de CPU e memória                  | `docker stats` (Ctrl+C sai)              |
+| Ver os logs de um serviço (ao vivo)         | `docker compose logs -f lab07-x-nodered` |
+| Ver só as últimas 100 linhas                | `docker compose logs --tail 100 gitea`   |
+| Reiniciar um serviço                        | `docker compose restart lab07-x-nodered` |
+| Parar tudo (**os dados ficam**)             | `docker compose down`                    |
+| Parar sem remover os containers             | `docker compose stop`                    |
+| Abrir um terminal dentro de um container    | `docker compose exec lab07-x-nodered sh` |
+| Rodar de novo a criação do usuário no Gitea | `docker compose run --rm gitea-init`     |
+
+### 3.3 Olhar dentro de um container
+
+```powershell
+docker compose exec lab07-x-nodered sh
+```
+
+Você entra num terminal Linux **dentro** do Node-RED:
+
+```sh
+pwd                 # /usr/src/node-red
+ls -la /data        # seus fluxos (é a pasta data/lab07-x do PC)
+ls -la /data/sqlite # bancos SQLite dos seus fluxos
+exit                # volta para o PowerShell
+```
+
+:::note
+O que você cria em `/data` aparece em `data\lab07-x\` no seu PC, e vice-versa. Fora de `/data`,
+qualquer mudança **some** quando o container é recriado.
+:::
+
+### 3.4 Instalar nós no Node-RED
+
+Há dois jeitos:
+
+1. **Pelo editor** (_Menu → Manage palette → Install_). O nó vai para `/data/node_modules` e
+   continua lá depois de recriar o container. É o jeito mais simples para testar um nó.
+2. **No `Dockerfile`** (o nó fica na imagem, igual para todos). Se o professor mandar acrescentar um
+   nó, ele entra na lista do `npm install` do `Dockerfile`, e depois você roda:
+
+```powershell
+docker compose build lab07-x-nodered
+docker compose up -d
+```
+
+### 3.5 Atualizar as imagens
+
+```powershell
+docker compose pull              # baixa versões novas das imagens prontas
+docker compose build --pull      # remonta o Node-RED sobre a imagem base nova
+docker compose up -d             # recria só o que mudou
+```
+
+### 3.6 Cópia de segurança
+
+As pastas `data/` e `fuxa/` estão no seu PC: basta copiá-las (com o lab parado, para não pegar um
+banco no meio de uma gravação). Guarde também o `.segredos.json`.
+
+Os volumes (Gitea, ntfy, MicroBin) ficam dentro do Docker. Para copiar o do Gitea:
+
+```powershell
+docker compose stop gitea
+docker run --rm -v lab07-x_gitea_data:/origem -v ${PWD}:/destino alpine `
+  tar czf /destino/gitea-backup.tgz -C /origem .
+docker compose start gitea
+```
+
+:::tip
+O nome do volume é `<pasta-do-lab>_<volume>`. Confira com `docker volume ls`.
+:::
+
+### 3.7 Liberar espaço em disco
+
+```powershell
+docker system df          # quanto o Docker está ocupando
+docker image prune        # apaga imagens antigas, sem uso (seguro)
+docker builder prune      # apaga o cache de montagem de imagens (seguro)
+```
+
+:::danger[Comandos que apagam os seus dados]
+
+- `docker compose down -v` → apaga **os volumes**: Gitea (repositórios!), ntfy e MicroBin.
+- `docker volume prune` / `docker system prune --volumes` → apaga volumes de **todos** os projetos
+  que estiverem parados.
+
+As pastas `data/` e `fuxa/` não são apagadas por esses comandos, mas o Gitea é. Use só se quiser
+mesmo começar do zero.
+:::
+
+---
+
+## 4. Problemas comuns
+
+### O Docker Desktop não inicia
+
+- _"WSL 2 installation is incomplete"_ → no PowerShell como administrador: `wsl --update` e reinicie.
+- _"Virtualization support not detected"_ → ligue a virtualização na BIOS/UEFI (Intel VT-x, AMD-V ou
+  SVM Mode).
+- `error during connect … pipe/docker_engine` ao rodar um comando → o Docker Desktop está fechado ou
+  ainda iniciando. Abra-o e espere a baleia ficar verde.
+
+### A porta 80 (ou 1883) já está em uso
+
+```text
+Error … Bind for 0.0.0.0:80 failed: port is already allocated
+```
+
+Outro programa (IIS, XAMPP, Skype antigo, outro lab) está usando a porta. Descubra qual:
+
+```powershell
+Get-Process -Id (Get-NetTCPConnection -LocalPort 80 -State Listen).OwningProcess
+```
+
+Feche o programa **ou** gere de novo com outra porta: `py gen_iot_aluno.py --lab lab07 --grupo x --porta-http 8080`.
+
+### A montagem do Node-RED falha no `npm install`
+
+```text
+npm error code ETARGET
+npm error notarget No matching version found for node-opcua-…@2.187.9
+```
+
+Não é erro seu: um pacote estava sendo publicado no npm exatamente naquele momento. Espere alguns
+minutos e monte de novo, sem cache:
+
+```powershell
+docker compose build --no-cache lab07-x-nodered
+docker compose up -d
+```
+
+Outros erros de rede no `npm install` (timeout, `ECONNRESET`) também se resolvem rodando de novo.
+
+### Node-RED: `failed to open /data/sqlite/....sqlite`
+
+A pasta do banco não existe. Crie-a e faça _Deploy_ de novo:
+
+```powershell
+mkdir data\lab07-x\sqlite
+```
+
+No nó de configuração do **sqlite**, o _Mode_ deve ser **Read-Write-Create**. Versões novas do
+gerador já criam essa pasta.
+
+### O ESP32 (ou o celular) não conecta
+
+1. O ESP32 está **no mesmo Wi-Fi** que o PC? (Rede de visitantes isola os aparelhos.)
+2. O `MQTT_HOST` é o **IP atual** do PC? (`ipconfig`)
+3. O Wi-Fi do PC está como **Rede privada** e o firewall liberou o Docker? (veja a
+   [seção 2.5](#25-esp32-e-celular-na-mesma-rede))
+4. O broker está de pé? `docker compose logs --tail 20 mosquitto` deve mostrar
+   `mosquitto version … running`, e os clientes que conectam aparecem como `New client connected`.
+
+### Um serviço fica reiniciando (`Restarting`)
+
+Veja o motivo no log:
+
+```powershell
+docker compose logs --tail 50 <serviço>
+```
+
+As causas mais comuns são falta de memória (aumente a memória do Docker ou use `--sem-runner`) e um
+arquivo de configuração alterado à mão (gere de novo com o script).
+
+### O PC ficou lento
+
+```powershell
+docker stats
+```
+
+O que mais pesa é o **CI** (gitea-runner: cada job de ESP32 usa ~1 CPU e 2 GB) e o Gitea. Se não
+estiver usando, pare-os: `docker compose stop gitea-runner gitea`. Ou gere sem eles (`--sem-runner`,
+`--sem-gitea`).
+
+### Quero começar do zero
+
+```powershell
+docker compose down          # para tudo (os volumes ficam)
+```
+
+Para apagar **também** os repositórios do Gitea e os avisos: `docker compose down -v` (veja o
+[alerta da seção 3.7](#37-liberar-espaço-em-disco)). Para zerar o Node-RED, apague
+`data\lab07-x\flows.json` com o lab parado.
+
+---
+
+## Resumo de bolso
+
+```powershell
+py gen_iot_aluno.py --lab lab07 --grupo x   # gerar (ou atualizar) o lab
+cd lab07-x
+docker compose up -d --build                 # subir
+docker compose ps                            # está tudo running?
+docker compose logs -f lab07-x-nodered       # ver erros
+docker compose down                          # parar (dados ficam)
+```
