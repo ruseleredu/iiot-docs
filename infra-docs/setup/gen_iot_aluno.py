@@ -29,6 +29,7 @@ Uso (Windows: "py"; Linux/macOS: "python3"):
   py gen_iot_aluno.py --ponte-mqtt 192.168.0.10                  # liga o MQTT ao broker do laboratório
   py gen_iot_aluno.py --captura                                  # grava os pacotes (netshoot) para o Wireshark
   py gen_iot_aluno.py --captura --captura-filtro "port 1883"     # só o MQTT
+  py gen_iot_aluno.py --sem-senha                                # tudo aberto, sem login (ver aviso)
   cd lab05-a  e  docker compose up -d --build
 
 Requisitos: Docker Desktop (Windows/macOS) ou Docker Engine (Linux); Python 3 com "pip install bcrypt".
@@ -58,6 +59,9 @@ ap.add_argument("--saida", default=None, help="Pasta de saída (padrão: <lab>-<
 ap.add_argument("--segredos", default=None,
                 help=".segredos.json do laboratório: reaproveita a senha e o credentialSecret do grupo")
 ap.add_argument("--novas-senhas", action="store_true", help="Sorteia senhas novas")
+ap.add_argument("--sem-senha", action="store_true",
+                help="Todos os serviços sem login (Node-RED, FUXA, Gitea, MicroBin, ntfy, MQTT, "
+                     "MQTT Explorer). Qualquer um na mesma rede pode ver e editar tudo")
 ap.add_argument("--mqtt-sem-anonimo", action="store_true",
                 help="Mosquitto exige usuário/senha de todos (padrão: allow_anonymous true)")
 ap.add_argument("--dominio", default="iot.lab", help="Domínio dos e-mails das contas (só no Gitea)")
@@ -183,6 +187,11 @@ LAN_URL = f"http://{IP}{_porta}" if not IP.startswith("127.") else None   # celu
 # link para abrir FORA desta máquina (QR code, link do MicroBin, servidor do app ntfy)
 LINK_BASE = LAN_URL or LOCAL_URL
 PROTEGER = args.proteger_http
+# --sem-senha: nenhum serviço pede login. As contas continuam existindo por dentro (o Gitea e o
+# gitea-init precisam de um usuário com senha; os tokens do ntfy seguem válidos), só não são exigidas.
+SEM_SENHA = args.sem_senha
+if SEM_SENHA and (PROTEGER or args.mqtt_sem_anonimo):
+    sys.exit("--sem-senha não combina com --proteger-http nem com --mqtt-sem-anonimo.")
 
 # ---------------- serviços ----------------
 WB = not args.sem_microbin
@@ -337,7 +346,8 @@ if NTFY:
            "cache-file: /var/lib/ntfy/cache.db",
            'cache-duration: "72h"',
            "auth-file: /var/lib/ntfy/auth.db",
-           "auth-default-access: deny-all",
+           f"auth-default-access: {'read-write' if SEM_SENHA else 'deny-all'}"
+           + ("   # --sem-senha: sem login, lê e publica em qualquer tópico" if SEM_SENHA else ""),
            "# o app web do ntfy não funciona em subcaminho: o portal tem a página /avisos/",
            "web-root: disable",
            "enable-signup: false",
@@ -512,7 +522,8 @@ for g in todos_servicos:
         c += [
             "      - MICROBIN_URL=http://microbin:8080\n",
             f"      - MICROBIN_LINK={LINK_BASE}/bin\n",
-            f"      - MICROBIN_AUTH=Basic {base64.b64encode(f'{g}:{SENHA[g]}'.encode()).decode()}\n",
+            ("      - MICROBIN_AUTH=\n" if SEM_SENHA else
+             f"      - MICROBIN_AUTH=Basic {base64.b64encode(f'{g}:{SENHA[g]}'.encode()).decode()}\n"),
         ]
     c += [
         "    depends_on:\n",
@@ -539,8 +550,13 @@ if MQTTX:
         "      - MQTT_AUTO_CONNECT_HOST=mosquitto\n",
         "      - MQTT_AUTO_CONNECT_PORT=1883\n",
         f"      - ALLOWED_ORIGINS={','.join(_origens)}\n",
-        f"      - MQTT_EXPLORER_USERNAME={G}\n",
-        f"      - MQTT_EXPLORER_PASSWORD={SENHA[G]}\n",
+    ]
+    if SEM_SENHA:
+        c += ["      - MQTT_EXPLORER_SKIP_AUTH=true\n"]
+    else:
+        c += [f"      - MQTT_EXPLORER_USERNAME={G}\n",
+              f"      - MQTT_EXPLORER_PASSWORD={SENHA[G]}\n"]
+    c += [
         "    volumes:\n",
         "      - ./mqtt-explorer/data:/app/data\n",
         "    depends_on:\n",
@@ -623,6 +639,16 @@ if GITEA:
         "      - GITEA__time__DEFAULT_UI_LOCATION=America/Sao_Paulo\n",
         f"      - GITEA__actions__ENABLED={'true' if RUNNER else 'false'}\n",
     ]
+    if SEM_SENHA:
+        # --sem-senha: o nginx envia X-WEBAUTH-USER: <grupo> em /git/ e o Gitea entra como o grupo
+        # (navegador, git clone/push e API), sem pedir senha
+        c += [
+            "      - GITEA__service__ENABLE_REVERSE_PROXY_AUTHENTICATION=true\n",
+            "      - GITEA__service__ENABLE_REVERSE_PROXY_AUTHENTICATION_API=true\n",
+            "      - GITEA__service__ENABLE_REVERSE_PROXY_AUTO_REGISTRATION=false\n",
+            "      - GITEA__security__REVERSE_PROXY_AUTHENTICATION_USER=X-WEBAUTH-USER\n",
+            "      - GITEA__security__REVERSE_PROXY_TRUSTED_PROXIES=*\n",
+        ]
     if RUNNER:
         c += [
             "      - GITEA__actions__DEFAULT_ACTIONS_URL=github\n",
@@ -707,7 +733,7 @@ if WB:
         f"      - MICROBIN_ADMIN_USERNAME={G}\n",
         f"      - MICROBIN_ADMIN_PASSWORD={SENHA[G]}\n",
         "      - MICROBIN_HIGHLIGHTSYNTAX=true\n",
-        "      - MICROBIN_PRIVATE=true\n",
+        f"      - MICROBIN_PRIVATE={'false' if SEM_SENHA else 'true'}\n",
         "      - MICROBIN_EDITABLE=true\n",
         "      - MICROBIN_ENABLE_BURN_AFTER=true\n",
         "      - MICROBIN_SHOW_READ_STATS=true\n",
@@ -947,18 +973,19 @@ if GITEA:
     # Gitea em subcaminho (ROOT_URL = .../git/); receita da documentação oficial
     n += ["\n        # Gitea -> /git/\n",
           "        location = /git { return 301 /git/; }\n"]
-    n += location("/git/", ["client_max_body_size 512m;",
+    n += location("/git/", ["client_max_body_size 512m;"] +
+                  ([f"proxy_set_header X-WEBAUTH-USER {G};   # --sem-senha: entra como {G}"] if SEM_SENHA else []) + [
                             "rewrite ^ $request_uri;",
                             "rewrite ^/git(/.*) $1 break;",
                             "proxy_pass http://gitea:3000$uri;"])
 if WB:
     # MicroBin em /bin/: gera os links com o prefixo (MICROBIN_PUBLIC_PATH=/bin) e o nginx
     # retira o /bin antes de entregar. Acesso com o login de qualquer grupo (htpasswd).
-    n += ["\n        # MicroBin (único) -> /bin/  (login: usuário e senha do grupo)\n",
+    n += [f"\n        # MicroBin (único) -> /bin/  ({'sem login' if SEM_SENHA else 'login: usuário e senha do grupo'})\n",
           "        location = /bin { return 301 /bin/; }\n"]
-    n += location("/bin/", ["client_max_body_size 55m;",
-                            'auth_basic "MicroBin - login do grupo";',
-                            "auth_basic_user_file /etc/nginx/htpasswd;",
+    n += location("/bin/", ["client_max_body_size 55m;"] +
+                  ([] if SEM_SENHA else ['auth_basic "MicroBin - login do grupo";',
+                                         "auth_basic_user_file /etc/nginx/htpasswd;"]) + [
                             "set $alvo microbin:8080;",
                             "rewrite ^/bin(/.*)$ $1 break;",
                             "proxy_pass http://$alvo;"])
@@ -1015,13 +1042,7 @@ module.exports = {{
         header: {{ title: "{titulo}" }},
         projects: {{ enabled: true }},
     }},
-    adminAuth: {{
-        type: "credentials",
-        users: [
-            {{ username: "{g}",      password: "{hash_admin}", permissions: "*" }},
-            {{ username: "{g}-view", password: "{hash_view}",  permissions: "read" }}
-        ]
-    }},{http_auth}
+{admin_auth}{http_auth}
     // Node-RED vive em <base>/{g}/  (http://IP/{g}/ ou https://<publico>/{g}/)
     httpAdminRoot: '/{g}/',
     httpNodeRoot: '/{g}/',
@@ -1043,7 +1064,18 @@ for g, s_admin, _uv, s_view in credenciais_geradas:
     if PROTEGER:
         http_auth = ("\n    // dashboards e endpoints HTTP exigem login (usuário/senha do grupo)\n"
                      f'    httpNodeAuth: {{ user: "{g}", pass: "{hash_admin}" }},')
-    gravar(f"settings/{g}.js", tpl.format(
+    if SEM_SENHA:
+        admin_auth = "    // --sem-senha: editor aberto, sem login (sem adminAuth)"
+    else:
+        admin_auth = (
+            '    adminAuth: {\n'
+            '        type: "credentials",\n'
+            '        users: [\n'
+            f'            {{ username: "{g}",      password: "{hash_admin}", permissions: "*" }},\n'
+            f'            {{ username: "{g}-view", password: "{hash_view}",  permissions: "read" }}\n'
+            '        ]\n'
+            '    },')
+    gravar(f"settings/{g}.js", tpl.format(admin_auth=admin_auth,
         g=g,
         # credentialSecret persistente: senão as credenciais salvas nos nós ficam ilegíveis
         cred=segredo(f"credential_secret:{g}", lambda: secrets.token_hex(16)),
@@ -1088,7 +1120,7 @@ def semear_fuxa(g):
     except (OSError, ValueError):
         cfg = {}
     cfg.update({
-        "secureEnabled": True,       # editar exige login; ver as telas (HMI) não
+        "secureEnabled": not SEM_SENHA,   # editar exige login (exceto --sem-senha); ver as telas não
         "secretCode": segredo(f"fuxa_secret:{g}", lambda: secrets.token_hex(24)),
         "tokenExpiresIn": "12h",
         "language": "pt",
@@ -1335,7 +1367,7 @@ if WB:
         '        <span class="node__idx">bin</span>\n'
         '        <span class="node__name">MicroBin</span>\n'
         '        <span class="node__topic">colar código e enviar arquivos</span>\n'
-        '        <span class="node__go">abrir (login) &rarr;</span>\n'
+        f'        <span class="node__go">abrir{"" if SEM_SENHA else " (login)"} &rarr;</span>\n'
         '      </a>\n')
 if MQTTX:
     cards.append(
@@ -1343,7 +1375,7 @@ if MQTTX:
         '        <span class="node__idx">mqtt · só nesta rede</span>\n'
         '        <span class="node__name">MQTT Explorer</span>\n'
         '        <span class="node__topic">#  ·  broker local</span>\n'
-        '        <span class="node__go">abrir explorer (login) &rarr;</span>\n'
+        f'        <span class="node__go">abrir explorer{"" if SEM_SENHA else " (login)"} &rarr;</span>\n'
         '      </a>\n')
 
 rodape = [f"<span>nesta máquina: {LOCAL_URL}/</span>"]
@@ -1497,7 +1529,7 @@ AVISOS_HTML = r"""<!DOCTYPE html>
         <h2>Celular e Node-RED</h2>
         <table>
           <tr><td>App ntfy · servidor</td><td><code id="srv"></code></td></tr>
-          <tr><td>Login no app</td><td><code id="quem"></code> e a senha do grupo</td></tr>
+          <tr><td>Login no app</td><td><code id="quem"></code></td></tr>
           <tr><td>Tópicos do grupo</td><td><code id="meus"></code></td></tr>
           <tr><td>Node-RED (já configurado)</td><td><code>env.get("NTFY_URL")</code>, <code>NTFY_TOPIC</code>, <code>NTFY_TOKEN</code></td></tr>
         </table>
@@ -1525,7 +1557,7 @@ let cred = null, conta = null, ctrl = null, vistos = new Set();
 
 const guardar = (k, v) => { try { v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} };
 const ler = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
-const auth = () => ({ Authorization: "Basic " + btoa(unescape(encodeURIComponent(cred.u + ":" + cred.s))) });
+const auth = () => cred ? { Authorization: "Basic " + btoa(unescape(encodeURIComponent(cred.u + ":" + cred.s))) } : {};
 
 function topicosPadrao(c) {
   const t = [];
@@ -1543,6 +1575,10 @@ function topicosPadrao(c) {
 }
 
 async function entrar(u, s) {
+  if (CFG.semSenha) {             // --sem-senha: ntfy aberto, sem login
+    cred = null; conta = { username: CFG.grupos[0], role: "user" };
+    $("bSair").classList.add("oculto");
+  } else {
   cred = { u, s };
   const r = await fetch("/ntfy/v1/account", { headers: auth() });
   if (r.status === 401 || r.status === 403) throw new Error("Usuário ou senha incorretos.");
@@ -1550,6 +1586,7 @@ async function entrar(u, s) {
   conta = await r.json();
   if (!conta.username || conta.username === "*") throw new Error("Usuário ou senha incorretos.");
   guardar("ntfy_u", u); guardar("ntfy_s", s);
+  }
   $("caixaLogin").classList.add("oculto"); $("area").classList.remove("oculto");
   const tops = topicosPadrao(conta);
   $("tt").value = tops.join(", ");
@@ -1559,7 +1596,7 @@ async function entrar(u, s) {
     const o = document.createElement("option"); o.value = t; $("ltopicos").appendChild(o);
   }
   $("srv").textContent = (CFG.publico || location.origin) + "/ntfy";
-  $("quem").textContent = conta.username;
+  $("quem").textContent = CFG.semSenha ? "não precisa (sem login)" : conta.username + " e a senha do grupo";
   $("meus").textContent = conta.username + ", " + conta.username + "-…" + (CFG.avisos ? "  ·  " + CFG.avisos + " (só leitura)" : "");
   $("opWb").classList.toggle("oculto", !CFG.microbin);
   assinar();
@@ -1685,7 +1722,8 @@ $("bSair").addEventListener("click", sair);
 $("tt").addEventListener("change", () => { $("msgs").innerHTML = ""; vistos = new Set(); assinar(); });
 
 const u0 = ler("ntfy_u"), s0 = ler("ntfy_s");
-if (u0 && s0) entrar(u0, s0).catch(() => sair());
+if (CFG.semSenha) { $("caixaLogin").classList.add("oculto"); entrar(); }
+else if (u0 && s0) entrar(u0, s0).catch(() => sair());
 </script>
 </body>
 </html>
@@ -1700,6 +1738,7 @@ if NTFY:
         "publico": LAN_URL,          # servidor do app ntfy no celular (mesma rede)
         "microbin": WB,
         "binLink": f"{LINK_BASE}/bin",
+        "semSenha": SEM_SENHA,
     }
     gravar("nginx/html/avisos/index.html",
            AVISOS_HTML.replace("__CFG__", json.dumps(avisos_cfg, ensure_ascii=False))
@@ -2039,12 +2078,19 @@ except OSError:
 # credenciais.txt e LEIA-ME.md
 # =====================================================================
 U = LOCAL_URL
-cred = [f"=== LAB IoT do {G} (na sua máquina) ===", "",
-        f"Usuário: {G}        Senha: {SENHA[G]}",
-        f"Só leitura (Node-RED): {G}-view   Senha: {SENHA[G + '-view']}", "",
-        "A mesma senha vale para Node-RED, FUXA, Gitea, MicroBin, ntfy e MQTT Explorer" +
-        (" (e é a do laboratório)." if SEGREDOS_LAB and not args.novas_senhas else "."), "",
-        f"Nesta máquina:  {U}/"]
+# Node-RED Projects clona por dentro da rede do Docker; sem senha, passa pelo nginx (login automático)
+GITEA_NR_URL = f"http://nginx{_porta}/git/" if SEM_SENHA else "http://gitea:3000/"
+cred = [f"=== LAB IoT do {G} (na sua máquina) ===", ""]
+if SEM_SENHA:
+    cred += ["SEM SENHA (--sem-senha): nenhum serviço pede login.",
+             "Qualquer pessoa na mesma rede pode ver e editar tudo.",
+             f"(Uso interno: Gitea/MicroBin admin {G} / {SENHA[G]})", ""]
+else:
+    cred += [f"Usuário: {G}        Senha: {SENHA[G]}",
+             f"Só leitura (Node-RED): {G}-view   Senha: {SENHA[G + '-view']}", "",
+             "A mesma senha vale para Node-RED, FUXA, Gitea, MicroBin, ntfy e MQTT Explorer" +
+             (" (e é a do laboratório)." if SEGREDOS_LAB and not args.novas_senhas else "."), ""]
+cred += [f"Nesta máquina:  {U}/"]
 if LAN_URL:
     cred.append(f"Rede local:     {LAN_URL}/   (celular/ESP32 no mesmo Wi-Fi)")
 cred += ["", f"Node-RED:   <base>/{G}/   ·   dashboard: <base>/{G}/dashboard"]
@@ -2055,7 +2101,7 @@ if GITEA:
                 (f"   ·   repositório {GITEA_REPO}" if GITEA_REPO else ""))
     cred.append(f"  git (nesta máquina): {GITEA_URL}{org_de(G)}/<repo>.git")
     if GITEA_REPO:
-        cred.append(f"  Node-RED Projects:   http://gitea:3000/{org_de(G)}/{GITEA_REPO}.git")
+        cred.append(f"  Node-RED Projects:   {GITEA_NR_URL}{org_de(G)}/{GITEA_REPO}.git")
 if RUNNER:
     cred.append(f"  Actions: runner {G}-runner, {args.runner_capacidade} job(s) por vez, rótulo ubuntu-latest")
     cred.append(f"  Secrets da organização: NTFY_TOPIC={G}-ci, NTFY_TOKEN" +
@@ -2068,8 +2114,11 @@ if WB:
 if MQTTX:
     cred.append(f"MQTT Explorer: {MQTTX_URL}")
 cred.append(f"MQTT:       mosquitto:1883 (Node-RED/FUXA)  ·  {IP}:1883 (ESP32 na mesma rede)")
-cred.append(f"MQTT login: <grupo>/<senha do grupo> (só tópicos <grupo>/#)  ·  {MQTT_SERV_USER}/{MQTT_SERV_SENHA} (tudo)"
-            + ("  ·  sem login: liberado" if MQTT_ANONIMO else "  ·  sem login: recusado"))
+if SEM_SENHA:
+    cred.append("MQTT login: não precisa (allow_anonymous true)")
+else:
+    cred.append(f"MQTT login: <grupo>/<senha do grupo> (só tópicos <grupo>/#)  ·  {MQTT_SERV_USER}/{MQTT_SERV_SENHA} (tudo)"
+                + ("  ·  sem login: liberado" if MQTT_ANONIMO else "  ·  sem login: recusado"))
 if PONTE:
     cred.append(f"Ponte MQTT: {G}/# <-> {PONTE} (broker do laboratório)")
 if CAPTURA:
@@ -2088,7 +2137,10 @@ leia = [f"# LAB IoT do {G} — na sua máquina", "",
         + (", notificações (ntfy)" if NTFY else "") + (" e MicroBin" if WB else "") + ".",
         "Os caminhos e os nomes dos serviços são **iguais aos do laboratório**: um fluxo ou uma",
         "tela feita aqui funciona lá sem mudar nada (e vice-versa).", "",
-        "> ⚠️ Esta pasta tem as suas senhas. Não a publique (nem em repositório).", "",
+        ("> ⚠️ **Sem senha** (`--sem-senha`): nenhum serviço pede login. Qualquer pessoa na mesma\n"
+         "> rede (Wi-Fi) pode abrir, editar e apagar tudo. Use só em rede de confiança; para voltar\n"
+         "> ao login, gere de novo sem `--sem-senha` e rode `docker compose up -d --build`."
+         if SEM_SENHA else "> ⚠️ Esta pasta tem as suas senhas. Não a publique (nem em repositório)."), "",
         "## 1. Instalar (uma vez)", "",
         "1. **Docker Desktop** (Windows 11 com WSL 2, ou macOS) ou Docker Engine (Linux). Abra-o.",
         "   Em *Settings → Resources*, deixe pelo menos **4 GB** de memória"
@@ -2100,8 +2152,9 @@ leia += ["", "## 2. Subir", "",
          "A primeira vez demora (monta a imagem do Node-RED e baixa as outras). Depois, o Docker",
          "Desktop sobe tudo sozinho quando o computador liga. Confira com `docker compose ps`:",
          "tudo `running`" + (", menos o `gitea-init`, que roda uma vez e sai" if GITEA else "") + ".", "",
-         "## 3. Endereços e login", "",
-         f"Usuário **`{G}`** · senha **`{SENHA[G]}`** (a mesma em todos os serviços)", "",
+         "## 3. Endereços" + ("" if SEM_SENHA else " e login"), "",
+         ("Nenhum serviço pede login." if SEM_SENHA else
+          f"Usuário **`{G}`** · senha **`{SENHA[G]}`** (a mesma em todos os serviços)"), "",
          "| Serviço | Endereço (nesta máquina) |", "|---|---|",
          f"| Portal | {U}/ |",
          f"| Node-RED (editor) | {U}/{G}/ |",
@@ -2116,7 +2169,8 @@ if WB:
     leia.append(f"| MicroBin | {U}/bin/ |")
 if MQTTX:
     leia.append(f"| MQTT Explorer | {MQTTX_URL} |")
-leia += ["", f"Só leitura no Node-RED (para mostrar sem risco): `{G}-view` · `{SENHA[G + '-view']}`"]
+if not SEM_SENHA:
+    leia += ["", f"Só leitura no Node-RED (para mostrar sem risco): `{G}-view` · `{SENHA[G + '-view']}`"]
 if LAN_URL:
     leia += ["", f"No celular ou em outro PC **na mesma rede** (Wi-Fi), troque `{U}` por **`{LAN_URL}`**.",
              "O LAB IoT não fica acessível pela internet."]
@@ -2127,11 +2181,12 @@ if FUXA:
     linhas.append(("FUXA → Conexões → *MQTT client*", f"`mqtt://mosquitto:1883`, tópicos `{G}/...`"))
 if NTFY:
     linhas.append(("ntfy no Node-RED", f"já configurado: `env.get(\"NTFY_URL\")`, `NTFY_TOPIC` (= `{G}`), `NTFY_TOKEN`"))
-    linhas.append(("App ntfy no celular", f"servidor `{LINK_BASE}/ntfy`, usuário `{G}`, tópicos `{G}` e `{G}-ci`"))
+    linhas.append(("App ntfy no celular", f"servidor `{LINK_BASE}/ntfy`, "
+                   + ("sem login" if SEM_SENHA else f"usuário `{G}`") + f", tópicos `{G}` e `{G}-ci`"))
 if WB:
     linhas.append(("MicroBin no Node-RED", "já configurado: `MICROBIN_URL`, `MICROBIN_AUTH`, `MICROBIN_LINK`"))
 if GITEA and GITEA_REPO:
-    linhas.append(("Node-RED → *Projects* → *Clone repository*", f"`http://gitea:3000/{org_de(G)}/{GITEA_REPO}.git`"))
+    linhas.append(("Node-RED → *Projects* → *Clone repository*", f"`{GITEA_NR_URL}{org_de(G)}/{GITEA_REPO}.git`"))
 leia += tab(("Para", "Valor"), linhas)
 if NTFY:
     leia += ["", f"Exemplo para importar no Node-RED: {U}/avisos/exemplo-node-red.json",
@@ -2142,6 +2197,25 @@ if GITEA:
     leia += ["", "## 5. Gitea e CI (Gitea Actions)", "",
              f"Você é o **administrador** do Gitea. A organização `{org_de(G)}` já existe"
              + (f", com o repositório `{GITEA_REPO}`" if GITEA_REPO else "") + ".", "",
+             ]
+    if SEM_SENHA:
+        leia += [f"Sem senha: o navegador já entra como `{G}`, e o `git` clona e envia sem pedir login.",
+                 "Crie o repositório pelo Gitea (*+* → *Novo repositório*, dono "
+                 f"`{org_de(G)}`) e depois:", "",
+                 "```powershell",
+                 f"git clone {GITEA_URL}{org_de(G)}/meu-projeto.git",
+                 "cd meu-projeto",
+                 "git add .",
+                 "git commit -m \"primeiro commit\"",
+                 "git push",
+                 "```", "",
+                 "Repositório que já existe no PC (ex.: o do GitHub): acrescente o Gitea como segundo remoto:", "",
+                 "```powershell",
+                 f"git remote add lab {GITEA_URL}{org_de(G)}/meu-projeto.git",
+                 "git push lab main",
+                 "```"]
+    else:
+        leia += [
              "Pela linha de comando, use o **tea** (cliente oficial do Gitea) junto com o `git`.",
              "Uma vez só: o tea cria um token de acesso e passa a atender o `git` (sem pedir senha):", "",
              "```powershell",
@@ -2182,12 +2256,13 @@ if GITEA:
                  f"Dentro de um job, `http://localhost{_porta}/` é o portal desta máquina (Gitea, ntfy) e",
                  "`mosquitto:1883` é o broker: o CI pode testar contra os serviços daqui."]) + [
                  "O primeiro job baixa a imagem dos jobs (~1,5 GB); os seguintes já a encontram.", "",
+                 ] + ([f"Acompanhe o CI no Gitea: repositório → aba *Actions* ({U}/git/)."] if SEM_SENHA else [
                  "Acompanhar o CI pelo terminal (dentro da pasta do repositório):", "",
                  "```powershell",
                  "tea actions runs list",
                  "tea actions runs logs <id>",
                  "tea actions workflows dispatch diagnostico.yml --ref main   # workflow com workflow_dispatch",
-                 "```"]
+                 "```"])
 if PONTE:
     leia += ["", "## Ponte MQTT com o laboratório", "",
              f"O broker daqui está ligado ao do laboratório (`{PONTE}`) **só nos tópicos `{G}/#`**, nos",
@@ -2256,7 +2331,8 @@ leia += ["| Parar (os dados ficam) | `docker compose down` |",
          "| Mudou alguma opção | rode o gerador de novo (mesma pasta) e `docker compose up -d --build` |", "",
          "Os dados ficam em `data/` (Node-RED)" + (", `fuxa/` (FUXA)" if FUXA else "")
          + " e nos volumes do Docker" + (" (Gitea, ntfy, MicroBin)" if GITEA else "") + ".",
-         "Guarde também o `.segredos.json`: sem ele, uma nova geração sorteia senhas novas.", ""]
+         ("Guarde também o `.segredos.json` (tokens e chaves internas)." if SEM_SENHA else
+          "Guarde também o `.segredos.json`: sem ele, uma nova geração sorteia senhas novas."), ""]
 gravar("LEIA-ME.md", "\n".join(leia))
 
 # =====================================================================
@@ -2271,7 +2347,10 @@ if CAPTURA:
     print(f"  Captura:       captura/*.pcap  ·  ao vivo: wireshark-ao-vivo.cmd  (interface {CAPTURA_IF})")
 if LAN_URL:
     print(f"  Rede local:    {LAN_URL}/   ·   MQTT {IP}:1883")
-print(f"\n🔒 Usuário {G} · senha em credenciais.txt" +
-      (" (a do laboratório)" if SEGREDOS_LAB and not args.novas_senhas else ""))
+if SEM_SENHA:
+    print("\n🔓 SEM SENHA: nenhum serviço pede login — qualquer pessoa na mesma rede pode editar tudo.")
+else:
+    print(f"\n🔒 Usuário {G} · senha em credenciais.txt" +
+          (" (a do laboratório)" if SEGREDOS_LAB and not args.novas_senhas else ""))
 print(f"\n📂 {SAIDA_ABS}")
 print(f"▶  cd {SAIDA_ABS}  e  docker compose up -d --build   (instruções no LEIA-ME.md)")
