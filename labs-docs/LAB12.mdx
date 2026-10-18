@@ -8,11 +8,11 @@ sidebar_position: 15
 - [ ] LAB IoT do grupo gerado com o `gen_iot_aluno.py` e no ar no seu computador, com o consumo de memória medido (T1)
 - [ ] Repositório no Gitea **da sua máquina** (remoto `casa`), o CI do Lab 11 verde no seu runner e a 3ª coluna da tabela "o que o job enxerga" (T2)
 - [ ] Tempos do CI em casa medidos com `ci/duracoes.py` (cache frio e quente) e comparados com os do laboratório (T3)
-- [ ] O MQTT "no fio": CONNECT, SUBSCRIBE, PUBLISH QoS 0 e 1, retain e PING identificados no Wireshark, e a senha do Node-RED achada na captura (T4)
+- [ ] O MQTT "no fio": CONNECT, SUBSCRIBE, PUBLISH QoS 0 e 1, retain e PING identificados no Wireshark, a ACL do broker testada e as senhas do MQTT e do Node-RED achadas na captura (T4)
 - [ ] Workflow `integracao.yml`: o CI conversa com o Node-RED pelo broker, só onde existe broker, e o job identificado na captura (T5)
 - [ ] Ponte MQTT casa ↔ laboratório: o fluxo de casa respondendo a um comando enviado do LAB IoT do laboratório (T6)
 - [ ] Previsões P1–P5 respondidas no `README.md`
-- [ ] Nenhum `credenciais.txt`, `.segredos.json` ou `.pcap` completo no repositório; nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Nenhum `credenciais.txt`, `.segredos.json`, `.pcap` completo ou CONNECT com senha no repositório; nenhum `push --force`; cada tarefa num commit `Tn:`
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 15 · T4 20 · T5 20 ·
@@ -75,8 +75,8 @@ flowchart LR
 - O mesmo do Lab 11: VS Code + PlatformIO + extensão Wokwi, o `git` e o `tea` no terminal, e o
   acesso do grupo ao LAB IoT do laboratório (usuário `lab12-x`, organização `lab12-grupo-x`).
 - **Docker Desktop** com pelo menos **6 GB** de memória (_Settings → Resources_), **Python 3** com
-  `bcrypt` (`py -m pip install bcrypt`) e o **Wireshark**. O passo a passo da instalação está no
-  guia **LAB IoT na sua máquina** (seção 1).
+  `bcrypt` (`py -m pip install bcrypt`) e o **Wireshark**. O passo a passo da instalação e o
+  script que confere tudo (`verificar.ps1`) estão no guia **LAB IoT na sua máquina** (seção 1).
 - O seu **token do Wokwi CI** (o do Lab 10), para a simulação rodar no seu runner.
 - O app **ntfy** no celular.
 - A T6 é feita **na rede do laboratório**.
@@ -92,6 +92,7 @@ flowchart LR
 | Secrets da organização | criados pelo professor | criados pelo gerador (`NTFY_*`, e `WOKWI_CLI_TOKEN` com `--wokwi-token`) |
 | Captura de pacotes | não | `--captura` (netshoot + Wireshark) |
 | Broker para o ESP32 | `<IP do LAB IoT>:1883` | `<seu IP>:1883`; `--ponte-mqtt` liga os dois |
+| Login no MQTT | opcional: sem usuário entra (`allow_anonymous true`); com `lab12-x` e a senha do grupo, só `lab12-x/#` (ACL) | igual (`--mqtt-sem-anonimo` exige login de todos) |
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
@@ -169,7 +170,8 @@ workflows de `.github/` e `.gitea/`) e quatro arquivos novos:
 :::danger[O que nunca vai para o repositório]
 O LAB IoT é gerado **fora** do clone (em `C:\iot\lab12-x`). Lá ficam o `credenciais.txt` e o
 `.segredos.json`, com a senha do grupo, e a pasta `captura/`, com pacotes que **contêm senhas**.
-Nas evidências entram só capturas **filtradas** (T4 e T6) e telas com a senha **tarjada**.
+Nas evidências entram só capturas **filtradas** (T4 e T6), **sem os CONNECT que levam senha**,
+e telas com a senha **tarjada**.
 :::
 
 ## Parte 1 — O LAB IoT na sua máquina {/* #parte-1 */} {/* #t1 */}
@@ -183,8 +185,8 @@ O `gen_iot_aluno.py` não instala nada: ele **escreve arquivos** numa pasta. O
 | -------------------------- | ---------------------------------------------------------------------- |
 | `docker-compose.yml`       | os serviços, a rede `labnet` e os volumes                              |
 | `nginx/`                   | o portal e os caminhos (`/lab12-x/`, `/git/`, `/ntfy/`, `/bin/`…)      |
-| `mosquitto/mosquitto.conf` | o broker (e a ponte, com `--ponte-mqtt`)                               |
-| `settings/`, `data/`       | o Node-RED (login, `credentialSecret`, fluxos)                         |
+| `mosquitto/`               | o broker: `mosquitto.conf` (e a ponte, com `--ponte-mqtt`), os usuários (`passwd`) e as permissões por tópico (`acl`) |
+| `settings/`, `data/`       | o Node-RED (login, `credentialSecret`, fluxos; `data/lab12-x/sqlite/` para os bancos SQLite) |
 | `runner/config.yaml`       | o runner do CI: rótulos, `capacity`, rede dos jobs                     |
 | `credenciais.txt`          | endereços, usuário e senha                                             |
 | `.segredos.json`           | as senhas sorteadas, reaproveitadas quando você roda o gerador de novo |
@@ -230,7 +232,14 @@ Rede local: http://192.168.0.20/ · MQTT 192.168.0.20:1883
 />
 
 A primeira vez demora alguns minutos (a imagem do Node-RED é montada aqui). Porta 80 ocupada?
-Gere de novo com `--porta-http 8080` e use `http://localhost:8080/` em todo o roteiro.
+Gere de novo com `--porta-http 8080` e use `http://localhost:8080/` em todo o roteiro. Erro
+`ETARGET` no `npm install`, ou `failed to open /data/sqlite/...` no Node-RED? Veja a seção 4 do
+guia **LAB IoT na sua máquina**.
+
+:::warning[Não use `--sem-senha` nesta aula]
+O gerador tem a opção `--sem-senha`, que tira o login de todos os serviços. Ela não serve para
+este roteiro: a T2 usa o login do `tea`, e a T4 procura as senhas **no fio**.
+:::
 
 1. Abra `http://localhost/` e entre no Node-RED, no Gitea e no ntfy com `lab12-x` e a senha do
    `credenciais.txt`. Captura do portal em `evidencias/t1-portal.png`.
@@ -343,7 +352,8 @@ tea actions runs logs <id> > evidencias\t2-diagnostico-casa.txt
 
 No `README.md`: a tabela com as três colunas (copie as duas do Lab 11) e, para cada linha em
 que **casa** difere do **laboratório**, a explicação. Confira o P2(b) no celular e explique o que
-a opção `--ci-rede ip` do gerador mudaria (guia **LAB IoT na sua máquina**, seção 7).
+a opção `--ci-rede ip` do gerador mudaria (veja `py ferramentas\gen_iot_aluno.py --help` e a
+seção de CI do `LEIA-ME.md` gerado).
 
 <FileTree
   root="lab12-grupo-X"
@@ -511,10 +521,58 @@ entregas, cada uma com o seu PUBACK. Ache as duas.
 
 Salve uma captura de tela com a árvore de um PUBLISH aberta em `evidencias/t4-wireshark.png`. Depois,
 com o filtro `mqtt` aplicado, _File → Export Specified Packets_ → **All packets: Displayed** →
-`evidencias/t4-mqtt.pcapng`. O broker do LAB IoT aceita conexões sem usuário, então os pacotes
-MQTT não carregam senha. Mesmo assim, abra o arquivo exportado e confira.
+`evidencias/t4-mqtt.pcapng`. O Node-RED e o MQTT Explorer conectam **sem usuário**, então os
+CONNECT deles não levam senha. Mas o broker também tem usuários: é o que vai na próxima seção.
 
-### 4.4 O que mais passa no fio
+### 4.4 Usuário, senha e ACL no broker
+
+O gerador cria `mosquitto/passwd` (o usuário `lab12-x`, com a senha do grupo) e `mosquitto/acl`:
+
+```text title="C:\iot\lab12-x\mosquitto\acl (gerado)"
+# Clientes sem login (allow_anonymous true): acesso livre, como sem ACL
+topic readwrite #
+topic read $SYS/#
+
+user servicos
+topic readwrite #
+topic read $SYS/#
+
+user lab12-x
+topic readwrite lab12-x/#
+```
+
+Com o Wireshark ao vivo em `port 1883`, publique **com login** a partir de um container
+temporário ligado à `labnet` (assim o tráfego passa pela ponte capturada):
+
+```powershell
+docker run --rm --network lab12-x_labnet eclipse-mosquitto:2 `
+  mosquitto_pub -h mosquitto -u lab12-x -P SUA_SENHA -q 1 -t lab12-x/teste/login -m com-login
+
+docker run --rm --network lab12-x_labnet eclipse-mosquitto:2 `
+  mosquitto_pub -h mosquitto -u lab12-x -P SUA_SENHA -q 1 -t lab12-y/teste/login -m intruso
+
+docker run --rm --network lab12-x_labnet eclipse-mosquitto:2 `
+  mosquitto_pub -h mosquitto -u lab12-x -P errada -t lab12-x/teste/login -m x
+```
+
+1. Filtre `mqtt.passwd` e abra o CONNECT do primeiro comando: usuário e senha aparecem **em
+   texto puro**. Tarje a senha e salve a tela em `evidencias/t4-senha-no-fio.png` (a mesma
+   imagem leva as duas senhas: a do MQTT e a do Node-RED, da seção 4.5).
+2. O segundo comando publica fora de `lab12-x/#`. O MQTT Explorer (assinando `#`) recebe a
+   mensagem? Na captura, o broker responde com PUBACK? O que isso diz sobre como o MQTT 3.1.1
+   avisa (ou não) uma recusa por ACL?
+3. O terceiro usa a senha errada: qual o código de retorno do CONNACK?
+
+No `README.md`: as respostas dos itens 2 e 3 e o que mudaria, para o ESP32 e para o
+`mqtt_eco.py` da T5, se o LAB IoT fosse gerado com `--mqtt-sem-anonimo`.
+
+:::caution[Exportar sem senha]
+Ao exportar `evidencias/t4-mqtt.pcapng`, use o filtro `mqtt && !mqtt.passwd`: assim nenhum
+CONNECT com senha entra no arquivo. Abra o arquivo exportado e confira com o filtro `mqtt.passwd`
+(não pode aparecer nada).
+:::
+
+### 4.5 O que mais passa no fio
 
 O Lab 11 recomendou um **token**, e não a senha do grupo, para o `git`, porque o LAB IoT usa HTTP
 sem criptografia. Agora, veja com os próprios olhos:
@@ -524,12 +582,12 @@ sem criptografia. Agora, veja com os próprios olhos:
 3. No Wireshark, filtre `urlencoded-form` ou `http.request.method == "POST"`. Ache o POST para
    `/lab12-x/auth/token` e abra o formulário.
 
-Tarje a senha **antes** de salvar a tela em `evidencias/t4-senha-no-fio.png`. No `README.md`,
-responda: quem, na rede do laboratório, poderia ver esse mesmo pacote quando você usa o LAB IoT
+Tarje a senha **antes** de juntá-la à tela da seção 4.4 em `evidencias/t4-senha-no-fio.png`.
+No `README.md`, responda: quem, na rede do laboratório, poderia ver esse mesmo pacote quando você usa o LAB IoT
 de lá? O que mudaria com HTTPS?
 
 :::danger[A pasta `captura/`]
-O netshoot continua gravando **tudo** em `C:\iot\lab12-x\captura\`, inclusive esse login. Não
+O netshoot continua gravando **tudo** em `C:\iot\lab12-x\captura\`, inclusive esses logins. Não
 copie esses arquivos para o repositório nem os envie para ninguém. Apague a pasta ao terminar a
 aula; para desligar a captura, gere de novo **sem** `--captura`, depois `docker compose down` e
 `docker compose up -d --remove-orphans`.
@@ -614,6 +672,9 @@ tea actions variables set MQTT_HOST mosquitto --repo lab12-grupo-x/camara-ci
 tea actions variables set MQTT_GRUPO lab12-x --repo lab12-grupo-x/camara-ci
 ```
 
+O `mqtt_eco.py` conecta **sem usuário**: funciona porque o broker é gerado com
+`allow_anonymous true` e, para clientes sem login, a ACL libera todos os tópicos.
+
 :::tip[Preveja antes de rodar]
 **P5:** (a) o mesmo `integracao.yml` chega ao GitHub (pelo `origin`). O GitHub lê
 `.github/workflows/`, não `.gitea/`. O que acontece lá? E no Gitea **do laboratório**, que
@@ -684,7 +745,14 @@ topic lab12-x/# both 0
 cleansession true
 restart_timeout 10 60
 try_private true
+remote_username lab12-x
+remote_password ********
 ```
+
+As duas últimas linhas só aparecem quando o gerador usa o `.segredos.json` do laboratório
+(`--segredos`): a ponte entra no broker de lá **como o grupo**. Por isso ela continua
+funcionando mesmo que o laboratório passe a exigir login, e a ACL de lá só a deixa mexer em
+`lab12-x/#`.
 
 :::warning[Na rede do laboratório]
 O broker do laboratório só é alcançável na rede de lá. Leve o seu computador e faça esta parte
@@ -703,6 +771,7 @@ na aula. Fora dessa rede, a ponte tenta reconectar sozinha e o resto do LAB IoT 
    cd C:\iot\lab12-x
    docker compose up -d --build
    docker compose logs mosquitto     # "Connecting bridge ponte-lab12-x (...)"
+   Select-String remote_username mosquitto\mosquitto.conf   # a ponte vai entrar como lab12-x
    ```
 
    A senha de casa passa a ser a do laboratório em todos os serviços. O `gitea-init` troca a
@@ -722,10 +791,11 @@ na aula. Fora dessa rede, a ponte tenta reconectar sozinha e o resto do LAB IoT 
 
 4. **A ponte no fio.** No Wireshark, abra o `.pcap` mais novo de `C:\iot\lab12-x\captura\`.
    Ache a conexão da ponte: o CONNECT que **sai do container do Mosquitto** para
-   `<IP do LAB IoT>:1883`. Anote o _client id_, a versão do protocolo e o SUBSCRIBE que a ponte
-   faz. Siga o comando do item 3: chegando pela ponte, indo ao Node-RED, voltando pela ponte.
-   Exporte só o MQTT para `evidencias/t6-ponte.pcapng` e salve a tela em
-   `evidencias/t6-ponte-wireshark.png`.
+   `<IP do LAB IoT>:1883`. Anote o _client id_, a versão do protocolo, o **usuário** (a senha
+   também está lá, em texto puro) e o SUBSCRIBE que a ponte faz. Siga o comando do item 3:
+   chegando pela ponte, indo ao Node-RED, voltando pela ponte. Exporte só o MQTT, **sem o
+   CONNECT da ponte** (filtro `mqtt && !mqtt.passwd`), para `evidencias/t6-ponte.pcapng` e salve
+   a tela (senha tarjada) em `evidencias/t6-ponte-wireshark.png`.
 
 5. **No `README.md`:**
    - o caminho completo do comando, do MQTT Explorer do laboratório ao Node-RED de casa e de
@@ -735,6 +805,9 @@ na aula. Fora dessa rede, a ponte tenta reconectar sozinha e o resto do LAB IoT 
      fica dando voltas? O que o `try_private true` tem a ver com isso? Mostre na captura;
    - o `0` no fim da linha `topic` é o QoS da ponte. O comando do item 3 foi publicado com
      QoS 1 no laboratório. Com que QoS ele chegou ao Node-RED de casa? Por quê?
+   - a ponte entra no laboratório como `lab12-x`. Se alguém trocasse a linha para
+     `topic # both 0`, o que a ACL do broker do laboratório deixaria passar? E quem, na rede do
+     laboratório, consegue ler a senha da ponte (item 4)?
    - e se **dois** integrantes do grupo ligarem a ponte ao mesmo tempo, cada um com o seu
      Node-RED respondendo, quantas respostas chegam ao MQTT Explorer do laboratório?
 
