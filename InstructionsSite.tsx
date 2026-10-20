@@ -40,11 +40,11 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ol>
             <p>Verificação rápida de versão instalada:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp;&amp; gh --version &amp;&amp; code -v &amp;&amp; pio --version &amp;&amp; wokwi-cli -V &amp;&amp; wsl --version &amp;&amp; docker --version
+                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version
             </ThemeCodeBlock>
             <p>Verificação rápida de autenticação:</p>
             <ThemeCodeBlock language="bash">
-                git config --get-regexp ^user\. &amp;&amp; gh auth status &amp;&amp; code --list-extensions --profile "ESP32IO"
+                git config --get-regexp ^user\. &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
             </ThemeCodeBlock>
         </Admonition>
     );
@@ -274,17 +274,28 @@ export function DevTools() {
                         </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Instale a plataforma espressif32:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`pio platform install espressif32`}
-                        </ThemeCodeBlock>
+                        <p>Torne o comando <code>pio</code> disponível no sistema:</p>
                         <p>Você precisa editar a variável de ambiente do sistema chamada <b>Path</b> e adicionar o caminho <b>%USERPROFILE%\.platformio\penv\Scripts\</b> no início da lista.</p>
-
+                        <ThemeCodeBlock className="language-bash">
+                            {`%USERPROFILE%\\.platformio\\penv\\Scripts\\`}
+                        </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Inicie o projeto no PlatformIO:</p>
+                        <p>Inicie o projeto no PlatformIO (Arduino):</p>
                         <ThemeCodeBlock className="language-bash">
                             {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --ide vscode --sample-code`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Inicie o projeto no PlatformIO (Espressif):</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`pio project init -b esp32dev -O "framework=espidf" -O "monitor_speed=115200" --ide vscode --sample-code`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>System Prune:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`pio system prune -f`}
                         </ThemeCodeBlock>
                     </li>
                 </ul>
@@ -348,20 +359,47 @@ export function DevTools() {
                         </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Teste rápido com a imagem oficial do Nginx:</p>
+                        <p>Teste de MQTT com mosquitto:</p>
                         <ThemeCodeBlock className="language-bash">
-                            {`docker run --rm -d -p 8080:80 --name teste-nginx nginx`}
+                            {`docker run --rm eclipse-mosquitto:2 mosquitto_sub -h test.mosquitto.org -t "esp32iot/labtest"`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`docker run --rm eclipse-mosquitto:2 mosquitto_pub -h test.mosquitto.org -t "esp32iot/labtest" -m "Hello from Docker!"`}
+                        </ThemeCodeBlock>
+                    </li>
+                </ul>
+            </TabItem>
+            <TabItem value="mqtt-cli" label="MQTT">
+                <p><b><a href="https://hivemq.github.io/mqtt-cli/" target="_blank">MQTT CLI</a>: Uma interface de linha de comando para clientes MQTT totalmente compatível com MQTT 5.0 e MQTT 3.1.1.</b></p>
+                <ul>
+                    <li>Baixe o arquivo <a href="https://github.com/hivemq/mqtt-cli/releases/latest" target="_blank">ZIP para Windows</a> e extraia-o no local <code>%USERPROFILE%\.platformio\penv\Scripts\</code>.
+
+                        <ThemeCodeBlock className="language-bash">
+                            explorer %USERPROFILE%\.platformio\penv\Scripts\
                         </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Acesse no navegador:<a href="http://localhost:8080" target="_blank" rel="noopener noreferrer">
-                            http://localhost:8080
-                        </a></p>
+                        <p>Verifique a versão instalada:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`mqtt-cli -V`}
+                        </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Pare o container:</p>
+                        <p>Pasta de configurações e logs:</p>
                         <ThemeCodeBlock className="language-bash">
-                            {`docker stop teste-nginx`}
+                            explorer %USERPROFILE%\.mqtt-cli
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Teste:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`mqtt-cli test -h broker.hivemq.com`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Teste de MQTT com hivemq/mqtt-cli:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`docker run -it hivemq/mqtt-cli test -h broker.hivemq.com`}
                         </ThemeCodeBlock>
                     </li>
                 </ul>
