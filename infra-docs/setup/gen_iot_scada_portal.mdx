@@ -4,6 +4,8 @@ title: gen_iot_scada_portal
 sidebar_label: gen_iot_scada_portal
 ---
 
+import LabIotProfessor from "@site/src/components/shared/LabIotProfessor";
+
 ## Help
 
 ```bash
@@ -77,6 +79,10 @@ options:
 
 ### LAB 04
 
+<LabIotProfessor labName="lab04" ip="192.168.0.102" />
+
+---
+
 ```bash
 py gen_iot_scada_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
 ```
@@ -86,8 +92,6 @@ py gen_iot_scada_portal.py --lab lab04 --grupos 13 --ip 192.168.0.102 --sem-gite
 ```bash
 py gen_iot_scada_portal.py --lab lab07 --grupos 13 --ip 192.168.0.102 --sem-fuxa --sem-ntfy
 ```
-
-### LAB 07
 
 ```bash
 py gen_iot_scada_portal.py --lab lab07 --grupos 13 --ip 192.168.0.102 --sem-gitea --sem-microbin --sem-fuxa --sem-ntfy
