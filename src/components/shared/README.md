@@ -38,7 +38,6 @@ git reset --hard HEAD
 ```
 ## Substituir totalmente o conteúdo do subtree pelo remoto sem merge
 
-
 ```bash
 git rm -r src/components/shared
 git commit -m "Remove local shared-components subtree"

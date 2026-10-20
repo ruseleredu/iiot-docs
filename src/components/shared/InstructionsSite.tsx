@@ -40,7 +40,7 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ol>
             <p>Verificação rápida de versão instalada:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; docker --version &amp; mqtt-cli -V
+                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version &amp; mqtt-cli -V
             </ThemeCodeBlock>
             <p>Verificação rápida de autenticação:</p>
             <ThemeCodeBlock language="bash">
@@ -274,17 +274,28 @@ export function DevTools() {
                         </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Instale a plataforma espressif32:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`pio platform install espressif32`}
-                        </ThemeCodeBlock>
+                        <p>Torne o comando <code>pio</code> disponível no sistema:</p>
                         <p>Você precisa editar a variável de ambiente do sistema chamada <b>Path</b> e adicionar o caminho <b>%USERPROFILE%\.platformio\penv\Scripts\</b> no início da lista.</p>
-
+                        <ThemeCodeBlock className="language-bash">
+                            {`%USERPROFILE%\\.platformio\\penv\\Scripts\\`}
+                        </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Inicie o projeto no PlatformIO:</p>
+                        <p>Inicie o projeto no PlatformIO (Arduino):</p>
                         <ThemeCodeBlock className="language-bash">
                             {`pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --ide vscode --sample-code`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Inicie o projeto no PlatformIO (Espressif):</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`pio project init -b esp32dev -O "framework=espidf" -O "monitor_speed=115200" --ide vscode --sample-code`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>System Prune:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`pio system prune -f`}
                         </ThemeCodeBlock>
                     </li>
                 </ul>
