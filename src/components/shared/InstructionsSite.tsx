@@ -40,7 +40,7 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ol>
             <p>Verificação rápida de versão instalada:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version &amp; mqtt-cli -V
+                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version
             </ThemeCodeBlock>
             <p>Verificação rápida de autenticação:</p>
             <ThemeCodeBlock language="bash">
