@@ -211,6 +211,20 @@ export function DevTools() {
                     gh auth status
                 </ThemeCodeBlock>
             </TabItem>
+            <TabItem value="py" label="Python">
+                <p><b>O <a href="https://www.python.org/" target="_blank">Python</a> é uma linguagem de programação que permite trabalhar com rapidez e integrar sistemas de forma mais eficaz.</b></p>
+                <ul>
+                    <li>O <a href="https://www.python.org/" target="_blank">Python</a> pode ser instalado via winget:
+                    </li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    winget install Python.Python.3.14
+                </ThemeCodeBlock>
+                <p>Verifique a versão instalada:</p>
+                <ThemeCodeBlock className="language-bash">
+                    py --version && python --version && pip --version
+                </ThemeCodeBlock>
+            </TabItem>
             <TabItem value="vscode" label="VS Code">
                 <p><b><Link to="/docs/vs-code-intro">Visual Studio Code</Link>: IDE e Editor de Código para Desenvolvimento de Software.</b></p>
                 <ul>

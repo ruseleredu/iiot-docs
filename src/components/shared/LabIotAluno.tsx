@@ -129,6 +129,7 @@ export default function LabIotAluno({
                     {gitea && !o.semRunner ? "; 6 GB com o CI" : ""}) e do <b>Python 3</b>.
                     Os comandos são para o <b>Prompt de Comando</b> (cmd) do Windows.
                 </p>
+                <Cmd>{`docker desktop start`}</Cmd>
                 <p>
                     Configuração do <code>{lab}</code>:{" "}
                     {flags.length ? flags.map((f) => <code key={f} style={{ marginRight: 4 }}>{f}</code>) : "LAB IoT completo (sem opções)"}
