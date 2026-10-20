@@ -72,16 +72,10 @@ export default function LabTeamMembers({
                             {`git clone ${repoUrl}.git && cd ${repoName}`}
                         </ThemeCodeBlock>
                         <p>
-                            <b>3.</b> Verifique status e abra o conteúdo do repositório no perfil {`${vscodeProfile}`} do VS Code:
+                            <b>3.</b> Abra o conteúdo do repositório no perfil {`${vscodeProfile}`} do VS Code e compile:
                         </p>
                         <ThemeCodeBlock className="language-bash">
-                            {`git status && code . --profile "${vscodeProfile}"`}
-                        </ThemeCodeBlock>
-                        <p>
-                            <b>4.</b> Abrir o conteúdo do repositório já clonado no perfil {`${vscodeProfile}`} do VS Code e compilar:
-                        </p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`cd /d "%USERPROFILE%\\${HOMEFOLDER}\\${repoName}" && code . --profile "${vscodeProfile}" && pio run`}
+                            {`cd /d "%USERPROFILE%\\${HOMEFOLDER}\\${repoName}" && code . --profile "${vscodeProfile}"`}
                         </ThemeCodeBlock>
                     </TabItem>
                 );
