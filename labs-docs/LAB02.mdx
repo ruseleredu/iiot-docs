@@ -3,71 +3,162 @@ title: Laboratório 02
 sidebar_position: 5
 ---
 
-# Laboratório 02
-
-{/* Tabela com link para atividade, inicio, fim e descrição do LAB! */}
+import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
 
 <div style={{ display: "flex", justifyContent: "center" }}>
   <LabTable index={2} internal={false} />
 </div>
 
----
+## Checklist — ambiente de desenvolvimento (parte 2): PlatformIO, Wokwi e Docker {/* #checklist */}
 
-## Checklist — Configuração do Ambiente ESP32 (Parte 02)
+- [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando (T1)
+- [ ] Licença do Wokwi ativada, `wokwi.toml` + `diagram.json` e o pisca-LED simulado no VS Code (T2)
+- [ ] Pisca sem `delay()` (com `millis()`) e o ciclo editar → compilar → simular dominado (T3)
+- [ ] Docker funcionando e mensagens MQTT trocadas com o `mosquitto_sub`/`mosquitto_pub` (T4)
+- [ ] ESP32 simulado publicando no broker MQTT e obedecendo a um comando enviado do terminal (T5)
+- [ ] Previsões P1–P3 respondidas no `README.md`
+- [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
-- [ ] Verificar `git --version`
-- [ ] Abrir o VS Code
-- [ ] Abrir a extensão PlatformIO IDE
-- [ ] Instalar a extensão Wokwi
-- [ ] Ativar/configurar o Wokwi
-- [ ] Criar um projeto ESP32
-- [ ] Selecionar o framework Arduino
-- [ ] Executar o primeiro Build
-- [ ] Criar `wokwi.toml`
-- [ ] Criar `diagram.json`
-- [ ] Executar a simulação
-- [ ] Verificar o Serial Monitor
-- [ ] Atualizar o repositório no GitHub
-- [ ] Executar `git push`
-- [ ] Confirmar que o projeto está disponível no GitHub
-- [ ] Logout
-
----
-
-import {
-  LabSetup,
-  LabLogout,
-} from "@site/src/components/shared/InstructionsSite";
+:::info[Pontuação]
+**T1…T5 = 100 pts** (esta aula não tem desafios): T1 15 · T2 20 · T3 15 · T4 20 · T5 30. O
+autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa.
+:::
 
 <LabSetup />
 
+### Configuração do ambiente de desenvolvimento {/* #setup */}
+
+<DevTools />
+
 ---
 
-<LabLogout />
+No Lab 01, o grupo passou a usar o Git e o GitHub, e o PlatformIO fez o primeiro build. Agora o
+firmware **roda**: no **Wokwi**, um ESP32 simulado dentro do VS Code, com LED, monitor serial e
+Wi-Fi. E entra a última ferramenta do ambiente, o **Docker**. Com ele, você roda o
+`mosquitto_sub` e o `mosquitto_pub` sem instalar nada, e nos próximos labs o Node-RED, o banco
+de dados e o LAB IoT inteiro.
 
----
+No fim da aula, o caminho que os Labs 05 a 12 usam o tempo todo estará testado de ponta a
+ponta: o ESP32 simulado conecta no Wi-Fi do Wokwi, publica no broker MQTT público, e você vê as
+mensagens e manda comandos de volta pelo terminal.
 
-## Clone o repositório inicial do LAB02
+```mermaid
+flowchart LR
+  subgraph VS["VS Code"]
+    PIO["PlatformIO<br/>pio run"] --> FW["firmware.bin / .elf"]
+    FW --> WK["Wokwi<br/>ESP32 + LED + serial"]
+  end
+  WK -- "Wi-Fi Wokwi-GUEST" --> BRK[("broker.hivemq.com:1883")]
+  subgraph DK["Docker"]
+    SUB["mosquitto_sub"]
+    PUB["mosquitto_pub"]
+  end
+  BRK --> SUB
+  PUB --> BRK
+```
 
-Escolha o Grupo e entre com o comando abaixo para criar o repositório no GitHub:
+## Objetivos
+
+- Configurar um projeto PlatformIO **reprodutível**: plataforma e bibliotecas com versão fixa.
+- Ativar o **Wokwi** no VS Code e ligar o firmware do PlatformIO ao circuito (`wokwi.toml`,
+  `diagram.json`).
+- Trocar o `delay()` por **`millis()`**, o padrão que todos os labs seguintes usam.
+- Instalar o **Docker** e usar o `mosquitto_sub`/`mosquitto_pub` num container.
+- Fechar o ciclo **ESP32 → MQTT → terminal → MQTT → ESP32**.
+
+## Material
+
+- O ambiente do Lab 01: Windows 11, VS Code no perfil `ESP32IO`, Git, `gh`, PlatformIO com o
+  `pio` no **Path**, extensão Wokwi, e o terminal do VS Code no **Prompt de Comando** (`cmd`).
+- Uma **conta no Wokwi** (gratuita) para ativar a licença do simulador no VS Code.
+- **Docker Desktop** com **WSL 2** (aba **Docker** da [configuração do ambiente](#setup)).
+- Nenhuma placa. A Parte 6 mostra como gravar uma placa real, para quem tiver.
+
+:::note[Abas da configuração do ambiente usadas hoje]
+**Wokwi** (licença e, opcionalmente, o `wokwi-cli`), **Docker** (WSL 2 e Docker Desktop) e,
+só para quem tiver placa, **Drivers**. As demais já foram feitas no Lab 01.
+:::
+
+:::info[Por que simular?]
+O Wokwi simula o ESP32 (incluindo o Wi-Fi), LEDs, potenciômetros, o DHT22, o display SSD1306 e
+um analisador lógico. Todo o semestre roda nele: ninguém depende da bancada, do cabo USB ou do
+driver da placa, e o mesmo circuito (`diagram.json`) vai para o repositório junto com o código.
+No Lab 10, o mesmo simulador roda sem interface, dentro do CI.
+:::
+
+## Clonar o repositório do grupo {/* #clonar */}
 
 <LabTeamMembers labName="lab02" />
-
-<SimpleFileTree defaultOpen details profile="lab02" />
 
 ## Envie o link do repositório do seu grupo no Moodle: {/* #moodle-link */}
 
 <LabSubmit labName="lab02" />
 
+<details>
+<summary><strong>Mapa de tarefas</strong> — 5 tarefas · 100 pts</summary>
+
+- [T1 — Projeto PlatformIO com versoes fixas](#t1) · 15 pts
+- [T2 — Wokwi no VS Code](#t2) · 20 pts
+- [T3 — Pisca com millis](#t3) · 15 pts
+- [T4 — Docker e MQTT pelo terminal](#t4) · 20 pts
+- [T5 — ESP32 simulado falando MQTT](#t5) · 30 pts
+
+</details>
+
+O repositório nasce do `lab02-template`, com o `README.md` e o `.gitignore`:
+
+<FileTree
+  details={true}
+  defaultOpen={false}
+  title="Estrutura de Arquivos do Projeto (no fim da aula)"
+  root="lab02-grupo-X"
+  files={[
+    ".gitignore r",
+    ".vscode/settings.json r",
+    "README.md u",
+    "platformio.ini c",
+    "src/main.cpp c",
+    "wokwi.toml c",
+    "diagram.json c",
+    "evidencias/t1-build.txt c",
+    "evidencias/t2-serial.txt c",
+    "evidencias/t2-wokwi.png c",
+    "evidencias/t3-serial.txt c",
+    "evidencias/t4-mqtt.txt c",
+    "evidencias/t5-mqtt.txt c",
+    "evidencias/t5-serial.txt c",
+  ]}
+/>
+
+:::info[Tópicos do Lab 02]
+Tudo fica sob `elt85b/lab02/grupo-X/`. Troque o `X` (e o `#define GRUPO`) pela letra do seu
+grupo. O broker `broker.hivemq.com` é **público**: qualquer pessoa pode ler e publicar nos seus
+tópicos. Não mande nada que não possa ser público.
+:::
+
 ---
 
-## Crie um novo projeto no PlatformIo
+## Parte 1 — Projeto PlatformIO com versões fixas {/* #parte-1 */}
 
-```bash
-pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200" --sample-code
+### 1.1 Criar o projeto
+
+Abra o repositório no perfil da disciplina e confira que o terminal é o **cmd** (o
+`.vscode/settings.json` do Lab 01; se o template não o trouxer, crie-o de novo):
+
+```shell title="Terminal (cmd)"
+cd lab02-grupo-x
+code --profile "ESP32IO" .
 ```
 
-```bash
+No terminal do VS Code, na raiz do repositório:
+
+```shell title="Terminal do VS Code (cmd)"
+pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200"
+```
+
+```text title="Saída esperada"
+The following files/directories have been created in C:\...\lab02-grupo-x
 include - Put project header files here
 lib - Put project specific (private) libraries here
 src - Put project source files here
@@ -77,412 +168,603 @@ Already up-to-date.
 Project has been successfully initialized!
 ```
 
-Crie ou edite o arquivo src/main.cpp com a seguinte estrutura:
+O _Already up-to-date_ quer dizer que o toolchain baixado no Lab 01 foi reaproveitado. Se este
+for o primeiro build neste computador, ele baixa agora (~300 MB).
 
-<FileTree root="lab02-grupo-x (git repo)" files={["src/main.cpp add"]} />
+### 1.2 Fixar as versões
 
-```c
+O `pio project init` escreve `platform = espressif32`, sem versão. Sem versão, o mesmo projeto
+compila com um core Arduino diferente quando sai uma versão nova, e um código que funcionava
+para de compilar "sozinho". Fixe:
+
+```ini title="platformio.ini"
+[env:esp32dev]
+platform = espressif32@6.9.0       ; versão fixa: core Arduino 2.0.17 (o dos labs seguintes)
+board = esp32dev
+framework = arduino
+monitor_speed = 115200             ; o mesmo valor do Serial.begin()
+```
+
+Copie o `src/main.cpp` do Lab 01 (o pisca-LED com `delay`) e compile:
+
+```shell title="Terminal do VS Code (cmd)"
+pio run
+if not exist evidencias mkdir evidencias
+pio run > evidencias\t1-build.txt 2>&1
+type evidencias\t1-build.txt
+git add .vscode/settings.json platformio.ini src evidencias/t1-build.txt
+git commit -m "T1: projeto com versões fixas"
+git push
+```
+
+:::note[Os botões do PlatformIO]
+A barra de status do VS Code tem os mesmos comandos: ✓ **Build** (`pio run`), → **Upload**
+(`pio run -t upload`), 🔌 **Serial Monitor** (`pio device monitor`) e 🗑 **Clean**. O terminal é
+melhor para gerar evidências, porque o `> arquivo 2>&1` grava a saída direto num arquivo. O
+segundo `pio run` não recompila nada, mas imprime de novo o uso de RAM e Flash.
+:::
+
+<FileTree
+  root="lab02-grupo-X"
+  files={[".vscode/settings.json c", "platformio.ini c", "src/main.cpp c", "evidencias/t1-build.txt c"]}
+/>
+
+<CommitPoint
+  id="t1"
+  task="Projeto PlatformIO com versoes fixas"
+  pontos={15}
+  files=".vscode/settings.json platformio.ini src/main.cpp evidencias/t1-build.txt"
+/>
+
+---
+
+## Parte 2 — Wokwi no VS Code {/* #parte-2 */}
+
+### 2.1 Ativar a licença
+
+Na aba **Wokwi** da [configuração do ambiente](#setup), use o link **Gerar uma licença pessoal
+de 30 dias** (ou, no VS Code, **F1** → **Wokwi: Request a New License**). O navegador abre o
+site do Wokwi: entre com a sua conta e confirme, e o navegador devolve a licença ao VS Code.
+Quando ela vencer, o VS Code avisa, e você repete o passo.
+
+### 2.2 Ligar o firmware ao simulador
+
+O Wokwi precisa de dois arquivos na raiz do projeto:
+
+- `wokwi.toml`: **qual firmware** rodar (o que o PlatformIO acabou de compilar);
+- `diagram.json`: **o circuito** (placa, componentes, fios).
+
+```toml title="wokwi.toml"
+[wokwi]
+version = 1
+firmware = '.pio/build/esp32dev/firmware.bin'
+elf = '.pio/build/esp32dev/firmware.elf'
+```
+
+Use `/` nos caminhos, mesmo no Windows: o arquivo vai para o repositório e precisa funcionar
+nos computadores de todos (e, no Lab 10, no Linux do CI).
+
+```json title="diagram.json"
+{
+  "version": 1,
+  "author": "ELT85B - Lab 02",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-resistor", "id": "r1", "top": 130, "left": 120, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "led1", "top": 80, "left": 220, "attrs": { "color": "red", "label": "GPIO2" } }
+  ],
+  "connections": [
+    ["esp:TX", "$serialMonitor:RX", "", []],
+    ["esp:RX", "$serialMonitor:TX", "", []],
+    ["esp:2", "r1:1", "green", []],
+    ["r1:2", "led1:A", "green", []],
+    ["led1:C", "esp:GND.2", "black", []]
+  ],
+  "dependencies": {}
+}
+```
+
+| Linha | O que liga |
+| --- | --- |
+| `esp:TX` → `$serialMonitor:RX` (e o inverso) | a UART0 do ESP32 ao monitor serial do Wokwi (o `Serial.println`) |
+| `esp:2` → resistor → `led1:A` | o GPIO2 ao **anodo** do LED, passando por 220 Ω (limita a corrente em ~6 mA) |
+| `led1:C` → `esp:GND.2` | o **catodo** do LED ao terra |
+
+Abra o `diagram.json` no VS Code: o editor do Wokwi mostra o circuito ao lado, e você pode
+arrastar as peças. Os labs seguintes acrescentam componentes a este mesmo arquivo.
+
+:::tip[Opcional: conferir o circuito com o `wokwi-cli`]
+Quem instalou o `wokwi-cli` (aba **Wokwi**) pode conferir o `diagram.json` sem abrir o
+simulador. O `lint` não precisa do token:
+
+```shell title="Terminal do VS Code (cmd)"
+wokwi-cli lint diagram.json
+```
+
+A única mensagem esperada é um aviso (`info`) de que o tipo `board-esp32-devkit-c-v4` não é
+documentado. O token (`WOKWI_CLI_TOKEN`) só é usado para **simular** pela linha de comando, como
+no CI do Lab 10.
+:::
+
+### 2.3 Simular
+
+1. Compile (`pio run`): o Wokwi roda o **último** `firmware.bin` compilado.
+2. **F1** → **Wokwi: Start Simulator** (ou clique no `diagram.json` e em ▶).
+3. O LED pisca, e o monitor serial (abaixo do circuito) mostra `ESP32 inicializado!`.
+
+Salve o monitor serial em `evidencias/t2-serial.txt` (selecione o texto e copie) e uma captura
+do VS Code com o circuito e o serial em `evidencias/t2-wokwi.png`.
+
+:::tip[Preveja antes de rodar]
+**P1:** (a) você mudou o `LED_PIN` para `4` e iniciou o simulador **sem** compilar de novo. O que
+o Wokwi mostra: o código novo ou o antigo? Por quê? (b) No canto do simulador aparece a
+porcentagem de **tempo real** (ex.: `98%`). Se ela cair para 50 %, o LED pisca mais devagar na
+tela? E o `millis()` do ESP32: conta o tempo simulado ou o do relógio da parede?
+:::
+
+<FileTree
+  root="lab02-grupo-X"
+  files={[
+    "wokwi.toml c",
+    "diagram.json c",
+    "evidencias/t2-serial.txt c",
+    "evidencias/t2-wokwi.png c",
+  ]}
+/>
+
+<CommitPoint
+  id="t2"
+  task="Wokwi no VS Code"
+  pontos={20}
+  files="wokwi.toml diagram.json evidencias/t2-serial.txt evidencias/t2-wokwi.png"
+/>
+
+---
+
+## Parte 3 — Pisca com `millis()` {/* #parte-3 */}
+
+Com `delay(500)`, o ESP32 fica **parado** meio segundo e não faz mais nada: não lê a serial, não
+atende o Wi-Fi, não confere um botão. Os labs seguintes fazem várias coisas "ao mesmo tempo",
+então o padrão é outro: o `loop()` gira o tempo todo e cada tarefa confere se **já deu a hora**.
+
+```cpp title="src/main.cpp (T3)"
 #include <Arduino.h>
 
-// Definição de pinos
-#define LED_PIN 2
+#define LED_PIN       2
+#define MEIO_PERIODO  500              // ms aceso, ms apagado
+#define RELATORIO_MS  2000             // a cada 2 s, uma linha no serial
 
-// Protótipos de funções (obrigatório em C/C++ padrão)
-void blinkLed(uint8_t pin, uint16_t delayMs);
+unsigned long tLed = 0, tRelatorio = 0;
+bool ledAceso = false;
+uint32_t voltas = 0;                   // quantas vezes o loop() rodou
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
-  Serial.println("ESP32 Inicializado!");
+  Serial.println("ESP32 inicializado! Lab 02, grupo X");
 }
 
 void loop() {
-  blinkLed(LED_PIN, 500);
-}
+  unsigned long agora = millis();
+  voltas++;
 
-// Implementação de funções auxiliares
-void blinkLed(uint8_t pin, uint16_t delayMs) {
-  digitalWrite(pin, HIGH);
-  delay(delayMs);
-  digitalWrite(pin, LOW);
-  delay(delayMs);
+  if (agora - tLed >= MEIO_PERIODO) {          // já deu a hora de trocar o LED?
+    tLed += MEIO_PERIODO;
+    ledAceso = !ledAceso;
+    digitalWrite(LED_PIN, ledAceso ? HIGH : LOW);
+  }
+
+  if (agora - tRelatorio >= RELATORIO_MS) {    // e a do relatório?
+    tRelatorio += RELATORIO_MS;
+    Serial.printf("[%7lu ms] LED %s · %lu voltas do loop() em 2 s\r\n",
+                  agora, ledAceso ? "aceso " : "apagado", (unsigned long)voltas);
+    voltas = 0;
+  }
 }
 ```
+
+```text title="Monitor serial (trecho; o número de voltas varia)"
+ESP32 inicializado! Lab 02, grupo X
+[   2000 ms] LED aceso  · 1032915 voltas do loop() em 2 s
+[   4000 ms] LED aceso  · 1035522 voltas do loop() em 2 s
+[   6000 ms] LED aceso  · 1035519 voltas do loop() em 2 s
+```
+
+O `loop()` roda centenas de milhares de vezes por segundo, e o LED continua piscando no ritmo
+certo. Com o pisca de `delay` da T1, seriam **2** voltas a cada 2 s.
+
+:::tip[Preveja antes de rodar]
+**P2:** (a) o `millis()` é um `unsigned long` de 32 bits e volta a zero depois de ~49,7 dias.
+Por que `agora - tLed >= MEIO_PERIODO` continua certo na virada, mas `agora >= tLed + MEIO_PERIODO`
+não? Teste a conta com números de 32 bits: `tLed = 4294967000`, `agora = 200`. (b) Por que
+`tLed += MEIO_PERIODO` e não `tLed = agora`? O que acontece com o ritmo do LED em cada caso, se
+uma volta do `loop()` atrasar 3 ms?
+:::
+
+**Evidência:** pelo menos 5 linhas do monitor serial em `evidencias/t3-serial.txt`.
+
+<FileTree root="lab02-grupo-X" files={["src/main.cpp u", "evidencias/t3-serial.txt c"]} />
+
+<CommitPoint id="t3" task="Pisca com millis" pontos={15} files="src/main.cpp evidencias/t3-serial.txt" />
 
 ---
 
-## 4. Simulação com Wokwi
+## Parte 4 — Docker e MQTT pelo terminal {/* #parte-4 */}
 
-Objetivo: validar lógica **sem depender da bancada**.
+### 4.1 Instalar e conferir o Docker
 
-- https://docs.wokwi.com/guides/esp32#arduino-examples
+Siga a aba **Docker** da [configuração do ambiente](#setup): primeiro o **WSL 2** (o
+`wsl --install` pede para reiniciar o computador), depois o **Docker Desktop**. Abra o Docker
+Desktop, aceite os termos e espere a baleia ficar parada na bandeja. Se ele reclamar de
+virtualização, ative-a na BIOS/UEFI (Intel VT-x ou AMD-V).
 
-### Opção A — Extensão Wokwi no VS Code
+Confira no terminal do VS Code:
 
-- https://docs.wokwi.com/vscode/project-config
-
-1. Instale **Wokwi Simulator**
-2. No projeto, use/crie:
-   - `diagram.json` — circuito (ESP32, LED, fios)
-   - `wokwi.toml` — liga o firmware do PlatformIO ao simulador (conforme docs do template)
-3. Comando típico da extensão: **Start Simulator**
-4. Abra o monitor serial do Wokwi e veja o mesmo `Serial.println`
-
-A basic wokwi.toml file looks like this:
-
-```yml
-[wokwi]
-version = 1
-firmware = '.pio\build\esp32dev\firmware.bin'
-elf = '.pio\build\esp32dev\firmware.elf'
+```shell title="Terminal do VS Code (cmd)"
+wsl --version && docker --version && docker compose version
+docker run --rm hello-world
 ```
 
-### Opção B — Wokwi no navegador
+O `hello-world` baixa uma imagem minúscula, cria um container, imprime _Hello from Docker!_ e
+o container é apagado (`--rm`). É assim que todos os comandos `docker run` dos labs funcionam:
+você usa um programa (o `mosquitto_sub`, por exemplo) sem instalá-lo no Windows.
 
-1. Acesse [wokwi.com](https://wokwi.com)
-2. Novo projeto → **ESP32**
-3. Cole o conteúdo de `src/main.cpp`
-4. Monte LED no GPIO do `LED_BUILTIN` (ou no GPIO que o template usar)
-5. **Start** e observe LED + serial
+### 4.2 MQTT em 1 minuto
 
-### Exemplo mínimo de ideia de `diagram.json` (LED no GPIO 2)
+O **MQTT** é um protocolo de mensagens por **tópicos**. Quem publica manda uma mensagem para um
+**broker**, num tópico (`elt85b/lab02/grupo-a/ola`). Quem assinou aquele tópico (ou um filtro
+como `elt85b/lab02/grupo-a/#`) recebe. Quem publica e quem assina não se conhecem: os dois só
+falam com o broker. Os detalhes (QoS, retain, LWT) vêm no Lab 05.
 
-Muitos DevKit tratam LED embutido no GPIO 2 — confirme no template.
+### 4.3 Publicar e assinar
 
-**Checklist Wokwi**
+O teste da aba **Docker** usa o broker `test.mosquitto.org`. Nos labs, o broker público é o
+`broker.hivemq.com`, e cada grupo usa o seu tópico.
 
-- [ ] Projeto simula e imprime no serial a mensagem do grupo
-- [ ] LED pisca conforme o `loop()`
-- [ ] Você não precisou da placa física para esta parte
+O `cmd` não tem um jeito simples de mostrar a saída na tela **e** gravá-la num arquivo ao mesmo
+tempo. Por isso, o assinante roda **em segundo plano**, num container com nome (`-d --name`): o
+`docker logs -f` mostra o que chega, e o `docker logs` (sem `-f`) grava tudo na evidência no
+fim.
 
-```json
-{
-  "version": 1,
-  "author": "Uri Shaked",
-  "editor": "wokwi",
-  "parts": [
+<GroupCommands
+  commands={[
     {
-      "type": "wokwi-esp32-devkit-v1",
-      "id": "esp",
-      "top": 0,
-      "left": 0,
-      "attrs": {}
+      title: "1. Assinar",
+      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
+      command: `docker run -d --name sub-lab02 eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/#" -v
+docker logs -f sub-lab02`,
     },
     {
-      "type": "wokwi-led",
-      "id": "led1",
-      "top": -3.33,
-      "left": 153.33,
-      "attrs": { "color": "red" }
+      title: "2. Publicar",
+      codeTitle: "Terminal 2 (cmd) — publicar",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/teste" -m "ola do grupo {group}"
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/teste/numero" -m 42`,
     },
     {
-      "type": "wokwi-resistor",
-      "id": "r1",
-      "top": 64,
-      "left": 149.33,
-      "rotate": 90,
-      "attrs": {}
-    }
-  ],
-  "connections": [
-    ["esp:TX0", "$serialMonitor:RX", "", []],
-    ["esp:RX0", "$serialMonitor:TX", "", []],
-    ["esp:GND.1", "led1:C", "black", ["h0"]],
-    ["led1:A", "r1:1", "green", ["v0"]],
-    ["r1:2", "esp:D2", "green", ["h0", "v38"]]
-  ]
-}
+      title: "3. Gravar e encerrar",
+      codeTitle: "Terminal 1 (cmd) — depois do Ctrl+C",
+      command: `docker logs sub-lab02 > evidencias\\t4-mqtt.txt 2>&1
+type evidencias\\t4-mqtt.txt
+docker rm -f sub-lab02`,
+    },
+  ]}
+/>
+
+Abra um segundo terminal com o **+** do painel de terminais (ou **Ctrl+Shift+`**). O
+**Ctrl+C** no terminal 1 só para o `docker logs -f`: o assinante continua rodando até o
+`docker rm -f`. Confira com `docker ps`.
+
+```text title="evidencias/t4-mqtt.txt"
+elt85b/lab02/grupo-a/teste ola do grupo a
+elt85b/lab02/grupo-a/teste/numero 42
 ```
 
-- [Migrating Wokwi projects to VS Code](https://docs.wokwi.com/vscode/migrating)
-- [Wokwi CLI Usage](https://docs.wokwi.com/wokwi-ci/cli-usage)
+A primeira execução baixa a imagem `eclipse-mosquitto:2` (~10 MB); as seguintes começam na hora.
+Se o `docker run -d` disser que o nome `sub-lab02` já está em uso, sobrou um container da
+tentativa anterior: `docker rm -f sub-lab02` e repita.
+
+:::warning[Aspas no cmd]
+No `cmd`, só as **aspas duplas** agrupam um texto. Com aspas simples (`'...'`, como em muitos
+exemplos da internet, escritos para Linux), o tópico chega ao `mosquitto_sub` com as aspas, e
+nenhuma mensagem casa com ele.
+:::
+
+<FileTree root="lab02-grupo-X" files={["evidencias/t4-mqtt.txt c"]} />
+
+<CommitPoint id="t4" task="Docker e MQTT pelo terminal" pontos={20} files="evidencias/t4-mqtt.txt" />
 
 ---
 
-## 5. Placa real (opcional, se houver ESP32)
+## Projeto integrador — ESP32 simulado falando MQTT {/* #integrador */}
 
-1. Conecte o USB
-2. Selecione a porta no PlatformIO (ou `pio device list`)
-3. Upload + monitor:
+Agora o ESP32 entra na conversa. Ele conecta no Wi-Fi do Wokwi (`Wokwi-GUEST`, aberto), publica
+uma mensagem a cada 5 s e **assina** um tópico de comando: o terminal manda `on`, `off` ou
+`pisca`, e o LED obedece. É o esqueleto de todos os labs com MQTT.
 
-```bash
+```mermaid
+sequenceDiagram
+  participant E as ESP32 (Wokwi)
+  participant B as broker.hivemq.com
+  participant T as Terminal (Docker)
+  E->>B: CONNECT (LWT: status = offline, retido)
+  E->>B: PUBLISH status = online (retido)
+  E->>B: SUBSCRIBE .../cmd/led
+  loop a cada 5 s
+    E->>B: PUBLISH .../ola {"grupo":"a","n":7,...}
+    B->>T: .../ola {"grupo":"a","n":7,...}
+  end
+  T->>B: PUBLISH .../cmd/led = on
+  B->>E: on
+  E->>E: LED aceso (fixo)
+```
+
+### Requisitos
+
+1. **`platformio.ini`**: a biblioteca do cliente MQTT, em versão fixa.
+
+   ```ini title="platformio.ini"
+   [env:esp32dev]
+   platform = espressif32@6.9.0
+   board = esp32dev
+   framework = arduino
+   monitor_speed = 115200
+   lib_deps =
+       knolleary/PubSubClient@2.8
+   ```
+
+2. **`src/main.cpp`**:
+
+   ```cpp title="src/main.cpp (T5)"
+   // ELT85B - Lab 02 (T5): ESP32 no Wokwi falando MQTT
+   #include <Arduino.h>
+   #include <WiFi.h>
+   #include <PubSubClient.h>
+
+   #define GRUPO   "a"                         // troque pela letra do seu grupo
+   #define LED_PIN 2
+
+   const char *WIFI_SSID  = "Wokwi-GUEST";     // a rede aberta do simulador
+   const char *WIFI_SENHA = "";
+   const char *MQTT_HOST  = "broker.hivemq.com";
+   const uint16_t MQTT_PORTA = 1883;
+
+   #define BASE "elt85b/lab02/grupo-" GRUPO
+   const char *TOPICO_STATUS = BASE "/status";   // online / offline (retido, LWT)
+   const char *TOPICO_OLA    = BASE "/ola";      // JSON a cada 5 s
+   const char *TOPICO_LED    = BASE "/cmd/led";  // terminal -> ESP32: on | off | pisca
+
+   WiFiClient wifiClient;
+   PubSubClient mqtt(wifiClient);
+   char clientId[32];
+
+   enum ModoLed { LED_PISCA, LED_LIGADO, LED_DESLIGADO };
+   ModoLed modoLed = LED_PISCA;
+   bool ledAceso = false;
+   unsigned long tLed = 0, tOla = 0;
+   uint32_t n = 0;
+
+   // Chamada DENTRO de mqtt.loop(), quando chega mensagem num tópico assinado
+   void aoReceberMensagem(char *topico, byte *payload, unsigned int tam) {
+     char txt[16];
+     size_t k = tam < sizeof(txt) - 1 ? tam : sizeof(txt) - 1;
+     memcpy(txt, payload, k);
+     txt[k] = '\0';                              // o payload NÃO termina com '\0'
+     Serial.printf("[CMD] %s <- '%s'\r\n", topico, txt);
+     if (strcmp(txt, "on") == 0) modoLed = LED_LIGADO;
+     else if (strcmp(txt, "off") == 0) modoLed = LED_DESLIGADO;
+     else if (strcmp(txt, "pisca") == 0) modoLed = LED_PISCA;
+     else Serial.println("[CMD] use on, off ou pisca");
+   }
+
+   void conectarWiFi() {
+     Serial.printf("[WiFi] conectando a %s", WIFI_SSID);
+     WiFi.mode(WIFI_STA);
+     WiFi.begin(WIFI_SSID, WIFI_SENHA, 6);      // canal 6: conecta mais rápido no Wokwi
+     while (WiFi.status() != WL_CONNECTED) {
+       delay(250);
+       Serial.print('.');
+     }
+     Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
+   }
+
+   void conectarMQTT() {
+     while (!mqtt.connected()) {
+       Serial.printf("[MQTT] conectando a %s como %s ... ", MQTT_HOST, clientId);
+       // LWT: se o ESP32 sumir sem avisar, o broker publica "offline" no lugar dele
+       if (mqtt.connect(clientId, TOPICO_STATUS, 1, true, "offline")) {
+         Serial.println("ok");
+         mqtt.publish(TOPICO_STATUS, "online", true);
+         mqtt.subscribe(TOPICO_LED);             // (re)assina a cada conexão
+       } else {
+         Serial.printf("falhou (rc=%d), nova tentativa em 2 s\r\n", mqtt.state());
+         delay(2000);
+       }
+     }
+   }
+
+   void setup() {
+     Serial.begin(115200);
+     pinMode(LED_PIN, OUTPUT);
+     Serial.println("\r\n=== Lab 02 - ESP32 + MQTT ===");
+     uint64_t mac = ESP.getEfuseMac();
+     snprintf(clientId, sizeof(clientId), "lab02-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
+     conectarWiFi();
+     mqtt.setServer(MQTT_HOST, MQTT_PORTA);
+     mqtt.setCallback(aoReceberMensagem);
+     conectarMQTT();
+   }
+
+   void loop() {
+     if (WiFi.status() != WL_CONNECTED) conectarWiFi();
+     if (!mqtt.connected()) conectarMQTT();
+     mqtt.loop();                               // processa a rede e chama o callback
+
+     unsigned long agora = millis();
+     if (agora - tLed >= 500) {                 // LED, sem delay (T3)
+       tLed += 500;
+       if (modoLed == LED_PISCA) ledAceso = !ledAceso;
+       else ledAceso = (modoLed == LED_LIGADO);
+       digitalWrite(LED_PIN, ledAceso ? HIGH : LOW);
+     }
+
+     if (agora - tOla >= 5000) {                // a cada 5 s, uma mensagem
+       tOla += 5000;
+       char json[96];
+       snprintf(json, sizeof(json), "{\"grupo\":\"%s\",\"n\":%lu,\"uptime_ms\":%lu}",
+                GRUPO, (unsigned long)++n, agora);
+       bool ok = mqtt.publish(TOPICO_OLA, json);
+       Serial.printf("[PUB] %s %s -> %s\r\n", ok ? "ok" : "ERRO", TOPICO_OLA, json);
+     }
+   }
+   ```
+
+3. **Teste.** Primeiro o assinante (para não perder o `status online`), depois compile e
+   inicie o Wokwi, e então os comandos:
+
+<GroupCommands
+  commands={[
+    {
+      title: "1. Assinar",
+      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
+      command: `docker run -d --name sub-lab02 eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/#" -v
+docker logs -f sub-lab02`,
+    },
+    {
+      title: "2. Comandar o LED",
+      codeTitle: "Terminal 2 (cmd) — comandar",
+      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m on
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m off
+docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m pisca`,
+    },
+    {
+      title: "3. Gravar e encerrar",
+      codeTitle: "Terminal 1 (cmd) — depois do offline",
+      command: `docker logs sub-lab02 > evidencias\\t5-mqtt.txt 2>&1
+type evidencias\\t5-mqtt.txt
+docker rm -f sub-lab02`,
+    },
+  ]}
+/>
+
+4. **Feche o ciclo.** Com o assinante ainda rodando, **pare** a simulação e espere (até ~25 s): chega
+   `status offline`, publicado pelo **broker** no lugar do ESP32 (o LWT). Só então grave a
+   evidência e remova o container (passo 3).
+
+```text title="Monitor serial (trecho; o IP pode variar)"
+=== Lab 02 - ESP32 + MQTT ===
+[WiFi] conectando a Wokwi-GUEST.....
+[WiFi] conectado, IP 10.10.0.2
+[MQTT] conectando a broker.hivemq.com como lab02-a-3C8A ... ok
+[PUB] ok elt85b/lab02/grupo-a/ola -> {"grupo":"a","n":1,"uptime_ms":7012}
+[CMD] elt85b/lab02/grupo-a/cmd/led <- 'on'
+[PUB] ok elt85b/lab02/grupo-a/ola -> {"grupo":"a","n":2,"uptime_ms":12012}
+```
+
+```text title="evidencias/t5-mqtt.txt (trecho)"
+elt85b/lab02/grupo-a/status online
+elt85b/lab02/grupo-a/ola {"grupo":"a","n":1,"uptime_ms":7012}
+elt85b/lab02/grupo-a/cmd/led on
+elt85b/lab02/grupo-a/ola {"grupo":"a","n":2,"uptime_ms":12012}
+elt85b/lab02/grupo-a/cmd/led off
+elt85b/lab02/grupo-a/cmd/led pisca
+elt85b/lab02/grupo-a/status offline
+```
+
+5. **Evidências:** o `docker logs` em `evidencias/t5-mqtt.txt` (com `online`, as mensagens
+   `ola`, os três comandos e o `offline`) e o monitor serial do Wokwi (selecione e copie) em
+   `evidencias/t5-serial.txt`.
+6. **No `README.md`:** as respostas de P1, P2 e P3.
+
+:::tip[Preveja antes de rodar]
+**P3:** (a) assine o tópico do grupo **antes** de iniciar o Wokwi, e depois de novo com a
+simulação já rodando há um minuto. Em qual das duas vezes o `status online` aparece logo no
+começo? Por quê (pense no `true` do `publish` de status)? (b) O `offline` chegou na hora em que
+você parou a simulação, ou alguns segundos depois? Do que isso depende (a conexão TCP fechada ×
+o _keepalive_ de 15 s vencido)? (c) Outro grupo poderia mandar
+`on` para o **seu** LED? O que isso diz sobre usar um broker público num projeto real?
+:::
+
+<FileTree
+  root="lab02-grupo-X"
+  files={[
+    "platformio.ini u",
+    "src/main.cpp u",
+    "evidencias/t5-mqtt.txt c",
+    "evidencias/t5-serial.txt c",
+    "README.md u",
+  ]}
+/>
+
+<CommitPoint
+  id="t5"
+  task="ESP32 simulado falando MQTT"
+  pontos={30}
+  files="platformio.ini src/main.cpp evidencias/t5-mqtt.txt evidencias/t5-serial.txt README.md"
+/>
+
+---
+
+## Parte 6 — Placa real (opcional) {/* #placa */}
+
+Quem tiver um ESP32 DevKit pode gravar o mesmo firmware. O código não muda. Só o Wi-Fi: troque
+`Wokwi-GUEST` pela rede disponível, e **não** faça commit da senha.
+
+Antes, siga a aba **Drivers** da [configuração do ambiente](#setup): a placa tem de aparecer
+como uma porta **COM** no Gerenciador de Dispositivos, e o `esptool chip-id` tem de responder.
+Depois:
+
+```shell title="Terminal do VS Code (cmd)"
 pio device list
 pio run -t upload
 pio device monitor
 ```
 
-| Problema          | O que tentar                                     |
-| ----------------- | ------------------------------------------------ |
-| Porta não aparece | Cabo, driver, outro USB                          |
-| Upload fail       | Segurar BOOT na gravação (algumas placas)        |
-| Serial sem texto  | `monitor_speed = 115200` igual ao `Serial.begin` |
+O `pio device list` mostra as portas (`COM3`, `COM4`...). O `upload` compila e grava, e o
+`monitor` abre o serial a 115200 (**Ctrl+C** sai). Feche o monitor antes de gravar de novo: a
+porta COM só atende um programa por vez.
+
+| Problema | O que tentar |
+| --- | --- |
+| A porta não aparece | outro cabo (muitos só carregam), outra USB, driver CP210x ou CH340 |
+| `Failed to connect to ESP32` | segure **BOOT** quando aparecer `Connecting....` |
+| Caracteres estranhos no serial | `monitor_speed` diferente do `Serial.begin()` |
+| `could not open port 'COM4': PermissionError` | outro programa está com a porta (um monitor serial aberto, outro terminal): feche-o |
 
 ---
 
-## 6. Git: salvar o trabalho e entregar
+## Referência rápida {/* #referencia */}
 
-Depois de **build ok** (e, se possível, Wokwi ok):
+| Para… | Comando |
+| --- | --- |
+| Compilar | `pio run` |
+| Limpar o build | `pio run -t clean` |
+| Simular | F1 → **Wokwi: Start Simulator** (compile antes) |
+| Assinar um tópico (na tela) | `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
+| Assinar em segundo plano | `docker run -d --name sub eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
+| Ver / gravar o que chegou | `docker logs -f sub` · `docker logs sub > arquivo.txt 2>&1` |
+| Publicar | `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "topico" -m "texto"` |
+| Ver containers / remover um | `docker ps -a` · `docker rm -f sub` |
+| Ver um arquivo no terminal | `type evidencias\t5-mqtt.txt` |
+| Fluxo de entrega | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01) |
 
-```bash
-git status
-git add src/main.cpp README.md
-git commit -m "lab02: mensagem serial do grupo + LED"
-git push
-```
-
-README — seção mínima:
-
-```markdown
-## Integrantes
-
-- Nome 1
-- Nome 2
-
-## Como rodar
-
-- Build: `pio run`
-- Simulação: Wokwi (extensão ou site)
-- Placa: `pio run -t upload` && `pio device monitor`
-```
-
----
-
-## 2. Daily workflow
-
-```bash
-# Update from remote
-git pull
-
-# See status
-git status
-
-# Stage changes
-git add .
-# or specific files:
-git add src/main.cpp
-
-# Commit
-git commit -m "Implement exercise 2"
-
-# Push to GitHub
-git push
-```
-
-If `git push` asks for a remote branch the first time:
-
-```bash
-git push -u origin main
-```
+| Problema | O que fazer |
+| --- | --- |
+| O Wokwi pede licença | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias) |
+| `firmware.bin not found` no Wokwi | compile antes (`pio run`) e confira os caminhos do `wokwi.toml` |
+| O Wokwi roda o código antigo | ele roda o último build: compile de novo |
+| `[WiFi] conectando...` sem fim | o SSID tem de ser exatamente `Wokwi-GUEST`, sem senha |
+| `[MQTT] ... falhou (rc=-2)` | sem rede até o broker: confira o Wi-Fi e o `MQTT_HOST` |
+| `docker: error during connect` | o Docker Desktop está fechado ou iniciando: abra-o e espere |
+| `The container name "/sub-lab02" is already in use` | sobrou o container de antes: `docker rm -f sub-lab02` |
+| `'docker' não é reconhecido como um comando interno` | o Docker Desktop terminou de instalar depois que o VS Code abriu: feche e abra o VS Code |
+| `mosquitto_sub` não mostra nada | o tópico tem de ser **idêntico** (maiúsculas, `grupo-a` × `grupo-A`), entre **aspas duplas** (no `cmd`, aspas simples viram parte do tópico), e o `#` só vale no fim |
+| O terminal abre como **PowerShell** | falta o `.vscode/settings.json` (Lab 01, 1.1): crie-o e abra um terminal novo |
 
 ---
 
-## 3. Useful `gh` commands for students
-
-```bash
-# Open the repo in the browser
-gh repo view --web
-
-# View repo info
-gh repo view
-
-# List issues
-gh issue list
-
-# Create an issue
-gh issue create --title "Doubt about exercise 3" --body "..."
-
-# List PRs
-gh pr list
-
-# Create a pull request (if you work on a branch)
-gh pr create --title "Solution lab00" --body "..."
-
-# Check Actions / CI status
-gh run list
-gh run view
-```
-
----
-
-## 4. Branch workflow (recommended)
-
-```bash
-# Create and switch to a branch
-git checkout -b feature/ex2
-
-# Work, commit, push
-git add .
-git commit -m "Exercise 2"
-git push -u origin feature/ex2
-
-# Open a PR into main
-gh pr create --base main --title "Exercise 2" --body "Done"
-```
-
-After the PR is merged:
-
-```bash
-git checkout main
-git pull
-git branch -d feature/ex2
-```
-
----
-
-## 5. PlatformIO / embedded labs (if applicable)
-
-```bash
-# Build
-pio run
-
-# Upload to board
-pio run -t upload
-
-# Serial monitor
-pio device monitor
-
-# Run tests
-pio test
-```
-
----
-
-## 6. What you **can** and **cannot** do
-
-| Action                                        | Allowed?                 |
-| --------------------------------------------- | ------------------------ |
-| Clone / pull / push to **your** group repo    | Yes (if team has `push`) |
-| Create branches / commits                     | Yes                      |
-| Open issues / PRs in your repo                | Yes                      |
-| Edit other groups’ repos (`lab00-grupo-b`, …) | No                       |
-| Delete the repository                         | No (usually)             |
-| Change team / org settings                    | No                       |
-| Access `lab00-template` (if private)          | Only if granted          |
-
-Your access comes from the **team** (`grupo-x`, etc.), not from being repo admin.
-
----
-
-## 7. Quick reference by lab
-
-| Lab     | Repository                          |
-| ------- | ----------------------------------- |
-| LAB00   | `ELT85B-N21-2026-2/lab00-grupo-x`   |
-| LAB05   | `ELT85B-N21-2026-2/lab05-grupo-x`   |
-| Projeto | `ELT85B-N21-2026-2/projeto-grupo-x` |
-
-Replace `a` with your group letter (`b`, `c`, …).
-
-Clone pattern:
-
-```bash
-gh repo clone ELT85B-N21-2026-2/lab05-grupo-x
-```
-
----
-
-## 8. Common problems
-
-**Permission denied on push**
-
-- Confirm you are logged in: `gh auth status`
-- Confirm you are in the right team/repo
-- Ask the instructor to check team access (`push` on the repo)
-
-**Repo not found**
-
-```bash
-gh repo view ELT85B-N21-2026-2/lab00-grupo-x
-```
-
-If 404: wrong name, or you are not a member of the org/team yet.
-
-**Merge conflicts**
-
-```bash
-git pull
-# fix conflicted files
-git add .
-git commit -m "Resolve merge conflicts"
-git push
-```
-
-**Undo local changes (destructive)**
-
-```bash
-git checkout -- .
-git clean -fd
-```
-
----
-
-## 9. Minimal “start of lab” checklist
-
-1. `gh auth status` (logged in)
-2. `gh repo clone ELT85B-N21-2026-2/labXX-grupo-y`
-3. `cd labXX-grupo-y`
-4. `code .`
-5. Work → `git add` → `git commit` → `git push`
-6. Check CI: `gh run list`
-
----
-
-## 10. One-liner cheat card
-
-```text
-clone   →  gh repo clone ORG/lab00-grupo-x
-update  →  git pull
-save    →  git add . && git commit -m "msg" && git push
-web     →  gh repo view --web
-ci      →  gh run list
-```
-
----
-
-Example workflow (.github/workflows/grade.yml):
-
-```bash
-.github/workflows/grade.yml
-```
-
-```yaml
-name: Build & Test
-
-on: [push, pull_request]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Cache PlatformIO
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-            ~/.platformio/packages
-          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install PlatformIO
-        run: pip install platformio
-
-      - name: Build project
-        run: pio run
-
-      # Uncomment if you want native/unit tests in CI
-      # - name: Run tests
-      #   run: pio test -e native
-```
-
-## Logout do seu ambiente dev, git e gh
-
-import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
+## Logout do seu ambiente dev, git e gh {/* #logout */}
 
 <GitLogOut />
+
+<LabLogout />
