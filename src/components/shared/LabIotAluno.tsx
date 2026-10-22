@@ -168,6 +168,32 @@ export default function LabIotAluno({
                     const commit = `${entrar} && git add . && git commit -m "T0: Hello Docker!" && git push`;
                     const valido = GRUPO_VALIDO.test(letra) && letra !== "p" && letra !== "n";
 
+                    // limpeza: o estado do Node-RED fica todo em data\<conta> (montado em /data);
+                    // settings\<conta>.js e .segredos.json ficam fora, então senha e login não mudam.
+                    // Nos comandos com "del"/"rmdir ... 2>nul" o "&" (dentro de parênteses) segue
+                    // mesmo se o arquivo não existir, sem rodar nada fora da pasta se o "cd" falhar.
+                    const nr = `${conta}-nodered`;
+                    const dataNr = `data\\${conta}`;
+                    const pararNr = `${entrar} && docker compose stop ${nr}`;
+                    const limparFluxos =
+                        `${pararNr} && (del /q "${dataNr}\\flows.json" "${dataNr}\\flows_cred.json" ` +
+                        `"${dataNr}\\.flows*.backup" 2>nul & docker compose start ${nr})`;
+                    const limparPaleta =
+                        `${pararNr} && (rmdir /s /q "${dataNr}\\node_modules" 2>nul & ` +
+                        `del /q "${dataNr}\\package.json" "${dataNr}\\package-lock.json" "${dataNr}\\.config.nodes.json" 2>nul & ` +
+                        `docker compose start ${nr})`;
+                    const limparNr = `${pararNr} && rmdir /s /q "${dataNr}" && ${gerar} && ${entrar} && docker compose up -d ${nr}`;
+                    const voltarCommit =
+                        `${pararNr} && git checkout -- "${dataNr}" && git clean -fdq "${dataNr}" && docker compose start ${nr}`;
+                    const guardarLimpo = `${pararNr} && tar -a -cf nodered-limpo.zip "${dataNr}" && docker compose start ${nr}`;
+                    const restaurarLimpo = `${pararNr} && rmdir /s /q "${dataNr}" && tar -xf nodered-limpo.zip && docker compose start ${nr}`;
+                    const fuxaNr = `${conta}-fuxa`;
+                    const limparFuxa =
+                        `${entrar} && docker compose stop ${fuxaNr} && rmdir /s /q "fuxa\\${conta}" && ${gerar} && ` +
+                        `${entrar} && docker compose up -d ${fuxaNr}`;
+                    const zerarParar = `${entrar} && docker compose down -v --remove-orphans && (rmdir /s /q data & rmdir /s /q fuxa) 2>nul`;
+                    const zerarSubir = `${gerar} && ${entrar} && docker compose up -d --build`;
+
                     const servicos: [string, string][] = [
                         ["Portal", `${base}/`],
                         ["Node-RED", `${base}/${conta}/`],
@@ -286,7 +312,68 @@ export default function LabIotAluno({
                                                 <code>data/</code> e as telas em <code>fuxa/</code> ficam na pasta.
                                             </p>
                                             <Cmd>{`${entrar} && docker compose down -v`}</Cmd>
+                                            <p>
+                                                Para limpar também os fluxos e as telas, veja <b>Limpar (voltar ao original)</b>.
+                                            </p>
                                         </Admonition>
+                                    </details>
+
+                                    <details>
+                                        <summary><b>Limpar (voltar ao original)</b></summary>
+
+                                        <p>
+                                            Tudo o que se faz no Node-RED (fluxos, credenciais dos nós, nós instalados pela
+                                            paleta, bancos sqlite, projetos) fica em <code>{`docker\\${conta}\\${dataNr}`}</code>.
+                                            O login e a senha ficam fora dela e <b>não mudam</b> com a limpeza.
+                                            Os nós que já vêm na imagem (dashboard, modbus, opcua...) continuam lá.
+                                        </p>
+
+                                        <p><b>Node-RED inteiro</b> (como recém-gerado): apaga a pasta e o gerador a recria.</p>
+                                        <Cmd>{limparNr}</Cmd>
+
+                                        <p><b>Só os fluxos</b> (mantém os nós instalados e os bancos):</p>
+                                        <Cmd>{limparFluxos}</Cmd>
+
+                                        <p><b>Só os nós instalados pela paleta</b> (<i>Manage palette</i>):</p>
+                                        <Cmd>{limparPaleta}</Cmd>
+
+                                        <p>
+                                            <b>Voltar ao último commit</b> (ex.: o <code>T0</code> do passo 7): desfaz o que mudou
+                                            em <code>{dataNr}</code> desde então.
+                                        </p>
+                                        <Cmd>{voltarCommit}</Cmd>
+
+                                        <p>
+                                            <b>Guardar um ponto de partida</b> e voltar a ele quando quiser
+                                            (o <code>nodered-limpo.zip</code> fica na pasta do LAB IoT):
+                                        </p>
+                                        <Cmd>{guardarLimpo}</Cmd>
+                                        <p>Restaurar:</p>
+                                        <Cmd>{restaurarLimpo}</Cmd>
+
+                                        {!o.semFuxa && (
+                                            <>
+                                                <p><b>FUXA</b> (telas e conexões; o login do grupo é recriado pelo gerador):</p>
+                                                <Cmd>{limparFuxa}</Cmd>
+                                            </>
+                                        )}
+
+                                        <Admonition type="danger" title="Zerar o LAB IoT inteiro">
+                                            <p>
+                                                Apaga containers, volumes
+                                                {gitea ? " (inclusive os repositórios do Gitea: faça push para outro lugar antes)" : ""},
+                                                {" "}<code>data\</code> e <code>fuxa\</code>. O <code>.segredos.json</code> fica:
+                                                a senha continua a mesma.
+                                            </p>
+                                            <Cmd>{zerarParar}</Cmd>
+                                            <p>Gerar e subir de novo:</p>
+                                            <Cmd>{zerarSubir}</Cmd>
+                                        </Admonition>
+
+                                        <p>
+                                            Depois de limpar, o <code>git status</code> mostra os arquivos apagados: faça um commit
+                                            (ex.: <code>git commit -am "limpeza"</code>) ou deixe como está.
+                                        </p>
                                     </details>
                                 </>
                             )}
