@@ -105,3 +105,10 @@ Depois rode o script com esse commit:
 - Não rode o script de novo nos grupos que já foram atualizados. O `git am` recusa patches que já foram aplicados.
 
 Se nenhum grupo mexeu nos repositórios ainda, a opção mais simples é apagar os repositórios dos grupos (`gh repo delete`) e rodar de novo o `create-lab-from-template.sh`.
+
+
+
+
+```bash
+gh repo clone ELT85B-N21-2026-2/lab08-template /tmp/t && git -C /tmp/t log --oneline
+```
