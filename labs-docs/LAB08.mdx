@@ -53,14 +53,14 @@ flowchart LR
 
 Guarde esta tabela: cada parte da aula preenche uma linha dela na prática.
 
-|                          | **Modbus TCP**                                 | **S7**                                                       | **OPC-UA**                                   | **MQTT**                                       |
-| ------------------------ | ---------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------- |
-| Origem                   | Modicon, 1979 (serial); aberto                 | Siemens; proprietário                                        | OPC Foundation; aberto (IEC 62541)           | IBM, 1999; aberto (OASIS)                      |
-| Como o dado é endereçado | **número** do registrador (`IR0`, `HR3`)       | **bloco + byte** (`DB1,REAL20`)                              | **nó com nome** (`ns=2;s=Camara.temp`)       | **tópico** (`.../telemetria`)                  |
-| Tipos                    | só bits e palavras de 16 bits                  | os do CLP (`BOOL`, `INT`, `REAL`…), mas o cliente é quem diz | o servidor **declara** o tipo de cada nó     | nenhum: o _payload_ é texto ou bytes           |
-| O que é cada endereço    | um **mapa** em documento à parte               | uma **tabela de variáveis** à parte                          | o próprio servidor descreve (_browse_)       | combinado entre as partes                      |
-| Como o dado chega        | **varredura**: o cliente pergunta a cada _x_ s | **varredura**                                                | **assinatura**: o servidor avisa quando muda | **publicação**: quem tem o dado envia          |
-| Quem é servidor          | o equipamento (escravo)                        | o CLP                                                        | o equipamento                                | o **broker**; equipamento e SCADA são clientes |
+| | **Modbus TCP** | **S7** | **OPC-UA** | **MQTT** |
+| --- | --- | --- | --- | --- |
+| Origem | Modicon, 1979 (serial); aberto | Siemens; proprietário | OPC Foundation; aberto (IEC 62541) | IBM, 1999; aberto (OASIS) |
+| Como o dado é endereçado | **número** do registrador (`IR0`, `HR3`) | **bloco + byte** (`DB1,REAL20`) | **nó com nome** (`ns=2;s=Camara.temp`) | **tópico** (`.../telemetria`) |
+| Tipos | só bits e palavras de 16 bits | os do CLP (`BOOL`, `INT`, `REAL`…), mas o cliente é quem diz | o servidor **declara** o tipo de cada nó | nenhum: o _payload_ é texto ou bytes |
+| O que é cada endereço | um **mapa** em documento à parte | uma **tabela de variáveis** à parte | o próprio servidor descreve (_browse_) | combinado entre as partes |
+| Como o dado chega | **varredura**: o cliente pergunta a cada _x_ s | **varredura** | **assinatura**: o servidor avisa quando muda | **publicação**: quem tem o dado envia |
+| Quem é servidor | o equipamento (escravo) | o CLP | o equipamento | o **broker**; equipamento e SCADA são clientes |
 
 ## Objetivos
 
@@ -142,12 +142,12 @@ O repositório do grupo nasce do `lab08-template`, que traz uma cópia do simula
 :::info[Nomes do Lab 08]
 Troque o `x` pela letra do seu grupo em **todos** os nomes abaixo.
 
-| O quê                    | Valor                         |
-| ------------------------ | ----------------------------- |
-| Contêiner e host na rede | `lab08-x-camara`              |
-| Tópico base MQTT         | `elt85b/lab08/grupo-x/camara` |
-| Rede do stack do curso   | `lab08-x_labnet`              |
-| LAB IoT do lab08-x       | `http://localhost`            |
+| O quê | Valor |
+| --- | --- |
+| Contêiner e host na rede | `lab08-x-camara` |
+| Tópico base MQTT | `elt85b/lab08/grupo-x/camara` |
+| Rede do stack do curso | `lab08-x_labnet` |
+| LAB IoT do lab08-x | `http://localhost` |
 
 :::
 
@@ -176,7 +176,7 @@ flowchart LR
 
 ### 1.1 Subir
 
-1. Suba o [stack do curso](/infra/setup/gen_iot_aluno#lab-08), se ainda não estiver rodando, e
+1. Suba o [stack do curso](infra/setup/gen_iot_aluno#lab-08), se ainda não estiver rodando, e
    confira o nome da rede:
 
    ```shell title="Terminal (cmd)"
@@ -200,8 +200,8 @@ PORTA_MODBUS_TCP=502
 PORTA_MODBUS_RTU=5021
 PORTA_S7=102
 PORTA_OPCUA=4840`,
-},
-]}
+    },
+  ]}
 />
 
 3. Suba o simulador **com o complemento de rede** (`docker-compose.lab.yml`), que o liga à rede
@@ -311,7 +311,7 @@ docker network inspect lab08-{group}_labnet --format "{{range .Containers}}{{.Na
 />
 
 1. No `credenciais.txt`, interessam as linhas `Node-RED: <base>/lab08-x/` e `MQTT:
-mosquitto:1883 (Node-RED/FUXA)`, e se o MQTT pede login.
+   mosquitto:1883 (Node-RED/FUXA)`, e se o MQTT pede login.
 2. A rede leva o nome da **pasta** do LAB IoT mais `_labnet` (é o `LAB_REDE` do `.env`). A lista
    tem de incluir `lab08-x-mosquitto`, `lab08-x-nodered` e **`lab08-x-camara`**. Sem o
    `lab08-x-camara`, o simulador subiu sem o `docker-compose.lab.yml` ou com outro `LAB_REDE`.
@@ -319,13 +319,13 @@ mosquitto:1883 (Node-RED/FUXA)`, e se o MQTT pede login.
    linhas devem sair `ok`. `ENOTFOUND` quer dizer que o nome não existe na rede (volte ao passo 2);
    `ECONNREFUSED`, que o contêiner existe, mas nada escuta naquela porta.
 
-| Nó de configuração no Node-RED | Endereço                                           |
-| ------------------------------ | -------------------------------------------------- |
-| modbus-client                  | `lab08-x-camara`, porta `502`, unit `1`            |
-| s7 endpoint                    | `lab08-x-camara`, porta `102`, rack `0` / slot `1` |
-| OpcUa-Endpoint                 | `opc.tcp://lab08-x-camara:4840/`                   |
-| mqtt-broker                    | `mosquitto`, porta `1883`                          |
-| Editor do Node-RED (navegador) | `http://localhost/lab08-x/`                        |
+| Nó de configuração no Node-RED | Endereço |
+| --- | --- |
+| modbus-client | `lab08-x-camara`, porta `502`, unit `1` |
+| s7 endpoint | `lab08-x-camara`, porta `102`, rack `0` / slot `1` |
+| OpcUa-Endpoint | `opc.tcp://lab08-x-camara:4840/` |
+| mqtt-broker | `mosquitto`, porta `1883` |
+| Editor do Node-RED (navegador) | `http://localhost/lab08-x/` |
 
 As portas do `.env` (`PORTA_MODBUS_TCP` etc.) só valem para quem acessa **de fora**, como o
 UaExpert em `localhost:4840`. Dentro da rede, o Node-RED usa sempre 502, 102 e 4840.
@@ -337,10 +337,7 @@ pode usar os tópicos `lab08-x/#`: os tópicos `elt85b/lab08/...` são descartad
 LAB IoT sem essa opção.
 :::
 
-<FileTree
-  root="lab08-grupo-X"
-  files={["camara-sim/.env c", "evidencias/t1-testar.txt c"]}
-/>
+<FileTree root="lab08-grupo-X" files={["camara-sim/.env c", "evidencias/t1-testar.txt c"]} />
 
 <CommitPoint
   id="t1"
@@ -360,13 +357,13 @@ palavras de 16 bits. O significado de cada endereço vem de um **mapa de registr
 documento que o fabricante entrega com o equipamento. Este é o trecho do mapa da câmara que
 vamos usar (unit 1, endereços a partir de 0):
 
-| Tabela                | Função (FC)          | Acesso              | End.      | Variável                                                |
-| --------------------- | -------------------- | ------------------- | --------- | ------------------------------------------------------- |
-| **Coils**             | FC1 lê · FC5 escreve | bit, R/W            | 0         | `habilitado`                                            |
-| **Discrete inputs**   | FC2                  | bit, só leitura     | 0–2       | LEDs verde, amarelo, vermelho                           |
-| **Holding registers** | FC3 lê · FC6 escreve | 16 bits, R/W        | 3         | `setpoint` × 10 (350 = 35,0 °C)                         |
-| **Input registers**   | FC4                  | 16 bits, só leitura | 0 / 1 / 2 | temperatura × 10 / umidade × 10 / setpoint efetivo × 10 |
-|                       |                      |                     | 3 / 4     | aquecedor / ventilador (%)                              |
+| Tabela | Função (FC) | Acesso | End. | Variável |
+| --- | --- | --- | --- | --- |
+| **Coils** | FC1 lê · FC5 escreve | bit, R/W | 0 | `habilitado` |
+| **Discrete inputs** | FC2 | bit, só leitura | 0–2 | LEDs verde, amarelo, vermelho |
+| **Holding registers** | FC3 lê · FC6 escreve | 16 bits, R/W | 3 | `setpoint` × 10 (350 = 35,0 °C) |
+| **Input registers** | FC4 | 16 bits, só leitura | 0 / 1 / 2 | temperatura × 10 / umidade × 10 / setpoint efetivo × 10 |
+| | | | 3 / 4 | aquecedor / ventilador (%) |
 
 O mapa completo está no `camara-sim/README.md`.
 
@@ -379,12 +376,12 @@ Um registrador guarda só **inteiros** de 0 a 65535. Para ter uma casa decimal, 
 
 Crie uma aba **Lab 08** no Node-RED e um nó de configuração **modbus-client**:
 
-| Campo       | `câmara Modbus TCP`      |
-| ----------- | ------------------------ |
-| Type        | TCP                      |
+| Campo | `câmara Modbus TCP` |
+| --- | --- |
+| Type | TCP |
 | Host / Port | `lab08-x-camara` / `502` |
-| TCP Type    | DEFAULT                  |
-| Unit-Id     | `1`                      |
+| TCP Type | DEFAULT |
+| Unit-Id | `1` |
 
 ```mermaid
 flowchart LR
@@ -399,11 +396,11 @@ flowchart LR
 // IR0..4 -> nomes e unidades (o mapa de registradores diz o que é cada um)
 const r = msg.payload;
 msg.payload = {
-  temp: r[0] / 10, // IR0: °C x 10
-  umid: r[1] / 10, // IR1: % x 10
-  sp_efetivo: r[2] / 10, // IR2: °C x 10
-  aquecedor: r[3], // IR3: %
-  ventilador: r[4], // IR4: %
+    temp: r[0] / 10,          // IR0: °C x 10
+    umid: r[1] / 10,          // IR1: % x 10
+    sp_efetivo: r[2] / 10,    // IR2: °C x 10
+    aquecedor: r[3],          // IR3: %
+    ventilador: r[4]          // IR4: %
 };
 return msg;
 ```
@@ -419,13 +416,13 @@ Sem o mapa, `[362, 363, 350, 0, 20]` são só números.
 
 ### 2.3 Escrever
 
-| Nó                                   | Configuração                                                      |
-| ------------------------------------ | ----------------------------------------------------------------- |
-| inject "SP 30 °C" / "SP 40 °C"       | payload número `30` / `40`                                        |
-| function "°C → HR3 (×10)"            | `msg.payload = Math.round(Number(msg.payload) * 10); return msg;` |
-| modbus-write "FC6 HR3 setpoint"      | _FC 6: Preset Single Register_, Address `3`, Quantity `1`         |
-| inject "Liga" / "Desliga"            | payload booleano `true` / `false`                                 |
-| modbus-write "FC5 coil 0 habilitado" | _FC 5: Force Single Coil_, Address `0`, Quantity `1`              |
+| Nó | Configuração |
+| --- | --- |
+| inject "SP 30 °C" / "SP 40 °C" | payload número `30` / `40` |
+| function "°C → HR3 (×10)" | `msg.payload = Math.round(Number(msg.payload) * 10); return msg;` |
+| modbus-write "FC6 HR3 setpoint" | _FC 6: Preset Single Register_, Address `3`, Quantity `1` |
+| inject "Liga" / "Desliga" | payload booleano `true` / `false` |
+| modbus-write "FC5 coil 0 habilitado" | _FC 5: Force Single Coil_, Address `0`, Quantity `1` |
 
 Clique "SP 40 °C": o `sp_efetivo` do debug vai a 40 e o aquecedor liga. Clique "Desliga": o
 aquecedor vai a 0. Cada escrita aparece no log do simulador, com o protocolo de origem:
@@ -441,7 +438,6 @@ docker logs lab08-x-camara 2>&1 | findstr /l /c:"[cmd]"
 ```
 
 :::note[Dois conceitos que você vai encontrar em equipamentos reais]
-
 - **Float32 em dois registradores:** para não perder precisão, muitos equipamentos guardam um
   `float` de 32 bits em **dois** registradores seguidos. A ordem das palavras (ABCD, CDAB…) muda
   de fabricante para fabricante, e errar a ordem dá números absurdos. A câmara faz isso nos
@@ -449,7 +445,7 @@ docker logs lab08-x-camara 2>&1 | findstr /l /c:"[cmd]"
 - **Modbus RTU:** o mesmo protocolo na linha serial **RS-485**, com o quadro endereço + função +
   dados + **CRC-16**. A câmara também responde em RTU (porta 5021, "RTU sobre TCP", como um
   conversor serial-Ethernet), mas não vamos usá-la hoje.
-  :::
+:::
 
 :::tip[Preveja antes de rodar]
 **P1:** (a) o que acontece se você esquecer a function "×10" e mandar `37.5` direto para o HR3?
@@ -462,12 +458,7 @@ e "Modbus") e as linhas `[cmd]` do log.
 
 <FileTree root="lab08-grupo-X" files={["evidencias/t2-modbus.txt c"]} />
 
-<CommitPoint
-  id="t2"
-  task="Modbus TCP"
-  pontos={25}
-  files="evidencias/t2-modbus.txt"
-/>
+<CommitPoint id="t2" task="Modbus TCP" pontos={25} files="evidencias/t2-modbus.txt" />
 
 ---
 
@@ -481,15 +472,15 @@ de **bytes**, e cada variável é um **tipo** num **deslocamento** (_offset_): `
 porta 102) lê e escreve faixas desses bytes. O cliente precisa saber o **endereço** e o **tipo**
 de cada variável.
 
-| Endereço (nodes7) | Bytes           | Variável                          | Acesso |
-| ----------------- | --------------- | --------------------------------- | ------ |
-| `DB1,X0.0`        | bit 0 do byte 0 | `habilitado`                      | R/W    |
-| `DB1,INT2`        | 2–3             | `modo`                            | R/W    |
-| `DB1,REAL4`       | 4–7             | `setpoint` (°C)                   | R/W    |
-| `DB1,REAL20`      | 20–23           | `temp` (°C)                       | R      |
-| `DB1,REAL24`      | 24–27           | `umid` (%)                        | R      |
-| `DB1,REAL28`      | 28–31           | `sp_efetivo` (°C)                 | R      |
-| `DB1,INT40`       | 40–41           | `estado` (0 DESLIGADO … 4 ALARME) | R      |
+| Endereço (nodes7) | Bytes | Variável | Acesso |
+| --- | --- | --- | --- |
+| `DB1,X0.0` | bit 0 do byte 0 | `habilitado` | R/W |
+| `DB1,INT2` | 2–3 | `modo` | R/W |
+| `DB1,REAL4` | 4–7 | `setpoint` (°C) | R/W |
+| `DB1,REAL20` | 20–23 | `temp` (°C) | R |
+| `DB1,REAL24` | 24–27 | `umid` (%) | R |
+| `DB1,REAL28` | 28–31 | `sp_efetivo` (°C) | R |
+| `DB1,INT40` | 40–41 | `estado` (0 DESLIGADO … 4 ALARME) | R |
 
 Repare que **não há escala**: o `REAL` já é o valor em °C.
 
@@ -497,13 +488,13 @@ Repare que **não há escala**: o `REAL` já é o valor em °C.
 
 Crie um nó de configuração **s7 endpoint** "câmara S7 (DB1)":
 
-| Campo          | Valor                                                                                                                 |
-| -------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Transport      | Ethernet (ISO-on-TCP)                                                                                                 |
-| Address / Port | `lab08-x-camara` / `102`                                                                                              |
-| Mode           | Rack/Slot: `0` / `1`                                                                                                  |
-| Cycle time     | `2000` ms                                                                                                             |
-| Variables      | `habilitado`, `setpoint`, `temp`, `umid`, `sp_efetivo` e `estado`, com os endereços da tabela (o `modo` fica de fora) |
+| Campo | Valor |
+| --- | --- |
+| Transport | Ethernet (ISO-on-TCP) |
+| Address / Port | `lab08-x-camara` / `102` |
+| Mode | Rack/Slot: `0` / `1` |
+| Cycle time | `2000` ms |
+| Variables | `habilitado`, `setpoint`, `temp`, `umid`, `sp_efetivo` e `estado`, com os endereços da tabela (o `modo` fica de fora) |
 
 ```mermaid
 flowchart LR
@@ -535,12 +526,7 @@ log do simulador.
 
 <FileTree root="lab08-grupo-X" files={["evidencias/t3-s7.txt c"]} />
 
-<CommitPoint
-  id="t3"
-  task="S7: o DB1"
-  pontos={20}
-  files="evidencias/t3-s7.txt"
-/>
+<CommitPoint id="t3" task="S7: o DB1" pontos={20} files="evidencias/t3-s7.txt" />
 
 ---
 
@@ -602,12 +588,7 @@ OPC-UA entrega? E quantas leituras o Modbus faz no mesmo minuto? Responda antes 
 
 <FileTree root="lab08-grupo-X" files={["evidencias/t4-opcua.txt c"]} />
 
-<CommitPoint
-  id="t4"
-  task="OPC-UA: assinatura e escrita"
-  pontos={20}
-  files="evidencias/t4-opcua.txt"
-/>
+<CommitPoint id="t4" task="OPC-UA: assinatura e escrita" pontos={20} files="evidencias/t4-opcua.txt" />
 
 ---
 
@@ -630,12 +611,12 @@ leitura e uma escrita **por protocolo**, e dá para comparar os quatro lado a la
    ```markdown title="README.md"
    ## T5 — Uma planta, quatro portas
 
-   | Escrito por         | Valor | Modbus lê (`sp_efetivo`) | S7 lê (`setpoint`) | OPC-UA lê (`setpoint`) | MQTT lê (`setpoint`) |
-   | ------------------- | ----- | ------------------------ | ------------------ | ---------------------- | -------------------- |
-   | Modbus (FC6 HR3)    | 40    |                          |                    |                        |                      |
-   | S7 (DB1,REAL4)      | 33    |                          |                    |                        |                      |
-   | OPC-UA (Double)     | 35    |                          |                    |                        |                      |
-   | MQTT (cmd/setpoint) | 36    |                          |                    |                        |                      |
+   | Escrito por | Valor | Modbus lê (`sp_efetivo`) | S7 lê (`setpoint`) | OPC-UA lê (`setpoint`) | MQTT lê (`setpoint`) |
+   | --- | --- | --- | --- | --- | --- |
+   | Modbus (FC6 HR3) | 40 | | | | |
+   | S7 (DB1,REAL4) | 33 | | | | |
+   | OPC-UA (Double) | 35 | | | | |
+   | MQTT (cmd/setpoint) | 36 | | | | |
    ```
 
 3. **Contar as mensagens.** Em cada um dos debugs "Modbus", "S7", "OPC-UA" e "MQTT", troque o
@@ -643,12 +624,12 @@ leitura e uma escrita **por protocolo**, e dá para comparar os quatro lado a la
    os contadores). Sem escrever nada, espere **1 minuto** e capture a aba em
    `evidencias/t5-contagem.png`. Anote os números no `README.md`.
 
-   | Debug  | Mensagens em 1 min | Por quê                                        |
-   | ------ | ------------------ | ---------------------------------------------- |
-   | Modbus |                    | varredura a cada 2 s                           |
-   | S7     |                    | varredura a cada 2 s (_Cycle time_)            |
-   | OPC-UA |                    | uma por **mudança** de `temp` ou de `setpoint` |
-   | MQTT   |                    | o equipamento publica a cada 2 s               |
+   | Debug | Mensagens em 1 min | Por quê |
+   | --- | --- | --- |
+   | Modbus | | varredura a cada 2 s |
+   | S7 | | varredura a cada 2 s (_Cycle time_) |
+   | OPC-UA | | uma por **mudança** de `temp` ou de `setpoint` |
+   | MQTT | | o equipamento publica a cada 2 s |
 
    No debug "OPC-UA", filtre a barra lateral pelo nó e confira: quantas mensagens são de
    `Camara.setpoint`?
@@ -667,11 +648,7 @@ redes industriais costumam ficar **separadas** da rede do escritório e da inter
 
 <FileTree
   root="lab08-grupo-X"
-  files={[
-    "nodered/flows-lab08.json c",
-    "evidencias/t5-contagem.png c",
-    "README.md u",
-  ]}
+  files={["nodered/flows-lab08.json c", "evidencias/t5-contagem.png c", "README.md u"]}
 />
 
 <CommitPoint
@@ -685,22 +662,23 @@ redes industriais costumam ficar **separadas** da rede do escritório e da inter
 
 ## Referência rápida {/* #referencia */}
 
-| Protocolo  | Nó de configuração                                                        | Ler                                                          | Escrever                                                |
-| ---------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
-| Modbus TCP | **modbus-client** `lab08-x-camara:502`, unit 1                            | **modbus-read** (FC1/2/3/4, endereço, quantidade, intervalo) | **modbus-write** (FC5 bobina, FC6 registrador)          |
-| S7         | **s7 endpoint** `lab08-x-camara:102`, rack 0, slot 1, tabela de variáveis | **s7 in** (uma variável ou todas)                            | **s7 out** (uma variável)                               |
-| OPC-UA     | **OpcUa-Endpoint** `opc.tcp://lab08-x-camara:4840/`                       | **OpcUa-Client** READ ou SUBSCRIBE, NodeId no `msg.topic`    | **OpcUa-Item** (NodeId + tipo) → **OpcUa-Client** WRITE |
-| MQTT       | **mqtt-broker** `mosquitto:1883`                                          | **mqtt in** (tópico)                                         | **mqtt out** (tópico)                                   |
+| Protocolo | Nó de configuração | Ler | Escrever |
+| --- | --- | --- | --- |
+| Modbus TCP | **modbus-client** `lab08-x-camara:502`, unit 1 | **modbus-read** (FC1/2/3/4, endereço, quantidade, intervalo) | **modbus-write** (FC5 bobina, FC6 registrador) |
+| S7 | **s7 endpoint** `lab08-x-camara:102`, rack 0, slot 1, tabela de variáveis | **s7 in** (uma variável ou todas) | **s7 out** (uma variável) |
+| OPC-UA | **OpcUa-Endpoint** `opc.tcp://lab08-x-camara:4840/` | **OpcUa-Client** READ ou SUBSCRIBE, NodeId no `msg.topic` | **OpcUa-Item** (NodeId + tipo) → **OpcUa-Client** WRITE |
+| MQTT | **mqtt-broker** `mosquitto:1883` | **mqtt in** (tópico) | **mqtt out** (tópico) |
 
-| Problema                            | O que fazer                                                                                                                |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Nó Modbus/S7/OPC-UA "desconectado"  | o simulador está na rede do stack? `docker logs lab08-x-camara`; no Node-RED, o host é `lab08-x-camara`, e não `localhost` |
-| `port is already allocated` no `up` | troque a porta do lado do PC no `.env`                                                                                     |
-| Setpoint "errado" pelo Modbus       | faltou o ×10 (P1)                                                                                                          |
-| Valores sem sentido no S7           | endereço ou tipo errado na tabela de variáveis (P2)                                                                        |
-| `BadTypeMismatch` no OPC-UA         | o _Type_ do OpcUa-Item tem de ser o do nó (`Double` para o setpoint)                                                       |
-| Nada chega no debug "MQTT"          | o tópico tem de ser **idêntico** ao `MQTT_BASE` do `.env`, mais `/telemetria`                                              |
-| Parar o simulador                   | na pasta `camara-sim`: `docker compose -f docker-compose.yml -f docker-compose.lab.yml down`                               |
+| Problema | O que fazer |
+| --- | --- |
+| Nó Modbus/S7/OPC-UA "desconectado" | o simulador está na rede do stack? `docker logs lab08-x-camara`; no Node-RED, o host é `lab08-x-camara`, e não `localhost` |
+| Nós Modbus com "propriedades inválidas: Server" | no `modbus-client`, o campo _Serial port_ não pode ficar vazio, mesmo com _Type_ TCP: mude o _Type_ para Serial, preencha `/dev/ttyUSB`, volte para TCP e faça o Deploy |
+| `port is already allocated` no `up` | troque a porta do lado do PC no `.env` |
+| Setpoint "errado" pelo Modbus | faltou o ×10 (P1) |
+| Valores sem sentido no S7 | endereço ou tipo errado na tabela de variáveis (P2) |
+| `BadTypeMismatch` no OPC-UA | o _Type_ do OpcUa-Item tem de ser o do nó (`Double` para o setpoint) |
+| Nada chega no debug "MQTT" | o tópico tem de ser **idêntico** ao `MQTT_BASE` do `.env`, mais `/telemetria` |
+| Parar o simulador | na pasta `camara-sim`: `docker compose -f docker-compose.yml -f docker-compose.lab.yml down` |
 
 ---
 
