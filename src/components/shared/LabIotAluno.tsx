@@ -54,7 +54,8 @@ export const PRESETS_IOT: Record<string, GenIotOpcoes> = {
     lab05: {}, // LAB IoT completo
     lab06: { semGitea: true, semMicrobin: true },
     lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
-    lab08: { captura: true, capturaFiltro: "port 1883" },
+    lab08: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
+    lab09: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
     projeto: {},
 };
 
