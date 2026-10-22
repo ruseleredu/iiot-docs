@@ -383,41 +383,6 @@ export function DevTools() {
                     </li>
                 </ul>
             </TabItem>
-            <TabItem value="mqtt-cli" label="MQTT">
-                <p><b><a href="https://hivemq.github.io/mqtt-cli/" target="_blank">MQTT CLI</a>: Uma interface de linha de comando para clientes MQTT totalmente compatível com MQTT 5.0 e MQTT 3.1.1.</b></p>
-                <ul>
-                    <li>Baixe o arquivo <a href="https://github.com/hivemq/mqtt-cli/releases/latest" target="_blank">ZIP para Windows</a> e extraia-o no local <code>%USERPROFILE%\.platformio\penv\Scripts\</code>.
-
-                        <ThemeCodeBlock className="language-bash">
-                            explorer %USERPROFILE%\.platformio\penv\Scripts\
-                        </ThemeCodeBlock>
-                    </li>
-                    <li>
-                        <p>Verifique a versão instalada:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`mqtt-cli -V`}
-                        </ThemeCodeBlock>
-                    </li>
-                    <li>
-                        <p>Pasta de configurações e logs:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            explorer %USERPROFILE%\.mqtt-cli
-                        </ThemeCodeBlock>
-                    </li>
-                    <li>
-                        <p>Teste:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`mqtt-cli test -h broker.hivemq.com`}
-                        </ThemeCodeBlock>
-                    </li>
-                    <li>
-                        <p>Teste de MQTT com hivemq/mqtt-cli:</p>
-                        <ThemeCodeBlock className="language-bash">
-                            {`docker run -it hivemq/mqtt-cli test -h broker.hivemq.com`}
-                        </ThemeCodeBlock>
-                    </li>
-                </ul>
-            </TabItem>
         </Tabs>
     );
 }
