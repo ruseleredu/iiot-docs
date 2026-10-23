@@ -172,7 +172,7 @@ if args.kit:
     except (OSError, ValueError):
         _lab_seg = {}
     SEGREDOS_LAB = {k: v for k, v in _lab_seg.items()
-                    if k in (f"senha:{KIT}", f"senha:{KIT}-view", f"credential_secret:{KIT}")}
+                    if k in (f"senha:{KIT}", f"credential_secret:{KIT}")}
 
 # ---------------- pasta de saída e segredos persistentes ----------------
 SAIDA = args.saida or (os.path.join(f"{LAB}-kits", KIT) if KIT else LAB)
@@ -314,13 +314,12 @@ def gravar(caminho, conteudo, executavel=False):
 
 
 # ---------------- credenciais dos grupos (persistentes) ----------------
-credenciais_geradas = []   # (usuario, senha_admin, usuario_view, senha_view)
+credenciais_geradas = []   # (usuario, senha)
 for g in todos_servicos:
     s_admin = segredo(f"senha:{g}", lambda: gerar_senha(8), renovar=args.novas_senhas)
-    s_view = segredo(f"senha:{g}-view", lambda: gerar_senha(8), renovar=args.novas_senhas)
-    credenciais_geradas.append((g, s_admin, f"{g}-view", s_view))
-SENHA = {u: s for (u, s, _uv, _sv) in credenciais_geradas}
-SENHA.update({uv: sv for (_u, _s, uv, sv) in credenciais_geradas})
+    SEGREDOS.pop(f"senha:{g}-view", None)      # o usuário só leitura do Node-RED não existe mais
+    credenciais_geradas.append((g, s_admin))
+SENHA = dict(credenciais_geradas)
 
 for g in todos_servicos:
     os.makedirs(f"data/{g}", exist_ok=True)
@@ -1024,8 +1023,7 @@ module.exports = {{
     adminAuth: {{
         type: "credentials",
         users: [
-            {{ username: "{g}",      password: "{hash_admin}", permissions: "*" }},
-            {{ username: "{g}-view", password: "{hash_view}",  permissions: "read" }}
+            {{ username: "{g}", password: "{hash_admin}", permissions: "*" }}
         ]
     }},{http_auth}
     // Node-RED vive em <base>/{g}/  (http://IP/{g}/ ou https://<publico>/{g}/)
@@ -1036,7 +1034,7 @@ module.exports = {{
 }};
 """
 
-for g, s_admin, _uv, s_view in credenciais_geradas:
+for g, s_admin in credenciais_geradas:
     if is_notas(g):
         titulo = f"{LAB.upper()} - PAINEL DE NOTAS"
     elif is_prof(g):
@@ -1044,7 +1042,6 @@ for g, s_admin, _uv, s_view in credenciais_geradas:
     else:
         titulo = g.upper()
     hash_admin = bcrypt.hashpw(s_admin.encode(), bcrypt.gensalt(8)).decode()
-    hash_view = bcrypt.hashpw(s_view.encode(), bcrypt.gensalt(8)).decode()
     http_auth = ""
     if args.proteger_http:
         http_auth = ("\n    // dashboards e endpoints HTTP exigem login (usuário/senha do grupo)\n"
@@ -1053,7 +1050,7 @@ for g, s_admin, _uv, s_view in credenciais_geradas:
         g=g,
         # credentialSecret persistente: senão as credenciais salvas nos nós ficam ilegíveis
         cred=segredo(f"credential_secret:{g}", lambda: secrets.token_hex(16)),
-        titulo=titulo, hash_admin=hash_admin, hash_view=hash_view, http_auth=http_auth))
+        titulo=titulo, hash_admin=hash_admin, http_auth=http_auth))
 print("⚙️  settings/<grupo>.js")
 
 # =====================================================================
@@ -2331,8 +2328,7 @@ if KIT:
     gl = GITEA_LAB
     repo_lab = f"{gl}/{org_de(g)}/{GITEA_REPO}.git" if (gl and GITEA_REPO) else None
     cred = [f"=== KIT {g.upper()} (máquina do aluno) ===", "",
-            f"Usuário: {g}        Senha: {SENHA[g]}",
-            f"Só leitura (Node-RED): {g}-view   Senha: {SENHA[g + '-view']}", "",
+            f"Usuário: {g}        Senha: {SENHA[g]}", "",
             "A mesma senha vale para Node-RED, FUXA e ntfy" +
             (" (e é a do laboratório)." if SEGREDOS_LAB and not args.novas_senhas else "."), "",
             f"Portal:    {U}/", f"Node-RED:  {U}/{g}/", f"Dashboard: {U}/{g}/dashboard"]
@@ -2376,8 +2372,7 @@ if KIT:
         leia.append(f"| FUXA (SCADA/HMI) | {U}/fuxa/{g}/ |")
     if NTFY:
         leia.append(f"| Avisos (ntfy): ler e publicar | {U}/avisos/ |")
-    leia += ["", f"Só leitura no Node-RED (para mostrar sem risco): `{g}-view` · `{SENHA[g + '-view']}`", "",
-             "## 4. Configurações (iguais às do laboratório)", ""]
+    leia += ["", "## 4. Configurações (iguais às do laboratório)", ""]
     linhas = [("Nós **mqtt** do Node-RED", f"servidor `mosquitto`, porta `1883`, tópicos `{g}/...`"),
               ("ESP32 / celular na sua rede", "IP do seu PC (`ipconfig`), porta `1883`")]
     if FUXA:
@@ -2446,10 +2441,10 @@ def bases():
 
 L_ = []
 L_.append(f"=== CREDENCIAIS {LAB.upper()} ===\n")
-L_.append(f"{'USUÁRIO':<13} | {'SENHA':<10} | {'USUÁRIO VIEW':<15} | {'SENHA VIEW':<10}")
-L_.append("-" * 58)
-for u, s, uv, sv in credenciais_geradas:
-    L_.append(f"{u:<13} | {s:<10} | {uv:<15} | {sv:<10}")
+L_.append(f"{'USUÁRIO':<13} | {'SENHA':<10}")
+L_.append("-" * 26)
+for u, s in credenciais_geradas:
+    L_.append(f"{u:<13} | {s:<10}")
 L_.append("\nA mesma senha do grupo vale para Node-RED, FUXA, Gitea, MicroBin e ntfy.")
 L_.append("\n=== ENDEREÇOS ===")
 for rot, b in bases():
@@ -2566,8 +2561,7 @@ def pagina_acesso(g):
          "",
          "| | Usuário | Senha |",
          "|---|---|---|",
-         f"| Acesso principal | `{g}` | `{SENHA[g]}` |",
-         f"| Só leitura no Node-RED (projetor) | `{g}-view` | `{SENHA[g + '-view']}` |"]
+         f"| Acesso principal | `{g}` | `{SENHA[g]}` |"]
     if is_prof(g):
         if MQTTX_AUTH:
             m.append(f"| MQTT Explorer | `{MQTTX_USER}` | `{MQTTX_SENHA}` |")

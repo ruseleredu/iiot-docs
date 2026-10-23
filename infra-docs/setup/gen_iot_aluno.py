@@ -138,7 +138,7 @@ if args.segredos:
         with open(args.segredos, encoding="utf-8") as _f:
             _lab_seg = json.load(_f)
         SEGREDOS_LAB = {k: v for k, v in _lab_seg.items()
-                        if k in (f"senha:{G}", f"senha:{G}-view", f"credential_secret:{G}")}
+                        if k in (f"senha:{G}", f"credential_secret:{G}")}
         if not SEGREDOS_LAB:
             print(f"⚠️  {args.segredos} não tem a conta {G}: senhas novas")
     except (OSError, ValueError) as e:
@@ -284,10 +284,9 @@ def gravar(caminho, conteudo, executavel=False):
 credenciais_geradas = []
 for g in todos_servicos:
     s_admin = segredo(f"senha:{g}", lambda: gerar_senha(8), renovar=args.novas_senhas)
-    s_view = segredo(f"senha:{g}-view", lambda: gerar_senha(8), renovar=args.novas_senhas)
-    credenciais_geradas.append((g, s_admin, f"{g}-view", s_view))
-SENHA = {u: s for (u, s, _uv, _sv) in credenciais_geradas}
-SENHA.update({uv: sv for (_u, _s, uv, sv) in credenciais_geradas})
+    SEGREDOS.pop(f"senha:{g}-view", None)      # o usuário só leitura do Node-RED não existe mais
+    credenciais_geradas.append((g, s_admin))
+SENHA = dict(credenciais_geradas)
 
 for g in todos_servicos:
     os.makedirs(f"data/{g}", exist_ok=True)
@@ -1051,7 +1050,7 @@ module.exports = {{
 }};
 """
 
-for g, s_admin, _uv, s_view in credenciais_geradas:
+for g, s_admin in credenciais_geradas:
     if is_notas(g):
         titulo = f"{LAB.upper()} - PAINEL DE NOTAS"
     elif is_prof(g):
@@ -1059,7 +1058,6 @@ for g, s_admin, _uv, s_view in credenciais_geradas:
     else:
         titulo = g.upper()
     hash_admin = bcrypt.hashpw(s_admin.encode(), bcrypt.gensalt(8)).decode()
-    hash_view = bcrypt.hashpw(s_view.encode(), bcrypt.gensalt(8)).decode()
     http_auth = ""
     if PROTEGER:
         http_auth = ("\n    // dashboards e endpoints HTTP exigem login (usuário/senha do grupo)\n"
@@ -1071,15 +1069,14 @@ for g, s_admin, _uv, s_view in credenciais_geradas:
             '    adminAuth: {\n'
             '        type: "credentials",\n'
             '        users: [\n'
-            f'            {{ username: "{g}",      password: "{hash_admin}", permissions: "*" }},\n'
-            f'            {{ username: "{g}-view", password: "{hash_view}",  permissions: "read" }}\n'
+            f'            {{ username: "{g}", password: "{hash_admin}", permissions: "*" }}\n'
             '        ]\n'
             '    },')
     gravar(f"settings/{g}.js", tpl.format(admin_auth=admin_auth,
         g=g,
         # credentialSecret persistente: senão as credenciais salvas nos nós ficam ilegíveis
         cred=segredo(f"credential_secret:{g}", lambda: secrets.token_hex(16)),
-        titulo=titulo, hash_admin=hash_admin, hash_view=hash_view, http_auth=http_auth))
+        titulo=titulo, hash_admin=hash_admin, http_auth=http_auth))
 print("⚙️  settings/<grupo>.js")
 
 # =====================================================================
@@ -2086,8 +2083,7 @@ if SEM_SENHA:
              "Qualquer pessoa na mesma rede pode ver e editar tudo.",
              f"(Uso interno: Gitea/MicroBin admin {G} / {SENHA[G]})", ""]
 else:
-    cred += [f"Usuário: {G}        Senha: {SENHA[G]}",
-             f"Só leitura (Node-RED): {G}-view   Senha: {SENHA[G + '-view']}", "",
+    cred += [f"Usuário: {G}        Senha: {SENHA[G]}", "",
              "A mesma senha vale para Node-RED, FUXA, Gitea, MicroBin, ntfy e MQTT Explorer" +
              (" (e é a do laboratório)." if SEGREDOS_LAB and not args.novas_senhas else "."), ""]
 cred += [f"Nesta máquina:  {U}/"]
@@ -2169,8 +2165,6 @@ if WB:
     leia.append(f"| MicroBin | {U}/bin/ |")
 if MQTTX:
     leia.append(f"| MQTT Explorer | {MQTTX_URL} |")
-if not SEM_SENHA:
-    leia += ["", f"Só leitura no Node-RED (para mostrar sem risco): `{G}-view` · `{SENHA[G + '-view']}`"]
 if LAN_URL:
     leia += ["", f"No celular ou em outro PC **na mesma rede** (Wi-Fi), troque `{U}` por **`{LAN_URL}`**.",
              "O LAB IoT não fica acessível pela internet."]
