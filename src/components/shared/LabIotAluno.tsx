@@ -286,8 +286,11 @@ export default function LabIotAluno({
                                         <p>Ver erros do Node-RED (Ctrl+C para sair):</p>
                                         <Cmd>{`${entrar} && docker compose logs -f ${conta}-nodered`}</Cmd>
 
-                                        <p>Mudou alguma opção? Gere de novo na mesma pasta e recrie:</p>
-                                        <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans`}</Cmd>
+                                        <p>
+                                            Mudou alguma opção? Gere de novo na mesma pasta e recrie (o Node-RED e o
+                                            MQTT só leem login e senhas ao iniciar, por isso o <code>restart</code>):
+                                        </p>
+                                        <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans && docker compose restart ${conta}-nodered mosquitto`}</Cmd>
 
                                         <p>Atualizar as imagens:</p>
                                         <Cmd>{`${entrar} && docker compose pull && docker compose build --pull && docker compose up -d`}</Cmd>

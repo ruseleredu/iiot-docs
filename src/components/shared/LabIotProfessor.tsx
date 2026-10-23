@@ -153,6 +153,9 @@ export default function LabIotProfessor({
     // --saida: gera sempre na mesma pasta, de qualquer diretório
     const gerar = [`py "%IOT_GEN%"`, ...gerarArgs, `--saida "%IOT_DIR%"`].join(" ");
     const gitBash = `"%ProgramFiles%\\Git\\bin\\bash.exe"`;
+    // Node-RED (settings.js) e mosquitto (passwd/acl) leem login e senhas só ao iniciar:
+    // depois de gerar de novo, "up -d" não os recria, então é preciso reiniciá-los
+    const reiniciarLogin = `docker compose restart ${letras.map((l) => `${lab}-${l}-nodered`).join(" ")} ${prof}-nodered ${notas}-nodered mosquitto`;
 
     // rede do laboratório: endereço público (o mesmo dentro e fora do laboratório)
     const baseLocal = PUBLICO_URL_PADRAO;
@@ -301,8 +304,8 @@ export default function LabIotProfessor({
                     </>
                 )}
 
-                <p>Mudou alguma opção? Gere de novo (as senhas são mantidas) e recrie:</p>
-                <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans`}</Cmd>
+                <p>Mudou alguma opção? Gere de novo (as senhas são mantidas), recrie e reinicie Node-RED e MQTT:</p>
+                <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans && ${reiniciarLogin}`}</Cmd>
 
                 {gitea && (
                     <>
@@ -332,7 +335,7 @@ export default function LabIotProfessor({
                         Invalida as senhas atuais de todos os grupos: depois, publique os acessos de novo (passo{" "}
                         {tunel ? 7 : 6}).
                     </p>
-                    <Cmd>{`${gerar} --novas-senhas && ${entrar} && docker compose up -d --build && docker compose run --rm gitea-init`}</Cmd>
+                    <Cmd>{`${gerar} --novas-senhas && ${entrar} && docker compose up -d --build && ${reiniciarLogin} && docker compose run --rm gitea-init`}</Cmd>
                 </Admonition>
 
                 <Admonition type="danger" title="Apagar tudo">
