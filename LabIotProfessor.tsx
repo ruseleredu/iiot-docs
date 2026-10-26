@@ -2,7 +2,7 @@ import React from "react";
 import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
 
-import { GROUPS, ORG } from "../constants"; // one folder up
+import { GROUPS, ORG, PRESETS_SCADA, ScadaOpcoes } from "../constants"; // updated import
 
 /* ------------------------------------------------------------------ */
 /* Opções do gen_iot_scada_portal.py (servidor do laboratório)          */
@@ -10,56 +10,6 @@ import { GROUPS, ORG } from "../constants"; // one folder up
 
 const PUBLICO_URL_PADRAO = "https://iot.adrianoruseler.com";
 const SCRIPT = "gen_iot_scada_portal.py";
-
-/** Opções do gen_iot_scada_portal.py (cada uma vira um argumento de linha de comando). */
-export type ScadaOpcoes = {
-    /** --sem-tunel: só rede local (http://IP/), sem VPS */
-    semTunel?: boolean;
-    /** --publico-url (padrão https://iot.adrianoruseler.com) */
-    publicoUrl?: string;
-    /** --vps-host (padrão: host da publicoUrl) */
-    vpsHost?: string;
-    /** Usuário SSH de administração do VPS (só nos comandos de instalação; padrão "ubuntu") */
-    vpsAdmin?: string;
-    /** --sem-gitea: sem Gitea e sem CI */
-    semGitea?: boolean;
-    /** --sem-runner: Gitea sem Actions */
-    semRunner?: boolean;
-    /** --gitea-db sqlite (padrão postgres) */
-    giteaDb?: "postgres" | "sqlite";
-    /** --gitea-repo <nome> (padrão "nodered"; "" = nenhum) */
-    giteaRepo?: string;
-    /** --runner-capacidade <n> (padrão 2) */
-    runnerCapacidade?: number;
-    /** --runner-dns IP[,IP] (DNS da instituição, se o 53 externo for bloqueado) */
-    runnerDns?: string;
-    /** --sem-microbin */
-    semMicrobin?: boolean;
-    /** --sem-fuxa */
-    semFuxa?: boolean;
-    /** --sem-ntfy */
-    semNtfy?: boolean;
-    /** --proteger-http: login nos dashboards e endpoints HTTP */
-    protegerHttp?: boolean;
-    /** --mqtt-sem-anonimo: MQTT exige usuário/senha */
-    mqttSemAnonimo?: boolean;
-    /** --mqtt-explorer-auth */
-    mqttExplorerAuth?: boolean;
-    /** Argumentos extras, passados como estão */
-    extras?: string[];
-};
-
-/**
- * Pré-configuração por laboratório (mesmas ideias do PRESETS_IOT do aluno).
- * A página pode sobrescrever qualquer opção com a prop `opcoes`.
- */
-export const PRESETS_SCADA: Record<string, ScadaOpcoes> = {
-    lab05: {}, // LAB IoT completo
-    lab06: { semGitea: true, semMicrobin: true },
-    lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
-    lab08: {},
-    projeto: {},
-};
 
 function montarFlags(o: ScadaOpcoes): string[] {
     const f: string[] = [];
@@ -153,6 +103,9 @@ export default function LabIotProfessor({
     // --saida: gera sempre na mesma pasta, de qualquer diretório
     const gerar = [`py "%IOT_GEN%"`, ...gerarArgs, `--saida "%IOT_DIR%"`].join(" ");
     const gitBash = `"%ProgramFiles%\\Git\\bin\\bash.exe"`;
+    // Node-RED (settings.js) e mosquitto (passwd/acl) leem login e senhas só ao iniciar:
+    // depois de gerar de novo, "up -d" não os recria, então é preciso reiniciá-los
+    const reiniciarLogin = `docker compose restart ${letras.map((l) => `${lab}-${l}-nodered`).join(" ")} ${prof}-nodered ${notas}-nodered mosquitto`;
 
     // rede do laboratório: endereço público (o mesmo dentro e fora do laboratório)
     const baseLocal = PUBLICO_URL_PADRAO;
@@ -301,8 +254,8 @@ export default function LabIotProfessor({
                     </>
                 )}
 
-                <p>Mudou alguma opção? Gere de novo (as senhas são mantidas) e recrie:</p>
-                <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans`}</Cmd>
+                <p>Mudou alguma opção? Gere de novo (as senhas são mantidas), recrie e reinicie Node-RED e MQTT:</p>
+                <Cmd>{`${gerar} && ${entrar} && docker compose up -d --build --remove-orphans && ${reiniciarLogin}`}</Cmd>
 
                 {gitea && (
                     <>
@@ -332,7 +285,7 @@ export default function LabIotProfessor({
                         Invalida as senhas atuais de todos os grupos: depois, publique os acessos de novo (passo{" "}
                         {tunel ? 7 : 6}).
                     </p>
-                    <Cmd>{`${gerar} --novas-senhas && ${entrar} && docker compose up -d --build && docker compose run --rm gitea-init`}</Cmd>
+                    <Cmd>{`${gerar} --novas-senhas && ${entrar} && docker compose up -d --build && ${reiniciarLogin} && docker compose run --rm gitea-init`}</Cmd>
                 </Admonition>
 
                 <Admonition type="danger" title="Apagar tudo">
