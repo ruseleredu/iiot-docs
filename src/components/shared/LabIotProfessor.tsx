@@ -2,7 +2,7 @@ import React from "react";
 import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
 
-import { GROUPS, ORG } from "../constants"; // one folder up
+import { GROUPS, ORG, PRESETS_SCADA, ScadaOpcoes } from "../constants"; // updated import
 
 /* ------------------------------------------------------------------ */
 /* Opções do gen_iot_scada_portal.py (servidor do laboratório)          */
@@ -10,56 +10,6 @@ import { GROUPS, ORG } from "../constants"; // one folder up
 
 const PUBLICO_URL_PADRAO = "https://iot.adrianoruseler.com";
 const SCRIPT = "gen_iot_scada_portal.py";
-
-/** Opções do gen_iot_scada_portal.py (cada uma vira um argumento de linha de comando). */
-export type ScadaOpcoes = {
-    /** --sem-tunel: só rede local (http://IP/), sem VPS */
-    semTunel?: boolean;
-    /** --publico-url (padrão https://iot.adrianoruseler.com) */
-    publicoUrl?: string;
-    /** --vps-host (padrão: host da publicoUrl) */
-    vpsHost?: string;
-    /** Usuário SSH de administração do VPS (só nos comandos de instalação; padrão "ubuntu") */
-    vpsAdmin?: string;
-    /** --sem-gitea: sem Gitea e sem CI */
-    semGitea?: boolean;
-    /** --sem-runner: Gitea sem Actions */
-    semRunner?: boolean;
-    /** --gitea-db sqlite (padrão postgres) */
-    giteaDb?: "postgres" | "sqlite";
-    /** --gitea-repo <nome> (padrão "nodered"; "" = nenhum) */
-    giteaRepo?: string;
-    /** --runner-capacidade <n> (padrão 2) */
-    runnerCapacidade?: number;
-    /** --runner-dns IP[,IP] (DNS da instituição, se o 53 externo for bloqueado) */
-    runnerDns?: string;
-    /** --sem-microbin */
-    semMicrobin?: boolean;
-    /** --sem-fuxa */
-    semFuxa?: boolean;
-    /** --sem-ntfy */
-    semNtfy?: boolean;
-    /** --proteger-http: login nos dashboards e endpoints HTTP */
-    protegerHttp?: boolean;
-    /** --mqtt-sem-anonimo: MQTT exige usuário/senha */
-    mqttSemAnonimo?: boolean;
-    /** --mqtt-explorer-auth */
-    mqttExplorerAuth?: boolean;
-    /** Argumentos extras, passados como estão */
-    extras?: string[];
-};
-
-/**
- * Pré-configuração por laboratório (mesmas ideias do PRESETS_IOT do aluno).
- * A página pode sobrescrever qualquer opção com a prop `opcoes`.
- */
-export const PRESETS_SCADA: Record<string, ScadaOpcoes> = {
-    lab05: {}, // LAB IoT completo
-    lab06: { semGitea: true, semMicrobin: true },
-    lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
-    lab08: {},
-    projeto: {},
-};
 
 function montarFlags(o: ScadaOpcoes): string[] {
     const f: string[] = [];

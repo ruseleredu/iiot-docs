@@ -4,60 +4,7 @@ import TabItem from "@theme/TabItem";
 import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
 
-import { GROUPS, HOMEFOLDER } from "../constants"; // one folder up
-
-/* ------------------------------------------------------------------ */
-/* Opções do gen_iot_aluno.py                                           */
-/* ------------------------------------------------------------------ */
-
-/** Opções do gen_iot_aluno.py (cada uma vira um argumento de linha de comando). */
-export type GenIotOpcoes = {
-    /** --sem-gitea: sem Gitea e sem CI */
-    semGitea?: boolean;
-    /** --sem-runner: Gitea sem Actions */
-    semRunner?: boolean;
-    /** --gitea-db postgres (padrão sqlite) */
-    giteaDb?: "sqlite" | "postgres";
-    /** --gitea-repo <nome> (padrão "nodered"; "" = nenhum) */
-    giteaRepo?: string;
-    /** --sem-microbin */
-    semMicrobin?: boolean;
-    /** --sem-fuxa */
-    semFuxa?: boolean;
-    /** --sem-ntfy */
-    semNtfy?: boolean;
-    /** --sem-mqtt-explorer */
-    semMqttExplorer?: boolean;
-    /** --sem-senha: tudo aberto, sem login */
-    semSenha?: boolean;
-    /** --proteger-http: login nos dashboards e no FUXA */
-    protegerHttp?: boolean;
-    /** --mqtt-sem-anonimo: MQTT exige usuário/senha */
-    mqttSemAnonimo?: boolean;
-    /** --porta-http <n> (padrão 80) */
-    portaHttp?: number;
-    /** --ponte-mqtt HOST[:PORTA]: liga o broker local ao do laboratório */
-    ponteMqtt?: string;
-    /** --captura: netshoot gravando .pcap para o Wireshark */
-    captura?: boolean;
-    /** --captura-filtro "<BPF>", ex.: "port 1883" */
-    capturaFiltro?: string;
-    /** Argumentos extras, passados como estão (ex.: ["--runner-capacidade 2"]) */
-    extras?: string[];
-};
-
-/**
- * Pré-configuração por laboratório. A página pode sobrescrever qualquer opção
- * com a prop `opcoes`.
- */
-export const PRESETS_IOT: Record<string, GenIotOpcoes> = {
-    lab05: {}, // LAB IoT completo
-    lab06: { semGitea: true, semMicrobin: true },
-    lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
-    lab08: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
-    lab09: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
-    projeto: {},
-};
+import { GROUPS, HOMEFOLDER, PRESETS_IOT, GenIotOpcoes } from "../constants"; // updated import
 
 function montarFlags(o: GenIotOpcoes): string[] {
     const f: string[] = [];
