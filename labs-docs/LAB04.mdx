@@ -3,12 +3,6 @@ title: Laboratório 04
 sidebar_position: 7
 ---
 
-import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-  <LabTable index={4} internal={false} />
-</div>
-
 ## Checklist — Wi-Fi e MQTT no ESP32 {/* #checklist */}
 
 - [ ] Varredura das redes Wi-Fi com logs, e o custo de uma chamada bloqueante (T1)
@@ -266,7 +260,12 @@ git push
 
 <FileTree
   root="lab04-grupo-X"
-  files={["platformio.ini c", "wokwi.toml c", "src/main.cpp c", "evidencias/t1-serial.txt c"]}
+  files={[
+    "platformio.ini c",
+    "wokwi.toml c",
+    "src/main.cpp c",
+    "evidencias/t1-serial.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -419,7 +418,12 @@ git push
 
 <FileTree
   root="lab04-grupo-X"
-  files={["include/config.h c", "src/main.cpp u", "evidencias/t2-serial.txt c", "README.md u"]}
+  files={[
+    "include/config.h c",
+    "src/main.cpp u",
+    "evidencias/t2-serial.txt c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
@@ -442,11 +446,11 @@ lib_deps =
     knolleary/PubSubClient@2.8
 ```
 
-| Tópico | Sentido | Conteúdo |
-| --- | --- | --- |
-| `.../status` | ESP32 → | `online` ao conectar; `offline` pelo **broker** (LWT) se o ESP32 sumir. **Retido** |
-| `.../telemetria` | ESP32 → | JSON a cada 5 s |
-| `.../cmd/led` | → ESP32 | `on`, `off` ou `auto` (o LED volta a mostrar o estado da rede) |
+| Tópico           | Sentido | Conteúdo                                                                           |
+| ---------------- | ------- | ---------------------------------------------------------------------------------- |
+| `.../status`     | ESP32 → | `online` ao conectar; `offline` pelo **broker** (LWT) se o ESP32 sumir. **Retido** |
+| `.../telemetria` | ESP32 → | JSON a cada 5 s                                                                    |
+| `.../cmd/led`    | → ESP32 | `on`, `off` ou `auto` (o LED volta a mostrar o estado da rede)                     |
 
 ```cpp title="src/main.cpp (T3): objetos e tópicos"
 #include <PubSubClient.h>
@@ -577,15 +581,15 @@ void loop() {
 }
 ```
 
-| `mqtt.state()` | Significado | Causa provável |
-| --- | --- | --- |
-| `-4` | sem resposta do broker a tempo | rede lenta, broker parado |
-| `-3` | conexão perdida | caiu o Wi-Fi, ou o broker fechou a conexão |
-| `-2` | a conexão TCP falhou | host ou porta errados, DNS, sem rede |
-| `-1` | desconectado (normal) | `mqtt.disconnect()` |
-| `0` | conectado | |
-| `2` | `client id` recusado | id vazio ou inválido |
-| `4` / `5` | usuário ou senha errados / sem autorização | credenciais do broker (T5) |
+| `mqtt.state()` | Significado                                | Causa provável                             |
+| -------------- | ------------------------------------------ | ------------------------------------------ |
+| `-4`           | sem resposta do broker a tempo             | rede lenta, broker parado                  |
+| `-3`           | conexão perdida                            | caiu o Wi-Fi, ou o broker fechou a conexão |
+| `-2`           | a conexão TCP falhou                       | host ou porta errados, DNS, sem rede       |
+| `-1`           | desconectado (normal)                      | `mqtt.disconnect()`                        |
+| `0`            | conectado                                  |                                            |
+| `2`            | `client id` recusado                       | id vazio ou inválido                       |
+| `4` / `5`      | usuário ou senha errados / sem autorização | credenciais do broker (T5)                 |
 
 ### 3.3 Conferir pelo terminal
 
@@ -609,7 +613,8 @@ docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{cour
     },
     {
       title: "3. Gravar e encerrar",
-      codeTitle: "Terminal 1 (cmd) — depois de parar a simulação e ver o offline",
+      codeTitle:
+        "Terminal 1 (cmd) — depois de parar a simulação e ver o offline",
       command: `docker logs sub-lab04 > evidencias\\t3-mqtt.txt 2>&1
 type evidencias\\t3-mqtt.txt
 docker rm -f sub-lab04`,
@@ -651,7 +656,12 @@ git push
 
 <FileTree
   root="lab04-grupo-X"
-  files={["platformio.ini u", "src/main.cpp u", "evidencias/t3-mqtt.txt c", "evidencias/t3-serial.txt c"]}
+  files={[
+    "platformio.ini u",
+    "src/main.cpp u",
+    "evidencias/t3-mqtt.txt c",
+    "evidencias/t3-serial.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -1080,7 +1090,12 @@ git push
 
 <FileTree
   root="lab04-grupo-X"
-  files={["src/main.cpp u", "evidencias/t4-backoff.txt c", "evidencias/t4-quedas.txt c", "evidencias/t4-mqtt.txt c"]}
+  files={[
+    "src/main.cpp u",
+    "evidencias/t4-backoff.txt c",
+    "evidencias/t4-quedas.txt c",
+    "evidencias/t4-mqtt.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -1267,27 +1282,27 @@ Nesse caso, sem login, deixe `MQTT_USUARIO` e `MQTT_SENHA` vazios e mude o `TOPI
 
 ## Referência rápida {/* #referencia */}
 
-| Para… | Código |
-| --- | --- |
-| Modo estação | `WiFi.mode(WIFI_STA)` |
-| Iniciar a conexão (não bloqueia) | `WiFi.begin(ssid, senha, canal)` |
-| Ser avisado dos eventos | `WiFi.onEvent(funcao)` |
-| Endereços | `WiFi.localIP()`, `gatewayIP()`, `dnsIP()`, `subnetMask()`, `macAddress()`, `RSSI()` |
-| Conectar ao broker com LWT | `mqtt.connect(id, usuario, senha, topicoWill, qos, retido, "offline")` |
-| Publicar (retido) | `mqtt.publish(topico, texto, true)` |
-| Assinar | `mqtt.subscribe(topico)` (a cada conexão) |
-| Processar a rede | `mqtt.loop()` em todo `loop()` |
+| Para…                            | Código                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| Modo estação                     | `WiFi.mode(WIFI_STA)`                                                                |
+| Iniciar a conexão (não bloqueia) | `WiFi.begin(ssid, senha, canal)`                                                     |
+| Ser avisado dos eventos          | `WiFi.onEvent(funcao)`                                                               |
+| Endereços                        | `WiFi.localIP()`, `gatewayIP()`, `dnsIP()`, `subnetMask()`, `macAddress()`, `RSSI()` |
+| Conectar ao broker com LWT       | `mqtt.connect(id, usuario, senha, topicoWill, qos, retido, "offline")`               |
+| Publicar (retido)                | `mqtt.publish(topico, texto, true)`                                                  |
+| Assinar                          | `mqtt.subscribe(topico)` (a cada conexão)                                            |
+| Processar a rede                 | `mqtt.loop()` em todo `loop()`                                                       |
 
-| Problema | O que fazer |
-| --- | --- |
-| `Wi-Fi: conectando...` e nada | o SSID tem de ser exatamente `Wokwi-GUEST`, senha vazia |
-| `rc=-2` sempre | `MQTT_HOST` ou porta errados, ou sem Wi-Fi |
-| `rc=5` no laboratório | usuário ou senha do grupo errados no `segredos.h` |
-| Conecta e cai a cada poucos segundos | outro cliente com o mesmo `client id` |
-| Publica, mas nada chega no `mosquitto_sub` | tópico diferente (maiúsculas, `grupo-x` × `grupo-X`) ou, no laboratório, fora da ACL (P4) |
-| `Falta include/segredos.h` ao compilar o `lab` | `copy include\segredos.exemplo.h include\segredos.h` e preencha |
-| `The container name "/sub-lab04" is already in use` | `docker rm -f sub-lab04` |
-| O LED não muda com `cmd/led` | o `subscribe` só vale depois da conexão: confira o `MQTT: conectado` no monitor |
+| Problema                                            | O que fazer                                                                               |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `Wi-Fi: conectando...` e nada                       | o SSID tem de ser exatamente `Wokwi-GUEST`, senha vazia                                   |
+| `rc=-2` sempre                                      | `MQTT_HOST` ou porta errados, ou sem Wi-Fi                                                |
+| `rc=5` no laboratório                               | usuário ou senha do grupo errados no `segredos.h`                                         |
+| Conecta e cai a cada poucos segundos                | outro cliente com o mesmo `client id`                                                     |
+| Publica, mas nada chega no `mosquitto_sub`          | tópico diferente (maiúsculas, `grupo-x` × `grupo-X`) ou, no laboratório, fora da ACL (P4) |
+| `Falta include/segredos.h` ao compilar o `lab`      | `copy include\segredos.exemplo.h include\segredos.h` e preencha                           |
+| `The container name "/sub-lab04" is already in use` | `docker rm -f sub-lab04`                                                                  |
+| O LED não muda com `cmd/led`                        | o `subscribe` só vale depois da conexão: confira o `MQTT: conectado` no monitor           |
 
 ---
 

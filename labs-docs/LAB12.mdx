@@ -181,16 +181,16 @@ e telas com a senha **tarjada**.
 O `gen_iot_aluno.py` não instala nada: ele **escreve arquivos** numa pasta. O
 `docker compose up` é que baixa as imagens e cria os containers.
 
-| Gerado                     | Para quê                                                               |
-| -------------------------- | ---------------------------------------------------------------------- |
-| `docker-compose.yml`       | os serviços, a rede `labnet` e os volumes                              |
-| `nginx/`                   | o portal e os caminhos (`/lab12-x/`, `/git/`, `/ntfy/`, `/bin/`…)      |
-| `mosquitto/`               | o broker: `mosquitto.conf` (e a ponte, com `--ponte-mqtt`), os usuários (`passwd`) e as permissões por tópico (`acl`) |
-| `settings/`, `data/`       | o Node-RED (login, `credentialSecret`, fluxos; `data/lab12-x/sqlite/` para os bancos SQLite) |
-| `runner/config.yaml`       | o runner do CI: rótulos, `capacity`, rede dos jobs                     |
-| `credenciais.txt`          | endereços, usuário e senha                                             |
-| `.segredos.json`           | as senhas sorteadas, reaproveitadas quando você roda o gerador de novo |
-| `LEIA-ME.md`               | o guia **da sua** instalação                                           |
+| Gerado               | Para quê                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `docker-compose.yml` | os serviços, a rede `labnet` e os volumes                                                                             |
+| `nginx/`             | o portal e os caminhos (`/lab12-x/`, `/git/`, `/ntfy/`, `/bin/`…)                                                     |
+| `mosquitto/`         | o broker: `mosquitto.conf` (e a ponte, com `--ponte-mqtt`), os usuários (`passwd`) e as permissões por tópico (`acl`) |
+| `settings/`, `data/` | o Node-RED (login, `credentialSecret`, fluxos; `data/lab12-x/sqlite/` para os bancos SQLite)                          |
+| `runner/config.yaml` | o runner do CI: rótulos, `capacity`, rede dos jobs                                                                    |
+| `credenciais.txt`    | endereços, usuário e senha                                                                                            |
+| `.segredos.json`     | as senhas sorteadas, reaproveitadas quando você roda o gerador de novo                                                |
+| `LEIA-ME.md`         | o guia **da sua** instalação                                                                                          |
 
 Rodar o gerador de novo na mesma pasta é seguro: as senhas vêm do `.segredos.json` e os dados
 (`data/`, `fuxa/`, volumes) não são tocados. Você vai fazer isso duas vezes nesta aula.

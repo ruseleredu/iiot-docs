@@ -17,8 +17,8 @@ import {
     LabSetup,
     LabLogout,
     DevTools,
+    GitLogOut,
 } from "@site/src/components/shared/InstructionsSite";
-
 
 export default {
     // Mantém os componentes padrão do MDX
@@ -37,5 +37,6 @@ export default {
     LabSetup,
     LabLogout,
     DevTools,
+    GitLogOut,
     GroupCommands,
 };

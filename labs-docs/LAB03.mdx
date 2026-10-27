@@ -3,12 +3,6 @@ title: Laboratório 03
 sidebar_position: 6
 ---
 
-import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-  <LabTable index={3} internal={false} />
-</div>
-
 ## Checklist — logs no ESP32 e ambientes de build (debug × release) {/* #checklist */}
 
 - [ ] Os cinco níveis de log (`log_e` … `log_v`) aparecendo no Wokwi com `CORE_DEBUG_LEVEL=5` (T1)
@@ -151,9 +145,27 @@ crie-o de novo) e o `wokwi.toml`:
   "author": "ELT85B - Lab 03",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
-    { "type": "wokwi-resistor", "id": "r1", "top": 130, "left": 120, "attrs": { "value": "220" } },
-    { "type": "wokwi-led", "id": "led1", "top": 80, "left": 220, "attrs": { "color": "red", "label": "GPIO2" } }
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 130,
+      "left": 120,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 80,
+      "left": 220,
+      "attrs": { "color": "red", "label": "GPIO2" }
+    }
   ],
   "connections": [
     ["esp:TX", "$serialMonitor:RX", "", []],
@@ -189,13 +201,13 @@ build_flags =
     -DCORE_DEBUG_LEVEL=5           ; 0 nada · 1 E · 2 W · 3 I · 4 D · 5 V
 ```
 
-| Macro | Nível | Valor | Quando usar |
-| --- | --- | --- | --- |
-| `log_e()` | **E**rror | 1 | falhas que impedem a operação (o sensor não responde) |
-| `log_w()` | **W**arning | 2 | algo estranho, mas o programa segue (valor fora da faixa) |
-| `log_i()` | **I**nfo | 3 | marcos normais ("Wi-Fi conectado") |
-| `log_d()` | **D**ebug | 4 | detalhes úteis durante o desenvolvimento |
-| `log_v()` | **V**erbose | 5 | tudo, inclusive valores brutos e laços internos |
+| Macro     | Nível       | Valor | Quando usar                                               |
+| --------- | ----------- | ----- | --------------------------------------------------------- |
+| `log_e()` | **E**rror   | 1     | falhas que impedem a operação (o sensor não responde)     |
+| `log_w()` | **W**arning | 2     | algo estranho, mas o programa segue (valor fora da faixa) |
+| `log_i()` | **I**nfo    | 3     | marcos normais ("Wi-Fi conectado")                        |
+| `log_d()` | **D**ebug   | 4     | detalhes úteis durante o desenvolvimento                  |
+| `log_v()` | **V**erbose | 5     | tudo, inclusive valores brutos e laços internos           |
 
 Uma macro só gera código se o **seu valor for menor ou igual** ao `CORE_DEBUG_LEVEL`.
 
@@ -255,13 +267,13 @@ Nivel de log compilado = 5; medir() rodou 1 vez(es)
 
 Uma linha de log, da esquerda para a direita:
 
-| Trecho | Significado |
-| --- | --- |
-| `[   385]` | milissegundos desde o boot |
-| `[E]` | o nível (E, W, I, D ou V) |
-| `[main.cpp:18]` | arquivo e linha de onde a mensagem saiu |
-| `setup():` | a função que chamou |
-| `Isto e um ERRO...` | a sua mensagem |
+| Trecho              | Significado                             |
+| ------------------- | --------------------------------------- |
+| `[   385]`          | milissegundos desde o boot              |
+| `[E]`               | o nível (E, W, I, D ou V)               |
+| `[main.cpp:18]`     | arquivo e linha de onde a mensagem saiu |
+| `setup():`          | a função que chamou                     |
+| `Isto e um ERRO...` | a sua mensagem                          |
 
 As quatro primeiras linhas não são suas: o **próprio core** usa os mesmos logs (a CPU a
 240 MHz, a UART sendo configurada pelo `Serial.begin`). Com o nível 5, você vê também o que as
@@ -289,7 +301,13 @@ git push
 
 <FileTree
   root="lab03-grupo-X"
-  files={["platformio.ini c", "src/main.cpp c", "diagram.json c", "wokwi.toml c", "evidencias/t1-serial.txt c"]}
+  files={[
+    "platformio.ini c",
+    "src/main.cpp c",
+    "diagram.json c",
+    "wokwi.toml c",
+    "evidencias/t1-serial.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -337,12 +355,12 @@ Nivel de log compilado = 2; medir() rodou 0 vez(es)
 
 Compare os dois arquivos de evidência:
 
-| | Nível 5 | Nível 2 |
-| --- | --- | --- |
-| Linhas no monitor | as 5 suas + as do core | só `[E]` e `[W]` |
+|                                          | Nível 5                         | Nível 2               |
+| ---------------------------------------- | ------------------------------- | --------------------- |
+| Linhas no monitor                        | as 5 suas + as do core          | só `[E]` e `[W]`      |
 | `findstr` acha `Isto e DEBUG` no `.bin`? | sim (imprime o nome do arquivo) | **não** (linha vazia) |
-| Tamanho do firmware (linha `Flash:`) | maior | ~2,4 KB menor |
-| `medir()` rodou | 1 vez | **0** vez |
+| Tamanho do firmware (linha `Flash:`)     | maior                           | ~2,4 KB menor         |
+| `medir()` rodou                          | 1 vez                           | **0** vez             |
 
 As linhas de Info, Debug e Verbose não foram filtradas na hora de imprimir: no nível 2, o
 pré-processador troca `log_d(...)` por um comando vazio, e o texto nem chega ao firmware.
@@ -364,7 +382,11 @@ git push
 
 <FileTree
   root="lab03-grupo-X"
-  files={["platformio.ini u", "evidencias/t2-nivel5.txt c", "evidencias/t2-nivel2.txt c"]}
+  files={[
+    "platformio.ini u",
+    "evidencias/t2-nivel5.txt c",
+    "evidencias/t2-nivel2.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -440,12 +462,12 @@ release        SUCCESS   00:00:04.876
 
 Simule (roda o `debug`) e confira o título `Firmware de DEBUG (CORE_DEBUG_LEVEL=4)`.
 
-| Comando | O que compila |
-| --- | --- |
-| `pio run` | só o `default_envs` (`debug`) |
-| `pio run -e release` | só o `release` |
-| `pio run -e debug -e release` | os dois |
-| `pio run -t clean -e release` | apaga o build do `release` |
+| Comando                       | O que compila                 |
+| ----------------------------- | ----------------------------- |
+| `pio run`                     | só o `default_envs` (`debug`) |
+| `pio run -e release`          | só o `release`                |
+| `pio run -e debug -e release` | os dois                       |
+| `pio run -t clean -e release` | apaga o build do `release`    |
 
 :::note[Simular o release]
 O `wokwi.toml` aponta para um ambiente só. Para ver o `release` no Wokwi, troque `debug` por
@@ -461,7 +483,12 @@ git push
 
 <FileTree
   root="lab03-grupo-X"
-  files={["platformio.ini u", "src/main.cpp u", "wokwi.toml u", "evidencias/t3-ambientes.txt c"]}
+  files={[
+    "platformio.ini u",
+    "src/main.cpp u",
+    "wokwi.toml u",
+    "evidencias/t3-ambientes.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -578,9 +605,17 @@ e não 0?
 Copie pelo menos 12 s do monitor (com uma linha de taxa e o _hexdump_) para
 `evidencias/t4-serial.txt`.
 
-<FileTree root="lab03-grupo-X" files={["src/main.cpp u", "evidencias/t4-serial.txt c"]} />
+<FileTree
+  root="lab03-grupo-X"
+  files={["src/main.cpp u", "evidencias/t4-serial.txt c"]}
+/>
 
-<CommitPoint id="t4" task="Logs com dados e falhas" pontos={20} files="src/main.cpp evidencias/t4-serial.txt" />
+<CommitPoint
+  id="t4"
+  task="Logs com dados e falhas"
+  pontos={20}
+  files="src/main.cpp evidencias/t4-serial.txt"
+/>
 
 ---
 
@@ -701,33 +736,33 @@ campo, e só aparece se o firmware registrar.
 
 ## Referência rápida {/* #referencia */}
 
-| Macro | Aparece se `CORE_DEBUG_LEVEL` ≥ | Uso típico |
-| --- | --- | --- |
-| `log_e("...", ...)` | 1 | erro |
-| `log_w("...", ...)` | 2 | aviso |
-| `log_i("...", ...)` | 3 | informação |
-| `log_d("...", ...)` | 4 | depuração |
-| `log_v("...", ...)` | 5 | detalhe fino |
-| `log_buf_i(buf, tam)` | 3 | _dump_ hexadecimal (também `log_buf_e`, `_w`, `_d`, `_v`) |
+| Macro                 | Aparece se `CORE_DEBUG_LEVEL` ≥ | Uso típico                                                |
+| --------------------- | ------------------------------- | --------------------------------------------------------- |
+| `log_e("...", ...)`   | 1                               | erro                                                      |
+| `log_w("...", ...)`   | 2                               | aviso                                                     |
+| `log_i("...", ...)`   | 3                               | informação                                                |
+| `log_d("...", ...)`   | 4                               | depuração                                                 |
+| `log_v("...", ...)`   | 5                               | detalhe fino                                              |
+| `log_buf_i(buf, tam)` | 3                               | _dump_ hexadecimal (também `log_buf_e`, `_w`, `_d`, `_v`) |
 
-| Para… | Comando ou configuração |
-| --- | --- |
-| Escolher o nível | `build_flags = -DCORE_DEBUG_LEVEL=<0..5>` |
-| Compilar um ambiente | `pio run -e release` |
-| Compilar todos os do `default_envs` | `pio run` |
-| Procurar um texto no firmware | `findstr /m /c:"texto" .pio\build\debug\firmware.bin` |
+| Para…                                   | Comando ou configuração                                |
+| --------------------------------------- | ------------------------------------------------------ |
+| Escolher o nível                        | `build_flags = -DCORE_DEBUG_LEVEL=<0..5>`              |
+| Compilar um ambiente                    | `pio run -e release`                                   |
+| Compilar todos os do `default_envs`     | `pio run`                                              |
+| Procurar um texto no firmware           | `findstr /m /c:"texto" .pio\build\debug\firmware.bin`  |
 | Gravar a saída e os erros de um comando | `comando > arquivo.txt 2>&1` (e `>>` para acrescentar) |
-| Ver um arquivo | `type arquivo.txt` |
+| Ver um arquivo                          | `type arquivo.txt`                                     |
 
-| Sintoma | Causa provável | O que fazer |
-| --- | --- | --- |
-| Só aparecem os `log_e` | `CORE_DEBUG_LEVEL` não definido: o padrão do core é 1 (P1) | defina o nível no `build_flags` e recompile |
-| Só aparecem erros e avisos | nível 1 ou 2 | suba o `CORE_DEBUG_LEVEL` |
+| Sintoma                          | Causa provável                                                       | O que fazer                                    |
+| -------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------- |
+| Só aparecem os `log_e`           | `CORE_DEBUG_LEVEL` não definido: o padrão do core é 1 (P1)           | defina o nível no `build_flags` e recompile    |
+| Só aparecem erros e avisos       | nível 1 ou 2                                                         | suba o `CORE_DEBUG_LEVEL`                      |
 | O Wokwi mostra o firmware antigo | simulou sem recompilar, ou o `wokwi.toml` aponta para outro ambiente | compile o ambiente certo e confira os caminhos |
-| `firmware.bin not found` | o `wokwi.toml` ainda aponta para `esp32dev` depois da T3 | troque para `.pio/build/debug/` |
-| Caracteres estranhos | `monitor_speed` diferente do `Serial.begin()` | os dois em 115200 |
-| `%f` imprime algo estranho | passou um `int` para `%f`, ou um `float` para `%d` | confira o tipo de cada argumento |
-| `'pio' não é reconhecido...` | falta o **Path** (aba **PlatformIO**) | veja a configuração do ambiente |
+| `firmware.bin not found`         | o `wokwi.toml` ainda aponta para `esp32dev` depois da T3             | troque para `.pio/build/debug/`                |
+| Caracteres estranhos             | `monitor_speed` diferente do `Serial.begin()`                        | os dois em 115200                              |
+| `%f` imprime algo estranho       | passou um `int` para `%f`, ou um `float` para `%d`                   | confira o tipo de cada argumento               |
+| `'pio' não é reconhecido...`     | falta o **Path** (aba **PlatformIO**)                                | veja a configuração do ambiente                |
 
 Mais sobre o core e a plataforma: [arduino-esp32](https://github.com/espressif/arduino-esp32),
 [PlatformIO — Espressif 32](https://docs.platformio.org/en/latest/platforms/espressif32.html)

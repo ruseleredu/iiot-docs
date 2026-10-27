@@ -3,12 +3,6 @@ title: Laboratório 01
 sidebar_position: 4
 ---
 
-import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-  <LabTable index={1} internal={false} />
-</div>
-
 ## Checklist — ambiente de desenvolvimento (parte 1): Git, GitHub e VS Code {/* #checklist */}
 
 - [ ] VS Code, Git, GitHub CLI (`gh`) e Python 3 instalados; extensões PlatformIO IDE e Wokwi Simulator no VS Code (Parte 1)
@@ -118,15 +112,15 @@ Siga as abas da [configuração do ambiente](#setup), nesta ordem. Cada aba tem 
 instalação (`winget`) e um comando para conferir. Depois de cada instalação, **feche e abra** o
 terminal, para ele achar os programas novos.
 
-| Aba do ambiente | O que fazer no Lab 01 |
-| --- | --- |
-| **VS Code** | instalar e criar o `settings.json` do terminal (veja 1.1) |
-| **Git SCM** | instalar; a configuração é a Parte 2 |
-| **GitHub CLI** | instalar; o login é a Parte 2 |
-| **Python** | instalar e conferir com `py --version` |
-| **PlatformIO** | instalar a extensão no perfil `ESP32IO` e pôr o `pio` no **Path** |
-| **Wokwi** | instalar a extensão no perfil `ESP32IO` (a licença e o `wokwi-cli` ficam para o Lab 02) |
-| Drivers, Docker | ficam para o Lab 02 |
+| Aba do ambiente | O que fazer no Lab 01                                                                   |
+| --------------- | --------------------------------------------------------------------------------------- |
+| **VS Code**     | instalar e criar o `settings.json` do terminal (veja 1.1)                               |
+| **Git SCM**     | instalar; a configuração é a Parte 2                                                    |
+| **GitHub CLI**  | instalar; o login é a Parte 2                                                           |
+| **Python**      | instalar e conferir com `py --version`                                                  |
+| **PlatformIO**  | instalar a extensão no perfil `ESP32IO` e pôr o `pio` no **Path**                       |
+| **Wokwi**       | instalar a extensão no perfil `ESP32IO` (a licença e o `wokwi-cli` ficam para o Lab 02) |
+| Drivers, Docker | ficam para o Lab 02                                                                     |
 
 As extensões vão para o **perfil `ESP32IO`** do VS Code (`--profile "ESP32IO"`), separado do
 seu perfil do dia a dia. O primeiro `code --install-extension ... --profile "ESP32IO"` cria o
@@ -336,10 +330,10 @@ Um integrante edita o `README.md`. Ele vai ser a capa de todos os repositórios 
 
 ## Integrantes
 
-| Nome | Usuário no GitHub |
-| --- | --- |
-| Nome 1 | @usuario1 |
-| Nome 2 | @usuario2 |
+| Nome   | Usuário no GitHub |
+| ------ | ----------------- |
+| Nome 1 | @usuario1         |
+| Nome 2 | @usuario2         |
 
 ## Como rodar
 
@@ -381,7 +375,12 @@ intermediários podem ter qualquer mensagem, desde que descritiva (`corrige pino
 
 <FileTree root="lab01-grupo-X" files={["README.md u"]} />
 
-<CommitPoint id="t2" task="README e primeiro push" pontos={20} files="README.md" />
+<CommitPoint
+  id="t2"
+  task="README e primeiro push"
+  pontos={20}
+  files="README.md"
+/>
 
 ---
 
@@ -647,29 +646,29 @@ justamente o "produto" do projeto? (No Lab 10 ele vai para outro lugar: uma _rel
 
 ## Referência rápida {/* #referencia */}
 
-| Para… | Comando |
-| --- | --- |
-| Ver em que ramo estou e o que mudou | `git status` |
-| Trazer o que os outros enviaram | `git pull` |
-| Salvar e enviar | `git add <arquivos>` → `git commit -m "msg"` → `git push` |
-| Criar um ramo e mudar para ele | `git switch -c nome` |
-| Voltar para a `main` atualizada | `git switch main` → `git pull` |
-| Histórico resumido | `git log --oneline --graph -15` |
-| Abrir o repositório no navegador | `gh repo view --web` |
-| Abrir / listar / juntar PRs | `gh pr create` · `gh pr list` · `gh pr merge N --merge --delete-branch` |
-| Issues | `gh issue create` · `gh issue list` |
-| Desfazer mudanças **não** commitadas num arquivo | `git restore <arquivo>` |
+| Para…                                            | Comando                                                                 |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| Ver em que ramo estou e o que mudou              | `git status`                                                            |
+| Trazer o que os outros enviaram                  | `git pull`                                                              |
+| Salvar e enviar                                  | `git add <arquivos>` → `git commit -m "msg"` → `git push`               |
+| Criar um ramo e mudar para ele                   | `git switch -c nome`                                                    |
+| Voltar para a `main` atualizada                  | `git switch main` → `git pull`                                          |
+| Histórico resumido                               | `git log --oneline --graph -15`                                         |
+| Abrir o repositório no navegador                 | `gh repo view --web`                                                    |
+| Abrir / listar / juntar PRs                      | `gh pr create` · `gh pr list` · `gh pr merge N --merge --delete-branch` |
+| Issues                                           | `gh issue create` · `gh issue list`                                     |
+| Desfazer mudanças **não** commitadas num arquivo | `git restore <arquivo>`                                                 |
 
-| Problema | O que fazer |
-| --- | --- |
-| `Permission denied` / `403` no `push` | `gh auth status`; confira se você está no time do grupo; peça ao professor para conferir o acesso |
-| `Repository not found` | nome errado ou você ainda não é membro da organização: `gh repo view ELT85B-N21-2026-2/lab01-grupo-x` |
-| `rejected ... (fetch first)` no `push` | alguém enviou antes: `git pull`, resolva o conflito se houver, e `git push` de novo. **Nunca** `--force` |
-| Commit sem o seu avatar no GitHub | `user.email` diferente do da conta (P1). Corrija o `git config` para os próximos commits |
+| Problema                                          | O que fazer                                                                                                                                                                        |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Permission denied` / `403` no `push`             | `gh auth status`; confira se você está no time do grupo; peça ao professor para conferir o acesso                                                                                  |
+| `Repository not found`                            | nome errado ou você ainda não é membro da organização: `gh repo view ELT85B-N21-2026-2/lab01-grupo-x`                                                                              |
+| `rejected ... (fetch first)` no `push`            | alguém enviou antes: `git pull`, resolva o conflito se houver, e `git push` de novo. **Nunca** `--force`                                                                           |
+| Commit sem o seu avatar no GitHub                 | `user.email` diferente do da conta (P1). Corrija o `git config` para os próximos commits                                                                                           |
 | `'pio' não é reconhecido como um comando interno` | ponha `%USERPROFILE%\.platformio\penv\Scripts\` no **Path** (aba **PlatformIO**) e abra um terminal novo. Se a pasta não existir, o PlatformIO Core ainda não terminou de instalar |
-| O terminal abre como **PowerShell** | falta o `.vscode/settings.json` (1.1), ou a pasta aberta não é a raiz do repositório. Abra um terminal novo depois de criar o arquivo |
-| `code` abre o VS Code sem as extensões | abra no perfil: `code --profile "ESP32IO" .` |
-| Comando com `'aspas simples'` falha | no `cmd`, só as **aspas duplas** agrupam um texto |
+| O terminal abre como **PowerShell**               | falta o `.vscode/settings.json` (1.1), ou a pasta aberta não é a raiz do repositório. Abra um terminal novo depois de criar o arquivo                                              |
+| `code` abre o VS Code sem as extensões            | abra no perfil: `code --profile "ESP32IO" .`                                                                                                                                       |
+| Comando com `'aspas simples'` falha               | no `cmd`, só as **aspas duplas** agrupam um texto                                                                                                                                  |
 
 ---
 

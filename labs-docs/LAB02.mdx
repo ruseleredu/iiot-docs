@@ -3,12 +3,6 @@ title: Laboratório 02
 sidebar_position: 5
 ---
 
-import { GitLogOut } from "@site/src/components/shared/InstructionsSite";
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-  <LabTable index={2} internal={false} />
-</div>
-
 ## Checklist — ambiente de desenvolvimento (parte 2): PlatformIO, Wokwi e Docker {/* #checklist */}
 
 - [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando (T1)
@@ -206,7 +200,12 @@ segundo `pio run` não recompila nada, mas imprime de novo o uso de RAM e Flash.
 
 <FileTree
   root="lab02-grupo-X"
-  files={[".vscode/settings.json c", "platformio.ini c", "src/main.cpp c", "evidencias/t1-build.txt c"]}
+  files={[
+    ".vscode/settings.json c",
+    "platformio.ini c",
+    "src/main.cpp c",
+    "evidencias/t1-build.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -250,9 +249,27 @@ nos computadores de todos (e, no Lab 10, no Linux do CI).
   "author": "ELT85B - Lab 02",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
-    { "type": "wokwi-resistor", "id": "r1", "top": 130, "left": 120, "attrs": { "value": "220" } },
-    { "type": "wokwi-led", "id": "led1", "top": 80, "left": 220, "attrs": { "color": "red", "label": "GPIO2" } }
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 130,
+      "left": 120,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 80,
+      "left": 220,
+      "attrs": { "color": "red", "label": "GPIO2" }
+    }
   ],
   "connections": [
     ["esp:TX", "$serialMonitor:RX", "", []],
@@ -265,11 +282,11 @@ nos computadores de todos (e, no Lab 10, no Linux do CI).
 }
 ```
 
-| Linha | O que liga |
-| --- | --- |
-| `esp:TX` → `$serialMonitor:RX` (e o inverso) | a UART0 do ESP32 ao monitor serial do Wokwi (o `Serial.println`) |
-| `esp:2` → resistor → `led1:A` | o GPIO2 ao **anodo** do LED, passando por 220 Ω (limita a corrente em ~6 mA) |
-| `led1:C` → `esp:GND.2` | o **catodo** do LED ao terra |
+| Linha                                        | O que liga                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `esp:TX` → `$serialMonitor:RX` (e o inverso) | a UART0 do ESP32 ao monitor serial do Wokwi (o `Serial.println`)             |
+| `esp:2` → resistor → `led1:A`                | o GPIO2 ao **anodo** do LED, passando por 220 Ω (limita a corrente em ~6 mA) |
+| `led1:C` → `esp:GND.2`                       | o **catodo** do LED ao terra                                                 |
 
 Abra o `diagram.json` no VS Code: o editor do Wokwi mostra o circuito ao lado, e você pode
 arrastar as peças. Os labs seguintes acrescentam componentes a este mesmo arquivo.
@@ -384,9 +401,17 @@ uma volta do `loop()` atrasar 3 ms?
 
 **Evidência:** pelo menos 5 linhas do monitor serial em `evidencias/t3-serial.txt`.
 
-<FileTree root="lab02-grupo-X" files={["src/main.cpp u", "evidencias/t3-serial.txt c"]} />
+<FileTree
+  root="lab02-grupo-X"
+  files={["src/main.cpp u", "evidencias/t3-serial.txt c"]}
+/>
 
-<CommitPoint id="t3" task="Pisca com millis" pontos={15} files="src/main.cpp evidencias/t3-serial.txt" />
+<CommitPoint
+  id="t3"
+  task="Pisca com millis"
+  pontos={15}
+  files="src/main.cpp evidencias/t3-serial.txt"
+/>
 
 ---
 
@@ -472,7 +497,12 @@ nenhuma mensagem casa com ele.
 
 <FileTree root="lab02-grupo-X" files={["evidencias/t4-mqtt.txt c"]} />
 
-<CommitPoint id="t4" task="Docker e MQTT pelo terminal" pontos={20} files="evidencias/t4-mqtt.txt" />
+<CommitPoint
+  id="t4"
+  task="Docker e MQTT pelo terminal"
+  pontos={20}
+  files="evidencias/t4-mqtt.txt"
+/>
 
 ---
 
@@ -724,42 +754,42 @@ O `pio device list` mostra as portas (`COM3`, `COM4`...). O `upload` compila e g
 `monitor` abre o serial a 115200 (**Ctrl+C** sai). Feche o monitor antes de gravar de novo: a
 porta COM só atende um programa por vez.
 
-| Problema | O que tentar |
-| --- | --- |
-| A porta não aparece | outro cabo (muitos só carregam), outra USB, driver CP210x ou CH340 |
-| `Failed to connect to ESP32` | segure **BOOT** quando aparecer `Connecting....` |
-| Caracteres estranhos no serial | `monitor_speed` diferente do `Serial.begin()` |
+| Problema                                      | O que tentar                                                                        |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| A porta não aparece                           | outro cabo (muitos só carregam), outra USB, driver CP210x ou CH340                  |
+| `Failed to connect to ESP32`                  | segure **BOOT** quando aparecer `Connecting....`                                    |
+| Caracteres estranhos no serial                | `monitor_speed` diferente do `Serial.begin()`                                       |
 | `could not open port 'COM4': PermissionError` | outro programa está com a porta (um monitor serial aberto, outro terminal): feche-o |
 
 ---
 
 ## Referência rápida {/* #referencia */}
 
-| Para… | Comando |
-| --- | --- |
-| Compilar | `pio run` |
-| Limpar o build | `pio run -t clean` |
-| Simular | F1 → **Wokwi: Start Simulator** (compile antes) |
-| Assinar um tópico (na tela) | `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
-| Assinar em segundo plano | `docker run -d --name sub eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
-| Ver / gravar o que chegou | `docker logs -f sub` · `docker logs sub > arquivo.txt 2>&1` |
-| Publicar | `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "topico" -m "texto"` |
-| Ver containers / remover um | `docker ps -a` · `docker rm -f sub` |
-| Ver um arquivo no terminal | `type evidencias\t5-mqtt.txt` |
-| Fluxo de entrega | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01) |
+| Para…                       | Comando                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| Compilar                    | `pio run`                                                                                          |
+| Limpar o build              | `pio run -t clean`                                                                                 |
+| Simular                     | F1 → **Wokwi: Start Simulator** (compile antes)                                                    |
+| Assinar um tópico (na tela) | `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v`          |
+| Assinar em segundo plano    | `docker run -d --name sub eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
+| Ver / gravar o que chegou   | `docker logs -f sub` · `docker logs sub > arquivo.txt 2>&1`                                        |
+| Publicar                    | `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "topico" -m "texto"`    |
+| Ver containers / remover um | `docker ps -a` · `docker rm -f sub`                                                                |
+| Ver um arquivo no terminal  | `type evidencias\t5-mqtt.txt`                                                                      |
+| Fluxo de entrega            | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01)                                       |
 
-| Problema | O que fazer |
-| --- | --- |
-| O Wokwi pede licença | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias) |
-| `firmware.bin not found` no Wokwi | compile antes (`pio run`) e confira os caminhos do `wokwi.toml` |
-| O Wokwi roda o código antigo | ele roda o último build: compile de novo |
-| `[WiFi] conectando...` sem fim | o SSID tem de ser exatamente `Wokwi-GUEST`, sem senha |
-| `[MQTT] ... falhou (rc=-2)` | sem rede até o broker: confira o Wi-Fi e o `MQTT_HOST` |
-| `docker: error during connect` | o Docker Desktop está fechado ou iniciando: abra-o e espere |
-| `The container name "/sub-lab02" is already in use` | sobrou o container de antes: `docker rm -f sub-lab02` |
-| `'docker' não é reconhecido como um comando interno` | o Docker Desktop terminou de instalar depois que o VS Code abriu: feche e abra o VS Code |
-| `mosquitto_sub` não mostra nada | o tópico tem de ser **idêntico** (maiúsculas, `grupo-a` × `grupo-A`), entre **aspas duplas** (no `cmd`, aspas simples viram parte do tópico), e o `#` só vale no fim |
-| O terminal abre como **PowerShell** | falta o `.vscode/settings.json` (Lab 01, 1.1): crie-o e abra um terminal novo |
+| Problema                                             | O que fazer                                                                                                                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| O Wokwi pede licença                                 | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias)                                                                               |
+| `firmware.bin not found` no Wokwi                    | compile antes (`pio run`) e confira os caminhos do `wokwi.toml`                                                                                                      |
+| O Wokwi roda o código antigo                         | ele roda o último build: compile de novo                                                                                                                             |
+| `[WiFi] conectando...` sem fim                       | o SSID tem de ser exatamente `Wokwi-GUEST`, sem senha                                                                                                                |
+| `[MQTT] ... falhou (rc=-2)`                          | sem rede até o broker: confira o Wi-Fi e o `MQTT_HOST`                                                                                                               |
+| `docker: error during connect`                       | o Docker Desktop está fechado ou iniciando: abra-o e espere                                                                                                          |
+| `The container name "/sub-lab02" is already in use`  | sobrou o container de antes: `docker rm -f sub-lab02`                                                                                                                |
+| `'docker' não é reconhecido como um comando interno` | o Docker Desktop terminou de instalar depois que o VS Code abriu: feche e abra o VS Code                                                                             |
+| `mosquitto_sub` não mostra nada                      | o tópico tem de ser **idêntico** (maiúsculas, `grupo-a` × `grupo-A`), entre **aspas duplas** (no `cmd`, aspas simples viram parte do tópico), e o `#` só vale no fim |
+| O terminal abre como **PowerShell**                  | falta o `.vscode/settings.json` (Lab 01, 1.1): crie-o e abra um terminal novo                                                                                        |
 
 ---
 
