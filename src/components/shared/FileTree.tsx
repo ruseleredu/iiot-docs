@@ -32,23 +32,42 @@ interface ActionConfig {
     border: string;
 }
 
+type InfimaColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'danger';
+
+// Gera a paleta de um badge a partir de uma cor semântica do Infima.
+// As variáveis *-contrast-* se adaptam automaticamente ao modo escuro.
+const infima = (color: InfimaColor) => ({
+    bg: `var(--ifm-color-${color}-contrast-background)`,
+    color: `var(--ifm-color-${color}-contrast-foreground)`,
+    border: `var(--ifm-color-${color}-dark)`,
+});
+
 // Mapeamento extensível para CRUD (Aceita iniciais c, r, u, d e termos em PT/EN)
 const ACTION_MAP: Record<string, ActionConfig> = {
     // CREATE (Adicionar / Criar)
-    c: { type: 'create', defaultLabel: 'Criar Aqui', bg: 'var(--ifm-color-info-lightest)', color: 'var(--ifm-color-info-darkest)', border: 'var(--ifm-color-info)' },
+    c: { type: 'create', defaultLabel: 'Criar Aqui', ...infima('info') },
     // READ (Verificar / Ler)
-    r: { type: 'read', defaultLabel: 'Verificar', bg: 'var(--ifm-color-primary-lightest)', color: 'var(--ifm-color-primary-darkest)', border: 'var(--ifm-color-primary)' },
+    r: { type: 'read', defaultLabel: 'Verificar', ...infima('primary') },
     // UPDATE (Editar / Atualizar)
-    u: { type: 'update', defaultLabel: 'Edite Aqui', bg: 'var(--ifm-color-warning-lightest)', color: 'var(--ifm-color-warning-darkest)', border: 'var(--ifm-color-warning)' },
+    u: { type: 'update', defaultLabel: 'Edite Aqui', ...infima('warning') },
     // DELETE (Remover / Deletar)
-    d: { type: 'delete', defaultLabel: 'Remover', bg: 'var(--ifm-color-danger-lightest)', color: 'var(--ifm-color-danger-darkest)', border: 'var(--ifm-color-danger)' },
+    d: { type: 'delete', defaultLabel: 'Remover', ...infima('danger') },
     // PROFESSOR (p)
-    p: { type: 'professor', defaultLabel: '(Professor)', bg: 'var(--ifm-color-secondary-lightest, #f0f0f0)', color: 'var(--ifm-color-secondary-darkest, #333)', border: 'var(--ifm-color-secondary, #ccc)' },
+    p: { type: 'professor', defaultLabel: '(Professor)', ...infima('secondary') },
     // NOTAS (n)
-    n: { type: 'notas', defaultLabel: '(Notas)', bg: 'var(--ifm-color-secondary-lightest, #f0f0f0)', color: 'var(--ifm-color-secondary-darkest, #333)', border: 'var(--ifm-color-secondary, #ccc)' },
+    n: { type: 'notas', defaultLabel: '(Notas)', ...infima('secondary') },
     // GENERATED / GERADO (g)
-    g: { type: 'generated', defaultLabel: 'Gerado', bg: 'var(--ifm-color-secondary-lightest, #f0f0f0)', color: 'var(--ifm-color-emphasis-700, #555)', border: 'var(--ifm-color-emphasis-400, #bbb)' },
+    g: {
+        type: 'generated',
+        defaultLabel: 'Gerado',
+        bg: 'var(--ifm-color-emphasis-100)',
+        color: 'var(--ifm-color-emphasis-700)',
+        border: 'var(--ifm-color-emphasis-400)',
+    },
 };
+
+// Estilo do badge após copiar o caminho
+const COPIED_STYLE = infima('success');
 
 function buildTree(paths: string[]): TreeNode {
     const treeRoot: TreeNode = { name: '', relativePath: '', isFolder: true, children: {} };
@@ -146,9 +165,9 @@ function RenderBranch({ nodes, copiedPath, onCopy }: { nodes: TreeNode[]; copied
                                     fontSize: '0.75rem',
                                     borderRadius: '4px',
                                     fontWeight: 'bold',
-                                    backgroundColor: isCopied ? 'var(--ifm-color-success-lightest)' : actionCfg.bg,
-                                    color: isCopied ? 'var(--ifm-color-success-darkest)' : actionCfg.color,
-                                    border: `1px solid ${isCopied ? 'var(--ifm-color-success)' : actionCfg.border}`,
+                                    backgroundColor: isCopied ? COPIED_STYLE.bg : actionCfg.bg,
+                                    color: isCopied ? COPIED_STYLE.color : actionCfg.color,
+                                    border: `1px solid ${isCopied ? COPIED_STYLE.border : actionCfg.border}`,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.2rem',

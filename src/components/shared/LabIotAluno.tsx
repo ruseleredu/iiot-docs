@@ -176,32 +176,22 @@ export default function LabIotAluno({
                                     </ul>
 
                                     <p>
-                                        <b>0.</b> Crie os atalhos (valem só nesta janela do cmd; abriu outra, rode de novo):
+                                        <b>1.</b> Crie os atalhos (valem só nesta janela do cmd; abriu outra, rode de novo):
                                     </p>
                                     <Cmd>{atalhos}</Cmd>
 
-                                    <p>
-                                        <b>1.</b> Atualize o repositório <code>{repoName}</code> (já clonado), que traz o gerador:
-                                    </p>
-                                    <Cmd>{`git -C "%IOT_REPO%" pull`}</Cmd>
 
-                                    <p><b>2.</b> Instale a dependência do gerador (uma vez):</p>
-                                    <Cmd>{`py -m pip install bcrypt`}</Cmd>
-
-                                    <p><b>3.</b> Gere o LAB IoT do grupo em <code>{`docker\\${conta}`}</code>:</p>
+                                    <p><b>2.</b> Gere o LAB IoT do grupo em <code>{`docker\\${conta}`}</code>:</p>
                                     <Cmd>{gerar}</Cmd>
 
-                                    <p><b>4.</b> Suba os containers (a primeira vez demora):</p>
+                                    <p><b>3.</b> Suba os containers (a primeira vez demora):</p>
                                     <Cmd>{`${entrar} && docker compose up -d --build`}</Cmd>
 
-                                    <p><b>5.</b> Confira e veja a senha:</p>
+                                    <p><b>4.</b> Confira e veja a senha:</p>
                                     <Cmd>{`docker compose ps && type credenciais.txt`}</Cmd>
 
-                                    <p><b>6.</b> Abra o portal:</p>
+                                    <p><b>5.</b> Abra o portal:</p>
                                     <Cmd>{`start ${base}/`}</Cmd>
-
-                                    <p><b>7.</b> Registre a pasta do LAB IoT no repositório:</p>
-                                    <Cmd>{commit}</Cmd>
 
                                     <details>
                                         <summary><b>Endereços</b></summary>
