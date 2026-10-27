@@ -100,7 +100,7 @@ O repositório do grupo nasce do `lab07-template`, que já traz o **firmware fin
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab07-grupo-X"
+  root="lab07-grupo-x"
   files={[
     "platformio.ini r",
     "src/main.cpp u",
@@ -147,7 +147,7 @@ Acrescente ao circuito do Lab 06:
 - **Analisador lógico** (`wokwi-logic-analyzer`): `D0 → GPIO25`, `D1 → GPIO26`, `GND → GND`.
   Ele grava os dois sinais de PWM para você medir frequência e _duty_ na T3.
 
-<FileTree root="lab07-grupo-X" files={["diagram.json u"]} />
+<FileTree root="lab07-grupo-x" files={["diagram.json u"]} />
 
 ```json title="diagram.json"
 {
@@ -295,7 +295,7 @@ raw = 4095  → 55,0 °C
 A leitura é disparada por um **segundo `Ticker`**, a 10 Hz, com o mesmo padrão de flag do
 Lab 05: o callback só marca `adcPendente`, e o `loop()` lê.
 
-<FileTree root="lab07-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab07-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (trechos novos da T2)"
 // ---- ADC: potenciômetro no GPIO34 (ADC1_CH6 - o ADC1 funciona junto com o Wi-Fi)
@@ -381,7 +381,7 @@ Anote as previsões e o que observou no `README.md`.
 **Evidência:** salve o serial girando o potenciômetro de um extremo ao outro (pelo menos 5
 linhas `[ADC]`) em `evidencias/t2-serial.txt`.
 
-<FileTree root="lab07-grupo-X" files={["evidencias/t2-serial.txt c"]} />
+<FileTree root="lab07-grupo-x" files={["evidencias/t2-serial.txt c"]} />
 
 <CommitPoint
   id="t2"
@@ -436,7 +436,7 @@ mudou as funções do LEDC. Para o mesmo código compilar nos dois, encapsule:
 | `ledcAttachPin(pino, canal)`   | (feito pela linha acima)                     |
 | `ledcWrite(canal, duty)`       | `ledcWrite(pino, duty)`                      |
 
-<FileTree root="lab07-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab07-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (trechos novos da T3)"
 // ---- PWM (LEDC): dois canais com frequências bem diferentes
@@ -518,7 +518,7 @@ um relé de estado sólido a 25 kHz? Qual a **maior resolução** possível a 25
 **Evidência:** captura do PulseView ou do Surfer com os dois canais e as medições, em
 `evidencias/t3-pwm.png`.
 
-<FileTree root="lab07-grupo-X" files={["evidencias/t3-pwm.png c"]} />
+<FileTree root="lab07-grupo-x" files={["evidencias/t3-pwm.png c"]} />
 
 <CommitPoint
   id="t3"
@@ -567,7 +567,7 @@ sequenceDiagram
 - A **tela** mostra o modo e o estado no rodapé, e o espelho em texto/framebuffer do Lab 06
   continua funcionando.
 
-<FileTree root="lab07-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab07-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (trechos novos da T4)"
 const char *TOPICO_ADC      = BASE "/adc";
@@ -654,7 +654,7 @@ void controlar() {
 <details>
 <summary><strong>Código completo até a T4</strong> (clique para abrir)</summary>
 
-<FileTree root="lab07-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab07-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T4)"
 // ELT85B - Lab 07 (T4): ADC (potenciômetro) + PWM (LEDC) + modos pot/remoto via MQTT
@@ -1123,7 +1123,7 @@ banda morta, vale publicar `.../adc` a cada 10 s? Pense no dashboard aberto **de
 :::
 
 <FileTree
-  root="lab07-grupo-X"
+  root="lab07-grupo-x"
   files={["src/main.cpp u", "evidencias/t4-mqtt.txt c"]}
 />
 
@@ -1344,7 +1344,7 @@ Com o dashboard aberto em `http://localhost:1880/dashboard/lab07`:
 fluxo exportado em `nodered/flows-lab07.json`.
 
 <FileTree
-  root="lab07-grupo-X"
+  root="lab07-grupo-x"
   files={[
     "nodered/flows-lab07.json c",
     "evidencias/t5-sqlite.txt c",
@@ -1450,7 +1450,7 @@ Compare a "Energia do aquecedor" de 5 minutos em `auto` com 5 minutos em `pot` c
 :::
 
 <FileTree
-  root="lab07-grupo-X"
+  root="lab07-grupo-x"
   files={[
     "src/main.cpp u",
     "nodered/flows-lab07.json u",

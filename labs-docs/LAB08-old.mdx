@@ -113,7 +113,7 @@ O repositório do grupo nasce do `lab08-template`, que traz uma cópia do simula
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={[
     "camara-sim/camara_sim.py r",
     "camara-sim/camara_model.py r",
@@ -187,7 +187,7 @@ flowchart LR
 
 2. Na pasta `camara-sim/` do repositório, crie o `.env` a partir do exemplo:
 
-   <FileTree root="lab08-grupo-X" files={["camara-sim/.env c"]} />
+   <FileTree root="lab08-grupo-x" files={["camara-sim/.env c"]} />
 
  <GroupCommands
   language="ini"
@@ -310,7 +310,7 @@ use `--s7-port 1102 --modbus-tcp-port 1502`.
 :::
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={["camara-sim/.env c", "evidencias/t1-testar.txt c"]}
 />
 
@@ -394,7 +394,7 @@ flowchart LR
 - **modbus-read** "FC2 DI 0..4": _FC 2: Read Discrete Inputs_, Address `0`, Quantity `5`,
   direto num **debug**.
 
-<FileTree root="lab08-grupo-X" files={["nodered/flows-lab08.json c"]} />
+<FileTree root="lab08-grupo-x" files={["nodered/flows-lab08.json c"]} />
 
 ```js title="function: decodifica IR"
 // Input registers 0..17 da câmara -> objeto com nomes e unidades
@@ -468,7 +468,7 @@ E se ler o float32 dos IR12–13 na ordem **CDAB**, que tipo de número aparece?
 linhas `[cmd]` do log.
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={["nodered/flows-lab08.json u", "evidencias/t2-modbus.txt c"]}
 />
 
@@ -566,7 +566,7 @@ Por que o Modbus e o OPC-UA não têm esse tipo de erro "silencioso" da mesma fo
 log do simulador.
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={["nodered/flows-lab08.json u", "evidencias/t3-s7.txt c"]}
 />
 
@@ -716,7 +716,7 @@ centenas de variáveis que quase nunca mudam?
 `[cmd] opcua:` do log do simulador. (Opcional: uma captura do UaExpert.)
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={["nodered/flows-lab08.json u", "evidencias/t4-opcua.txt c"]}
 />
 
@@ -831,7 +831,7 @@ cada 5 s, é o mais "velho".
 `evidencias/t5-dashboard.png` e o fluxo exportado em `nodered/flows-lab08.json`.
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={["nodered/flows-lab08.json u", "evidencias/t5-dashboard.png c"]}
 />
 
@@ -1068,7 +1068,7 @@ por exemplo um _watchdog_ no equipamento que volta ao modo 2 se o HR4 não for r
 :::
 
 <FileTree
-  root="lab08-grupo-X"
+  root="lab08-grupo-x"
   files={[
     "nodered/flows-lab08.json u",
     "evidencias/t6-sqlite.txt c",

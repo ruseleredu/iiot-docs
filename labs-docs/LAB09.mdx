@@ -108,7 +108,7 @@ O repositório do grupo nasce do `lab09-template`, que traz uma cópia do simula
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab09-grupo-X"
+  root="lab09-grupo-x"
   files={[
     "camara-sim/camara_sim.py r",
     "camara-sim/testar_clientes.py r",
@@ -133,14 +133,14 @@ O repositório do grupo nasce do `lab09-template`, que traz uma cópia do simula
 :::info[Nomes do Lab 09]
 Troque o `x` pela letra do seu grupo em **todos** os nomes abaixo.
 
-| O quê | Valor |
-| --- | --- |
-| Contêiner e host na rede | `lab09-x-camara` |
-| Tópico base MQTT | `elt85b/lab09/grupo-x/camara` |
-| Rede do stack do curso | `lab09-x_labnet` |
-| Banco SQLite (no Node-RED) | `/data/sqlite/lab09.sqlite` |
-| Editor do Node-RED | `http://localhost/lab09-x/` |
-| Dashboard | `http://localhost/lab09-x/dashboard/lab09` |
+| O quê                      | Valor                                      |
+| -------------------------- | ------------------------------------------ |
+| Contêiner e host na rede   | `lab09-x-camara`                           |
+| Tópico base MQTT           | `elt85b/lab09/grupo-x/camara`              |
+| Rede do stack do curso     | `lab09-x_labnet`                           |
+| Banco SQLite (no Node-RED) | `/data/sqlite/lab09.sqlite`                |
+| Editor do Node-RED         | `http://localhost/lab09-x/`                |
+| Dashboard                  | `http://localhost/lab09-x/dashboard/lab09` |
 
 :::
 
@@ -168,8 +168,8 @@ PORTA_MODBUS_TCP=502
 PORTA_MODBUS_RTU=5021
 PORTA_S7=102
 PORTA_OPCUA=4840`,
-    },
-  ]}
+},
+]}
 />
 
 <GroupCommands
@@ -222,11 +222,11 @@ escrita apontam para ele. Para levar o fluxo para o Lab 09, basta trocar esses n
 3. Na barra lateral, abra **Configuration nodes** (ícone de engrenagem) e troque `lab08` por
    `lab09` em:
 
-   | Nó de configuração | Campo | Novo valor |
-   | --- | --- | --- |
-   | `câmara Modbus TCP` (modbus-client) | Host | `lab09-x-camara` |
-   | `câmara S7 (DB1)` (s7 endpoint) | Address | `lab09-x-camara` |
-   | `câmara OPC-UA` (OpcUa-Endpoint) | Endpoint | `opc.tcp://lab09-x-camara:4840/` |
+   | Nó de configuração                  | Campo    | Novo valor                       |
+   | ----------------------------------- | -------- | -------------------------------- |
+   | `câmara Modbus TCP` (modbus-client) | Host     | `lab09-x-camara`                 |
+   | `câmara S7 (DB1)` (s7 endpoint)     | Address  | `lab09-x-camara`                 |
+   | `câmara OPC-UA` (OpcUa-Endpoint)    | Endpoint | `opc.tcp://lab09-x-camara:4840/` |
 
 4. Troque `lab08` por `lab09` nos tópicos do **mqtt in** (telemetria) e do **mqtt out**
    (`cmd/setpoint`). Esses ficam nos próprios nós, não num nó de configuração.
@@ -240,8 +240,13 @@ sobrou nenhum.
 :::
 
 <FileTree
-  root="lab09-grupo-X"
-  files={["camara-sim/.env c", "nodered/flows-lab09.json c", "evidencias/t1-testar.txt c", "evidencias/t1-enderecos.txt c"]}
+  root="lab09-grupo-x"
+  files={[
+    "camara-sim/.env c",
+    "nodered/flows-lab09.json c",
+    "evidencias/t1-testar.txt c",
+    "evidencias/t1-enderecos.txt c",
+  ]}
 />
 
 <CommitPoint
@@ -259,20 +264,20 @@ sobrou nenhum.
 
 No Lab 08, você leu os IR 0 a 4. Este é o mapa completo da câmara (unit 1, endereços base 0):
 
-| Tabela (código de função) | Acesso | End. | Variável |
-| --- | --- | --- | --- |
-| Coils (FC1 lê · FC5/FC15 escreve) | R/W bit | 0 / 1 | `habilitado` / `falha_dht` (simulação) |
-| Discrete inputs (FC2) | R bit | 0–4 | LED verde, amarelo, vermelho, `dht_ok`, alarme ativo |
+| Tabela (código de função)                     | Acesso      | End.      | Variável                                                      |
+| --------------------------------------------- | ----------- | --------- | ------------------------------------------------------------- |
+| Coils (FC1 lê · FC5/FC15 escreve)             | R/W bit     | 0 / 1     | `habilitado` / `falha_dht` (simulação)                        |
+| Discrete inputs (FC2)                         | R bit       | 0–4       | LED verde, amarelo, vermelho, `dht_ok`, alarme ativo          |
 | Holding registers (FC3 lê · FC6/FC16 escreve) | R/W 16 bits | 0 / 1 / 2 | `habilitado` / `modo` (0 MANUAL, 1 ON/OFF, 2 PI) / `fonte_sp` |
-| | | 3 | `setpoint` × 10 (350 = 35,0 °C) |
-| | | 4 / 5 | `aquecedor_cmd` / `ventilador_cmd` (%), valem no modo MANUAL |
-| Input registers (FC4) | R 16 bits | 0 / 1 / 2 | temperatura × 10 / umidade × 10 / setpoint efetivo × 10 |
-| | | 3 / 4 / 5 | aquecedor / ventilador aplicados (%) / `pot_raw` |
-| | | 6 / 7 | `estado` (0 DESLIGADO … 4 ALARME) / `alarme` (bits) |
-| | | 8 | LEDs: bit0 verde, bit1 amarelo, bit2 vermelho |
-| | | 10 | `heartbeat` (conta a cada ciclo do "firmware") |
-| | | 12–13 | temperatura em **float32** (palavra alta primeiro, ABCD) |
-| | | 14–15 | umidade em **float32** (ABCD) |
+|                                               |             | 3         | `setpoint` × 10 (350 = 35,0 °C)                               |
+|                                               |             | 4 / 5     | `aquecedor_cmd` / `ventilador_cmd` (%), valem no modo MANUAL  |
+| Input registers (FC4)                         | R 16 bits   | 0 / 1 / 2 | temperatura × 10 / umidade × 10 / setpoint efetivo × 10       |
+|                                               |             | 3 / 4 / 5 | aquecedor / ventilador aplicados (%) / `pot_raw`              |
+|                                               |             | 6 / 7     | `estado` (0 DESLIGADO … 4 ALARME) / `alarme` (bits)           |
+|                                               |             | 8         | LEDs: bit0 verde, bit1 amarelo, bit2 vermelho                 |
+|                                               |             | 10        | `heartbeat` (conta a cada ciclo do "firmware")                |
+|                                               |             | 12–13     | temperatura em **float32** (palavra alta primeiro, ABCD)      |
+|                                               |             | 14–15     | umidade em **float32** (ABCD)                                 |
 
 Além da **escala** (Lab 08), dois truques que aparecem em quase todo equipamento real:
 
@@ -288,13 +293,13 @@ CRC). A 5021 usa o quadro **RTU** (endereço + função + dados + **CRC-16**), o
 só que transportado por TCP, como faz um conversor serial-Ethernet. Crie um segundo
 **modbus-client**:
 
-| Campo | `câmara Modbus TCP` (do Lab 08) | `câmara Modbus RTU/TCP` (novo) |
-| --- | --- | --- |
-| Type | TCP | TCP |
-| Host | `lab09-x-camara` | `lab09-x-camara` |
-| Port | `502` | `5021` |
-| TCP Type | **DEFAULT** | **TELNET** |
-| Unit-Id | `1` | `1` |
+| Campo    | `câmara Modbus TCP` (do Lab 08) | `câmara Modbus RTU/TCP` (novo) |
+| -------- | ------------------------------- | ------------------------------ |
+| Type     | TCP                             | TCP                            |
+| Host     | `lab09-x-camara`                | `lab09-x-camara`               |
+| Port     | `502`                           | `5021`                         |
+| TCP Type | **DEFAULT**                     | **TELNET**                     |
+| Unit-Id  | `1`                             | `1`                            |
 
 :::warning[TELNET, não RTU-BUFFERED]
 No `node-red-contrib-modbus`, o tipo que envia quadros **RTU crus** pelo socket se chama
@@ -379,7 +384,10 @@ empacota no IR8?
 `modbus_tcp`, outro com `modbus_rtu`, um array do debug de LEDs e as linhas `[cmd]` do log
 (`docker logs lab09-x-camara 2>&1 | findstr /l /c:"[cmd]"`) depois de usar os injects do Lab 08.
 
-<FileTree root="lab09-grupo-X" files={["nodered/flows-lab09.json u", "evidencias/t2-modbus.txt c"]} />
+<FileTree
+  root="lab09-grupo-x"
+  files={["nodered/flows-lab09.json u", "evidencias/t2-modbus.txt c"]}
+/>
 
 <CommitPoint
   id="t2"
@@ -394,21 +402,21 @@ empacota no IR8?
 
 ### 3.1 A tabela de variáveis inteira
 
-| Endereço nodes7 | Bytes | Variável | Acesso |
-| --- | --- | --- | --- |
-| `DB1,X0.0` | 0.0 | `habilitado` | R/W |
-| `DB1,X0.1` | 0.1 | `fonte_sp` (0 remoto, 1 potenciômetro) | R/W |
-| `DB1,INT2` | 2–3 | `modo` | R/W |
-| `DB1,REAL4` | 4–7 | `setpoint` (°C) | R/W |
-| `DB1,REAL8` | 8–11 | `aquecedor_cmd` (%) | R/W |
-| `DB1,REAL12` | 12–15 | `ventilador_cmd` (%) | R/W |
-| `DB1,REAL20` | 20–23 | `temp` (°C) | R |
-| `DB1,REAL24` | 24–27 | `umid` (%) | R |
-| `DB1,REAL28` | 28–31 | `sp_efetivo` (°C) | R |
-| `DB1,REAL32` / `REAL36` | 32–39 | `aquecedor_pwm` / `ventilador_pwm` (%) | R |
-| `DB1,INT40` / `INT42` | 40–43 | `estado` / `alarme` | R |
-| `DB1,X44.0` … `X44.2` | 44 | `led_verde`, `led_amarelo`, `led_vermelho` | R |
-| `DB1,DINT48` | 48–51 | `heartbeat` | R |
+| Endereço nodes7         | Bytes | Variável                                   | Acesso |
+| ----------------------- | ----- | ------------------------------------------ | ------ |
+| `DB1,X0.0`              | 0.0   | `habilitado`                               | R/W    |
+| `DB1,X0.1`              | 0.1   | `fonte_sp` (0 remoto, 1 potenciômetro)     | R/W    |
+| `DB1,INT2`              | 2–3   | `modo`                                     | R/W    |
+| `DB1,REAL4`             | 4–7   | `setpoint` (°C)                            | R/W    |
+| `DB1,REAL8`             | 8–11  | `aquecedor_cmd` (%)                        | R/W    |
+| `DB1,REAL12`            | 12–15 | `ventilador_cmd` (%)                       | R/W    |
+| `DB1,REAL20`            | 20–23 | `temp` (°C)                                | R      |
+| `DB1,REAL24`            | 24–27 | `umid` (%)                                 | R      |
+| `DB1,REAL28`            | 28–31 | `sp_efetivo` (°C)                          | R      |
+| `DB1,REAL32` / `REAL36` | 32–39 | `aquecedor_pwm` / `ventilador_pwm` (%)     | R      |
+| `DB1,INT40` / `INT42`   | 40–43 | `estado` / `alarme`                        | R      |
+| `DB1,X44.0` … `X44.2`   | 44    | `led_verde`, `led_amarelo`, `led_vermelho` | R      |
+| `DB1,DINT48`            | 48–51 | `heartbeat`                                | R      |
 
 O DB1 do simulador é **sem acesso otimizado**: os endereços são fixos, como num S7-300 ou num
 S7-1200 com _Optimized block access_ desligado. Num S7-1200/1500 real, isso e o _PUT/GET_
@@ -465,7 +473,10 @@ Quantas **requisições** cada cliente precisa para ler os 3 LEDs **e** a temper
 **Evidência:** em `evidencias/t3-s7.txt`, um objeto do debug "S7" e as linhas `[cmd] s7:` do
 log do simulador.
 
-<FileTree root="lab09-grupo-X" files={["nodered/flows-lab09.json u", "evidencias/t3-s7.txt c"]} />
+<FileTree
+  root="lab09-grupo-x"
+  files={["nodered/flows-lab09.json u", "evidencias/t3-s7.txt c"]}
+/>
 
 <CommitPoint
   id="t3"
@@ -595,7 +606,10 @@ mudam, gera mais ou menos tráfego com assinatura do que com varredura a cada 2 
 **Evidência:** em `evidencias/t4-opcua.txt`, um objeto do debug "OPC-UA" e as linhas
 `[cmd] opcua:` do log do simulador (setpoint e modo).
 
-<FileTree root="lab09-grupo-X" files={["nodered/flows-lab09.json u", "evidencias/t4-opcua.txt c"]} />
+<FileTree
+  root="lab09-grupo-x"
+  files={["nodered/flows-lab09.json u", "evidencias/t4-opcua.txt c"]}
+/>
 
 <CommitPoint
   id="t4"
@@ -693,12 +707,12 @@ out[["modbus", "s7", "opcua", "mqtt"].indexOf(via)] = { payload: sp };
 return out;
 ```
 
-| Saída | Liga em |
-| --- | --- |
-| 1 | function "°C → HR3 (×10)" do Lab 08 (que já leva ao FC6 HR3) |
-| 2 | **s7 out** `setpoint` do Lab 08 |
-| 3 | **OpcUa-Item** `Camara.setpoint` do Lab 08 |
-| 4 | **mqtt out** `elt85b/lab09/grupo-x/camara/cmd/setpoint` do Lab 08 |
+| Saída | Liga em                                                           |
+| ----- | ----------------------------------------------------------------- |
+| 1     | function "°C → HR3 (×10)" do Lab 08 (que já leva ao FC6 HR3)      |
+| 2     | **s7 out** `setpoint` do Lab 08                                   |
+| 3     | **OpcUa-Item** `Camara.setpoint` do Lab 08                        |
+| 4     | **mqtt out** `elt85b/lab09/grupo-x/camara/cmd/setpoint` do Lab 08 |
 
 Escolha cada protocolo, mova o slider e veja **as cinco linhas** convergirem para o novo SP. A
 coluna **idade** mostra há quanto tempo cada caminho foi atualizado: o RTU, lido a cada 5 s, é o
@@ -707,7 +721,10 @@ mais "velho".
 **Evidência:** a captura do dashboard com as cinco linhas em `evidencias/t5-dashboard.png` e o
 fluxo exportado.
 
-<FileTree root="lab09-grupo-X" files={["nodered/flows-lab09.json u", "evidencias/t5-dashboard.png c"]} />
+<FileTree
+  root="lab09-grupo-x"
+  files={["nodered/flows-lab09.json u", "evidencias/t5-dashboard.png c"]}
+/>
 
 <CommitPoint
   id="t5"
@@ -949,8 +966,13 @@ em 10 s, e diga por que ela precisa ficar no **equipamento** e não no Node-RED.
 :::
 
 <FileTree
-  root="lab09-grupo-X"
-  files={["nodered/flows-lab09.json u", "evidencias/t6-sqlite.txt c", "evidencias/t6-dashboard.png c", "README.md u"]}
+  root="lab09-grupo-x"
+  files={[
+    "nodered/flows-lab09.json u",
+    "evidencias/t6-sqlite.txt c",
+    "evidencias/t6-dashboard.png c",
+    "README.md u",
+  ]}
 />
 
 <CommitPoint
@@ -964,17 +986,17 @@ em 10 s, e diga por que ela precisa ficar no **equipamento** e não no Node-RED.
 
 ## Referência rápida {/* #referencia */}
 
-| Problema | O que fazer |
-| --- | --- |
+| Problema                                        | O que fazer                                                                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Nós Modbus com "propriedades inválidas: Server" | no `modbus-client`, o _Serial port_ não pode ficar vazio, mesmo com _Type_ TCP: mude para Serial, preencha `/dev/ttyUSB`, volte para TCP |
-| RTU em _timeout_ | o _TCP Type_ do cliente da porta 5021 é **TELNET** |
-| Temperatura absurda (±10⁸ ou 10⁻³⁸) | ordem das palavras do float32 trocada (P1) |
-| Ventilador não muda no PI externo | o modbus-write de HR4..5 está em FC6; use **FC16** com payload array |
-| `BadTypeMismatch` | o _Type_ do OpcUa-Item tem de ser o do nó (`Double` no setpoint, `Int32` no modo) |
-| Linhas repetidas no SQLite | falta o _debounce_ no "junta variáveis" (P3) |
-| `SQLITE_CANTOPEN` | o caminho é `/data/sqlite/lab09.sqlite` (pasta `sqlite` dentro do `/data` do Node-RED) |
-| O dashboard não abre | `http://localhost/lab09-x/dashboard/lab09`; a página precisa do _path_ `/lab09` |
-| Sobrou `lab08` em algum nó | Ctrl+F no editor procura em todos os nós |
+| RTU em _timeout_                                | o _TCP Type_ do cliente da porta 5021 é **TELNET**                                                                                       |
+| Temperatura absurda (±10⁸ ou 10⁻³⁸)             | ordem das palavras do float32 trocada (P1)                                                                                               |
+| Ventilador não muda no PI externo               | o modbus-write de HR4..5 está em FC6; use **FC16** com payload array                                                                     |
+| `BadTypeMismatch`                               | o _Type_ do OpcUa-Item tem de ser o do nó (`Double` no setpoint, `Int32` no modo)                                                        |
+| Linhas repetidas no SQLite                      | falta o _debounce_ no "junta variáveis" (P3)                                                                                             |
+| `SQLITE_CANTOPEN`                               | o caminho é `/data/sqlite/lab09.sqlite` (pasta `sqlite` dentro do `/data` do Node-RED)                                                   |
+| O dashboard não abre                            | `http://localhost/lab09-x/dashboard/lab09`; a página precisa do _path_ `/lab09`                                                          |
+| Sobrou `lab08` em algum nó                      | Ctrl+F no editor procura em todos os nós                                                                                                 |
 
 ---
 

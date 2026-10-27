@@ -98,7 +98,7 @@ O repositório do grupo nasce do `lab05-template`:
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab05-grupo-X"
+  root="lab05-grupo-x"
   files={[
     "platformio.ini u",
     "src/main.cpp u",
@@ -136,7 +136,7 @@ O DHT22 do Wokwi tem 4 pinos: `VCC`, `SDA` (dados), `NC` e `GND`. Ligue **VCC �
 **GND → GND** e **SDA → GPIO15**. O template já traz o ESP32; acrescente o sensor no
 `diagram.json`:
 
-<FileTree root="lab05-grupo-X" files={["diagram.json u"]} />
+<FileTree root="lab05-grupo-x" files={["diagram.json u"]} />
 
 ```json title="diagram.json"
 {
@@ -177,7 +177,7 @@ Com o simulador rodando, **clique no DHT22**: aparecem sliders de temperatura e 
 
 ### 1.2 Bibliotecas no `platformio.ini`
 
-<FileTree root="lab05-grupo-X" files={["platformio.ini u"]} />
+<FileTree root="lab05-grupo-x" files={["platformio.ini u"]} />
 
 ```ini title="platformio.ini"
 [env:esp32dev]
@@ -241,7 +241,7 @@ se você pedir antes, ela devolve **o último valor** em cache.
 
 ### 2.2 Código
 
-<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab05-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T2)"
 #include <Arduino.h>
@@ -312,7 +312,7 @@ Anote as previsões e o que observou no `README.md`. Depois **volte o intervalo 
 Salve pelo menos **3 leituras** do monitor serial (copie do terminal do Wokwi) em
 `evidencias/t2-serial.txt`, incluindo a linha `=== Lab 05`.
 
-<FileTree root="lab05-grupo-X" files={["evidencias/t2-serial.txt c"]} />
+<FileTree root="lab05-grupo-x" files={["evidencias/t2-serial.txt c"]} />
 
 <CommitPoint
   id="t2"
@@ -328,7 +328,7 @@ Salve pelo menos **3 leituras** do monitor serial (copie do terminal do Wokwi) e
 Acrescente o Wi-Fi ao programa da T2. No Wokwi a rede é **`Wokwi-GUEST`**, sem senha; passar
 o **canal 6** no `begin()` pula a varredura e conecta mais rápido.
 
-<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab05-grupo-x" files={["src/main.cpp u"]} />
 
 <Tabs groupId="alvo">
 <TabItem value="wokwi" label="Wokwi (padrão)" default>
@@ -388,7 +388,7 @@ nesta aula. Em produção você trocaria por uma máquina de estados não bloque
 
 Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
 
-<FileTree root="lab05-grupo-X" files={["evidencias/t3-wifi.txt c"]} />
+<FileTree root="lab05-grupo-x" files={["evidencias/t3-wifi.txt c"]} />
 
 <CommitPoint
   id="t3"
@@ -421,7 +421,7 @@ Não publique nada sensível. (Broker local no Wokwi exige o IoT Gateway do Wokw
 
 ### 4.2 Código completo até aqui
 
-<FileTree root="lab05-grupo-X" files={["src/main.cpp u"]} />
+<FileTree root="lab05-grupo-x" files={["src/main.cpp u"]} />
 
 ```cpp title="src/main.cpp (T4)"
 #include <Arduino.h>
@@ -550,7 +550,7 @@ Enquanto a simulação roda, assine o tópico. Use o **MQTT Explorer** da stack 
 
 `-C 5` encerra depois de 5 mensagens. **Saída esperada:**
 
-<FileTree root="lab05-grupo-X" files={["evidencias/t4-mqtt.txt c"]} />
+<FileTree root="lab05-grupo-x" files={["evidencias/t4-mqtt.txt c"]} />
 
 <GroupCommands
   language="text"
@@ -624,7 +624,7 @@ passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`.
 **Evidências:**
 
 <FileTree
-  root="lab05-grupo-X"
+  root="lab05-grupo-x"
   files={["nodered/flows-lab05.json c", "evidencias/t5-debug.txt c"]}
 />
 
@@ -728,7 +728,7 @@ PubSubClient é **15 s**. Qual dos dois o Wokwi provocou? E o que muda se o firm
 :::
 
 <FileTree
-  root="lab05-grupo-X"
+  root="lab05-grupo-x"
   files={["nodered/flows-lab05.json u", "evidencias/t6-status.txt c"]}
 />
 

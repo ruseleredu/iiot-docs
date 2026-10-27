@@ -36,13 +36,13 @@ Nesta aula, você monta o SCADA da mesma câmara climática no **FUXA**, um SCAD
 aberto que **já vem no LAB IoT**. Tudo o que você aprendeu nos Labs 08 e 09 reaparece, agora
 como configuração:
 
-| No Lab 08/09 (Node-RED) | No FUXA |
-| --- | --- |
-| nó de configuração (`modbus-client`, `OpcUa-Endpoint`, `mqtt-broker`) | **conexão** (_Connection_) |
-| endereço lido por um nó (`IR0`, `ns=2;s=Camara.temp`, chave do JSON) | **tag** |
-| function "÷10" | campo **Divisor** da tag |
-| debug, ui-table, ui-chart | **sinótico**, **tendência** |
-| PI externo (Lab 09, T6) | continua no Node-RED; o FUXA escolhe quem controla e **vigia** |
+| No Lab 08/09 (Node-RED)                                               | No FUXA                                                        |
+| --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| nó de configuração (`modbus-client`, `OpcUa-Endpoint`, `mqtt-broker`) | **conexão** (_Connection_)                                     |
+| endereço lido por um nó (`IR0`, `ns=2;s=Camara.temp`, chave do JSON)  | **tag**                                                        |
+| function "÷10"                                                        | campo **Divisor** da tag                                       |
+| debug, ui-table, ui-chart                                             | **sinótico**, **tendência**                                    |
+| PI externo (Lab 09, T6)                                               | continua no Node-RED; o FUXA escolhe quem controla e **vigia** |
 
 ```mermaid
 flowchart LR
@@ -111,7 +111,7 @@ nomes de host e exigiria o IP do contêiner.
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab10-grupo-X"
+  root="lab10-grupo-x"
   files={[
     "camara-sim/docker-compose.yml r",
     "camara-sim/docker-compose.lab.yml r",
@@ -134,14 +134,14 @@ nomes de host e exigiria o IP do contêiner.
 :::info[Nomes do Lab 10]
 Troque o `x` pela letra do seu grupo em **todos** os nomes abaixo.
 
-| O quê | Valor |
-| --- | --- |
-| Câmara (host na rede) | `lab10-x-camara` |
-| Telemetria da câmara (MQTT) | `elt85b/lab10/grupo-x/camara/telemetria` |
-| Estado do PI externo (T6) | `elt85b/lab10/grupo-x/scada/pi` |
-| Node-RED | `http://localhost/lab10-x/` (contêiner `lab10-x-nodered`) |
-| FUXA: editor / runtime | `http://localhost/fuxa/lab10-x/editor` · `http://localhost/fuxa/lab10-x/` (contêiner `lab10-x-fuxa`) |
-| Login do FUXA | o usuário e a senha do grupo (`credenciais.txt` do LAB IoT) |
+| O quê                       | Valor                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Câmara (host na rede)       | `lab10-x-camara`                                                                                     |
+| Telemetria da câmara (MQTT) | `elt85b/lab10/grupo-x/camara/telemetria`                                                             |
+| Estado do PI externo (T6)   | `elt85b/lab10/grupo-x/scada/pi`                                                                      |
+| Node-RED                    | `http://localhost/lab10-x/` (contêiner `lab10-x-nodered`)                                            |
+| FUXA: editor / runtime      | `http://localhost/fuxa/lab10-x/editor` · `http://localhost/fuxa/lab10-x/` (contêiner `lab10-x-fuxa`) |
+| Login do FUXA               | o usuário e a senha do grupo (`credenciais.txt` do LAB IoT)                                          |
 
 O projeto do FUXA fica **dentro** do LAB IoT (pasta `fuxa/lab10-x/` dele). O que vai para o
 repositório é a **exportação**: no menu do projeto (ícone de disquete), **Save Project As...**
@@ -187,18 +187,23 @@ Abra o editor do FUXA (`http://localhost/fuxa/lab10-x/editor`) e entre com o usu
 No FUXA, só o MQTT vem instalado: **Modbus e OPC-UA são plugins**, baixados do npm na primeira
 vez. Na engrenagem (**Setup**) ▸ **Plugins**, instale:
 
-| Plugin | Versão | Protocolo |
-| --- | --- | --- |
-| `modbus-serial` | 8.0.19 | Modbus TCP e RTU |
-| `node-opcua` | 2.149.0 | OPC-UA (o maior: leva cerca de 1 min) |
+| Plugin          | Versão  | Protocolo                             |
+| --------------- | ------- | ------------------------------------- |
+| `modbus-serial` | 8.0.19  | Modbus TCP e RTU                      |
+| `node-opcua`    | 2.149.0 | OPC-UA (o maior: leva cerca de 1 min) |
 
 Os plugins ficam na pasta `fuxa/lab10-x/pkg/` do LAB IoT: sobrevivem a um `docker compose down`.
 
 **Evidência:** `evidencias/t1-plugins.png`, a tela de plugins com os dois instalados.
 
 <FileTree
-  root="lab10-grupo-X"
-  files={["camara-sim/.env c", "nodered/flows-lab10.json c", "evidencias/t1-enderecos.txt c", "evidencias/t1-plugins.png c"]}
+  root="lab10-grupo-x"
+  files={[
+    "camara-sim/.env c",
+    "nodered/flows-lab10.json c",
+    "evidencias/t1-enderecos.txt c",
+    "evidencias/t1-plugins.png c",
+  ]}
 />
 
 <CommitPoint
@@ -219,11 +224,11 @@ A coluna _Value_ mostra o valor ao vivo: use-a para conferir cada tag.
 
 Crie as três conexões, todas com _Polling_ **1 sec**:
 
-| Name | Type | Endereço | Outros campos |
-| --- | --- | --- | --- |
-| `Camara OPC-UA` | `OPCUA` | `opc.tcp://lab10-x-camara:4840/` | _Without Security_ |
-| `Camara Modbus` | `ModbusTCP` | _Slave IP and Port_ `lab10-x-camara:502` | _Connection options_ `TcpPort`, _Slave ID_ `1` |
-| `Broker MQTT` | `MQTTclient` | `mqtt://mosquitto:1883` | _Without Security_ |
+| Name            | Type         | Endereço                                 | Outros campos                                  |
+| --------------- | ------------ | ---------------------------------------- | ---------------------------------------------- |
+| `Camara OPC-UA` | `OPCUA`      | `opc.tcp://lab10-x-camara:4840/`         | _Without Security_                             |
+| `Camara Modbus` | `ModbusTCP`  | _Slave IP and Port_ `lab10-x-camara:502` | _Connection options_ `TcpPort`, _Slave ID_ `1` |
+| `Broker MQTT`   | `MQTTclient` | `mqtt://mosquitto:1883`                  | _Without Security_                             |
 
 São os mesmos endereços dos nós de configuração do Node-RED (Lab 08, seção 1.3): o FUXA está na
 mesma rede.
@@ -233,13 +238,13 @@ mesma rede.
 Na lista de tags da `Camara OPC-UA`, o **＋** abre o **navegador** do servidor (o _browse_ do
 Lab 08). Expanda `Objects ▸ Camara` e marque:
 
-| Pasta | Variáveis |
-| --- | --- |
-| `Medicoes` | `temp`, `umid`, `sp_efetivo` |
-| `Atuadores` | `aquecedor_pwm` |
-| `Estado` | `estado`, `estado_txt`, `alarme` |
-| `Comandos` | `modo`, `setpoint` |
-| `Simulacao` | `falha_dht` |
+| Pasta       | Variáveis                        |
+| ----------- | -------------------------------- |
+| `Medicoes`  | `temp`, `umid`, `sp_efetivo`     |
+| `Atuadores` | `aquecedor_pwm`                  |
+| `Estado`    | `estado`, `estado_txt`, `alarme` |
+| `Comandos`  | `modo`, `setpoint`               |
+| `Simulacao` | `falha_dht`                      |
 
 Cada tag fica com o **NodeId** como endereço e o **tipo que o servidor declara**. É o caminho
 mais simples: nada de mapa de registradores.
@@ -256,11 +261,11 @@ Na `Camara Modbus`, crie as tags à mão, com o mapa do Lab 09. Atenção: no FU
 IR12 é o **13**, e assim por diante. O **Divisor** faz o papel da function "÷10" do Lab 08 (÷ na
 leitura, × na escrita).
 
-| Tagname | Register | Address offset | Type | Divisor | No Lab 09 |
-| --- | --- | --- | --- | --- | --- |
-| `IR0 temp x10` | Input Registers | **1** | `Int16` | `10` | `r[0] / 10` |
-| `IR12 temp float` | Input Registers | **13** | `Float32` | | `f32(12)` |
-| `HR1 modo` | Holding Registers | **2** | `UInt16` | | HR1 |
+| Tagname           | Register          | Address offset | Type      | Divisor | No Lab 09   |
+| ----------------- | ----------------- | -------------- | --------- | ------- | ----------- |
+| `IR0 temp x10`    | Input Registers   | **1**          | `Int16`   | `10`    | `r[0] / 10` |
+| `IR12 temp float` | Input Registers   | **13**         | `Float32` |         | `f32(12)`   |
+| `HR1 modo`        | Holding Registers | **2**          | `UInt16`  |         | HR1         |
 
 `IR0 temp x10` e `IR12 temp float` devem mostrar **a mesma temperatura**. Se não mostrarem, o
 endereço está deslocado de um.
@@ -281,7 +286,10 @@ de número aparece: próximo da temperatura, enorme ou minúsculo? E se ele tive
 `Float32MLE` (ordem de palavras trocada, a P1 do Lab 09) com o endereço certo? Teste os dois.
 :::
 
-<FileTree root="lab10-grupo-X" files={["fuxa/projeto-lab10.json c", "evidencias/t2-conexoes.png c"]} />
+<FileTree
+  root="lab10-grupo-x"
+  files={["fuxa/projeto-lab10.json c", "evidencias/t2-conexoes.png c"]}
+/>
 
 <CommitPoint
   id="t2"
@@ -308,15 +316,15 @@ _General_ e _Controls_. Com o objeto selecionado, **Property** (ou duplo clique)
 
 ### 3.2 O que a tela precisa ter
 
-| Elemento | Ferramenta | Tag | Configuração |
-| --- | --- | --- | --- |
-| Corpo da câmara | retângulo (_General_) | `estado` | Ranges: 0 cinza · 1 laranja · 2 azul · 3 verde · 4 vermelho |
-| T, UR, estado | _Value_ | `temp`, `umid`, `estado_txt` | unidade `°C` / `%`, 1 casa |
-| Aquecedor | _Progress_ (vertical) | `aquecedor_pwm` | 0 a 100 |
-| Setpoint | _Input_ | `setpoint` (OPC-UA) | numérico, mín. 20, máx. 55 |
-| Botões **ON/OFF**, **PI interno**, **PI Node-RED** | _Button_ | `modo` (OPC-UA) | _Click ▸ Set Value_ `1`, `2`, `0`; Ranges: o botão do modo atual fica azul |
-| Falha do DHT22 | _Button_ | `falha_dht` | _Click ▸ Set Value_ `1` / outro botão `0` |
-| Temperatura por protocolo | 3 × _Value_ | `temp`, `IR12 temp float`, `telemetria temp` | a mesma câmara por três portas (Lab 08) |
+| Elemento                                           | Ferramenta            | Tag                                          | Configuração                                                               |
+| -------------------------------------------------- | --------------------- | -------------------------------------------- | -------------------------------------------------------------------------- |
+| Corpo da câmara                                    | retângulo (_General_) | `estado`                                     | Ranges: 0 cinza · 1 laranja · 2 azul · 3 verde · 4 vermelho                |
+| T, UR, estado                                      | _Value_               | `temp`, `umid`, `estado_txt`                 | unidade `°C` / `%`, 1 casa                                                 |
+| Aquecedor                                          | _Progress_ (vertical) | `aquecedor_pwm`                              | 0 a 100                                                                    |
+| Setpoint                                           | _Input_               | `setpoint` (OPC-UA)                          | numérico, mín. 20, máx. 55                                                 |
+| Botões **ON/OFF**, **PI interno**, **PI Node-RED** | _Button_              | `modo` (OPC-UA)                              | _Click ▸ Set Value_ `1`, `2`, `0`; Ranges: o botão do modo atual fica azul |
+| Falha do DHT22                                     | _Button_              | `falha_dht`                                  | _Click ▸ Set Value_ `1` / outro botão `0`                                  |
+| Temperatura por protocolo                          | 3 × _Value_           | `temp`, `IR12 temp float`, `telemetria temp` | a mesma câmara por três portas (Lab 08)                                    |
 
 :::warning[Botões que "ficam acesos"]
 Quando o valor sai de **todas** as faixas de um botão, o FUXA **não** volta à cor original: ele
@@ -334,7 +342,10 @@ dashboard do Node-RED (Lab 09) e veja o FUXA acompanhar.
 **Evidência:** `evidencias/t3-sinotico.png`, com a câmara **aquecendo** (laranja), e o projeto
 exportado.
 
-<FileTree root="lab10-grupo-X" files={["fuxa/projeto-lab10.json u", "evidencias/t3-sinotico.png c"]} />
+<FileTree
+  root="lab10-grupo-x"
+  files={["fuxa/projeto-lab10.json u", "evidencias/t3-sinotico.png c"]}
+/>
 
 <CommitPoint
   id="t3"
@@ -351,10 +362,10 @@ Um alarme é uma **condição anormal que exige ação do operador**: tem priori
 de entrada e de saída e **reconhecimento** (_ack_). Em **Setup ▸ Alarms ▸ ＋**, escolha a tag e
 preencha o nível, a faixa **min–max**, o texto e o modo de reconhecimento.
 
-| Alarme | Tag | Nível | Faixa | Texto | Ack |
-| --- | --- | --- | --- | --- | --- |
-| `Temperatura` | `temp` | High | 45–200 | Temperatura alta (>= 45 °C) | _Floating_ |
-| `Sensor DHT22` | `alarme` | High High | 2–3 | Falha do sensor DHT22 | _Ack by active Alarm allowed_ |
+| Alarme         | Tag      | Nível     | Faixa  | Texto                       | Ack                           |
+| -------------- | -------- | --------- | ------ | --------------------------- | ----------------------------- |
+| `Temperatura`  | `temp`   | High      | 45–200 | Temperatura alta (>= 45 °C) | _Floating_                    |
+| `Sensor DHT22` | `alarme` | High High | 2–3    | Falha do sensor DHT22       | _Ack by active Alarm allowed_ |
 
 - O `alarme` da câmara é um **campo de bits** (Lab 09): bit 0 = sobretemperatura, bit 1 =
   sensor. Valor 2 ou 3 significa "sensor com falha".
@@ -378,7 +389,10 @@ quantas vezes por minuto? Por que normas de alarme (ISA-18.2) pedem uma **banda 
 limite? Como você a imitaria no FUXA, que só tem faixas min–max?
 :::
 
-<FileTree root="lab10-grupo-X" files={["fuxa/projeto-lab10.json u", "evidencias/t4-alarmes.png c"]} />
+<FileTree
+  root="lab10-grupo-x"
+  files={["fuxa/projeto-lab10.json u", "evidencias/t4-alarmes.png c"]}
+/>
 
 <CommitPoint
   id="t4"
@@ -415,7 +429,10 @@ o gráfico liga dois pontos?) Compare com o gráfico do Lab 09, alimentado a cad
 OPC-UA.
 :::
 
-<FileTree root="lab10-grupo-X" files={["fuxa/projeto-lab10.json u", "evidencias/t5-tendencia.png c"]} />
+<FileTree
+  root="lab10-grupo-x"
+  files={["fuxa/projeto-lab10.json u", "evidencias/t5-tendencia.png c"]}
+/>
 
 <CommitPoint
   id="t5"
@@ -432,11 +449,11 @@ No Lab 09, o PI externo era ligado por um switch no dashboard do próprio Node-R
 mostrou o problema: se o Node-RED cai com o aquecedor ligado, **ninguém** desliga. Agora as
 responsabilidades se separam:
 
-| Quem | Faz |
-| --- | --- |
-| Câmara | **executa**: obedece ao modo (0 MANUAL, 1 ON/OFF, 2 PI interno) |
-| Node-RED | **controla**: roda o PI sempre que a câmara está em modo 0 e publica um sinal de vida |
-| FUXA | **opera e vigia**: o operador escolhe o modo; um script devolve a câmara ao modo 2 se o Node-RED parar |
+| Quem     | Faz                                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------ |
+| Câmara   | **executa**: obedece ao modo (0 MANUAL, 1 ON/OFF, 2 PI interno)                                        |
+| Node-RED | **controla**: roda o PI sempre que a câmara está em modo 0 e publica um sinal de vida                  |
+| FUXA     | **opera e vigia**: o operador escolhe o modo; um script devolve a câmara ao modo 2 se o Node-RED parar |
 
 ```mermaid
 sequenceDiagram
@@ -468,7 +485,11 @@ sequenceDiagram
    if (p.modo !== 0) {
      context.set("I", 0);
      context.set("t0", null);
-     node.status({ fill: "grey", shape: "ring", text: `parado (modo ${p.modo})` });
+     node.status({
+       fill: "grey",
+       shape: "ring",
+       text: `parado (modo ${p.modo})`,
+     });
      return [null, null];
    }
    ```
@@ -504,14 +525,16 @@ sequenceDiagram
    // (o seq não muda há mais de 10 s), volta ao PI interno (modo 2) pelo Modbus.
    const LIMITE_S = 10;
    // tags pelo NOME (tag, conexão): os nomes têm de ser exatamente os da T2
-   const MODO = $getTagId("modo", "Camara OPC-UA");        // leitura do modo
+   const MODO = $getTagId("modo", "Camara OPC-UA"); // leitura do modo
    const MODO_MB = $getTagId("HR1 modo", "Camara Modbus"); // escrita do fallback
-   const SEQ = $getTagId("pi seq", "Broker MQTT");         // sinal de vida do Node-RED
+   const SEQ = $getTagId("pi seq", "Broker MQTT"); // sinal de vida do Node-RED
 
    const modo = Number($getTag(MODO));
    const seq = $getTag(SEQ);
    const agora = Date.now();
-   const wd = globalThis.wd || (globalThis.wd = { seq: seq, desde: agora, modo: modo, disparou: false });
+   const wd =
+     globalThis.wd ||
+     (globalThis.wd = { seq: seq, desde: agora, modo: modo, disparou: false });
    // recomeça a contar quando chega seq novo OU quando o operador acabou de escolher o modo 0
    if (seq !== wd.seq || (modo === 0 && wd.modo !== 0)) {
      wd.seq = seq;
@@ -521,9 +544,11 @@ sequenceDiagram
    wd.modo = modo;
    const idade = Math.round((agora - wd.desde) / 1000);
    if (modo === 0 && idade > LIMITE_S && !wd.disparou) {
-     wd.disparou = true;            // uma vez só (a leitura do modo demora um ciclo)
-     $setTag(MODO_MB, 2);           // fallback: PI interno
-     console.log("supervisor: PI externo sem resposta ha " + idade + " s -> modo 2");
+     wd.disparou = true; // uma vez só (a leitura do modo demora um ciclo)
+     $setTag(MODO_MB, 2); // fallback: PI interno
+     console.log(
+       "supervisor: PI externo sem resposta ha " + idade + " s -> modo 2",
+     );
    }
    ```
 
@@ -562,8 +587,8 @@ type evidencias\\t6-log.txt`,
 [14:26:57] [cmd] opcua: modo = 0
 ```
 
-   - `nodered/flows-lab10.json` e `fuxa/projeto-lab10.json` exportados de novo;
-   - no `README.md`, as respostas de P1 a P4.
+- `nodered/flows-lab10.json` e `fuxa/projeto-lab10.json` exportados de novo;
+- no `README.md`, as respostas de P1 a P4.
 
 :::tip[Preveja antes de rodar]
 **P4:** (a) o que acontece se o operador clicar **ON/OFF** no FUXA enquanto o PI externo está
@@ -573,7 +598,7 @@ Onde cada proteção deve ficar?
 :::
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab10-grupo-x"
   files={[
     "nodered/flows-lab10.json u",
     "fuxa/projeto-lab10.json u",
@@ -594,15 +619,15 @@ Onde cada proteção deve ficar?
 
 ## Referência rápida {/* #referencia */}
 
-| Problema | O que fazer |
-| --- | --- |
-| Conexão OPC-UA ou Modbus vermelha logo de início | o plugin (`node-opcua`, `modbus-serial`) não foi instalado (T1) |
-| Conexão vermelha com o plugin instalado | o endereço é o nome na rede (`lab10-x-camara`), e não `localhost`; confira com o `docker network inspect` da T1 |
-| `IR0 temp x10` e `IR12 temp float` diferentes | _Address offset_ deslocado de um: no FUXA, o registrador 0 é o endereço 1 (P1) |
-| Escrevi no setpoint e nada mudou | tipo da tag OPC-UA trocado; mantenha o que o navegador trouxe |
-| Botão de modo continua azul | falta uma faixa para cada valor do modo (`0`, `1`, `2`) |
-| O supervisor não faz nada | os nomes no `$getTagId` têm de ser idênticos aos das tags e das conexões; o script está em modo **Server** e com **Loop** |
-| O editor do FUXA pede login | use o usuário e a senha do grupo (`credenciais.txt`) |
+| Problema                                         | O que fazer                                                                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Conexão OPC-UA ou Modbus vermelha logo de início | o plugin (`node-opcua`, `modbus-serial`) não foi instalado (T1)                                                           |
+| Conexão vermelha com o plugin instalado          | o endereço é o nome na rede (`lab10-x-camara`), e não `localhost`; confira com o `docker network inspect` da T1           |
+| `IR0 temp x10` e `IR12 temp float` diferentes    | _Address offset_ deslocado de um: no FUXA, o registrador 0 é o endereço 1 (P1)                                            |
+| Escrevi no setpoint e nada mudou                 | tipo da tag OPC-UA trocado; mantenha o que o navegador trouxe                                                             |
+| Botão de modo continua azul                      | falta uma faixa para cada valor do modo (`0`, `1`, `2`)                                                                   |
+| O supervisor não faz nada                        | os nomes no `$getTagId` têm de ser idênticos aos das tags e das conexões; o script está em modo **Server** e com **Loop** |
+| O editor do FUXA pede login                      | use o usuário e a senha do grupo (`credenciais.txt`)                                                                      |
 
 ---
 
