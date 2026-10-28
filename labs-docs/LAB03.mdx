@@ -74,11 +74,11 @@ flowchart LR
 <details>
 <summary><strong>Mapa de tarefas</strong> — 5 tarefas · 100 pts</summary>
 
-- [T1 — Os cinco niveis de log](#t1) · 15 pts
-- [T2 — Filtrar na compilacao](#t2) · 20 pts
+- [T1 — Os cinco níveis de log](#t1) · 15 pts
+- [T2 — Filtrar na compilação](#t2) · 20 pts
 - [T3 — Ambientes debug e release](#t3) · 20 pts
 - [T4 — Logs com dados e falhas](#t4) · 20 pts
-- [T5 — Firmware com relatorio de boot](#t5) · 25 pts
+- [T5 — Firmware com relatório de boot](#t5) · 25 pts
 
 </details>
 
@@ -193,7 +193,7 @@ O nível de log é uma **macro do pré-processador**, passada ao compilador pelo
 
 ```ini title="platformio.ini"
 [env:esp32dev]
-platform = espressif32@6.9.0
+platform = espressif32
 board = esp32dev
 framework = arduino
 monitor_speed = 115200
@@ -312,7 +312,7 @@ git push
 
 <CommitPoint
   id="t1"
-  task="Os cinco niveis de log"
+  task="Os cinco níveis de log"
   pontos={15}
   files="platformio.ini src/main.cpp diagram.json wokwi.toml evidencias/t1-serial.txt"
 />
@@ -391,7 +391,7 @@ git push
 
 <CommitPoint
   id="t2"
-  task="Filtrar na compilacao"
+  task="Filtrar na compilação"
   pontos={20}
   files="platformio.ini evidencias/t2-nivel5.txt evidencias/t2-nivel2.txt"
 />
@@ -409,7 +409,7 @@ ambiente acrescenta o que é dele.
 default_envs = debug              ; o "pio run" sem -e compila só este
 
 [env]                             ; comum a todos os ambientes
-platform = espressif32@6.9.0
+platform = espressif32
 board = esp32dev
 framework = arduino
 monitor_speed = 115200
@@ -605,6 +605,12 @@ e não 0?
 Copie pelo menos 12 s do monitor (com uma linha de taxa e o _hexdump_) para
 `evidencias/t4-serial.txt`.
 
+```shell title="Terminal do VS Code (cmd)"
+git add src/main.cpp evidencias/t4-serial.txt
+git commit -m "T4: logs com dados e falhas"
+git push
+```
+
 <FileTree
   root="lab03-grupo-x"
   files={["src/main.cpp u", "evidencias/t4-serial.txt c"]}
@@ -714,6 +720,12 @@ campo, e só aparece se o firmware registrar.
 5. **No `README.md`:** as respostas de P1, P2 e P3, e uma tabela com o tamanho do firmware
    (linha `Flash:`) nos ambientes `debug` e `release`.
 
+```shell title="Terminal do VS Code (cmd)"
+git add src/main.cpp wokwi.toml evidencias/t5-serial.txt evidencias/t5-build.txt README.md
+git commit -m "T5: relatorio de boot"
+git push
+```
+
 <FileTree
   root="lab03-grupo-x"
   files={[
@@ -727,7 +739,7 @@ campo, e só aparece se o firmware registrar.
 
 <CommitPoint
   id="t5"
-  task="Firmware com relatorio de boot"
+  task="Firmware com relatório de boot"
   pontos={25}
   files="src/main.cpp wokwi.toml evidencias/t5-serial.txt evidencias/t5-build.txt README.md"
 />

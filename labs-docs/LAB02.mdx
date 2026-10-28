@@ -6,7 +6,7 @@ sidebar_position: 5
 ## Checklist — ambiente de desenvolvimento (parte 2): PlatformIO, Wokwi e Docker {/* #checklist */}
 
 - [ ] Extensões PlatformIO IDE e Wokwi Simulator no perfil `ESP32IO`, com o `pio` no **Path** (Parte 1)
-- [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando, sem a `.pio/` no repositório (T1)
+- [ ] Projeto PlatformIO na **versão mais recente** da plataforma (registrada na evidência), compilando, sem a `.pio/` no repositório (T1)
 - [ ] Licença do Wokwi ativada, `wokwi.toml` + `diagram.json` e o pisca-LED simulado no VS Code (T2)
 - [ ] Pisca sem `delay()` (com `millis()`) e um _breakpoint_ do GDB parando o firmware no Wokwi (T3)
 - [ ] Docker funcionando, `Dockerfile` + `compose.yaml` e o firmware compilado **dentro do container** (T4)
@@ -33,7 +33,7 @@ No Lab 01, o grupo passou a usar o Git e o GitHub. Agora entra o **firmware**: o
 VS Code, com LED, monitor serial e depurador (GDB). E entra a última ferramenta do ambiente, o
 **Docker**: o mesmo build e a mesma simulação passam a rodar num **container Linux**, igual em
 qualquer computador, sem depender do que está instalado no Windows. É exatamente o que o CI do
-Lab 10 vai fazer a cada `push`. O MQTT fica para o Lab 04.
+Lab 11 vai fazer a cada `push`. O MQTT fica para o Lab 04.
 
 ```mermaid
 flowchart LR
@@ -54,7 +54,7 @@ flowchart LR
 ## Objetivos
 
 - Instalar o **PlatformIO** e o **Wokwi** no VS Code e fazer o primeiro build do ESP32.
-- Configurar um projeto PlatformIO **reprodutível**: plataforma e bibliotecas com versão fixa.
+- Configurar um projeto PlatformIO e **registrar** a versão da plataforma que o build usou.
 - Ativar o **Wokwi** no VS Code e ligar o firmware do PlatformIO ao circuito (`wokwi.toml`,
   `diagram.json`).
 - Trocar o `delay()` por **`millis()`**, o padrão que todos os labs seguintes usam, e
@@ -83,7 +83,8 @@ ser instalado no Windows: ele roda dentro do container.
 O Wokwi simula o ESP32 (incluindo o Wi-Fi), LEDs, potenciômetros, o DHT22, o display SSD1306 e
 um analisador lógico. Todo o semestre roda nele: ninguém depende da bancada, do cabo USB ou do
 driver da placa, e o mesmo circuito (`diagram.json`) vai para o repositório junto com o código.
-No Lab 10, o mesmo simulador roda sem interface, dentro do CI, com a imagem que você monta hoje.
+No Lab 11, o mesmo simulador roda sem interface, dentro do CI, com os mesmos comandos
+(`pio run` e `wokwi-cli`) que você roda hoje no container.
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
@@ -97,7 +98,7 @@ No Lab 10, o mesmo simulador roda sem interface, dentro do CI, com a imagem que 
 <details>
 <summary><strong>Mapa de tarefas</strong> — 5 tarefas · 100 pts</summary>
 
-- [T1 — Projeto PlatformIO com versoes fixas](#t1) · 15 pts
+- [T1 — Projeto PlatformIO](#t1) · 15 pts
 - [T2 — Wokwi no VS Code](#t2) · 20 pts
 - [T3 — Pisca com millis e GDB](#t3) · 15 pts
 - [T4 — Docker: build no container](#t4) · 20 pts
@@ -142,7 +143,7 @@ O repositório nasce do `lab02-template`, com o `README.md` e o `.gitignore`:
 
 ---
 
-## Parte 1 — PlatformIO: instalação e projeto com versões fixas {/* #parte-1 */}
+## Parte 1 — PlatformIO: instalação e projeto {/* #parte-1 */}
 
 ### 1.1 Instalar as extensões
 
@@ -200,15 +201,18 @@ O `pio project init` cria `platformio.ini`, `src/`, `include/`, `lib/` e `test/`
 `--ide vscode --sample-code`: o primeiro gera arquivos de configuração do VS Code, o segundo um
 `main.cpp` de exemplo. Aqui você escreve o seu.)
 
-### 1.3 Fixar as versões
+### 1.3 Versão da plataforma
 
-O `pio project init` escreve `platform = espressif32`, sem versão. Sem versão, o mesmo projeto
-compila com um core Arduino diferente quando sai uma versão nova, e um código que funcionava
-para de compilar "sozinho". Fixe:
+O `pio project init` escreve `platform = espressif32`, sem versão: o PlatformIO usa a versão
+**mais recente** da plataforma (e, com ela, do core Arduino e do toolchain). É o padrão desta
+disciplina, e vale também para as bibliotecas dos labs seguintes. O preço é que o mesmo código
+pode se comportar diferente quando sai uma versão nova; por isso a versão usada fica
+**registrada** na evidência do build (as linhas `PLATFORM:` e `PACKAGES:` no início do
+`pio run`). Para trazer a versão nova de algo já instalado: `pio pkg update`.
 
 ```ini title="platformio.ini"
 [env:esp32dev]
-platform = espressif32@6.9.0       ; versão fixa: core Arduino 2.0.17 (o dos labs seguintes)
+platform = espressif32             ; sem versão: a mais recente
 board = esp32dev
 framework = arduino
 monitor_speed = 115200             ; o mesmo valor do Serial.begin()
@@ -244,7 +248,7 @@ void piscar(uint8_t pino, uint16_t meioPeriodoMs) {
 }
 ```
 
-O **primeiro** build baixa a plataforma `espressif32@6.9.0`, o toolchain Xtensa e o core
+O **primeiro** build baixa a plataforma `espressif32`, o toolchain Xtensa e o core
 Arduino (~300 MB). Pode levar de 5 a 15 minutos; os seguintes levam segundos. Rode o primeiro
 na tela, para acompanhar o download, e o segundo gravando a evidência:
 
@@ -275,13 +279,13 @@ segundo `pio run` não recompila nada, mas imprime de novo o uso de RAM e Flash.
 O `git status` mostra a pasta `.pio/`? Não deveria: o `.gitignore` do template a ignora. Ela
 guarda o build inteiro (dezenas de MB, confira com `dir /s .pio`), muda a cada compilação e é
 refeita por qualquer um com `pio run`. Nem o `firmware.bin` vai: ele é gerado a partir do
-código, e no Lab 10 vai para outro lugar, uma _release_. Faça o commit **só** do que é código e
+código, e no Lab 11 vai para outro lugar, uma _release_. Faça o commit **só** do que é código e
 configuração:
 
 ```shell title="Terminal do VS Code (cmd)"
 git status
 git add .vscode/settings.json platformio.ini src include lib test evidencias/t1-ambiente.txt evidencias/t1-build.txt
-git commit -m "T1: projeto com versões fixas"
+git commit -m "T1: projeto PlatformIO"
 git push
 ```
 
@@ -298,7 +302,7 @@ git push
 
 <CommitPoint
   id="t1"
-  task="Projeto PlatformIO com versoes fixas"
+  task="Projeto PlatformIO"
   pontos={15}
   files=".vscode/settings.json platformio.ini src/main.cpp evidencias/t1-ambiente.txt evidencias/t1-build.txt"
 />
@@ -606,18 +610,15 @@ com espaços entre as letras no arquivo: tudo bem.
 Na raiz do repositório, crie o `Dockerfile` (sem extensão):
 
 ```dockerfile title="Dockerfile"
-# ELT85B - ambiente de build e simulação do ESP32 (o mesmo do CI do Lab 10)
-FROM python:3.12-slim
-
-# Versão fixa do PlatformIO Core, como a plataforma no platformio.ini
-ARG PIO_VERSION=6.1.18
+# ELT85B - ambiente de build e simulação do ESP32 (os mesmos comandos do CI do Lab 11)
+FROM python:3-slim
 
 # curl: baixar o wokwi-cli · git: bibliotecas do PlatformIO vindas de repositórios
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir "platformio==${PIO_VERSION}"
+RUN pip install --no-cache-dir platformio
 
 # wokwi-cli: um único executável Linux, publicado no GitHub do Wokwi
 RUN curl -fsSL -o /usr/local/bin/wokwi-cli \
@@ -631,6 +632,8 @@ CMD ["pio", "--version"]
 
 Cada `RUN` vira uma **camada** da imagem. O Docker guarda as camadas em cache: se você mudar só
 a última linha, ele não instala o PlatformIO de novo. Por isso o que muda menos fica em cima.
+Sem versão no `Dockerfile`, o build pega o Python, o PlatformIO e o `wokwi-cli` mais recentes;
+para atualizar uma imagem já construída, use `docker compose build --no-cache`.
 
 O **contexto** do build é a pasta inteira, enviada ao Docker antes de começar. O
 `.dockerignore` tira dele o que a imagem não usa (e o `.env` da T5, que nunca deve entrar numa
@@ -672,7 +675,7 @@ services:
       wokwi-cli --timeout 10000 --expect-text "voltas do loop"
       --serial-log-file evidencias/t5-serial.txt .
 
-  ci: # compilar e simular, como o CI do Lab 10
+  ci: # compilar e simular, como o CI do Lab 11
     <<: *esp32
     command: sh -c "pio run && wokwi-cli --timeout 10000 --expect-text 'voltas do loop' ."
 
@@ -691,7 +694,7 @@ type evidencias\t4-build-docker.txt
 
 1. `docker compose build` monta a imagem a partir do `Dockerfile` (alguns minutos, na primeira
    vez).
-2. O primeiro `docker compose run --rm pio` baixa a plataforma `espressif32@6.9.0` e o
+2. O primeiro `docker compose run --rm pio` baixa a plataforma `espressif32` e o
    toolchain **para Linux** (~300 MB, de novo: o do Windows não serve no container) e guarda
    tudo no volume `platformio`.
 3. O segundo grava a evidência. O `-T` desliga o terminal interativo, que atrapalha quando a
@@ -735,7 +738,7 @@ O Wokwi do VS Code precisa de alguém olhando a tela. O **`wokwi-cli`** roda a m
 sem interface: envia o `firmware.bin` e o `diagram.json` para o simulador do Wokwi (na nuvem),
 recebe o monitor serial e termina com um **código de saída**: `0` se o texto esperado apareceu
 no serial a tempo, diferente de `0` se não. É um **teste automático** do firmware, e é o que o
-CI do Lab 10 roda a cada `push`.
+CI do Lab 11 roda a cada `push`.
 
 ```mermaid
 sequenceDiagram
@@ -803,7 +806,7 @@ sequenceDiagram
 
    O código de saída não é `0`. É isso que faz o CI marcar o `push` em vermelho.
 
-5. **Tudo de uma vez.** O serviço `ci` compila e simula na sequência, como o Lab 10 fará:
+5. **Tudo de uma vez.** O serviço `ci` compila e simula na sequência, como o Lab 11 fará:
 
    ```shell title="Terminal do VS Code (cmd)"
    docker compose run --rm -T ci > evidencias\t5-wokwi.txt 2>&1
@@ -829,7 +832,7 @@ git push
 :::warning[O token não vai para o Git]
 Nem no `compose.yaml`, nem no `README.md`, nem numa evidência. Se ele for parar num commit,
 apagar o arquivo depois **não** resolve: o token continua no histórico. Revogue-o em
-**wokwi.com/dashboard/ci** e gere outro. No Lab 10, ele vai para os **secrets** do GitHub.
+**wokwi.com/dashboard/ci** e gere outro. No Lab 11, ele vai para os **secrets** do GitHub.
 :::
 
 :::tip[Preveja antes de rodar]

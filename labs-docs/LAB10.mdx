@@ -13,6 +13,7 @@ sidebar_position: 13
 - [ ] FUXA + Node-RED: o operador escolhe o controlador no FUXA, e um supervisor devolve a câmara ao PI interno se o Node-RED cair (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 20 · T4 15 · T5 15 ·
@@ -176,7 +177,8 @@ type evidencias\\t1-enderecos.txt`,
 />
 
 3. **Node-RED:** importe o `nodered/flows-lab09.json` do repositório do Lab 09, chame a aba de
-   **Lab 10** e troque `lab09` por `lab10` nos três nós de configuração (Modbus, S7 e OPC-UA),
+   **Lab 10** e troque `lab09` por `lab10` nos quatro nós de configuração (Modbus TCP, Modbus RTU/TCP, S7 e
+   OPC-UA),
    nos tópicos MQTT e no caminho do SQLite (`/data/sqlite/lab10.sqlite`). Use **Ctrl+F** para
    achar o que sobrou. **Deploy** e confira o painel em
    `http://localhost/lab10-x/dashboard/lab09`.
@@ -187,10 +189,10 @@ Abra o editor do FUXA (`http://localhost/fuxa/lab10-x/editor`) e entre com o usu
 No FUXA, só o MQTT vem instalado: **Modbus e OPC-UA são plugins**, baixados do npm na primeira
 vez. Na engrenagem (**Setup**) ▸ **Plugins**, instale:
 
-| Plugin          | Versão  | Protocolo                             |
-| --------------- | ------- | ------------------------------------- |
-| `modbus-serial` | 8.0.19  | Modbus TCP e RTU                      |
-| `node-opcua`    | 2.149.0 | OPC-UA (o maior: leva cerca de 1 min) |
+| Plugin          | Versão         | Protocolo                             |
+| --------------- | -------------- | ------------------------------------- |
+| `modbus-serial` | a mais recente | Modbus TCP e RTU                      |
+| `node-opcua`    | a mais recente | OPC-UA (o maior: leva cerca de 1 min) |
 
 Os plugins ficam na pasta `fuxa/lab10-x/pkg/` do LAB IoT: sobrevivem a um `docker compose down`.
 
@@ -208,7 +210,7 @@ Os plugins ficam na pasta `fuxa/lab10-x/pkg/` do LAB IoT: sobrevivem a um `docke
 
 <CommitPoint
   id="t1"
-  task="Camara, Node-RED e drivers do FUXA"
+  task="Câmara, Node-RED e drivers do FUXA"
   pontos={10}
   files="camara-sim/.env nodered/flows-lab10.json evidencias/t1-enderecos.txt evidencias/t1-plugins.png"
 />
@@ -293,7 +295,7 @@ de número aparece: próximo da temperatura, enorme ou minúsculo? E se ele tive
 
 <CommitPoint
   id="t2"
-  task="Conexoes e tags"
+  task="Conexões e tags"
   pontos={20}
   files="fuxa/projeto-lab10.json evidencias/t2-conexoes.png"
 />
@@ -349,7 +351,7 @@ exportado.
 
 <CommitPoint
   id="t3"
-  task="Sinotico da camara"
+  task="Sinótico da câmara"
   pontos={20}
   files="fuxa/projeto-lab10.json evidencias/t3-sinotico.png"
 />
@@ -436,7 +438,7 @@ OPC-UA.
 
 <CommitPoint
   id="t5"
-  task="Historico e tendencia"
+  task="Histórico e tendência"
   pontos={15}
   files="fuxa/projeto-lab10.json evidencias/t5-tendencia.png"
 />
@@ -630,5 +632,9 @@ Onde cada proteção deve ficar?
 | O editor do FUXA pede login                      | use o usuário e a senha do grupo (`credenciais.txt`)                                                                      |
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

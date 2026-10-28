@@ -13,6 +13,7 @@ sidebar_position: 8
 - [ ] LWT `offline` + `online` retidos em `.../status`, visíveis no Node-RED (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 20 · T5 15 ·
@@ -59,8 +60,8 @@ SQLite** e a **mudar o intervalo** do ESP32 remotamente.
 ## Material
 
 - VS Code + PlatformIO + extensão **Wokwi** (ESP32 **simulado** — sem placa física).
-- Stack Docker do curso (**Mosquitto + Node-RED + MQTT Explorer**) — nesta aula usamos o
-  **Node-RED** e o **MQTT Explorer**.
+- O **LAB IoT** do `lab05-x` (gerado pelo `gen_iot_aluno.py`): nesta aula usamos o **Node-RED**
+  (`http://localhost/lab05-x/`) e o **MQTT Explorer**.
 - Bibliotecas (baixadas pelo PlatformIO): `adafruit/DHT sensor library`,
   `adafruit/Adafruit Unified Sensor`, `knolleary/PubSubClient`. O `Ticker` já vem com o
   core Arduino do ESP32.
@@ -83,12 +84,12 @@ na [T3](#t3)).
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — Dependencias e circuito do DHT22](#t1) · 10 pts
+- [T1 — Dependências e circuito do DHT22](#t1) · 10 pts
 - [T2 — Leitura do DHT22 com temporizador](#t2) · 20 pts
-- [T3 — Conexao Wi-Fi](#t3) · 15 pts
-- [T4 — Publicacao MQTT periodica em JSON](#t4) · 20 pts
+- [T3 — Conexão Wi-Fi](#t3) · 15 pts
+- [T4 — Publicação MQTT periódica em JSON](#t4) · 20 pts
 - [T5 — Node-RED recebendo as leituras no debug](#t5) · 15 pts
-- [T6 — Status do no com LWT](#t6) · 20 pts
+- [T6 — Status do nó com LWT](#t6) · 20 pts
 
 </details>
 
@@ -124,7 +125,8 @@ O repositório do grupo nasce do `lab05-template`:
   e **consumir** a flag do temporizador (ler + publicar).
 - **callback do temporizador** — não é nem um nem outro: roda em **outro contexto**
   (a tarefa do `esp_timer`). Por isso ele só faz `leituraPendente = true` e mais nada.
-  :::
+
+:::
 
 ---
 
@@ -187,9 +189,9 @@ framework = arduino
 monitor_speed = 115200
 #highlight-start
 lib_deps =
-    adafruit/DHT sensor library@^1.4.6
-    adafruit/Adafruit Unified Sensor@^1.1.14
-    knolleary/PubSubClient@^2.8
+    adafruit/DHT sensor library
+    adafruit/Adafruit Unified Sensor
+    knolleary/PubSubClient
 #highlight-end
 ```
 
@@ -198,7 +200,7 @@ por isso o nome do ambiente precisa continuar **`esp32dev`**.
 
 <CommitPoint
   id="t1"
-  task="Dependencias e circuito do DHT22"
+  task="Dependências e circuito do DHT22"
   pontos={10}
   files="platformio.ini diagram.json"
 />
@@ -350,7 +352,8 @@ void conectarWiFi() {
   Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
 }
 
-// em setup(), depois de dht.begin():
+// em setup(), troque o titulo para "=== Lab 05 - T3: DHT22 + Wi-Fi ===" e,
+// depois de dht.begin():
 //   conectarWiFi();
 // no inicio de loop():
 //   if (WiFi.status() != WL_CONNECTED) conectarWiFi();
@@ -364,7 +367,7 @@ real pode estar em qualquer canal:
 
 ```cpp title="src/main.cpp (placa fisica)"
 const char* WIFI_SSID = "IoT-Broker";
-const char* WIFI_PASS = "ESP32IoTLab";
+const char* WIFI_SENHA = "ESP32IoTLab";
 // ...
 WiFi.begin(WIFI_SSID, WIFI_SENHA);
 ```
@@ -375,15 +378,17 @@ WiFi.begin(WIFI_SSID, WIFI_SENHA);
 **Saída esperada:**
 
 ```text title="Monitor serial"
-=== Lab 05 ===
+=== Lab 05 - T3: DHT22 + Wi-Fi ===
 [WiFi] conectando a Wokwi-GUEST.....
 [WiFi] conectado, IP 10.13.37.2
 [DHT] seq=1 t=24.5 C h=55.0 % (6120 ms)
 ```
 
-:::note[O while do Wi-Fi bloqueia — e tudo bem aqui]
-Enquanto não há Wi-Fi não há o que publicar, então bloquear na (re)conexão é aceitável
-nesta aula. Em produção você trocaria por uma máquina de estados não bloqueante.
+:::note[Uma conexão simplificada, de propósito]
+Este `while` **bloqueia** o `loop()` até o Wi-Fi voltar: é o defeito que o Lab 04 corrigiu com
+eventos (`WiFi.onEvent`) e _backoff_. Aqui ele fica para o foco ser o DHT22, o temporizador e o
+Node-RED: enquanto não há Wi-Fi, não há o que publicar. Num firmware de campo, use a conexão do
+Lab 04.
 :::
 
 Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
@@ -392,7 +397,7 @@ Salve a saída (com a linha `[WiFi] conectado`) em `evidencias/t3-wifi.txt`.
 
 <CommitPoint
   id="t3"
-  task="Conexao Wi-Fi"
+  task="Conexão Wi-Fi"
   pontos={15}
   files="src/main.cpp evidencias/t3-wifi.txt"
 />
@@ -499,8 +504,8 @@ void setup() {
   Serial.println("\r\n=== Lab 05 - T4: DHT22 + MQTT ===");
   dht.begin();
 
-  uint64_t mac = ESP.getEfuseMac();
-  snprintf(clientId, sizeof(clientId), "lab05-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
+  // sufixo aleatorio: no Wokwi, todos os ESP32 simulados tem o MESMO MAC
+  snprintf(clientId, sizeof(clientId), "lab05-%s-%04lX", GRUPO, (unsigned long)(esp_random() & 0xFFFF));
 
   conectarWiFi();
   mqtt.setServer(MQTT_HOST, MQTT_PORTA);
@@ -526,29 +531,40 @@ Pontos que valem a atenção:
 - `"elt85b/lab05/grupo-" GRUPO "/dht"` — literais de string **adjacentes** são concatenados
   pelo compilador; como `GRUPO` é um `#define` de string, o tópico é montado em tempo de compilação.
 - **Client ID único:** dois clientes com o mesmo ID no mesmo broker se derrubam mutuamente.
-  Por isso o ID leva parte do MAC do chip.
+  Por isso o ID leva um sufixo **aleatório** (`esp_random()`), como no Lab 04 (veja o aviso
+  abaixo).
 - `%lu` + cast para `unsigned long`: no ESP32 `uint32_t` e `unsigned long` têm ambos 4 bytes,
   mas são tipos diferentes para o `printf` — o cast deixa o formato correto e sem warnings.
 - O `PubSubClient` tem buffer padrão de **256 bytes** (cabeçalho + tópico + payload).
   Nosso payload tem ~70 bytes; se um dia passar do limite, `publish()` devolve `false`
   (e o log mostra `ERRO`) — aí use `mqtt.setBufferSize(...)`.
 
+:::warning[Client ID: o Wokwi tem prioridade]
+O padrão desta disciplina é o **Wokwi**, e no Wokwi **todos** os ESP32 simulados têm o **mesmo
+MAC**. Um client ID tirado do MAC (`ESP.getEfuseMac()`) sairia igual para os integrantes do
+grupo que simulam ao mesmo tempo, e o broker derrubaria um a cada conexão do outro (o sintoma:
+conecta e cai a cada poucos segundos). Por isso o sufixo é aleatório, aqui e nos Labs 06 e 07.
+Numa **placa real** o MAC é único, e um ID tirado dele tem a vantagem de ser sempre o mesmo para
+aquela placa; o sufixo aleatório também funciona lá.
+:::
+
 ### 4.3 Verificando no broker
 
-Enquanto a simulação roda, assine o tópico. Use o **MQTT Explorer** da stack (conexão
+Enquanto a simulação roda, assine o tópico. Use o **MQTT Explorer** do LAB IoT (conexão
 `broker.hivemq.com`, porta `1883`) ou, pelo terminal, um `mosquitto_sub` descartável em Docker:
 
 <GroupCommands
   commands={[
     {
-      codeTitle: "Terminal — Assinar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
-  -t '{course}/lab06/grupo-{group}/#' -v -C 5 | tee evidencias/t4-mqtt.txt`,
+      codeTitle: "Terminal (cmd) — assinar e gravar 5 mensagens",
+      command: `docker run --rm eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab05/grupo-{group}/#" -v -C 5 > evidencias\\t4-mqtt.txt
+type evidencias\\t4-mqtt.txt`,
     },
   ]}
 />
 
-`-C 5` encerra depois de 5 mensagens. **Saída esperada:**
+`-C 5` encerra depois de 5 mensagens (a saída vai direto para o arquivo, e o `type` a mostra no
+fim). **Saída esperada:**
 
 <FileTree root="lab05-grupo-x" files={["evidencias/t4-mqtt.txt c"]} />
 
@@ -573,7 +589,7 @@ E o que aconteceria se dois grupos esquecessem de trocar o `GRUPO` e ficassem am
 
 <CommitPoint
   id="t4"
-  task="Publicacao MQTT periodica em JSON"
+  task="Publicação MQTT periódica em JSON"
   pontos={20}
   files="src/main.cpp evidencias/t4-mqtt.txt"
 />
@@ -582,7 +598,7 @@ E o que aconteceria se dois grupos esquecessem de trocar o `GRUPO` e ficassem am
 
 ## Parte 5 — Node-RED: receber e visualizar {/* #parte-5 */}
 
-Suba a stack Docker do curso e abra o Node-RED em `http://localhost:1880`. Crie uma aba
+Suba o LAB IoT do `lab05-x` e abra o Node-RED em `http://localhost/lab05-x/`. Crie uma aba
 nova chamada **Lab 05** e monte:
 
 ```mermaid
@@ -628,8 +644,8 @@ passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`.
   files={["nodered/flows-lab05.json c", "evidencias/t5-debug.txt c"]}
 />
 
-1. No debug "payload", passe o mouse sobre **3 mensagens** → ícone **Copy value** e cole cada
-   uma numa linha de `evidencias/t5-debug.txt`:
+**1.** No debug "payload", passe o mouse sobre **3 mensagens** → ícone **Copy value** e cole cada
+uma numa linha de `evidencias/t5-debug.txt`:
 
 <GroupCommands
   language="json"
@@ -642,7 +658,8 @@ passa a mostrar o payload entre aspas e o debug "temperatura" exibe `undefined`.
     },
   ]}
 />
-2. Selecione a aba **Lab 05** → menu (☰) → **Export** → _Current flow_ → **JSON
+
+**2.** Selecione a aba **Lab 05** → menu (☰) → **Export** → _Current flow_ → **JSON
 formatado** → **Download**. Salve como `nodered/flows-lab05.json`.
 
 <CommitPoint
@@ -657,7 +674,7 @@ formatado** → **Download**. Salve como `nodered/flows-lab05.json`.
 ## Projeto integrador — status do nó com LWT {/* #integrador */}
 
 Quem olha o Node-RED não tem como saber se o ESP32 **caiu** ou só está entre duas leituras.
-O MQTT resolve isso com o **LWT** (_Last Will and Testament_): ao conectar, o cliente deixa
+O MQTT resolve isso com o **LWT** (_Last Will and Testament_), que você já usou no Lab 04: ao conectar, o cliente deixa
 com o broker uma mensagem-testamento; se a conexão cair **sem** um `DISCONNECT` educado, o
 **broker** publica essa mensagem por ele.
 
@@ -685,14 +702,23 @@ sequenceDiagram
      **node status** ligado — o nó mostra `online`/`offline` no editor.
    - Exporte o fluxo de novo por cima de `nodered/flows-lab05.json`.
 3. **Evidência** — deixe um `mosquitto_sub` escutando o status, inicie a simulação, espere o
-   `online`, **pare** a simulação e espere o `offline`; aí encerre com Ctrl+C:
+   `online`, **pare** a simulação e espere o `offline`; aí saia do `docker logs -f` com Ctrl+C e
+   grave a evidência:
 
 <GroupCommands
   commands={[
     {
-      codeTitle: "Terminal — Assinar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
-  -t '{course}/lab06/grupo-{group}' -v | tee evidencias/t6-status.txt`,
+      title: "1. Assinar",
+      codeTitle: "Terminal (cmd) — assinante em segundo plano",
+      command: `docker run -d --name sub-lab05 eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab05/grupo-{group}/status" -v
+docker logs -f sub-lab05`,
+    },
+    {
+      title: "2. Gravar e encerrar",
+      codeTitle: "Terminal (cmd) — depois do offline",
+      command: `docker logs sub-lab05 > evidencias\\t6-status.txt 2>&1
+type evidencias\\t6-status.txt
+docker rm -f sub-lab05`,
     },
   ]}
 />
@@ -734,11 +760,15 @@ PubSubClient é **15 s**. Qual dos dois o Wokwi provocou? E o que muda se o firm
 
 <CommitPoint
   id="t6"
-  task="Status do no com LWT"
+  task="Status do nó com LWT"
   pontos={20}
   files="src/main.cpp nodered/flows-lab05.json evidencias/t6-status.txt"
 />
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

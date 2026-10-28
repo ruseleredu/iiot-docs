@@ -27,18 +27,19 @@ autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada taref
 
 ---
 
-No Lab 02, o ESP32 simulado já conversou com o broker MQTT, com um código pronto. Aquele código
-tinha dois defeitos que não apareceram no teste: ele **parava tudo** enquanto o Wi-Fi ou o
-broker não respondiam (os `while` de `conectarWiFi()` e `conectarMQTT()`), e só funcionava no
-Wokwi.
+Nesta aula o ESP32 entra na rede pela primeira vez. A forma mais comum de conectar, a dos
+exemplos que circulam na internet, tem dois defeitos que não aparecem num teste rápido: ela
+**para tudo** enquanto o Wi-Fi ou o broker não respondem (um `while` esperando a conexão), e
+costuma funcionar só na rede em que foi escrita.
 
-Nesta aula você monta a conexão do zero, peça por peça, olhando por dentro com os **logs** do
+Aqui você monta a conexão do zero, peça por peça, olhando por dentro com os **logs** do
 Lab 03: a varredura, os eventos do Wi-Fi, a conexão ao broker, a telemetria e os comandos.
 Depois, derruba a rede de propósito e faz o firmware **se recuperar sozinho**, sem travar o
 `loop()`. No fim, o mesmo código compila para o Wokwi e para a placa real no laboratório, com
 as senhas fora do repositório.
 
-O Lab 05 parte deste firmware e acrescenta o sensor DHT22.
+O Lab 05 acrescenta o sensor DHT22 e o Node-RED. Para manter o foco neles, ele usa uma conexão
+simplificada, com `while`; a conexão robusta, para um firmware de campo, é a desta aula.
 
 ```mermaid
 flowchart LR
@@ -85,10 +86,10 @@ que não possa ser público.
 <summary><strong>Mapa de tarefas</strong> — 5 tarefas · 100 pts</summary>
 
 - [T1 — Varredura das redes](#t1) · 15 pts
-- [T2 — Conexao por eventos](#t2) · 20 pts
+- [T2 — Conexão por eventos](#t2) · 20 pts
 - [T3 — MQTT nos dois sentidos](#t3) · 20 pts
 - [T4 — Rede robusta](#t4) · 20 pts
-- [T5 — Wokwi e laboratorio no mesmo firmware](#t5) · 25 pts
+- [T5 — Wokwi e laboratório no mesmo firmware](#t5) · 25 pts
 
 </details>
 
@@ -143,7 +144,7 @@ core mostra o que o Wi-Fi faz por dentro), e aponte o `wokwi.toml` para ele:
 default_envs = wokwi
 
 [env:wokwi]
-platform = espressif32@6.9.0
+platform = espressif32
 board = esp32dev
 framework = arduino
 monitor_speed = 115200
@@ -305,7 +306,7 @@ O `TOPICO_BASE` junta textos pelo pré-processador: `"elt85b/lab04/grupo-" "x"` 
 
 ### 2.2 Eventos em vez de `while`
 
-O Lab 02 esperava o Wi-Fi assim:
+A forma ingênua espera o Wi-Fi assim:
 
 ```cpp
 while (WiFi.status() != WL_CONNECTED) { delay(250); }   // o ESP32 fica PARADO aqui
@@ -428,7 +429,7 @@ git push
 
 <CommitPoint
   id="t2"
-  task="Conexao por eventos"
+  task="Conexão por eventos"
   pontos={20}
   files="include/config.h src/main.cpp evidencias/t2-serial.txt README.md"
 />
@@ -443,7 +444,7 @@ Acrescente ao `[env:wokwi]` do `platformio.ini`:
 
 ```ini title="platformio.ini (T3)"
 lib_deps =
-    knolleary/PubSubClient@2.8
+    knolleary/PubSubClient
 ```
 
 | Tópico           | Sentido | Conteúdo                                                                           |
@@ -466,7 +467,7 @@ WiFiClient wifiClient;                 // o TCP
 PubSubClient mqtt(wifiClient);         // o MQTT, por cima do TCP
 char clientId[24];
 uint32_t conexoesMQTT = 0, falhasMQTT = 0, n = 0;
-unsigned long tTentativaMQTT = 0;
+unsigned long tTentativaMQTT = 0, tTelemetria = 0;
 
 enum ModoLed { LED_AUTO, LED_LIGADO, LED_DESLIGADO };
 ModoLed modoLed = LED_AUTO;
@@ -593,7 +594,7 @@ void loop() {
 
 ### 3.3 Conferir pelo terminal
 
-Como no Lab 02: o assinante roda em segundo plano, e o `docker logs` mostra e grava o que chegou.
+O assinante roda em segundo plano (`-d`), e o `docker logs` mostra e grava o que chegou.
 Assine **antes** de iniciar a simulação.
 
 <GroupCommands
@@ -601,15 +602,15 @@ Assine **antes** de iniciar a simulação.
     {
       title: "1. Assinar",
       codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
-      command: `docker run -d --name sub-lab04 eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/#" -v
+      command: `docker run -d --name sub-lab04 eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/#" -v
 docker logs -f sub-lab04`,
     },
     {
       title: "2. Comandar o LED",
       codeTitle: "Terminal 2 (cmd) — comandos",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m off
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m on
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m auto`,
+      command: `docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m off
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m on
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/led" -m auto`,
     },
     {
       title: "3. Gravar e encerrar",
@@ -1033,12 +1034,12 @@ Suba de novo o assinante da T3 (`docker run -d --name sub-lab04 ...` e `docker l
     {
       title: "Derrubar o MQTT",
       codeTitle: "Terminal 2 (cmd)",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/rede" -m cai-mqtt`,
+      command: `docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/rede" -m cai-mqtt`,
     },
     {
       title: "Derrubar o Wi-Fi",
       codeTitle: "Terminal 2 (cmd), uns 30 s depois",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/rede" -m cai-wifi`,
+      command: `docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab04/grupo-{group}/cmd/rede" -m cai-wifi`,
     },
     {
       title: "Gravar e encerrar",
@@ -1073,8 +1074,8 @@ chama o `iniciarWiFi()` 10 s depois é o seu `cuidarDaRede()`. A telemetria segu
 :::tip[Preveja antes de rodar]
 **P3:** (a) no teste 1, cada tentativa falha em poucos ms. Se o host existisse, mas não
 respondesse, o `connect()` do TCP esperaria até ~3 s, e o do MQTT até o `setSocketTimeout`. O
-que o LED e a telemetria fariam nesse tempo? Por que isso ainda é bem melhor que o `while` do
-Lab 02? (b) No `cai-mqtt`, o firmware publica `offline` **antes** do `disconnect()`. Por que o
+que o LED e a telemetria fariam nesse tempo? Por que isso ainda é bem melhor que um `while` de
+espera? (b) No `cai-mqtt`, o firmware publica `offline` **antes** do `disconnect()`. Por que o
 LWT não dispararia sozinho nesse caso? (c) No `cai-wifi`, o broker vê o ESP32 sumir sem
 `DISCONNECT`. O que aparece no `status` e quando?
 :::
@@ -1125,12 +1126,12 @@ podem ir para o GitHub.
    default_envs = wokwi              ; o "pio run" (e o autograder) compila so este
 
    [env]
-   platform = espressif32@6.9.0
+   platform = espressif32
    board = esp32dev
    framework = arduino
    monitor_speed = 115200
    lib_deps =
-       knolleary/PubSubClient@2.8
+       knolleary/PubSubClient
 
    [env:wokwi]                       ; simulador: Wokwi-GUEST + broker publico
    build_flags =
@@ -1237,6 +1238,13 @@ podem ir para o GitHub.
 
 7. **No `README.md`:** as respostas de P1 a P4.
 
+   ```shell title="Terminal do VS Code (cmd)"
+   git status
+   git add .gitignore platformio.ini include/config.h include/segredos.exemplo.h evidencias/t5-build.txt evidencias/t5-mqtt.txt README.md
+   git commit -m "T5: o mesmo firmware no Wokwi e no laboratorio"
+   git push
+   ```
+
 :::tip[Preveja antes de rodar]
 **P4:** (a) no broker do laboratório, cada grupo só pode publicar e assinar em `<usuário>/#`
 (ACL). Se o `TOPICO_BASE` do `lab` fosse `elt85b/lab04/grupo-x`, o `connect()` funcionaria? E o
@@ -1260,7 +1268,7 @@ Isso é um problema? Que diferença há entre ela e a senha do MQTT do grupo?
 
 <CommitPoint
   id="t5"
-  task="Wokwi e laboratorio no mesmo firmware"
+  task="Wokwi e laboratório no mesmo firmware"
   pontos={25}
   files=".gitignore platformio.ini include/config.h include/segredos.exemplo.h evidencias/t5-build.txt evidencias/t5-mqtt.txt README.md"
 />
@@ -1271,7 +1279,7 @@ computador. Com uma placa real, sim: suba o LAB IoT (guia **LAB IoT na sua máqu
 broker, e ponha o IP do seu PC (`ipconfig`, _Endereço IPv4_) no `MQTT_HOST` do `segredos.h`.
 
 ```shell title="Terminal (cmd): um broker sem senha, só para testes"
-docker run -d --name broker -p 1883:1883 eclipse-mosquitto:2 mosquitto -c /mosquitto-no-auth.conf
+docker run -d --name broker -p 1883:1883 eclipse-mosquitto mosquitto -c /mosquitto-no-auth.conf
 ```
 
 Nesse caso, sem login, deixe `MQTT_USUARIO` e `MQTT_SENHA` vazios e mude o `TOPICO_BASE` do

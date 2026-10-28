@@ -12,6 +12,7 @@ sidebar_position: 11
 - [ ] Uma planta, quatro portas: o setpoint escrito por cada protocolo e lido por todos, e a contagem de mensagens (T5)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T5 = 100 pts** (esta aula não tem desafios): T1 15 · T2 25 · T3 20 · T4 20 · T5 20. O
@@ -198,9 +199,9 @@ MQTT_BASE={course}/lab08/grupo-{group}/camara
 LAB_REDE=lab08-{group}_labnet
 SIM_SPEED=5
 
-PORTA_MODBUS_TCP=1502
+PORTA_MODBUS_TCP=502
 PORTA_MODBUS_RTU=5021
-PORTA_S7=1102
+PORTA_S7=102
 PORTA_OPCUA=4840`,
 },
 ]}
@@ -451,7 +452,8 @@ docker logs lab08-x-camara 2>&1 | findstr /l /c:"[cmd]"
 - **Modbus RTU:** o mesmo protocolo na linha serial **RS-485**, com o quadro endereço + função +
   dados + **CRC-16**. A câmara também responde em RTU (porta 5021, "RTU sobre TCP", como um
   conversor serial-Ethernet), mas não vamos usá-la hoje.
-  :::
+
+:::
 
 :::tip[Preveja antes de rodar]
 **P1:** (a) o que acontece se você esquecer a function "×10" e mandar `37.5` direto para o HR3?
@@ -706,5 +708,9 @@ redes industriais costumam ficar **separadas** da rede do escritório e da inter
 | Parar o simulador                               | na pasta `camara-sim`: `docker compose -f docker-compose.yml -f docker-compose.lab.yml down`                                                                            |
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

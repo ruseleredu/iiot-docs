@@ -13,6 +13,7 @@ sidebar_position: 10
 - [ ] Modo `auto`: aquecedor ON/OFF com histerese e ventilador proporcional (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 20 · T4 20 · T5 15 ·
@@ -61,7 +62,8 @@ flowchart LR
 ## Material
 
 - VS Code + PlatformIO + extensão **Wokwi** (ESP32 **simulado**).
-- Stack Docker do curso: **Node-RED** com `node-red-node-sqlite` e o **Dashboard 2.0**.
+- O **LAB IoT** do `lab07-x` (gerado pelo `gen_iot_aluno.py`): **Node-RED** com
+  `node-red-node-sqlite` e o **Dashboard 2.0**.
 - **Nenhuma biblioteca nova**: o ADC e o LEDC fazem parte do core Arduino do ESP32. O
   `platformio.ini` é o mesmo do Lab 06.
 
@@ -84,8 +86,8 @@ planta, mexendo no slider do sensor.
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — Circuito: potenciometro, LEDs e analisador logico](#t1) · 10 pts
-- [T2 — Leitura do potenciometro com o ADC](#t2) · 15 pts
+- [T1 — Circuito: potenciômetro, LEDs e analisador lógico](#t1) · 10 pts
+- [T2 — Leitura do potenciômetro com o ADC](#t2) · 15 pts
 - [T3 — PWM com o LEDC](#t3) · 20 pts
 - [T4 — ADC e PWM no MQTT, modos pot e remoto](#t4) · 20 pts
 - [T5 — Node-RED: SQLite e dashboard de comando](#t5) · 15 pts
@@ -216,10 +218,7 @@ Acrescente ao circuito do Lab 06:
       "id": "logic1",
       "top": 320,
       "left": 120,
-      "attrs": {
-        "channelNames": "aquecedor,ventilador",
-        "filename": "lab07-pwm"
-      }
+      "attrs": { "filename": "lab07-pwm" }
     }
   ],
   "connections": [
@@ -258,7 +257,7 @@ o que é perfeito para um sinal analógico.
 
 <CommitPoint
   id="t1"
-  task="Circuito: potenciometro, LEDs e analisador logico"
+  task="Circuito: potenciômetro, LEDs e analisador lógico"
   pontos={10}
   files="diagram.json"
 />
@@ -385,7 +384,7 @@ linhas `[ADC]`) em `evidencias/t2-serial.txt`.
 
 <CommitPoint
   id="t2"
-  task="Leitura do potenciometro com o ADC"
+  task="Leitura do potenciômetro com o ADC"
   pontos={15}
   files="src/main.cpp evidencias/t2-serial.txt"
 />
@@ -502,7 +501,8 @@ Gire o potenciômetro e observe os dois LEDs: o **azul** muda de brilho suavemen
 ### 3.3 Medindo com o analisador lógico
 
 Deixe o potenciômetro em ~25 %, rode a simulação por alguns segundos e **pare**. No VS Code o
-Wokwi grava o arquivo **`wokwi.vcd`** na raiz do projeto. Abra-o no **PulseView** ou no
+Wokwi grava a captura do analisador num arquivo **`.vcd`** na pasta do projeto
+(`dir /s /b *.vcd` mostra onde). Abra-o no **PulseView** ou no
 **Surfer** (`app.surfer-project.org`, no navegador) e meça:
 
 - **D0 (aquecedor):** período ≈ 200 ms (5 Hz), tempo em nível alto ≈ 25 % do período.
@@ -566,6 +566,7 @@ sequenceDiagram
 - Ao (re)conectar, o ESP32 publica `.../adc` e `.../pwm` com o estado atual.
 - A **tela** mostra o modo e o estado no rodapé, e o espelho em texto/framebuffer do Lab 06
   continua funcionando.
+- O **client ID** continua com sufixo aleatório (o aviso da T4 do Lab 05).
 
 <FileTree root="lab07-grupo-x" files={["src/main.cpp u"]} />
 
@@ -1018,8 +1019,8 @@ void setup() {
   }
   desenharTela();
 
-  uint64_t mac = ESP.getEfuseMac();
-  snprintf(clientId, sizeof(clientId), "lab07-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
+  // sufixo aleatorio: no Wokwi, todos os ESP32 simulados tem o MESMO MAC
+  snprintf(clientId, sizeof(clientId), "lab07-%s-%04lX", GRUPO, (unsigned long)(esp_random() & 0xFFFF));
 
   conectarWiFi();
   mqtt.setServer(MQTT_HOST, MQTT_PORTA);
@@ -1067,24 +1068,30 @@ void loop() {
 ### 4.2 Testando pelo terminal
 
 <GroupCommands
-  language="bash"
   commands={[
     {
-      title: "1. Assinar tópicos (sem o framebuffer)",
-      codeTitle: "Terminal 1 — assinar (sem o framebuffer)",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
-  -t '{course}/lab07/grupo-{group}/adc' -t '{course}/lab07/grupo-{group}/pwm' \\
-  -t '{course}/lab07/grupo-{group}/cmd/#' -v | tee evidencias/t4-mqtt.txt`,
+      title: "1. Assinar (sem o framebuffer)",
+      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
+      command: `docker run -d --name sub-lab07 eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/adc" -t "{course}/lab07/grupo-{group}/pwm" -t "{course}/lab07/grupo-{group}/cmd/#" -v
+docker logs -f sub-lab07`,
     },
     {
       title: "2. Comandar via MQTT",
-      codeTitle: "Terminal 2 — comandar",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m remoto
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/aquecedor -m 30
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/ventilador -m 80
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/aquecedor -m 150   # fora da faixa
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m turbo      # modo inválido
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t {course}/lab07/grupo-{group}/cmd/modo -m pot`,
+      codeTitle:
+        "Terminal 2 (cmd) — o 150 e o turbo são inválidos, de propósito",
+      command: `docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/modo" -m remoto
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/aquecedor" -m 30
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/ventilador" -m 80
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/aquecedor" -m 150
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/modo" -m turbo
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab07/grupo-{group}/cmd/modo" -m pot`,
+    },
+    {
+      title: "3. Gravar e encerrar",
+      codeTitle: "Terminal 1 (cmd) — Ctrl+C sai do logs -f",
+      command: `docker logs sub-lab07 > evidencias\\t4-mqtt.txt 2>&1
+type evidencias\\t4-mqtt.txt
+docker rm -f sub-lab07`,
     },
   ]}
 />
@@ -1332,7 +1339,7 @@ _Potenciômetro (ADC)_, _Atuadores (PWM)_, _Comando_ e _Histórico (SQLite)_.
   ];
   ```
 
-Com o dashboard aberto em `http://localhost:1880/dashboard/lab07`:
+Com o dashboard aberto em `http://localhost/lab07-x/dashboard/lab07`:
 
 - clique **Remoto** e mova os sliders: os LEDs no Wokwi, as barras no OLED e os gauges mudam
   juntos;
@@ -1467,5 +1474,9 @@ Compare a "Energia do aquecedor" de 5 minutos em `auto` com 5 minutos em `pot` c
 />
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />

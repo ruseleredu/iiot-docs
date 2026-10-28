@@ -13,6 +13,7 @@ sidebar_position: 9
 - [ ] Framebuffer do SSD1306 em `.../oled/fb` desenhado pixel a pixel no dashboard (T6)
 - [ ] Previsões P1–P4 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
 **T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 20 · T4 20 · T5 15 ·
@@ -61,7 +62,7 @@ flowchart LR
 ## Material
 
 - VS Code + PlatformIO + extensão **Wokwi** (ESP32 **simulado**, sem placa física).
-- Stack Docker do curso: nesta aula usamos o **Node-RED**, com `node-red-node-sqlite` e o
+- O **LAB IoT** do `lab06-x` (gerado pelo `gen_iot_aluno.py`): nesta aula usamos o **Node-RED**, com `node-red-node-sqlite` e o
   **Dashboard 2.0** (`@flowfuse/node-red-dashboard`) já instalados na imagem.
 - Bibliotecas novas (baixadas pelo PlatformIO): `adafruit/Adafruit SSD1306` e
   `adafruit/Adafruit GFX Library`. As do Lab 05 continuam.
@@ -83,11 +84,11 @@ a maioria é `0x3C`, alguns são `0x3D`.
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — Circuito e dependencias do SSD1306](#t1) · 10 pts
+- [T1 — Circuito e dependências do SSD1306](#t1) · 10 pts
 - [T2 — Tela local no OLED](#t2) · 15 pts
 - [T3 — MQTT nos dois sentidos](#t3) · 20 pts
 - [T4 — Node-RED gravando e consultando o SQLite](#t4) · 20 pts
-- [T5 — Dashboard com a replica do OLED](#t5) · 15 pts
+- [T5 — Dashboard com a réplica do OLED](#t5) · 15 pts
 - [T6 — Framebuffer pixel a pixel no dashboard](#t6) · 20 pts
 
 </details>
@@ -199,11 +200,11 @@ framework = arduino
 monitor_speed = 115200
 #highlight-start
 lib_deps =
-    adafruit/DHT sensor library@^1.4.6
-    adafruit/Adafruit Unified Sensor@^1.1.14
-    knolleary/PubSubClient@^2.8
-    adafruit/Adafruit SSD1306@^2.5.13
-    adafruit/Adafruit GFX Library@^1.11.11
+    adafruit/DHT sensor library
+    adafruit/Adafruit Unified Sensor
+    knolleary/PubSubClient
+    adafruit/Adafruit SSD1306
+    adafruit/Adafruit GFX Library
 #highlight-end
 ```
 
@@ -212,7 +213,7 @@ o framebuffer e conversa com o controlador do display pelo I2C.
 
 <CommitPoint
   id="t1"
-  task="Circuito e dependencias do SSD1306"
+  task="Circuito e dependências do SSD1306"
   pontos={10}
   files="platformio.ini diagram.json"
 />
@@ -397,6 +398,8 @@ sequenceDiagram
   contrário do callback do temporizador.
 - O payload **não** termina com `'\0'`: copie para um buffer e termine a string antes do `atof()`.
 - **Valide** o comando. O broker é público: qualquer pessoa pode publicar `0` ou `abc` no seu tópico.
+- **Client ID aleatório**, como no Lab 05: no Wokwi, todos os ESP32 simulados têm o mesmo MAC
+  (veja o aviso da T4 do Lab 05).
 - **Assine dentro de `conectarMQTT()`**: a sessão é limpa, então depois de uma reconexão o
   broker não lembra das assinaturas antigas.
 - O JSON das leituras ganha `intervalo_s`, que **confirma** ao Node-RED o valor em uso.
@@ -592,8 +595,8 @@ void setup() {
   }
   desenharTela();
 
-  uint64_t mac = ESP.getEfuseMac();
-  snprintf(clientId, sizeof(clientId), "lab06-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
+  // sufixo aleatorio: no Wokwi, todos os ESP32 simulados tem o MESMO MAC
+  snprintf(clientId, sizeof(clientId), "lab06-%s-%04lX", GRUPO, (unsigned long)(esp_random() & 0xFFFF));
 
   conectarWiFi();
   mqtt.setServer(MQTT_HOST, MQTT_PORTA);
@@ -628,24 +631,29 @@ Num terminal, assine **todos** os tópicos do grupo. Num segundo terminal, mande
 <GroupCommands
   commands={[
     {
-      codeTitle: "Terminal 1 — Assinar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
--t '{course}/lab06/grupo-{group}/#' -v | tee evidencias/t3-mqtt.txt`,
+      title: "1. Assinar",
+      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
+      command: `docker run -d --name sub-lab06 eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab06/grupo-{group}/#" -v
+docker logs -f sub-lab06`,
     },
     {
-      codeTitle: "Terminal 2 — comandar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \\
-  -t '{course}/lab06/grupo-{group}/cmd/intervalo' -m 10`,
+      title: "2. Comandar",
+      codeTitle:
+        "Terminal 2 (cmd) — o 1 está fora da faixa e deve ser ignorado",
+      command: `docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab06/grupo-{group}/cmd/intervalo" -m 10
+docker run --rm eclipse-mosquitto mosquitto_pub -h broker.hivemq.com -t "{course}/lab06/grupo-{group}/cmd/intervalo" -m 1`,
     },
     {
-      codeTitle: "Terminal 2 — comandar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com \\
-  -t '{course}/lab06/grupo-{group}/cmd/intervalo' -m 1      # fora da faixa: deve ser ignorado`,
+      title: "3. Gravar e encerrar",
+      codeTitle: "Terminal 1 (cmd) — Ctrl+C sai do logs -f",
+      command: `docker logs sub-lab06 > evidencias\\t3-mqtt.txt 2>&1
+type evidencias\\t3-mqtt.txt
+docker rm -f sub-lab06`,
     },
   ]}
 />
 
-**Saída esperada** (trecho; encerre o Terminal 1 com Ctrl+C depois de umas 8 linhas):
+**Saída esperada** (trecho; depois de umas 8 linhas, grave e encerre com o passo 3):
 
 <FileTree root="lab06-grupo-x" files={["evidencias/t3-mqtt.txt c"]} />
 
@@ -703,7 +711,7 @@ flowchart LR
 
 Os nós **sqlite** usam um nó de configuração **sqlitedb**: _Database_
 **`/data/sqlite/lab06.sqlite`**, _Mode_ **Read-Write-Create**. A pasta `/data/sqlite` já existe
-na imagem do Node-RED da stack e fica no volume, então o banco sobrevive a um restart.
+na imagem do Node-RED do LAB IoT e fica no volume, então o banco sobrevive a um restart.
 
 Crie um **inject** "Criar tabela" (_Inject once after_ 0,5 s) com o SQL abaixo em `msg.topic`,
 ligado a um **sqlite** com _SQL Query_ **Via msg.topic** → **debug**:
@@ -831,8 +839,8 @@ menor que o anterior indica que o ESP32 reiniciou.
 ```
 
 :::tip[Preveja antes de rodar]
-**P3:** com o ESP32 rodando, **pare o Node-RED** por ~30 s (`docker stop` no container) e
-volte a ligá-lo. O que a consulta "Falhas na sequência" mostra? Por que o broker não guardou
+**P3:** com o ESP32 rodando, **pare o Node-RED** por ~30 s (`docker stop lab06-x-nodered`) e
+volte a ligá-lo (`docker start lab06-x-nodered`). O que a consulta "Falhas na sequência" mostra? Por que o broker não guardou
 as leituras para você? Pense em QoS 0 e em sessão limpa. Depois **reinicie a simulação** do
 Wokwi e rode a consulta de novo. Por fim, publique `{"t":"quente"}` e `lixo` no tópico `.../dht`
 com `mosquitto_pub`: o que acontece em cada caso e em qual nó?
@@ -859,7 +867,7 @@ leituras"** (mostrando a troca de 5 s para 10 s) para `evidencias/t4-sqlite.txt`
 
 ## Parte 5 — Dashboard com a réplica do OLED {/* #parte-5 */}
 
-O **Dashboard 2.0** já existe na stack (`My Dashboard`, em `http://localhost:1880/dashboard`).
+O **Dashboard 2.0** já existe no LAB IoT (`My Dashboard`, em `http://localhost/lab06-x/dashboard`).
 Crie nele uma **página** _Lab 06_ (caminho `/lab06`) com quatro **grupos**: _Tela OLED
 (SSD1306)_, _Leituras_, _Histórico (SQLite)_ e _ESP32_.
 
@@ -979,7 +987,7 @@ Complete com:
   → **ui-table** (colunas automáticas, _action_ **replace**).
 - **mqtt in** `.../status` (_a String_) → **ui-text** "ESP32" no grupo _ESP32_.
 
-Abra `http://localhost:1880/dashboard/lab06`, mova o slider para 10 s e confira:
+Abra `http://localhost/lab06-x/dashboard/lab06`, mova o slider para 10 s e confira:
 
 - o **rodapé do OLED** no Wokwi e a réplica mudam para `int 10 s`;
 - a **tabela** passa a mostrar `int_s = 10`;
@@ -995,7 +1003,7 @@ novo em `nodered/flows-lab06.json`.
 
 <CommitPoint
   id="t5"
-  task="Dashboard com a replica do OLED"
+  task="Dashboard com a réplica do OLED"
   pontos={15}
   files="nodered/flows-lab06.json evidencias/t5-dashboard.png"
 />
@@ -1044,18 +1052,22 @@ Como o MQTT/JSON é texto, os bytes viajam em **base64**: 3 bytes viram 4 caract
 <GroupCommands
   commands={[
     {
-      codeTitle: "Terminal — Assinar via Docker",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com \\
-  -t '{course}/lab06/grupo-{group}/oled/fb' -C 1 | wc -c | tee evidencias/t6-fb.txt`,
+      codeTitle:
+        "Terminal (cmd) — uma mensagem do framebuffer e o tamanho dela",
+      command: `docker run --rm eclipse-mosquitto mosquitto_sub -h broker.hivemq.com -t "{course}/lab06/grupo-{group}/oled/fb" -C 1 > fb.tmp
+for %A in (fb.tmp) do @echo %~zA bytes> evidencias\\t6-fb.txt
+del fb.tmp
+type evidencias\\t6-fb.txt`,
     },
   ]}
 />
 
 ```text title="evidencias/t6-fb.txt"
-1369
+1369 bytes
 ```
 
-São 1368 caracteres base64 mais a quebra de linha que o `mosquitto_sub` acrescenta.
+São 1368 caracteres base64 mais a quebra de linha que o `mosquitto_sub` acrescenta. O `%~zA` do
+`for` é o tamanho do arquivo em bytes; o `fb.tmp` é apagado em seguida.
 
 ### Dicas de API
 
@@ -1147,5 +1159,9 @@ ou no dashboard?
 />
 
 ---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
 
 <LabLogout />
