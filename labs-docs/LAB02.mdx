@@ -5,9 +5,10 @@ sidebar_position: 5
 
 ## Checklist — ambiente de desenvolvimento (parte 2): PlatformIO, Wokwi e Docker {/* #checklist */}
 
-- [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando (T1)
+- [ ] Extensões PlatformIO IDE e Wokwi Simulator no perfil `ESP32IO`, com o `pio` no **Path** (Parte 1)
+- [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando, sem a `.pio/` no repositório (T1)
 - [ ] Licença do Wokwi ativada, `wokwi.toml` + `diagram.json` e o pisca-LED simulado no VS Code (T2)
-- [ ] Pisca sem `delay()` (com `millis()`) e o ciclo editar → compilar → simular dominado (T3)
+- [ ] Pisca sem `delay()` (com `millis()`) e um _breakpoint_ do GDB parando o firmware no Wokwi (T3)
 - [ ] Docker funcionando e mensagens MQTT trocadas com o `mosquitto_sub`/`mosquitto_pub` (T4)
 - [ ] ESP32 simulado publicando no broker MQTT e obedecendo a um comando enviado do terminal (T5)
 - [ ] Previsões P1–P3 respondidas no `README.md`
@@ -27,11 +28,11 @@ autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada taref
 
 ---
 
-No Lab 01, o grupo passou a usar o Git e o GitHub, e o PlatformIO fez o primeiro build. Agora o
-firmware **roda**: no **Wokwi**, um ESP32 simulado dentro do VS Code, com LED, monitor serial e
-Wi-Fi. E entra a última ferramenta do ambiente, o **Docker**. Com ele, você roda o
-`mosquitto_sub` e o `mosquitto_pub` sem instalar nada, e nos próximos labs o Node-RED, o banco
-de dados e o LAB IoT inteiro.
+No Lab 01, o grupo passou a usar o Git e o GitHub. Agora entra o **firmware**: o
+**PlatformIO** compila o código do ESP32, e o **Wokwi** o roda num ESP32 simulado dentro do
+VS Code, com LED, monitor serial, Wi-Fi e depurador (GDB). E entra a última ferramenta do
+ambiente, o **Docker**. Com ele, você roda o `mosquitto_sub` e o `mosquitto_pub` sem instalar
+nada, e nos próximos labs o Node-RED, o banco de dados e o LAB IoT inteiro.
 
 No fim da aula, o caminho que os Labs 05 a 12 usam o tempo todo estará testado de ponta a
 ponta: o ESP32 simulado conecta no Wi-Fi do Wokwi, publica no broker MQTT público, e você vê as
@@ -42,6 +43,7 @@ flowchart LR
   subgraph VS["VS Code"]
     PIO["PlatformIO<br/>pio run"] --> FW["firmware.bin / .elf"]
     FW --> WK["Wokwi<br/>ESP32 + LED + serial"]
+    GDB["GDB<br/>breakpoints"] -. "localhost:3333" .-> WK
   end
   WK -- "Wi-Fi Wokwi-GUEST" --> BRK[("broker.hivemq.com:1883")]
   subgraph DK["Docker"]
@@ -54,24 +56,27 @@ flowchart LR
 
 ## Objetivos
 
+- Instalar o **PlatformIO** e o **Wokwi** no VS Code e fazer o primeiro build do ESP32.
 - Configurar um projeto PlatformIO **reprodutível**: plataforma e bibliotecas com versão fixa.
 - Ativar o **Wokwi** no VS Code e ligar o firmware do PlatformIO ao circuito (`wokwi.toml`,
   `diagram.json`).
-- Trocar o `delay()` por **`millis()`**, o padrão que todos os labs seguintes usam.
+- Trocar o `delay()` por **`millis()`**, o padrão que todos os labs seguintes usam, e
+  **depurar** o firmware simulado com o **GDB**.
 - Instalar o **Docker** e usar o `mosquitto_sub`/`mosquitto_pub` num container.
 - Fechar o ciclo **ESP32 → MQTT → terminal → MQTT → ESP32**.
 
 ## Material
 
-- O ambiente do Lab 01: Windows 11, VS Code no perfil `ESP32IO`, Git, `gh`, PlatformIO com o
-  `pio` no **Path**, extensão Wokwi, e o terminal do VS Code no **Prompt de Comando** (`cmd`).
+- O ambiente do Lab 01: Windows 11, VS Code, Git, `gh`, Python, e o terminal do VS Code no
+  **Prompt de Comando** (`cmd`).
+- ~5 GB livres: o toolchain do ESP32 (~300 MB no primeiro build) e as imagens do Docker.
 - Uma **conta no Wokwi** (gratuita) para ativar a licença do simulador no VS Code.
 - **Docker Desktop** com **WSL 2** (aba **Docker** da [configuração do ambiente](#setup)).
 - Nenhuma placa. A Parte 6 mostra como gravar uma placa real, para quem tiver.
 
 :::note[Abas da configuração do ambiente usadas hoje]
-**Wokwi** (licença e, opcionalmente, o `wokwi-cli`), **Docker** (WSL 2 e Docker Desktop) e,
-só para quem tiver placa, **Drivers**. As demais já foram feitas no Lab 01.
+**PlatformIO**, **Wokwi** (extensão, licença e, opcionalmente, o `wokwi-cli`), **Docker** (WSL 2
+e Docker Desktop) e, só para quem tiver placa, **Drivers**. As demais já foram feitas no Lab 01.
 :::
 
 :::info[Por que simular?]
@@ -94,7 +99,7 @@ No Lab 10, o mesmo simulador roda sem interface, dentro do CI.
 
 - [T1 — Projeto PlatformIO com versoes fixas](#t1) · 15 pts
 - [T2 — Wokwi no VS Code](#t2) · 20 pts
-- [T3 — Pisca com millis](#t3) · 15 pts
+- [T3 — Pisca com millis e GDB](#t3) · 15 pts
 - [T4 — Docker e MQTT pelo terminal](#t4) · 20 pts
 - [T5 — ESP32 simulado falando MQTT](#t5) · 30 pts
 
@@ -110,15 +115,21 @@ O repositório nasce do `lab02-template`, com o `README.md` e o `.gitignore`:
   files={[
     ".gitignore r",
     ".vscode/settings.json r",
+    ".vscode/launch.json c",
     "README.md u",
     "platformio.ini c",
     "src/main.cpp c",
+    "include/README c",
+    "lib/README c",
+    "test/README c",
     "wokwi.toml c",
     "diagram.json c",
+    "evidencias/t1-ambiente.txt c",
     "evidencias/t1-build.txt c",
     "evidencias/t2-serial.txt c",
     "evidencias/t2-wokwi.png c",
     "evidencias/t3-serial.txt c",
+    "evidencias/t3-gdb.png c",
     "evidencias/t4-mqtt.txt c",
     "evidencias/t5-mqtt.txt c",
     "evidencias/t5-serial.txt c",
@@ -133,17 +144,42 @@ tópicos. Não mande nada que não possa ser público.
 
 ---
 
-## Parte 1 — Projeto PlatformIO com versões fixas {/* #parte-1 */}
+## Parte 1 — PlatformIO: instalação e projeto com versões fixas {/* #parte-1 */}
 
-### 1.1 Criar o projeto
+### 1.1 Instalar as extensões
 
-Abra o repositório no perfil da disciplina e confira que o terminal é o **cmd** (o
+Siga as abas **PlatformIO** e **Wokwi** da [configuração do ambiente](#setup). As extensões vão
+para o **perfil `ESP32IO`** do VS Code (`--profile "ESP32IO"`), o mesmo em que você abriu o
+repositório no Lab 01:
+
+```shell title="Terminal (cmd)"
+code --install-extension platformio.platformio-ide --profile "ESP32IO"
+code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
+```
+
+Abra o repositório do grupo **nesse perfil** e confira que o terminal é o **cmd** (o
 `.vscode/settings.json` do Lab 01; se o template não o trouxer, crie-o de novo):
 
 ```shell title="Terminal (cmd)"
 cd lab02-grupo-x
 code --profile "ESP32IO" .
 ```
+
+Na primeira vez que o VS Code abrir com a extensão do PlatformIO, ela instala o **PlatformIO
+Core** (barra de status: _Installing PlatformIO Core_). Espere terminar e recarregue a janela
+quando ele pedir. É essa instalação que cria a pasta `%USERPROFILE%\.platformio\penv\Scripts\`,
+que a aba **PlatformIO** manda pôr no **Path**. Depois de pôr, **feche e abra** o VS Code e
+confira:
+
+```shell title="Terminal do VS Code (cmd)"
+pio --version
+call code --list-extensions --profile "ESP32IO"
+```
+
+Se aparecer _'pio' não é reconhecido como um comando interno_, falta o **Path**; se a pasta não
+existir, o PlatformIO Core ainda não terminou de instalar.
+
+### 1.2 Criar o projeto
 
 No terminal do VS Code, na raiz do repositório:
 
@@ -158,14 +194,15 @@ lib - Put project specific (private) libraries here
 src - Put project source files here
 platformio.ini - Project Configuration File
 Resolving esp32dev dependencies...
-Already up-to-date.
 Project has been successfully initialized!
 ```
 
-O _Already up-to-date_ quer dizer que o toolchain baixado no Lab 01 foi reaproveitado. Se este
-for o primeiro build neste computador, ele baixa agora (~300 MB).
+O `pio project init` cria `platformio.ini`, `src/`, `include/`, `lib/` e `test/`, e não apaga o
+`README.md` nem o `.vscode/settings.json`. (A aba **PlatformIO** mostra o mesmo comando com
+`--ide vscode --sample-code`: o primeiro gera arquivos de configuração do VS Code, o segundo um
+`main.cpp` de exemplo. Aqui você escreve o seu.)
 
-### 1.2 Fixar as versões
+### 1.3 Fixar as versões
 
 O `pio project init` escreve `platform = espressif32`, sem versão. Sem versão, o mesmo projeto
 compila com um core Arduino diferente quando sai uma versão nova, e um código que funcionava
@@ -179,16 +216,53 @@ framework = arduino
 monitor_speed = 115200             ; o mesmo valor do Serial.begin()
 ```
 
-Copie o `src/main.cpp` do Lab 01 (o pisca-LED com `delay`) e compile:
+### 1.4 Pisca-LED e primeiro build
+
+Crie `src/main.cpp`:
+
+```cpp title="src/main.cpp"
+#include <Arduino.h>
+
+#define LED_PIN 2                     // GPIO2 (o LED do circuito da Parte 2)
+
+// Protótipo: em C/C++ uma função precisa ser declarada antes de ser usada
+void piscar(uint8_t pino, uint16_t meioPeriodoMs);
+
+void setup() {
+  Serial.begin(115200);               // o mesmo valor do monitor_speed do platformio.ini
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 inicializado! Lab 02, grupo X");
+}
+
+void loop() {
+  piscar(LED_PIN, 500);
+}
+
+void piscar(uint8_t pino, uint16_t meioPeriodoMs) {
+  digitalWrite(pino, HIGH);
+  delay(meioPeriodoMs);
+  digitalWrite(pino, LOW);
+  delay(meioPeriodoMs);
+}
+```
+
+O **primeiro** build baixa a plataforma `espressif32@6.9.0`, o toolchain Xtensa e o core
+Arduino (~300 MB). Pode levar de 5 a 15 minutos; os seguintes levam segundos. Rode o primeiro
+na tela, para acompanhar o download, e o segundo gravando a evidência:
 
 ```shell title="Terminal do VS Code (cmd)"
 pio run
 if not exist evidencias mkdir evidencias
+(echo == ambiente %DATE% %TIME% & pio --version & call code --list-extensions --profile "ESP32IO") > evidencias\t1-ambiente.txt 2>&1
 pio run > evidencias\t1-build.txt 2>&1
 type evidencias\t1-build.txt
-git add .vscode/settings.json platformio.ini src evidencias/t1-build.txt
-git commit -m "T1: projeto com versões fixas"
-git push
+```
+
+```text title="evidencias/t1-build.txt (final; os números variam)"
+RAM:   [=         ]   6.5% (used 21360 bytes from 327680 bytes)
+Flash: [==        ]  20.4% (used 267525 bytes from 1310720 bytes)
+Building .pio/build/esp32dev/firmware.bin
+========================= [SUCCESS] Took 41.27 seconds =========================
 ```
 
 :::note[Os botões do PlatformIO]
@@ -198,12 +272,28 @@ melhor para gerar evidências, porque o `> arquivo 2>&1` grava a saída direto n
 segundo `pio run` não recompila nada, mas imprime de novo o uso de RAM e Flash.
 :::
 
+### 1.5 O que vai para o repositório
+
+O `git status` mostra a pasta `.pio/`? Não deveria: o `.gitignore` do template a ignora. Ela
+guarda o build inteiro (dezenas de MB, confira com `dir /s .pio`), muda a cada compilação e é
+refeita por qualquer um com `pio run`. Nem o `firmware.bin` vai: ele é gerado a partir do
+código, e no Lab 10 vai para outro lugar, uma _release_. Faça o commit **só** do que é código e
+configuração:
+
+```shell title="Terminal do VS Code (cmd)"
+git status
+git add .vscode/settings.json platformio.ini src include lib test evidencias/t1-ambiente.txt evidencias/t1-build.txt
+git commit -m "T1: projeto com versões fixas"
+git push
+```
+
 <FileTree
   root="lab02-grupo-x"
   files={[
     ".vscode/settings.json c",
     "platformio.ini c",
     "src/main.cpp c",
+    "evidencias/t1-ambiente.txt c",
     "evidencias/t1-build.txt c",
   ]}
 />
@@ -212,7 +302,7 @@ segundo `pio run` não recompila nada, mas imprime de novo o uso de RAM e Flash.
   id="t1"
   task="Projeto PlatformIO com versoes fixas"
   pontos={15}
-  files=".vscode/settings.json platformio.ini src/main.cpp evidencias/t1-build.txt"
+  files=".vscode/settings.json platformio.ini src/main.cpp evidencias/t1-ambiente.txt evidencias/t1-build.txt"
 />
 
 ---
@@ -339,7 +429,9 @@ tela? E o `millis()` do ESP32: conta o tempo simulado ou o do relógio da parede
 
 ---
 
-## Parte 3 — Pisca com `millis()` {/* #parte-3 */}
+## Parte 3 — Pisca com `millis()` e depuração com GDB {/* #parte-3 */}
+
+### 3.1 Sem `delay()`
 
 Com `delay(500)`, o ESP32 fica **parado** meio segundo e não faz mais nada: não lê a serial, não
 atende o Wi-Fi, não confere um botão. Os labs seguintes fazem várias coisas "ao mesmo tempo",
@@ -401,16 +493,91 @@ uma volta do `loop()` atrasar 3 ms?
 
 **Evidência:** pelo menos 5 linhas do monitor serial em `evidencias/t3-serial.txt`.
 
+### 3.2 Depurar com GDB no Wokwi
+
+O `Serial.printf` mostra o que você **mandou** imprimir. O **GDB** para o firmware numa linha
+(_breakpoint_) e mostra **todas** as variáveis naquele instante, sem mudar o código. O Wokwi
+abre um servidor GDB na porta 3333, e o VS Code se conecta a ele.
+
+1. **Extensão C/C++** (fornece o depurador `cppdbg` do VS Code):
+
+   ```shell title="Terminal (cmd)"
+   code --install-extension ms-vscode.cpptools --profile "ESP32IO"
+   ```
+
+2. **`wokwi.toml`**: acrescente a porta do servidor GDB.
+
+   ```toml title="wokwi.toml"
+   [wokwi]
+   version = 1
+   firmware = '.pio/build/esp32dev/firmware.bin'
+   elf = '.pio/build/esp32dev/firmware.elf'
+   gdbServerPort = 3333
+   ```
+
+3. **`.vscode/launch.json`**: diz ao VS Code qual GDB usar (o do toolchain do ESP32, baixado
+   pelo PlatformIO), qual `.elf` tem os símbolos e onde está o servidor.
+
+   ```json title=".vscode/launch.json"
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": "Wokwi GDB",
+         "type": "cppdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/.pio/build/esp32dev/firmware.elf",
+         "cwd": "${workspaceFolder}",
+         "MIMode": "gdb",
+         "miDebuggerPath": "${userHome}/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gdb.exe",
+         "miDebuggerServerAddress": "localhost:3333"
+       }
+     ]
+   }
+   ```
+
+   Confira que o GDB existe nesse caminho:
+
+   ```shell title="Terminal do VS Code (cmd)"
+   dir "%USERPROFILE%\.platformio\packages\toolchain-xtensa-esp32\bin\*gdb*"
+   ```
+
+4. **Depurar.** Compile (`pio run`), depois **F1** → **Wokwi: Start Simulator and Wait for
+   Debugger**: o simulador abre parado, esperando o GDB. Clique na margem à esquerda da linha
+   `ledAceso = !ledAceso;` (aparece um ponto vermelho) e aperte **F5** (configuração
+   **Wokwi GDB**).
+
+5. O firmware para no _breakpoint_. No painel **Run and Debug**, a seção **Variables** mostra
+   `agora`, e **Watch** aceita expressões (`tLed`, `voltas`, `ledAceso`). **F5** continua até a
+   próxima parada, **F10** executa uma linha, **F11** entra na função, **Shift+F5** encerra.
+
+Salve uma captura do VS Code parado no _breakpoint_, com as variáveis à vista, em
+`evidencias/t3-gdb.png`.
+
+:::note[Variáveis _optimized out_]
+O build padrão do PlatformIO é otimizado (`-Os`): o compilador guarda variáveis em
+registradores ou as elimina, e o GDB mostra `<optimized out>`. Para depurar, acrescente
+`build_type = debug` ao `[env:esp32dev]` do `platformio.ini` e compile de novo; retire-o depois.
+Enquanto o firmware está parado no GDB, o tempo **simulado** também para: o `millis()` não
+avança, e o LED não troca (compare com o P1-b).
+:::
+
 <FileTree
   root="lab02-grupo-x"
-  files={["src/main.cpp u", "evidencias/t3-serial.txt c"]}
+  files={[
+    "src/main.cpp u",
+    "wokwi.toml u",
+    ".vscode/launch.json c",
+    "evidencias/t3-serial.txt c",
+    "evidencias/t3-gdb.png c",
+  ]}
 />
 
 <CommitPoint
   id="t3"
-  task="Pisca com millis"
+  task="Pisca com millis e GDB"
   pontos={15}
-  files="src/main.cpp evidencias/t3-serial.txt"
+  files="src/main.cpp wokwi.toml .vscode/launch.json evidencias/t3-serial.txt evidencias/t3-gdb.png"
 />
 
 ---
@@ -649,6 +816,13 @@ sequenceDiagram
    }
    ```
 
+   :::tip[O GDB também serve aqui]
+   Um _breakpoint_ dentro de `aoReceberMensagem` mostra o `payload` e o `tam` exatamente como
+   chegaram do broker (**Watch**: `(char*)payload,10`). Lembre que, com o firmware parado, o
+   ESP32 não responde ao _keepalive_: pare por mais de ~20 s e o broker o desconecta (e publica
+   o `offline`).
+   :::
+
 3. **Teste.** Primeiro o assinante (para não perder o `status online`), depois compile e
    inicie o Wokwi, e então os comandos:
 
@@ -770,6 +944,7 @@ porta COM só atende um programa por vez.
 | Compilar                    | `pio run`                                                                                          |
 | Limpar o build              | `pio run -t clean`                                                                                 |
 | Simular                     | F1 → **Wokwi: Start Simulator** (compile antes)                                                    |
+| Depurar                     | F1 → **Wokwi: Start Simulator and Wait for Debugger** → **F5** (**Wokwi GDB**)                     |
 | Assinar um tópico (na tela) | `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v`          |
 | Assinar em segundo plano    | `docker run -d --name sub eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
 | Ver / gravar o que chegou   | `docker logs -f sub` · `docker logs sub > arquivo.txt 2>&1`                                        |
@@ -778,11 +953,25 @@ porta COM só atende um programa por vez.
 | Ver um arquivo no terminal  | `type evidencias\t5-mqtt.txt`                                                                      |
 | Fluxo de entrega            | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01)                                       |
 
+| Atalho do depurador | Ação                                 |
+| ------------------- | ------------------------------------ |
+| **F9**              | liga/desliga o _breakpoint_ na linha |
+| **F5**              | inicia / continua                    |
+| **F10** · **F11**   | próxima linha · entra na função      |
+| **Shift+F5**        | encerra a depuração                  |
+
 | Problema                                             | O que fazer                                                                                                                                                          |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'pio' não é reconhecido como um comando interno`    | ponha `%USERPROFILE%\.platformio\penv\Scripts\` no **Path** (aba **PlatformIO**) e abra um terminal novo. Se a pasta não existir, o PlatformIO Core ainda não terminou de instalar |
+| `code` abre o VS Code sem as extensões               | abra no perfil: `code --profile "ESP32IO" .`                                                                                                                         |
+| O primeiro `pio run` demora muito                    | é o download do toolchain (~300 MB): deixe terminar. Os builds seguintes levam segundos                                                                              |
 | O Wokwi pede licença                                 | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias)                                                                               |
 | `firmware.bin not found` no Wokwi                    | compile antes (`pio run`) e confira os caminhos do `wokwi.toml`                                                                                                      |
 | O Wokwi roda o código antigo                         | ele roda o último build: compile de novo                                                                                                                             |
+| `Configured debug type 'cppdbg' is not supported`    | falta a extensão **C/C++** (`ms-vscode.cpptools`) no perfil `ESP32IO`                                                                                                |
+| GDB: `Unable to start debugging` / `localhost:3333`  | inicie antes o **Wokwi: Start Simulator and Wait for Debugger**, e confira o `gdbServerPort = 3333` no `wokwi.toml`                                                  |
+| GDB: `miDebuggerPath` inválido                       | o caminho do `launch.json` tem de bater com o `dir ...\toolchain-xtensa-esp32\bin\*gdb*` (3.2)                                                                       |
+| _Breakpoint_ cinza ou variável `<optimized out>`     | `build_type = debug` no `platformio.ini` e compile de novo                                                                                                           |
 | `[WiFi] conectando...` sem fim                       | o SSID tem de ser exatamente `Wokwi-GUEST`, sem senha                                                                                                                |
 | `[MQTT] ... falhou (rc=-2)`                          | sem rede até o broker: confira o Wi-Fi e o `MQTT_HOST`                                                                                                               |
 | `docker: error during connect`                       | o Docker Desktop está fechado ou iniciando: abra-o e espere                                                                                                          |
