@@ -9,10 +9,10 @@ sidebar_position: 5
 - [ ] Projeto PlatformIO com plataforma e bibliotecas em **versões fixas**, compilando, sem a `.pio/` no repositório (T1)
 - [ ] Licença do Wokwi ativada, `wokwi.toml` + `diagram.json` e o pisca-LED simulado no VS Code (T2)
 - [ ] Pisca sem `delay()` (com `millis()`) e um _breakpoint_ do GDB parando o firmware no Wokwi (T3)
-- [ ] Docker funcionando e mensagens MQTT trocadas com o `mosquitto_sub`/`mosquitto_pub` (T4)
-- [ ] ESP32 simulado publicando no broker MQTT e obedecendo a um comando enviado do terminal (T5)
+- [ ] Docker funcionando, `Dockerfile` + `compose.yaml` e o firmware compilado **dentro do container** (T4)
+- [ ] Firmware simulado pelo `wokwi-cli` no container, com teste automático do serial (T5)
 - [ ] Previsões P1–P3 respondidas no `README.md`
-- [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Nenhum token no repositório; nenhum `push --force`; cada tarefa num commit `Tn:`
 - [ ] Logout do Git e do `gh` no computador do laboratório
 
 :::info[Pontuação]
@@ -30,28 +30,25 @@ autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada taref
 
 No Lab 01, o grupo passou a usar o Git e o GitHub. Agora entra o **firmware**: o
 **PlatformIO** compila o código do ESP32, e o **Wokwi** o roda num ESP32 simulado dentro do
-VS Code, com LED, monitor serial, Wi-Fi e depurador (GDB). E entra a última ferramenta do
-ambiente, o **Docker**. Com ele, você roda o `mosquitto_sub` e o `mosquitto_pub` sem instalar
-nada, e nos próximos labs o Node-RED, o banco de dados e o LAB IoT inteiro.
-
-No fim da aula, o caminho que os Labs 05 a 12 usam o tempo todo estará testado de ponta a
-ponta: o ESP32 simulado conecta no Wi-Fi do Wokwi, publica no broker MQTT público, e você vê as
-mensagens e manda comandos de volta pelo terminal.
+VS Code, com LED, monitor serial e depurador (GDB). E entra a última ferramenta do ambiente, o
+**Docker**: o mesmo build e a mesma simulação passam a rodar num **container Linux**, igual em
+qualquer computador, sem depender do que está instalado no Windows. É exatamente o que o CI do
+Lab 10 vai fazer a cada `push`. O MQTT fica para o Lab 04.
 
 ```mermaid
 flowchart LR
-  subgraph VS["VS Code"]
+  subgraph VS["VS Code (Windows)"]
     PIO["PlatformIO<br/>pio run"] --> FW["firmware.bin / .elf"]
     FW --> WK["Wokwi<br/>ESP32 + LED + serial"]
     GDB["GDB<br/>breakpoints"] -. "localhost:3333" .-> WK
   end
-  WK -- "Wi-Fi Wokwi-GUEST" --> BRK[("broker.hivemq.com:1883")]
-  subgraph DK["Docker"]
-    SUB["mosquitto_sub"]
-    PUB["mosquitto_pub"]
+  subgraph DK["Docker (container Linux)"]
+    CPIO["pio run"] --> CFW["firmware.bin"]
+    CFW --> CLI["wokwi-cli<br/>--expect-text"]
   end
-  BRK --> SUB
-  PUB --> BRK
+  REPO[("pasta do repositório")] <-- "bind mount /projeto" --> DK
+  REPO <--> VS
+  CLI -- "WOKWI_CLI_TOKEN" --> CLOUD[("Wokwi<br/>(nuvem)")]
 ```
 
 ## Objetivos
@@ -62,28 +59,31 @@ flowchart LR
   `diagram.json`).
 - Trocar o `delay()` por **`millis()`**, o padrão que todos os labs seguintes usam, e
   **depurar** o firmware simulado com o **GDB**.
-- Instalar o **Docker** e usar o `mosquitto_sub`/`mosquitto_pub` num container.
-- Fechar o ciclo **ESP32 → MQTT → terminal → MQTT → ESP32**.
+- Instalar o **Docker**, escrever um `Dockerfile` e um `compose.yaml`, e **compilar** e
+  **simular** o firmware num container com o `wokwi-cli`.
 
 ## Material
 
 - O ambiente do Lab 01: Windows 11, VS Code, Git, `gh`, Python, e o terminal do VS Code no
   **Prompt de Comando** (`cmd`).
-- ~5 GB livres: o toolchain do ESP32 (~300 MB no primeiro build) e as imagens do Docker.
-- Uma **conta no Wokwi** (gratuita) para ativar a licença do simulador no VS Code.
+- ~6 GB livres: o toolchain do ESP32 (~300 MB no Windows e de novo no container) e a imagem do
+  Docker.
+- Uma **conta no Wokwi** (gratuita): a licença do simulador no VS Code e o **token de CI** do
+  `wokwi-cli`.
 - **Docker Desktop** com **WSL 2** (aba **Docker** da [configuração do ambiente](#setup)).
 - Nenhuma placa. A Parte 6 mostra como gravar uma placa real, para quem tiver.
 
 :::note[Abas da configuração do ambiente usadas hoje]
-**PlatformIO**, **Wokwi** (extensão, licença e, opcionalmente, o `wokwi-cli`), **Docker** (WSL 2
-e Docker Desktop) e, só para quem tiver placa, **Drivers**. As demais já foram feitas no Lab 01.
+**PlatformIO**, **Wokwi** (extensão e licença), **Docker** (WSL 2 e Docker Desktop) e, só para
+quem tiver placa, **Drivers**. As demais já foram feitas no Lab 01. O `wokwi-cli` não precisa
+ser instalado no Windows: ele roda dentro do container.
 :::
 
 :::info[Por que simular?]
 O Wokwi simula o ESP32 (incluindo o Wi-Fi), LEDs, potenciômetros, o DHT22, o display SSD1306 e
 um analisador lógico. Todo o semestre roda nele: ninguém depende da bancada, do cabo USB ou do
 driver da placa, e o mesmo circuito (`diagram.json`) vai para o repositório junto com o código.
-No Lab 10, o mesmo simulador roda sem interface, dentro do CI.
+No Lab 10, o mesmo simulador roda sem interface, dentro do CI, com a imagem que você monta hoje.
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
@@ -100,8 +100,8 @@ No Lab 10, o mesmo simulador roda sem interface, dentro do CI.
 - [T1 — Projeto PlatformIO com versoes fixas](#t1) · 15 pts
 - [T2 — Wokwi no VS Code](#t2) · 20 pts
 - [T3 — Pisca com millis e GDB](#t3) · 15 pts
-- [T4 — Docker e MQTT pelo terminal](#t4) · 20 pts
-- [T5 — ESP32 simulado falando MQTT](#t5) · 30 pts
+- [T4 — Docker: build no container](#t4) · 20 pts
+- [T5 — Simulação no container com o wokwi-cli](#t5) · 30 pts
 
 </details>
 
@@ -113,9 +113,12 @@ O repositório nasce do `lab02-template`, com o `README.md` e o `.gitignore`:
   title="Estrutura de Arquivos do Projeto (no fim da aula)"
   root="lab02-grupo-x"
   files={[
-    ".gitignore r",
+    ".gitignore u",
+    ".dockerignore c",
     ".vscode/settings.json r",
     ".vscode/launch.json c",
+    "Dockerfile c",
+    "compose.yaml c",
     "README.md u",
     "platformio.ini c",
     "src/main.cpp c",
@@ -130,17 +133,12 @@ O repositório nasce do `lab02-template`, com o `README.md` e o `.gitignore`:
     "evidencias/t2-wokwi.png c",
     "evidencias/t3-serial.txt c",
     "evidencias/t3-gdb.png c",
-    "evidencias/t4-mqtt.txt c",
-    "evidencias/t5-mqtt.txt c",
+    "evidencias/t4-docker.txt c",
+    "evidencias/t4-build-docker.txt c",
+    "evidencias/t5-wokwi.txt c",
     "evidencias/t5-serial.txt c",
   ]}
 />
-
-:::info[Tópicos do Lab 02]
-Tudo fica sob `elt85b/lab02/grupo-X/`. Troque o `X` (e o `#define GRUPO`) pela letra do seu
-grupo. O broker `broker.hivemq.com` é **público**: qualquer pessoa pode ler e publicar nos seus
-tópicos. Não mande nada que não possa ser público.
-:::
 
 ---
 
@@ -331,7 +329,7 @@ elf = '.pio/build/esp32dev/firmware.elf'
 ```
 
 Use `/` nos caminhos, mesmo no Windows: o arquivo vai para o repositório e precisa funcionar
-nos computadores de todos (e, no Lab 10, no Linux do CI).
+nos computadores de todos e no container Linux da Parte 4.
 
 ```json title="diagram.json"
 {
@@ -380,19 +378,6 @@ nos computadores de todos (e, no Lab 10, no Linux do CI).
 
 Abra o `diagram.json` no VS Code: o editor do Wokwi mostra o circuito ao lado, e você pode
 arrastar as peças. Os labs seguintes acrescentam componentes a este mesmo arquivo.
-
-:::tip[Opcional: conferir o circuito com o `wokwi-cli`]
-Quem instalou o `wokwi-cli` (aba **Wokwi**) pode conferir o `diagram.json` sem abrir o
-simulador. O `lint` não precisa do token:
-
-```shell title="Terminal do VS Code (cmd)"
-wokwi-cli lint diagram.json
-```
-
-A única mensagem esperada é um aviso (`info`) de que o tipo `board-esp32-devkit-c-v4` não é
-documentado. O token (`WOKWI_CLI_TOKEN`) só é usado para **simular** pela linha de comando, como
-no CI do Lab 10.
-:::
 
 ### 2.3 Simular
 
@@ -582,7 +567,21 @@ avança, e o LED não troca (compare com o P1-b).
 
 ---
 
-## Parte 4 — Docker e MQTT pelo terminal {/* #parte-4 */}
+## Parte 4 — Docker: o ambiente num container {/* #parte-4 */}
+
+Até aqui, o build depende do **seu** Windows: da versão do PlatformIO, do Path, do perfil do
+VS Code. Um **container** é um Linux mínimo, descrito num arquivo de texto (`Dockerfile`), que
+roda igual em qualquer computador com Docker. Se o firmware compila no container, compila no
+computador do colega, no do professor e no CI.
+
+| Peça           | O que é                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| `Dockerfile`   | a **receita** da imagem: sistema base + o que instalar (PlatformIO, `wokwi-cli`)                |
+| imagem         | o resultado do `docker compose build`: um "molde" pronto, guardado no Docker                    |
+| container      | uma execução da imagem; com `--rm`, é apagado quando o comando termina                          |
+| `compose.yaml` | **como** rodar: qual imagem, quais pastas montar, quais variáveis, qual comando de cada serviço |
+| _bind mount_   | a pasta do repositório aparece dentro do container em `/projeto`: o que ele grava, você vê      |
+| volume nomeado | uma pasta guardada pelo Docker entre execuções: aqui, o cache do PlatformIO (~300 MB)           |
 
 ### 4.1 Instalar e conferir o Docker
 
@@ -591,310 +590,262 @@ Siga a aba **Docker** da [configuração do ambiente](#setup): primeiro o **WSL 
 Desktop, aceite os termos e espere a baleia ficar parada na bandeja. Se ele reclamar de
 virtualização, ative-a na BIOS/UEFI (Intel VT-x ou AMD-V).
 
-Confira no terminal do VS Code:
+Confira no terminal do VS Code e grave a evidência:
 
 ```shell title="Terminal do VS Code (cmd)"
-wsl --version && docker --version && docker compose version
-docker run --rm hello-world
+(wsl --version & docker --version & docker compose version & docker run --rm hello-world) > evidencias\t4-docker.txt 2>&1
+type evidencias\t4-docker.txt
 ```
 
 O `hello-world` baixa uma imagem minúscula, cria um container, imprime _Hello from Docker!_ e
-o container é apagado (`--rm`). É assim que todos os comandos `docker run` dos labs funcionam:
-você usa um programa (o `mosquitto_sub`, por exemplo) sem instalá-lo no Windows.
+o container é apagado (`--rm`). O `wsl --version` escreve em UTF-16, e por isso pode aparecer
+com espaços entre as letras no arquivo: tudo bem.
 
-### 4.2 MQTT em 1 minuto
+### 4.2 O `Dockerfile`
 
-O **MQTT** é um protocolo de mensagens por **tópicos**. Quem publica manda uma mensagem para um
-**broker**, num tópico (`elt85b/lab02/grupo-a/ola`). Quem assinou aquele tópico (ou um filtro
-como `elt85b/lab02/grupo-a/#`) recebe. Quem publica e quem assina não se conhecem: os dois só
-falam com o broker. Os detalhes (QoS, retain, LWT) vêm no Lab 05.
+Na raiz do repositório, crie o `Dockerfile` (sem extensão):
 
-### 4.3 Publicar e assinar
+```dockerfile title="Dockerfile"
+# ELT85B - ambiente de build e simulação do ESP32 (o mesmo do CI do Lab 10)
+FROM python:3.12-slim
 
-O teste da aba **Docker** usa o broker `test.mosquitto.org`. Nos labs, o broker público é o
-`broker.hivemq.com`, e cada grupo usa o seu tópico.
+# Versão fixa do PlatformIO Core, como a plataforma no platformio.ini
+ARG PIO_VERSION=6.1.18
 
-O `cmd` não tem um jeito simples de mostrar a saída na tela **e** gravá-la num arquivo ao mesmo
-tempo. Por isso, o assinante roda **em segundo plano**, num container com nome (`-d --name`): o
-`docker logs -f` mostra o que chega, e o `docker logs` (sem `-f`) grava tudo na evidência no
-fim.
+# curl: baixar o wokwi-cli · git: bibliotecas do PlatformIO vindas de repositórios
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates git \
+ && rm -rf /var/lib/apt/lists/*
 
-<GroupCommands
-  commands={[
-    {
-      title: "1. Assinar",
-      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
-      command: `docker run -d --name sub-lab02 eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/#" -v
-docker logs -f sub-lab02`,
-    },
-    {
-      title: "2. Publicar",
-      codeTitle: "Terminal 2 (cmd) — publicar",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/teste" -m "ola do grupo {group}"
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/teste/numero" -m 42`,
-    },
-    {
-      title: "3. Gravar e encerrar",
-      codeTitle: "Terminal 1 (cmd) — depois do Ctrl+C",
-      command: `docker logs sub-lab02 > evidencias\\t4-mqtt.txt 2>&1
-type evidencias\\t4-mqtt.txt
-docker rm -f sub-lab02`,
-    },
+RUN pip install --no-cache-dir "platformio==${PIO_VERSION}"
+
+# wokwi-cli: um único executável Linux, publicado no GitHub do Wokwi
+RUN curl -fsSL -o /usr/local/bin/wokwi-cli \
+      https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64 \
+ && chmod +x /usr/local/bin/wokwi-cli \
+ && wokwi-cli --version
+
+WORKDIR /projeto
+CMD ["pio", "--version"]
+```
+
+Cada `RUN` vira uma **camada** da imagem. O Docker guarda as camadas em cache: se você mudar só
+a última linha, ele não instala o PlatformIO de novo. Por isso o que muda menos fica em cima.
+
+O **contexto** do build é a pasta inteira, enviada ao Docker antes de começar. O
+`.dockerignore` tira dele o que a imagem não usa (e o `.env` da T5, que nunca deve entrar numa
+imagem):
+
+```text title=".dockerignore"
+.git
+.pio
+.vscode
+evidencias
+.env
+```
+
+### 4.3 O `compose.yaml`
+
+O `docker compose` guarda num arquivo os parâmetros que, com o `docker run`, você teria de
+digitar a cada vez. Os três serviços usam a mesma imagem; muda só o comando:
+
+```yaml title="compose.yaml"
+# Configuração comum aos serviços (âncora YAML: &esp32 define, <<: *esp32 reutiliza)
+x-esp32: &esp32
+  build: .
+  image: elt85b/esp32-dev:lab02
+  working_dir: /projeto
+  volumes:
+    - .:/projeto # o repositório, dentro do container
+    - platformio:/root/.platformio # cache do toolchain entre execuções
+  environment:
+    WOKWI_CLI_TOKEN: ${WOKWI_CLI_TOKEN:-} # vem do arquivo .env (T5), nunca do Git
+
+services:
+  pio: # compilar
+    <<: *esp32
+    command: pio run
+
+  wokwi: # simular e testar o serial
+    <<: *esp32
+    command: >
+      wokwi-cli --timeout 10000 --expect-text "voltas do loop"
+      --serial-log-file evidencias/t5-serial.txt .
+
+  ci: # compilar e simular, como o CI do Lab 10
+    <<: *esp32
+    command: sh -c "pio run && wokwi-cli --timeout 10000 --expect-text 'voltas do loop' ."
+
+volumes:
+  platformio:
+```
+
+### 4.4 Construir a imagem e compilar no container
+
+```shell title="Terminal do VS Code (cmd)"
+docker compose build
+docker compose run --rm pio
+docker compose run --rm -T pio > evidencias\t4-build-docker.txt 2>&1
+type evidencias\t4-build-docker.txt
+```
+
+1. `docker compose build` monta a imagem a partir do `Dockerfile` (alguns minutos, na primeira
+   vez).
+2. O primeiro `docker compose run --rm pio` baixa a plataforma `espressif32@6.9.0` e o
+   toolchain **para Linux** (~300 MB, de novo: o do Windows não serve no container) e guarda
+   tudo no volume `platformio`.
+3. O segundo grava a evidência. O `-T` desliga o terminal interativo, que atrapalha quando a
+   saída vai para um arquivo.
+
+O `firmware.bin` aparece na **sua** pasta `.pio/build/esp32dev/`, porque o container escreve
+no _bind mount_. O build do Windows e o do container usam a mesma `.pio/`, mas caminhos
+diferentes (`C:\...` × `/projeto`): na primeira vez que você alternar entre os dois, cada lado
+recompila tudo. Um build dentro do container, numa pasta do Windows, também é mais lento que o
+do VS Code: é o preço do WSL 2 cruzar os dois sistemas de arquivos.
+
+```shell title="Terminal do VS Code (cmd)"
+git add Dockerfile .dockerignore compose.yaml evidencias/t4-docker.txt evidencias/t4-build-docker.txt
+git commit -m "T4: build do firmware no Docker"
+git push
+```
+
+<FileTree
+  root="lab02-grupo-x"
+  files={[
+    "Dockerfile c",
+    ".dockerignore c",
+    "compose.yaml c",
+    "evidencias/t4-docker.txt c",
+    "evidencias/t4-build-docker.txt c",
   ]}
 />
 
-Abra um segundo terminal com o **+** do painel de terminais (ou **Ctrl+Shift+`**). O
-**Ctrl+C** no terminal 1 só para o `docker logs -f`: o assinante continua rodando até o
-`docker rm -f`. Confira com `docker ps`.
-
-```text title="evidencias/t4-mqtt.txt"
-elt85b/lab02/grupo-a/teste ola do grupo a
-elt85b/lab02/grupo-a/teste/numero 42
-```
-
-A primeira execução baixa a imagem `eclipse-mosquitto:2` (~10 MB); as seguintes começam na hora.
-Se o `docker run -d` disser que o nome `sub-lab02` já está em uso, sobrou um container da
-tentativa anterior: `docker rm -f sub-lab02` e repita.
-
-:::warning[Aspas no cmd]
-No `cmd`, só as **aspas duplas** agrupam um texto. Com aspas simples (`'...'`, como em muitos
-exemplos da internet, escritos para Linux), o tópico chega ao `mosquitto_sub` com as aspas, e
-nenhuma mensagem casa com ele.
-:::
-
-<FileTree root="lab02-grupo-x" files={["evidencias/t4-mqtt.txt c"]} />
-
 <CommitPoint
   id="t4"
-  task="Docker e MQTT pelo terminal"
+  task="Docker: build no container"
   pontos={20}
-  files="evidencias/t4-mqtt.txt"
+  files="Dockerfile .dockerignore compose.yaml evidencias/t4-docker.txt evidencias/t4-build-docker.txt"
 />
 
 ---
 
-## Projeto integrador — ESP32 simulado falando MQTT {/* #integrador */}
+## Projeto integrador — simular no container com o `wokwi-cli` {/* #integrador */}
 
-Agora o ESP32 entra na conversa. Ele conecta no Wi-Fi do Wokwi (`Wokwi-GUEST`, aberto), publica
-uma mensagem a cada 5 s e **assina** um tópico de comando: o terminal manda `on`, `off` ou
-`pisca`, e o LED obedece. É o esqueleto de todos os labs com MQTT.
+O Wokwi do VS Code precisa de alguém olhando a tela. O **`wokwi-cli`** roda a mesma simulação
+sem interface: envia o `firmware.bin` e o `diagram.json` para o simulador do Wokwi (na nuvem),
+recebe o monitor serial e termina com um **código de saída**: `0` se o texto esperado apareceu
+no serial a tempo, diferente de `0` se não. É um **teste automático** do firmware, e é o que o
+CI do Lab 10 roda a cada `push`.
 
 ```mermaid
 sequenceDiagram
-  participant E as ESP32 (Wokwi)
-  participant B as broker.hivemq.com
-  participant T as Terminal (Docker)
-  E->>B: CONNECT (LWT: status = offline, retido)
-  E->>B: PUBLISH status = online (retido)
-  E->>B: SUBSCRIBE .../cmd/led
-  loop a cada 5 s
-    E->>B: PUBLISH .../ola {"grupo":"a","n":7,...}
-    B->>T: .../ola {"grupo":"a","n":7,...}
+  participant C as container (wokwi-cli)
+  participant W as Wokwi (nuvem)
+  C->>W: token + firmware.bin + diagram.json
+  W-->>C: monitor serial (ao vivo)
+  Note over C: procura "voltas do loop"
+  alt texto apareceu antes de 10 s simulados
+    C->>C: sai com código 0 (passou)
+  else não apareceu
+    C->>C: sai com código ≠ 0 (falhou)
   end
-  T->>B: PUBLISH .../cmd/led = on
-  B->>E: on
-  E->>E: LED aceso (fixo)
 ```
 
 ### Requisitos
 
-1. **`platformio.ini`**: a biblioteca do cliente MQTT, em versão fixa.
+1. **Token de CI.** Em [wokwi.com/dashboard/ci](https://wokwi.com/dashboard/ci), entre com a sua
+   conta e gere um token. Ele é **pessoal**: quem tem o token usa a sua cota de simulação.
 
-   ```ini title="platformio.ini"
-   [env:esp32dev]
-   platform = espressif32@6.9.0
-   board = esp32dev
-   framework = arduino
-   monitor_speed = 115200
-   lib_deps =
-       knolleary/PubSubClient@2.8
+2. **`.env`, fora do Git.** Primeiro, garanta que o Git ignora o `.env`; depois, crie-o pelo
+   VS Code (**Explorer** → novo arquivo `.env`):
+
+   ```shell title="Terminal do VS Code (cmd)"
+   echo .env>> .gitignore
+   git check-ignore -v .env
    ```
 
-2. **`src/main.cpp`**:
-
-   ```cpp title="src/main.cpp (T5)"
-   // ELT85B - Lab 02 (T5): ESP32 no Wokwi falando MQTT
-   #include <Arduino.h>
-   #include <WiFi.h>
-   #include <PubSubClient.h>
-
-   #define GRUPO   "a"                         // troque pela letra do seu grupo
-   #define LED_PIN 2
-
-   const char *WIFI_SSID  = "Wokwi-GUEST";     // a rede aberta do simulador
-   const char *WIFI_SENHA = "";
-   const char *MQTT_HOST  = "broker.hivemq.com";
-   const uint16_t MQTT_PORTA = 1883;
-
-   #define BASE "elt85b/lab02/grupo-" GRUPO
-   const char *TOPICO_STATUS = BASE "/status";   // online / offline (retido, LWT)
-   const char *TOPICO_OLA    = BASE "/ola";      // JSON a cada 5 s
-   const char *TOPICO_LED    = BASE "/cmd/led";  // terminal -> ESP32: on | off | pisca
-
-   WiFiClient wifiClient;
-   PubSubClient mqtt(wifiClient);
-   char clientId[32];
-
-   enum ModoLed { LED_PISCA, LED_LIGADO, LED_DESLIGADO };
-   ModoLed modoLed = LED_PISCA;
-   bool ledAceso = false;
-   unsigned long tLed = 0, tOla = 0;
-   uint32_t n = 0;
-
-   // Chamada DENTRO de mqtt.loop(), quando chega mensagem num tópico assinado
-   void aoReceberMensagem(char *topico, byte *payload, unsigned int tam) {
-     char txt[16];
-     size_t k = tam < sizeof(txt) - 1 ? tam : sizeof(txt) - 1;
-     memcpy(txt, payload, k);
-     txt[k] = '\0';                              // o payload NÃO termina com '\0'
-     Serial.printf("[CMD] %s <- '%s'\r\n", topico, txt);
-     if (strcmp(txt, "on") == 0) modoLed = LED_LIGADO;
-     else if (strcmp(txt, "off") == 0) modoLed = LED_DESLIGADO;
-     else if (strcmp(txt, "pisca") == 0) modoLed = LED_PISCA;
-     else Serial.println("[CMD] use on, off ou pisca");
-   }
-
-   void conectarWiFi() {
-     Serial.printf("[WiFi] conectando a %s", WIFI_SSID);
-     WiFi.mode(WIFI_STA);
-     WiFi.begin(WIFI_SSID, WIFI_SENHA, 6);      // canal 6: conecta mais rápido no Wokwi
-     while (WiFi.status() != WL_CONNECTED) {
-       delay(250);
-       Serial.print('.');
-     }
-     Serial.printf("\r\n[WiFi] conectado, IP %s\r\n", WiFi.localIP().toString().c_str());
-   }
-
-   void conectarMQTT() {
-     while (!mqtt.connected()) {
-       Serial.printf("[MQTT] conectando a %s como %s ... ", MQTT_HOST, clientId);
-       // LWT: se o ESP32 sumir sem avisar, o broker publica "offline" no lugar dele
-       if (mqtt.connect(clientId, TOPICO_STATUS, 1, true, "offline")) {
-         Serial.println("ok");
-         mqtt.publish(TOPICO_STATUS, "online", true);
-         mqtt.subscribe(TOPICO_LED);             // (re)assina a cada conexão
-       } else {
-         Serial.printf("falhou (rc=%d), nova tentativa em 2 s\r\n", mqtt.state());
-         delay(2000);
-       }
-     }
-   }
-
-   void setup() {
-     Serial.begin(115200);
-     pinMode(LED_PIN, OUTPUT);
-     Serial.println("\r\n=== Lab 02 - ESP32 + MQTT ===");
-     uint64_t mac = ESP.getEfuseMac();
-     snprintf(clientId, sizeof(clientId), "lab02-%s-%04X", GRUPO, (uint16_t)(mac >> 32));
-     conectarWiFi();
-     mqtt.setServer(MQTT_HOST, MQTT_PORTA);
-     mqtt.setCallback(aoReceberMensagem);
-     conectarMQTT();
-   }
-
-   void loop() {
-     if (WiFi.status() != WL_CONNECTED) conectarWiFi();
-     if (!mqtt.connected()) conectarMQTT();
-     mqtt.loop();                               // processa a rede e chama o callback
-
-     unsigned long agora = millis();
-     if (agora - tLed >= 500) {                 // LED, sem delay (T3)
-       tLed += 500;
-       if (modoLed == LED_PISCA) ledAceso = !ledAceso;
-       else ledAceso = (modoLed == LED_LIGADO);
-       digitalWrite(LED_PIN, ledAceso ? HIGH : LOW);
-     }
-
-     if (agora - tOla >= 5000) {                // a cada 5 s, uma mensagem
-       tOla += 5000;
-       char json[96];
-       snprintf(json, sizeof(json), "{\"grupo\":\"%s\",\"n\":%lu,\"uptime_ms\":%lu}",
-                GRUPO, (unsigned long)++n, agora);
-       bool ok = mqtt.publish(TOPICO_OLA, json);
-       Serial.printf("[PUB] %s %s -> %s\r\n", ok ? "ok" : "ERRO", TOPICO_OLA, json);
-     }
-   }
+   ```text title=".env (NÃO vai para o repositório)"
+   WOKWI_CLI_TOKEN=cole_aqui_o_seu_token
    ```
 
-   :::tip[O GDB também serve aqui]
-   Um _breakpoint_ dentro de `aoReceberMensagem` mostra o `payload` e o `tam` exatamente como
-   chegaram do broker (**Watch**: `(char*)payload,10`). Lembre que, com o firmware parado, o
-   ESP32 não responde ao _keepalive_: pare por mais de ~20 s e o broker o desconecta (e publica
-   o `offline`).
-   :::
+   O `git check-ignore` tem de responder `.gitignore:N:.env .env`. O `docker compose` lê o
+   `.env` sozinho e passa o token ao container pelo `${WOKWI_CLI_TOKEN:-}` do `compose.yaml`.
+   Confira com `git status`: o `.env` **não** pode aparecer.
 
-3. **Teste.** Primeiro o assinante (para não perder o `status online`), depois compile e
-   inicie o Wokwi, e então os comandos:
+3. **Simular.** Com o firmware da T3 já compilado (T4):
 
-<GroupCommands
-  commands={[
-    {
-      title: "1. Assinar",
-      codeTitle: "Terminal 1 (cmd) — assinante em segundo plano",
-      command: `docker run -d --name sub-lab02 eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/#" -v
-docker logs -f sub-lab02`,
-    },
-    {
-      title: "2. Comandar o LED",
-      codeTitle: "Terminal 2 (cmd) — comandar",
-      command: `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m on
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m off
-docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "{course}/lab02/grupo-{group}/cmd/led" -m pisca`,
-    },
-    {
-      title: "3. Gravar e encerrar",
-      codeTitle: "Terminal 1 (cmd) — depois do offline",
-      command: `docker logs sub-lab02 > evidencias\\t5-mqtt.txt 2>&1
-type evidencias\\t5-mqtt.txt
-docker rm -f sub-lab02`,
-    },
-  ]}
-/>
+   ```shell title="Terminal do VS Code (cmd)"
+   docker compose run --rm wokwi
+   echo %ERRORLEVEL%
+   ```
 
-4. **Feche o ciclo.** Com o assinante ainda rodando, **pare** a simulação e espere (até ~25 s): chega
-   `status offline`, publicado pelo **broker** no lugar do ESP32 (o LWT). Só então grave a
-   evidência e remova o container (passo 3).
+   ```text title="Saída (trecho; as mensagens do wokwi-cli variam com a versão)"
+   Wokwi CLI v0.x.x
+   Starting simulation...
+   ESP32 inicializado! Lab 02, grupo X
+   [   2000 ms] LED aceso  · 1032915 voltas do loop() em 2 s
+   Expected text found: "voltas do loop"
+   TEST PASSED.
+   0
+   ```
 
-```text title="Monitor serial (trecho; o IP pode variar)"
-=== Lab 02 - ESP32 + MQTT ===
-[WiFi] conectando a Wokwi-GUEST.....
-[WiFi] conectado, IP 10.10.0.2
-[MQTT] conectando a broker.hivemq.com como lab02-a-3C8A ... ok
-[PUB] ok elt85b/lab02/grupo-a/ola -> {"grupo":"a","n":1,"uptime_ms":7012}
-[CMD] elt85b/lab02/grupo-a/cmd/led <- 'on'
-[PUB] ok elt85b/lab02/grupo-a/ola -> {"grupo":"a","n":2,"uptime_ms":12012}
-```
-
-```text title="evidencias/t5-mqtt.txt (trecho)"
-elt85b/lab02/grupo-a/status online
-elt85b/lab02/grupo-a/ola {"grupo":"a","n":1,"uptime_ms":7012}
-elt85b/lab02/grupo-a/cmd/led on
-elt85b/lab02/grupo-a/ola {"grupo":"a","n":2,"uptime_ms":12012}
-elt85b/lab02/grupo-a/cmd/led off
-elt85b/lab02/grupo-a/cmd/led pisca
-elt85b/lab02/grupo-a/status offline
-```
-
-5. **Evidências:** o `docker logs` em `evidencias/t5-mqtt.txt` (com `online`, as mensagens
-   `ola`, os três comandos e o `offline`) e o monitor serial do Wokwi (selecione e copie) em
+   O `--expect-text` encerra a simulação assim que o texto aparece; o `--timeout 10000` é o
+   limite, em milissegundos **simulados**; o `--serial-log-file` grava o serial em
    `evidencias/t5-serial.txt`.
-6. **No `README.md`:** as respostas de P1, P2 e P3.
+
+4. **Ver o teste falhar.** Rode com um texto que o firmware nunca imprime (o comando depois do
+   nome do serviço substitui o do `compose.yaml`):
+
+   ```shell title="Terminal do VS Code (cmd)"
+   docker compose run --rm wokwi wokwi-cli --timeout 5000 --expect-text "texto que nunca aparece" .
+   echo %ERRORLEVEL%
+   ```
+
+   O código de saída não é `0`. É isso que faz o CI marcar o `push` em vermelho.
+
+5. **Tudo de uma vez.** O serviço `ci` compila e simula na sequência, como o Lab 10 fará:
+
+   ```shell title="Terminal do VS Code (cmd)"
+   docker compose run --rm -T ci > evidencias\t5-wokwi.txt 2>&1
+   echo exit=%ERRORLEVEL%>> evidencias\t5-wokwi.txt
+   type evidencias\t5-wokwi.txt
+   ```
+
+   O `echo` fica numa linha separada de propósito: dentro de parênteses, o `cmd` trocaria o
+   `%ERRORLEVEL%` pelo valor de **antes** do comando.
+
+6. **Evidências:** `evidencias/t5-wokwi.txt` (saída do serviço `ci`, terminando em `exit=0`) e
+   `evidencias/t5-serial.txt` (gravado pelo serviço `wokwi` no passo 3).
+
+7. **No `README.md`:** as respostas de P1, P2 e P3.
+
+```shell title="Terminal do VS Code (cmd)"
+git status
+git add .gitignore evidencias/t5-wokwi.txt evidencias/t5-serial.txt README.md
+git commit -m "T5: firmware simulado no Docker com o wokwi-cli"
+git push
+```
+
+:::warning[O token não vai para o Git]
+Nem no `compose.yaml`, nem no `README.md`, nem numa evidência. Se ele for parar num commit,
+apagar o arquivo depois **não** resolve: o token continua no histórico. Revogue-o em
+**wokwi.com/dashboard/ci** e gere outro. No Lab 10, ele vai para os **secrets** do GitHub.
+:::
 
 :::tip[Preveja antes de rodar]
-**P3:** (a) assine o tópico do grupo **antes** de iniciar o Wokwi, e depois de novo com a
-simulação já rodando há um minuto. Em qual das duas vezes o `status online` aparece logo no
-começo? Por quê (pense no `true` do `publish` de status)? (b) O `offline` chegou na hora em que
-você parou a simulação, ou alguns segundos depois? Do que isso depende (a conexão TCP fechada ×
-o _keepalive_ de 15 s vencido)? (c) Outro grupo poderia mandar
-`on` para o **seu** LED? O que isso diz sobre usar um broker público num projeto real?
+**P3:** (a) o primeiro `docker compose run --rm pio` levou minutos, e o segundo, segundos. Se o
+container é apagado a cada execução (`--rm`), onde ficou guardado o toolchain? O que aconteceria
+depois de um `docker compose down -v`? (b) O `firmware.bin` compilado **no container** pode ser
+simulado pelo Wokwi **do VS Code**, no Windows? Por quê (pense no _bind mount_ e no que o
+`firmware.bin` contém)? (c) Por que um teste com `--expect-text` e código de saída serve para o
+CI, e um print do monitor serial não serve?
 :::
 
 <FileTree
   root="lab02-grupo-x"
   files={[
-    "platformio.ini u",
-    "src/main.cpp u",
-    "evidencias/t5-mqtt.txt c",
+    ".gitignore u",
+    "evidencias/t5-wokwi.txt c",
     "evidencias/t5-serial.txt c",
     "README.md u",
   ]}
@@ -902,21 +853,21 @@ o _keepalive_ de 15 s vencido)? (c) Outro grupo poderia mandar
 
 <CommitPoint
   id="t5"
-  task="ESP32 simulado falando MQTT"
+  task="Simulação no container com o wokwi-cli"
   pontos={30}
-  files="platformio.ini src/main.cpp evidencias/t5-mqtt.txt evidencias/t5-serial.txt README.md"
+  files=".gitignore evidencias/t5-wokwi.txt evidencias/t5-serial.txt README.md"
 />
 
 ---
 
 ## Parte 6 — Placa real (opcional) {/* #placa */}
 
-Quem tiver um ESP32 DevKit pode gravar o mesmo firmware. O código não muda. Só o Wi-Fi: troque
-`Wokwi-GUEST` pela rede disponível, e **não** faça commit da senha.
+Quem tiver um ESP32 DevKit pode gravar o mesmo firmware: o código não muda.
 
 Antes, siga a aba **Drivers** da [configuração do ambiente](#setup): a placa tem de aparecer
 como uma porta **COM** no Gerenciador de Dispositivos, e o `esptool chip-id` tem de responder.
-Depois:
+Depois, no terminal do VS Code (a gravação é feita pelo Windows, não pelo container, que não
+enxerga as portas COM):
 
 ```shell title="Terminal do VS Code (cmd)"
 pio device list
@@ -939,19 +890,22 @@ porta COM só atende um programa por vez.
 
 ## Referência rápida {/* #referencia */}
 
-| Para…                       | Comando                                                                                            |
-| --------------------------- | -------------------------------------------------------------------------------------------------- |
-| Compilar                    | `pio run`                                                                                          |
-| Limpar o build              | `pio run -t clean`                                                                                 |
-| Simular                     | F1 → **Wokwi: Start Simulator** (compile antes)                                                    |
-| Depurar                     | F1 → **Wokwi: Start Simulator and Wait for Debugger** → **F5** (**Wokwi GDB**)                     |
-| Assinar um tópico (na tela) | `docker run --rm eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v`          |
-| Assinar em segundo plano    | `docker run -d --name sub eclipse-mosquitto:2 mosquitto_sub -h broker.hivemq.com -t "topico/#" -v` |
-| Ver / gravar o que chegou   | `docker logs -f sub` · `docker logs sub > arquivo.txt 2>&1`                                        |
-| Publicar                    | `docker run --rm eclipse-mosquitto:2 mosquitto_pub -h broker.hivemq.com -t "topico" -m "texto"`    |
-| Ver containers / remover um | `docker ps -a` · `docker rm -f sub`                                                                |
-| Ver um arquivo no terminal  | `type evidencias\t5-mqtt.txt`                                                                      |
-| Fluxo de entrega            | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01)                                       |
+| Para…                             | Comando                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| Compilar                          | `pio run`                                                                      |
+| Limpar o build                    | `pio run -t clean`                                                             |
+| Simular                           | F1 → **Wokwi: Start Simulator** (compile antes)                                |
+| Depurar                           | F1 → **Wokwi: Start Simulator and Wait for Debugger** → **F5** (**Wokwi GDB**) |
+| Construir a imagem                | `docker compose build`                                                         |
+| Compilar no container             | `docker compose run --rm pio`                                                  |
+| Simular no container              | `docker compose run --rm wokwi`                                                |
+| Compilar e simular (CI)           | `docker compose run --rm ci`                                                   |
+| Outro comando na mesma imagem     | `docker compose run --rm pio <comando>` (ex.: `pio run -t clean`)              |
+| Gravar a saída num arquivo        | `docker compose run --rm -T <serviço> > arquivo.txt 2>&1`                      |
+| Código de saída do último comando | `echo %ERRORLEVEL%`                                                            |
+| Ver imagens / volumes             | `docker images` · `docker volume ls`                                           |
+| Apagar o cache do PlatformIO      | `docker compose down -v`                                                       |
+| Fluxo de entrega                  | ramo → commit `Tn:` → `push` → PR → revisão → merge (Lab 01)                   |
 
 | Atalho do depurador | Ação                                 |
 | ------------------- | ------------------------------------ |
@@ -960,25 +914,27 @@ porta COM só atende um programa por vez.
 | **F10** · **F11**   | próxima linha · entra na função      |
 | **Shift+F5**        | encerra a depuração                  |
 
-| Problema                                             | O que fazer                                                                                                                                                          |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Problema                                             | O que fazer                                                                                                                                                                        |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'pio' não é reconhecido como um comando interno`    | ponha `%USERPROFILE%\.platformio\penv\Scripts\` no **Path** (aba **PlatformIO**) e abra um terminal novo. Se a pasta não existir, o PlatformIO Core ainda não terminou de instalar |
-| `code` abre o VS Code sem as extensões               | abra no perfil: `code --profile "ESP32IO" .`                                                                                                                         |
-| O primeiro `pio run` demora muito                    | é o download do toolchain (~300 MB): deixe terminar. Os builds seguintes levam segundos                                                                              |
-| O Wokwi pede licença                                 | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias)                                                                               |
-| `firmware.bin not found` no Wokwi                    | compile antes (`pio run`) e confira os caminhos do `wokwi.toml`                                                                                                      |
-| O Wokwi roda o código antigo                         | ele roda o último build: compile de novo                                                                                                                             |
-| `Configured debug type 'cppdbg' is not supported`    | falta a extensão **C/C++** (`ms-vscode.cpptools`) no perfil `ESP32IO`                                                                                                |
-| GDB: `Unable to start debugging` / `localhost:3333`  | inicie antes o **Wokwi: Start Simulator and Wait for Debugger**, e confira o `gdbServerPort = 3333` no `wokwi.toml`                                                  |
-| GDB: `miDebuggerPath` inválido                       | o caminho do `launch.json` tem de bater com o `dir ...\toolchain-xtensa-esp32\bin\*gdb*` (3.2)                                                                       |
-| _Breakpoint_ cinza ou variável `<optimized out>`     | `build_type = debug` no `platformio.ini` e compile de novo                                                                                                           |
-| `[WiFi] conectando...` sem fim                       | o SSID tem de ser exatamente `Wokwi-GUEST`, sem senha                                                                                                                |
-| `[MQTT] ... falhou (rc=-2)`                          | sem rede até o broker: confira o Wi-Fi e o `MQTT_HOST`                                                                                                               |
-| `docker: error during connect`                       | o Docker Desktop está fechado ou iniciando: abra-o e espere                                                                                                          |
-| `The container name "/sub-lab02" is already in use`  | sobrou o container de antes: `docker rm -f sub-lab02`                                                                                                                |
-| `'docker' não é reconhecido como um comando interno` | o Docker Desktop terminou de instalar depois que o VS Code abriu: feche e abra o VS Code                                                                             |
-| `mosquitto_sub` não mostra nada                      | o tópico tem de ser **idêntico** (maiúsculas, `grupo-a` × `grupo-A`), entre **aspas duplas** (no `cmd`, aspas simples viram parte do tópico), e o `#` só vale no fim |
-| O terminal abre como **PowerShell**                  | falta o `.vscode/settings.json` (Lab 01, 1.1): crie-o e abra um terminal novo                                                                                        |
+| `code` abre o VS Code sem as extensões               | abra no perfil: `code --profile "ESP32IO" .`                                                                                                                                       |
+| O primeiro `pio run` demora muito                    | é o download do toolchain (~300 MB): deixe terminar. Os builds seguintes levam segundos                                                                                            |
+| O Wokwi pede licença                                 | link da aba **Wokwi**, ou F1 → **Wokwi: Request a New License** (vence a cada 30 dias)                                                                                             |
+| `firmware.bin not found` no Wokwi                    | compile antes (`pio run`) e confira os caminhos do `wokwi.toml`                                                                                                                    |
+| O Wokwi roda o código antigo                         | ele roda o último build: compile de novo                                                                                                                                           |
+| `Configured debug type 'cppdbg' is not supported`    | falta a extensão **C/C++** (`ms-vscode.cpptools`) no perfil `ESP32IO`                                                                                                              |
+| GDB: `Unable to start debugging` / `localhost:3333`  | inicie antes o **Wokwi: Start Simulator and Wait for Debugger**, e confira o `gdbServerPort = 3333` no `wokwi.toml`                                                                |
+| GDB: `miDebuggerPath` inválido                       | o caminho do `launch.json` tem de bater com o `dir ...\toolchain-xtensa-esp32\bin\*gdb*` (3.2)                                                                                     |
+| _Breakpoint_ cinza ou variável `<optimized out>`     | `build_type = debug` no `platformio.ini` e compile de novo                                                                                                                         |
+| `docker: error during connect`                       | o Docker Desktop está fechado ou iniciando: abra-o e espere                                                                                                                        |
+| `'docker' não é reconhecido como um comando interno` | o Docker Desktop terminou de instalar depois que o VS Code abriu: feche e abra o VS Code                                                                                           |
+| `docker compose build` falha no `curl` do wokwi-cli  | sem acesso ao GitHub (proxy ou rede): tente de novo em outra rede                                                                                                                  |
+| `no configuration file provided: not found`          | rode o `docker compose` na raiz do repositório, onde está o `compose.yaml`                                                                                                         |
+| `wokwi-cli`: token ausente ou inválido               | falta o `.env` na raiz, com `WOKWI_CLI_TOKEN=...` sem espaços nem aspas; ou o token foi revogado                                                                                   |
+| `wokwi-cli`: `firmware.bin` não encontrado           | compile antes: `docker compose run --rm pio` (ou use o serviço `ci`)                                                                                                               |
+| `wokwi-cli` termina por _timeout_                    | o texto do `--expect-text` não apareceu no serial: confira o firmware gravado (é o da T3?) e as maiúsculas                                                                         |
+| Build no container muito lento                       | é a pasta do Windows vista pelo WSL 2; o segundo build, com o cache, é bem mais rápido                                                                                             |
+| O terminal abre como **PowerShell**                  | falta o `.vscode/settings.json` (Lab 01, 1.1): crie-o e abra um terminal novo                                                                                                      |
 
 ---
 
