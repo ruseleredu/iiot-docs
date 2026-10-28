@@ -5,11 +5,11 @@ sidebar_position: 4
 
 ## Checklist — ambiente de desenvolvimento (parte 1): Git, GitHub e VS Code {/* #checklist */}
 
-- [ ] VS Code, Git, GitHub CLI (`gh`) e Python 3 instalados; extensões PlatformIO IDE e Wokwi Simulator no VS Code (Parte 1)
+- [ ] VS Code, Git, GitHub CLI (`gh`) e Python 3 instalados (Parte 1)
 - [ ] Identidade do Git configurada, `gh` autenticado, repositório do grupo clonado e versões registradas em `evidencias/t1-ambiente.txt` (T1)
 - [ ] `README.md` do grupo com os integrantes e o primeiro `push` (T2)
 - [ ] Cada integrante com um _pull request_ aprovado, e um conflito de merge resolvido (T3)
-- [ ] Primeiro build do PlatformIO, entregue por _issue_ → _branch_ → _pull request_ que fecha a _issue_ (T4)
+- [ ] `README.md` com _badges_, um diagrama Mermaid e uma expressão matemática, entregue por _issue_ → _branch_ → _pull request_ que fecha a _issue_ (T4)
 - [ ] Previsões P1–P3 respondidas no `README.md`
 - [ ] Nenhum `push --force`; cada tarefa num commit `Tn:`
 - [ ] Logout do Git e do `gh` no computador do laboratório
@@ -33,14 +33,15 @@ GitHub**, criado a partir de um _template_. Ali escreve o firmware do ESP32 no *
 esses commits. Mais adiante entram o broker MQTT, o Node-RED, o banco de dados e o CI, todos
 rodando sobre as mesmas ferramentas.
 
-Os Labs 01 e 02 preparam esse ambiente. Nesta aula:
+Os Labs 01 e 02 preparam esse ambiente. O Lab 01 cuida do **Git** e do **GitHub**; o Lab 02, do
+**PlatformIO**, do **Wokwi** e do **Docker**. Nesta aula:
 
 1. você instala e confere as ferramentas;
 2. o Git passa a saber **quem** você é, e o GitHub passa a aceitar os seus `push`;
 3. o grupo pratica o fluxo que vai usar o semestre inteiro: _branch_, _pull request_, revisão e
    _merge_, inclusive quando dois mexem na mesma linha;
-4. o PlatformIO faz o primeiro build. Ele baixa o toolchain do ESP32 (~300 MB), e é melhor que
-   isso aconteça **hoje**, e não no meio do Lab 02.
+4. o `README.md` do grupo ganha **badges**, um **diagrama** e uma **fórmula**: os recursos de
+   Markdown do GitHub que os relatórios dos próximos labs usam.
 
 ```mermaid
 flowchart LR
@@ -52,13 +53,13 @@ flowchart LR
 
 ## Objetivos
 
-- Instalar e **verificar** o ambiente: VS Code, Git, GitHub CLI, Python e as extensões
-  PlatformIO e Wokwi.
+- Instalar e **verificar** o ambiente: VS Code, Git, GitHub CLI e Python.
 - Configurar a **identidade** do Git e autenticar o `gh`, sem guardar senha em lugar nenhum.
 - Usar o fluxo de trabalho em grupo: `clone`, `commit`, `push`, `pull`, _branch_, _pull request_,
   revisão e _merge_.
 - **Resolver um conflito** de merge sem perder o trabalho de ninguém.
-- Fazer o **primeiro build** do PlatformIO e saber o que vai (e o que não vai) para o repositório.
+- Escrever um `README.md` com **diagramas** (Mermaid), **expressões matemáticas** (LaTeX) e
+  **badges** (Shields.io).
 
 ## Material
 
@@ -70,7 +71,7 @@ flowchart LR
 :::info[Computador do laboratório × o seu]
 Nos computadores do laboratório o ambiente já vem instalado: faça só a **Parte 2 em diante** e,
 no fim, o **logout** do Git e do `gh`. No seu computador, faça tudo, desde a Parte 1. O Lab 02
-acrescenta o Docker, que só é necessário no seu computador.
+acrescenta o PlatformIO, o Wokwi e o Docker.
 :::
 
 <details>
@@ -79,7 +80,7 @@ acrescenta o Docker, que só é necessário no seu computador.
 - [T1 — Identidade, autenticacao e clone](#t1) · 15 pts
 - [T2 — README e primeiro push](#t2) · 20 pts
 - [T3 — Branch, pull request e conflito](#t3) · 30 pts
-- [T4 — Primeiro build por issue e pull request](#t4) · 35 pts
+- [T4 — README com diagramas, fórmulas e badges por issue e pull request](#t4) · 35 pts
 
 </details>
 
@@ -92,15 +93,10 @@ acrescenta o Docker, que só é necessário no seu computador.
     ".gitignore r",
     ".vscode/settings.json c",
     "README.md u",
-    "platformio.ini c",
-    "src/main.cpp c",
-    "include/README c",
-    "lib/README c",
-    "test/README c",
     "evidencias/t1-ambiente.txt c",
     "evidencias/t3-presenca.md c",
     "evidencias/t3-prs.txt c",
-    "evidencias/t4-build.txt c",
+    "evidencias/t4-readme.png c",
   ]}
 />
 
@@ -112,28 +108,21 @@ Siga as abas da [configuração do ambiente](#setup), nesta ordem. Cada aba tem 
 instalação (`winget`) e um comando para conferir. Depois de cada instalação, **feche e abra** o
 terminal, para ele achar os programas novos.
 
-| Aba do ambiente | O que fazer no Lab 01                                                                   |
-| --------------- | --------------------------------------------------------------------------------------- |
-| **VS Code**     | instalar e criar o `settings.json` do terminal (veja 1.1)                               |
-| **Git SCM**     | instalar; a configuração é a Parte 2                                                    |
-| **GitHub CLI**  | instalar; o login é a Parte 2                                                           |
-| **Python**      | instalar e conferir com `py --version`                                                  |
-| **PlatformIO**  | instalar a extensão no perfil `ESP32IO` e pôr o `pio` no **Path**                       |
-| **Wokwi**       | instalar a extensão no perfil `ESP32IO` (a licença e o `wokwi-cli` ficam para o Lab 02) |
-| Drivers, Docker | ficam para o Lab 02                                                                     |
+| Aba do ambiente                     | O que fazer no Lab 01                                     |
+| ----------------------------------- | --------------------------------------------------------- |
+| **VS Code**                         | instalar e criar o `settings.json` do terminal (veja 1.1) |
+| **Git SCM**                         | instalar; a configuração é a Parte 2                      |
+| **GitHub CLI**                      | instalar; o login é a Parte 2                             |
+| **Python**                          | instalar e conferir com `py --version`                    |
+| PlatformIO, Wokwi, Drivers, Docker  | ficam para o Lab 02                                       |
 
-As extensões vão para o **perfil `ESP32IO`** do VS Code (`--profile "ESP32IO"`), separado do
-seu perfil do dia a dia. O primeiro `code --install-extension ... --profile "ESP32IO"` cria o
-perfil. Abra sempre os repositórios da disciplina **nesse perfil**:
+Os repositórios da disciplina abrem sempre no **perfil `ESP32IO`** do VS Code, separado do seu
+perfil do dia a dia. Se o perfil ainda não existir, o VS Code o cria vazio; as extensões do
+PlatformIO e do Wokwi entram nele no Lab 02.
 
 ```shell title="Prompt de Comando (cmd), na pasta do repositório"
 code --profile "ESP32IO" .
 ```
-
-Na primeira vez que o VS Code abrir com a extensão do PlatformIO, ela instala o **PlatformIO
-Core** (barra de status: _Installing PlatformIO Core_). Espere terminar e recarregue a janela
-quando ele pedir. É essa instalação que cria a pasta `%USERPROFILE%\.platformio\penv\Scripts\`
-que a aba **PlatformIO** manda pôr no **Path**.
 
 ### 1.1 O terminal do VS Code é o Prompt de Comando
 
@@ -251,7 +240,7 @@ erro de ambiente depois.
 
 ```shell title="Terminal do VS Code (cmd), na raiz do repositório"
 if not exist evidencias mkdir evidencias
-(echo == ambiente %DATE% %TIME% & git --version & gh --version & call code --version & py --version & pio --version & call code --list-extensions --profile "ESP32IO" & git config --global user.name & git config --global user.email & gh auth status) > evidencias\t1-ambiente.txt 2>&1
+(echo == ambiente %DATE% %TIME% & git --version & gh --version & call code --version & py --version & git config --global user.name & git config --global user.email & gh auth status) > evidencias\t1-ambiente.txt 2>&1
 type evidencias\t1-ambiente.txt
 ```
 
@@ -268,18 +257,14 @@ https://github.com/cli/cli/releases/tag/v2.xx.x
 (hash do commit do VS Code)
 x64
 Python 3.14.x
-PlatformIO Core, version 6.1.xx
-platformio.platformio-ide
-wokwi.wokwi-vscode
 Seu Nome Completo
 12345678+seu-usuario@users.noreply.github.com
 github.com
   ✓ Logged in to github.com account seu-usuario (keyring)
 ```
 
-Confira que **todas** as linhas têm versão, que as duas extensões aparecem e que o `gh` está
-logado. O token aparece mascarado (`gho_****`): é seguro registrar. Se aparecer _'pio' não é
-reconhecido como um comando interno_, falta o **Path** da aba **PlatformIO**.
+Confira que **todas** as linhas têm versão e que o `gh` está logado. O token aparece mascarado
+(`gho_****`): é seguro registrar.
 
 ```shell title="Terminal (cmd)"
 git add .vscode/settings.json evidencias/t1-ambiente.txt
@@ -334,11 +319,6 @@ Um integrante edita o `README.md`. Ele vai ser a capa de todos os repositórios 
 | ------ | ----------------- |
 | Nome 1 | @usuario1         |
 | Nome 2 | @usuario2         |
-
-## Como rodar
-
-- Build: `pio run`
-- Simulação: Wokwi no VS Code (Lab 02)
 
 ## Previsões
 
@@ -523,123 +503,195 @@ git push
 
 ---
 
-## Projeto integrador — primeiro build por issue e pull request {/* #integrador */}
+## Parte 5 — Markdown avançado no GitHub {/* #parte-5 */}
+
+O GitHub renderiza, além do Markdown comum, três recursos que os relatórios desta disciplina
+usam o tempo todo: **diagramas**, **expressões matemáticas** e **badges**. Os três são texto
+puro no arquivo: entram no Git, aparecem no `diff` do PR e são revisados como código.
+
+### 5.1 Criando diagramas
+
+- [GitHub Docs — Criar diagramas](https://docs.github.com/pt/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+
+Um bloco de código com a linguagem `mermaid` vira um diagrama. Um fluxograma simples:
+
+````markdown title="README.md (trecho)"
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+````
+
+O GitHub mostra:
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+O mesmo Mermaid desenha os outros diagramas desta página: `flowchart`, `sequenceDiagram` e
+`gitGraph`. Os diagramas dos labs seguintes (circuitos MQTT, fluxos do Node-RED) vão para o
+`README.md` assim.
+
+### 5.2 Escrevendo expressões matemáticas
+
+- [GitHub Docs — Escrever expressões matemáticas](https://docs.github.com/pt/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions)
+
+O GitHub usa a sintaxe do **LaTeX** (renderizada pelo MathJax):
+
+| Forma                                        | Uso                                                           |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| `$ ... $`                                    | expressão **na linha** do texto                               |
+| `$$ ... $$`                                  | expressão em **bloco**, numa linha própria                    |
+| bloco de código com a linguagem `math`       | bloco, sem conflito com o resto do Markdown (`_`, `*`, `\`)   |
+
+Por exemplo, a **desigualdade de Cauchy-Schwarz**. O `\` no fim da linha do título força a
+quebra de linha:
+
+```markdown title="README.md (trecho)"
+**The Cauchy-Schwarz Inequality**\
+$$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
+```
+
+E uma conta que aparece no Lab 02: o resistor que limita a corrente do LED no GPIO2 (3,3 V,
+LED vermelho com ~2 V, corrente de ~6 mA):
+
+````markdown title="README.md (trecho)"
+O resistor do LED vale $R = \frac{V_{CC} - V_F}{I_F}$:
+
+```math
+R = \frac{3{,}3\ \text{V} - 2{,}0\ \text{V}}{6\ \text{mA}} \approx 217\ \Omega \;\Rightarrow\; 220\ \Omega
+```
+````
+
+### 5.3 Static Badge
+
+- [Shields.io — Static Badge](https://shields.io/badges)
+
+Um _badge_ é uma imagem gerada pela URL: `https://img.shields.io/badge/<rótulo>-<mensagem>-<cor>`.
+No Markdown, entra como qualquer imagem (`![texto alternativo](url)`):
+
+```markdown title="README.md (trecho)"
+![Version](https://img.shields.io/badge/github-repo-blue?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-OK-green?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-OK-blue?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-TODO-red?logo=github)
+```
+
+![Version](https://img.shields.io/badge/github-repo-blue?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-OK-green?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-OK-blue?logo=github)
+![LAB status](https://img.shields.io/badge/LAB_01-TODO-red?logo=github)
+
+| Na URL       | Vira no badge                                                     |
+| ------------ | ----------------------------------------------------------------- |
+| `_`          | espaço (`LAB_01` → "LAB 01")                                      |
+| `__`         | um `_`                                                            |
+| `--`         | um `-` (um `-` sozinho separa rótulo, mensagem e cor)             |
+| `%20`        | espaço                                                            |
+| `?logo=...`  | o ícone de um serviço (`github`, `espressif`, `docker`, `mqtt`…)  |
+| `&style=...` | o estilo: `flat`, `flat-square`, `for-the-badge`…                 |
+
+Um badge **estático** mostra só o que está escrito na URL: o `LAB_01-OK` continua verde mesmo
+que nada funcione. No Lab 10, o CI ganha um badge **dinâmico**, que muda de cor sozinho quando
+o build quebra.
+
+---
+
+## Projeto integrador — README por issue e pull request {/* #integrador */}
 
 Num projeto real, o trabalho começa por uma **issue** (o que precisa ser feito), segue num
-**ramo** e termina num **PR que fecha a issue** quando entra na `main`. Aqui, a issue é o
-primeiro build do firmware do ESP32.
+**ramo** e termina num **PR que fecha a issue** quando entra na `main`. Aqui, a issue é deixar
+o `README.md` do grupo com a cara dos relatórios da disciplina.
 
 ### Requisitos
 
 1. **Issue.** Um integrante abre a issue:
 
    ```shell title="Terminal (cmd)"
-   gh issue create --title "Primeiro build do PlatformIO" --body "Criar o projeto esp32dev e compilar o pisca-LED."
+   gh issue create --title "README com badges, diagrama e fórmula" --body "Badges no topo, diagrama Mermaid do fluxo do grupo e a fórmula do resistor do LED."
    gh issue list
    ```
 
    Anote o número da issue (ex.: `#3`).
 
-2. **Ramo e projeto.** No ramo `t4-build`, crie o projeto PlatformIO na raiz do repositório
-   (o `pio` funciona no terminal do VS Code depois do **Path** da aba **PlatformIO**):
+2. **Ramo.** Crie o ramo `t4-readme` a partir da `main` atualizada:
 
    ```shell title="Terminal (cmd)"
    git switch main
    git pull
-   git switch -c t4-build
-   pio project init -b esp32dev -O "framework=arduino" -O "monitor_speed=115200"
+   git switch -c t4-readme
    ```
 
-   O `pio project init` cria `platformio.ini`, `src/`, `include/`, `lib/` e `test/`. Ele não
-   apaga o `README.md`, as `evidencias/` nem o `.vscode/settings.json`. (A aba **PlatformIO**
-   mostra o mesmo comando com `--ide vscode --sample-code`: o primeiro gera arquivos de
-   configuração do VS Code, o segundo um `main.cpp` de exemplo. Aqui você escreve o seu.)
+3. **`README.md`.** Acrescente, mantendo os integrantes e as previsões:
+   - logo abaixo do título, **pelo menos dois badges**: um com o nome do grupo e um de status
+     do Lab 01 (`TODO` em vermelho, por enquanto);
+   - uma seção **Fluxo de trabalho** com um diagrama Mermaid (`flowchart` ou `gitGraph`) do
+     caminho _issue_ → _branch_ → PR → revisão → _merge_ que o grupo usou;
+   - uma seção **Fórmulas** com a conta do resistor do LED da Parte 5.2, em bloco.
 
-3. **Pisca-LED.** Crie `src/main.cpp`:
+   ```markdown title="README.md (início)"
+   # Lab 01 — Grupo X
 
-   ```cpp title="src/main.cpp"
-   #include <Arduino.h>
-
-   #define LED_PIN 2                     // GPIO2 (o LED do circuito do Lab 02)
-
-   // Protótipo: em C/C++ uma função precisa ser declarada antes de ser usada
-   void piscar(uint8_t pino, uint16_t meioPeriodoMs);
-
-   void setup() {
-     Serial.begin(115200);               // o mesmo valor do monitor_speed do platformio.ini
-     pinMode(LED_PIN, OUTPUT);
-     Serial.println("ESP32 inicializado! Lab 01, grupo X");
-   }
-
-   void loop() {
-     piscar(LED_PIN, 500);
-   }
-
-   void piscar(uint8_t pino, uint16_t meioPeriodoMs) {
-     digitalWrite(pino, HIGH);
-     delay(meioPeriodoMs);
-     digitalWrite(pino, LOW);
-     delay(meioPeriodoMs);
-   }
+   ![Grupo](https://img.shields.io/badge/ELT85B-grupo_X-blue?logo=github)
+   ![LAB status](https://img.shields.io/badge/LAB_01-TODO-red?logo=github)
    ```
 
-4. **Build.** O **primeiro** build baixa a plataforma `espressif32`, o toolchain Xtensa e o core
-   Arduino (~300 MB). Pode levar de 5 a 15 minutos. Os seguintes levam segundos. Rode o primeiro
-   na tela, para acompanhar o download, e o segundo gravando a evidência:
+4. **Conferir antes do PR.** Veja o resultado em dois lugares:
+   - no VS Code, com o _preview_ do Markdown (**Ctrl+Shift+V**);
+   - no GitHub, no próprio ramo:
 
    ```shell title="Terminal (cmd)"
-   pio run
-   pio run > evidencias\t4-build.txt 2>&1
-   type evidencias\t4-build.txt
+   git add README.md
+   git commit -m "README com badges, diagrama e fórmula"
+   git push -u origin t4-readme
+   gh repo view --web --branch t4-readme
    ```
 
-   ```text title="evidencias/t4-build.txt (final; os números variam)"
-   RAM:   [=         ]   6.5% (used 21360 bytes from 327680 bytes)
-   Flash: [==        ]  20.4% (used 267525 bytes from 1310720 bytes)
-   Building .pio/build/esp32dev/firmware.bin
-   ========================= [SUCCESS] Took 41.27 seconds =========================
-   ```
+   Corrija o que não renderizar (um `-` a mais no badge, uma `}` faltando na fórmula) e faça
+   `git push` de novo. Quando estiver certo no GitHub, troque o badge do Lab 01 para
+   `LAB_01-OK-green` e salve uma captura da página do ramo, com os badges, o diagrama e a
+   fórmula, em `evidencias/t4-readme.png`.
 
-5. **O que vai para o repositório.** `git status` mostra a pasta `.pio/`? Não deveria: o
-   `.gitignore` do template a ignora. Confira e faça o commit **só** do que é código e
-   configuração:
+5. **Commit e PR.**
 
    ```shell title="Terminal (cmd)"
-   git status
-   git add platformio.ini src include lib test evidencias/t4-build.txt
-   git commit -m "T4: primeiro build do PlatformIO (closes #3)"
-   git push -u origin t4-build
-   gh pr create --base main --title "Primeiro build do PlatformIO" --body "Closes #3"
+   git add README.md evidencias/t4-readme.png
+   git commit -m "T4: README com badges, diagrama e fórmula (closes #3)"
+   git push
+   gh pr create --base main --title "README com badges, diagrama e fórmula" --body "Closes #3"
    ```
 
-6. **Revisão e merge.** Outro integrante revisa (o `platformio.ini` e o `main.cpp` fazem
-   sentido?), aprova e faz o merge. A issue **fecha sozinha** por causa do `Closes #3`. Confira
-   com `gh issue list --state closed`.
+6. **Revisão e merge.** Outro integrante revisa: em **Files changed**, o botão de _rich diff_
+   (ícone de documento) mostra o README renderizado. Aprova e faz o merge. A issue **fecha
+   sozinha** por causa do `Closes #3`. Confira com `gh issue list --state closed`.
 
 7. **No `README.md`:** as respostas de P1, P2 e P3 (num PR, como todo o resto).
 
 :::tip[Preveja antes de rodar]
-**P3:** quanto espaço a pasta `.pio/` ocupa depois do build (as duas últimas linhas do
-`dir /s .pio`)? O que aconteceria com o repositório, e com o `git pull` dos
-colegas, se ela fosse para o GitHub a cada build? Por que o `firmware.bin` também não vai, se é
-justamente o "produto" do projeto? (No Lab 10 ele vai para outro lugar: uma _release_.)
+**P3:** (a) o _preview_ do VS Code mostra a fórmula? E o diagrama Mermaid? E o GitHub mostra os
+dois? Por que o mesmo arquivo `README.md` aparece diferente em cada lugar? (b) Os badges
+aparecem com o computador **sem internet**? O que isso diz sobre onde a imagem é gerada? (c) Se
+o firmware do Lab 02 parar de compilar, o badge `LAB_01-OK-green` muda de cor? Então, o que ele
+garante para quem lê o README?
 :::
 
 <FileTree
   root="lab01-grupo-x"
-  files={[
-    "platformio.ini c",
-    "src/main.cpp c",
-    "evidencias/t4-build.txt c",
-    "README.md u",
-  ]}
+  files={["README.md u", "evidencias/t4-readme.png c"]}
 />
 
 <CommitPoint
   id="t4"
-  task="Primeiro build por issue e pull request"
+  task="README com diagramas, fórmulas e badges por issue e pull request"
   pontos={35}
-  files="platformio.ini src/main.cpp evidencias/t4-build.txt README.md"
+  files="README.md evidencias/t4-readme.png"
 />
 
 ---
@@ -654,21 +706,30 @@ justamente o "produto" do projeto? (No Lab 10 ele vai para outro lugar: uma _rel
 | Criar um ramo e mudar para ele                   | `git switch -c nome`                                                    |
 | Voltar para a `main` atualizada                  | `git switch main` → `git pull`                                          |
 | Histórico resumido                               | `git log --oneline --graph -15`                                         |
-| Abrir o repositório no navegador                 | `gh repo view --web`                                                    |
+| Abrir o repositório no navegador                 | `gh repo view --web` · num ramo: `gh repo view --web --branch nome`     |
 | Abrir / listar / juntar PRs                      | `gh pr create` · `gh pr list` · `gh pr merge N --merge --delete-branch` |
 | Issues                                           | `gh issue create` · `gh issue list`                                     |
 | Desfazer mudanças **não** commitadas num arquivo | `git restore <arquivo>`                                                 |
+| Preview do Markdown no VS Code                   | **Ctrl+Shift+V** (ou **Ctrl+K V**, ao lado)                             |
 
-| Problema                                          | O que fazer                                                                                                                                                                        |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Permission denied` / `403` no `push`             | `gh auth status`; confira se você está no time do grupo; peça ao professor para conferir o acesso                                                                                  |
-| `Repository not found`                            | nome errado ou você ainda não é membro da organização: `gh repo view ELT85B-N21-2026-2/lab01-grupo-x`                                                                              |
-| `rejected ... (fetch first)` no `push`            | alguém enviou antes: `git pull`, resolva o conflito se houver, e `git push` de novo. **Nunca** `--force`                                                                           |
-| Commit sem o seu avatar no GitHub                 | `user.email` diferente do da conta (P1). Corrija o `git config` para os próximos commits                                                                                           |
-| `'pio' não é reconhecido como um comando interno` | ponha `%USERPROFILE%\.platformio\penv\Scripts\` no **Path** (aba **PlatformIO**) e abra um terminal novo. Se a pasta não existir, o PlatformIO Core ainda não terminou de instalar |
-| O terminal abre como **PowerShell**               | falta o `.vscode/settings.json` (1.1), ou a pasta aberta não é a raiz do repositório. Abra um terminal novo depois de criar o arquivo                                              |
-| `code` abre o VS Code sem as extensões            | abra no perfil: `code --profile "ESP32IO" .`                                                                                                                                       |
-| Comando com `'aspas simples'` falha               | no `cmd`, só as **aspas duplas** agrupam um texto                                                                                                                                  |
+| Markdown no GitHub   | Sintaxe                                                     |
+| -------------------- | ----------------------------------------------------------- |
+| Diagrama             | bloco de código com a linguagem `mermaid`                   |
+| Fórmula na linha     | `$ ... $`                                                   |
+| Fórmula em bloco     | `$$ ... $$` ou bloco de código com a linguagem `math`       |
+| Badge estático       | `![alt](https://img.shields.io/badge/rótulo-mensagem-cor)`  |
+
+| Problema                                          | O que fazer                                                                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Permission denied` / `403` no `push`             | `gh auth status`; confira se você está no time do grupo; peça ao professor para conferir o acesso                                                            |
+| `Repository not found`                            | nome errado ou você ainda não é membro da organização: `gh repo view ELT85B-N21-2026-2/lab01-grupo-x`                                                        |
+| `rejected ... (fetch first)` no `push`            | alguém enviou antes: `git pull`, resolva o conflito se houver, e `git push` de novo. **Nunca** `--force`                                                     |
+| Commit sem o seu avatar no GitHub                 | `user.email` diferente do da conta (P1). Corrija o `git config` para os próximos commits                                                                     |
+| O terminal abre como **PowerShell**               | falta o `.vscode/settings.json` (1.1), ou a pasta aberta não é a raiz do repositório. Abra um terminal novo depois de criar o arquivo                        |
+| Comando com `'aspas simples'` falha               | no `cmd`, só as **aspas duplas** agrupam um texto                                                                                                            |
+| Diagrama aparece como código no GitHub            | o bloco tem de começar com três crases e `mermaid`, e a sintaxe tem de estar certa: o GitHub mostra o erro no lugar do diagrama                              |
+| Fórmula aparece com `$` ou sem os índices         | o Markdown comeu um `_` ou `\`: use o bloco com a linguagem `math`                                                                                           |
+| Badge quebrado ou com texto errado                | um `-` a mais na URL: no rótulo e na mensagem, `-` vira `--` e espaço vira `_`                                                                               |
 
 ---
 
