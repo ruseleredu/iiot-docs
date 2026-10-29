@@ -149,10 +149,16 @@ Troque o `x` pela letra do seu grupo em **todos** os nomes abaixo.
 
 ## Parte 1 — Simulador, endereços e o fluxo do Lab 08 {/* #parte-1 */}
 
+:::info[Suba o stack do LAB09!]
+Execute os comandos para subir o [stack do LAB09](/infra/setup/gen_iot_aluno#lab-09)!
+:::
+
 ### 1.1 Subir o simulador
 
 Como no Lab 08, agora com os nomes do Lab 09. Com o LAB IoT do `lab09-x` rodando, crie o `.env`
 na pasta `camara-sim/`:
+
+<FileTree root="lab09-grupo-x" files={["camara-sim/.env c"]} />
 
 <GroupCommands
   language="ini"
@@ -216,10 +222,6 @@ As cinco portas (agora com a **5021**, do Modbus RTU) devem sair `ok`.
 O fluxo do Lab 08 já tem um cliente para cada protocolo. Num SCADA, o endereço de cada
 equipamento fica **num só lugar**, o **nó de configuração**, e todos os nós de leitura e
 escrita apontam para ele. Para levar o fluxo para o Lab 09, basta trocar esses nós.
-
-:::info[Suba o stack do LAB09!]
-Execute os comandos para subir o [stack do LAB09](/infra/setup/gen_iot_aluno#lab-09)!
-:::
 
 1. No Node-RED do Lab 09 (`http://localhost/lab09-x/`): Menu ☰ → _Import_ → selecione o
    `nodered/flows-lab08.json` do repositório do **Lab 08** → _Import_.
