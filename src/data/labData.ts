@@ -103,7 +103,7 @@ export const labData: LabRow[] = [
     },
     {
         tarefa: "LAB11",
-        hrefi: "/labs/LAB10",
+        hrefi: "/labs/LAB11",
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
@@ -111,7 +111,7 @@ export const labData: LabRow[] = [
     },
     {
         tarefa: "LAB12",
-        hrefi: "/labs/LAB10",
+        hrefi: "/labs/LAB12",
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
