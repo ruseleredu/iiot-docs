@@ -56,6 +56,27 @@ node scripts/generate-emojis.js
 node scripts/download-katex.js
 ```
 
+# Template LABs (IIOT)
+
+- Empty
+
+```bash
+./scripts/iiot/create-lab-template.sh
+```
+
+- PIO init
+  
+```bash
+./scripts/iiot/create-lab-pio-template.sh
+```
+
+- Inicializa repo pro grupo
+  
+```bash
+./scripts/iiot/create-lab-from-template.sh
+```
+
+
 # Template LABs (MIC)
 
 - Empty

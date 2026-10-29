@@ -4,7 +4,7 @@ set -e
 ORG="ELT85B-N21-2026-2"
 # GROUP_LIST="A B C D E F G H I J K L M P"   # ← not GROUPS
 GROUP_LIST="A B C D E F G H I J X P N"   # ← Populated GROUPS
-NLAB=8
+NLAB=9
 LAB=$(printf "lab%02d" "$NLAB")
 TEMPLATE="$ORG/${LAB}-template"
 
