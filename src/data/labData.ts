@@ -27,7 +27,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=384201", // external
         start: "27-08-2026",
         end: "03-09-2026",
-        conteudo: "Configuração do Ambiente ESP32 (Parte 01);",
+        conteudo: "Git, GitHub e VS Code;",
     },
     {
         tarefa: "LAB02",
@@ -35,7 +35,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=380901", // external
         start: "03-09-2026",
         end: "10-09-2026",
-        conteudo: "Configuração do Ambiente ESP32 (Parte 02);",
+        conteudo: "PlatformIO, Wokwi e Docker;",
     },
     {
         tarefa: "LAB03",
@@ -43,7 +43,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=380902", // external
         start: "10-09-2026",
         end: "17-09-2026",
-        conteudo: "PlatformIO IDE e Logging no ESP32;",
+        conteudo: "logs no ESP32 e ambientes de build (debug × release);",
     },
     {
         tarefa: "LAB04",
@@ -83,7 +83,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=392012", // external
         start: "15-10-2026",
         end: "22-10-2026",
-        conteudo: "Modbus, S7 e OPC-UA com a câmara simulada;", // 19 a 23 – SICITE 2026
+        conteudo: "Modbus, S7 e OPC-UA (conceitos iniciais);", // 19 a 23 – SICITE 2026
     },
     {
         tarefa: "LAB09",
@@ -91,7 +91,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=392440", // external
         start: "22-10-2026",
         end: "29-10-2026",
-        conteudo: "SCADA da câmara com FUXA;", // 19 a 23 – SICITE 2026
+        conteudo: "Modbus, S7 e OPC-UA a fundo: painel SCADA e controle pela rede;", // 19 a 23 – SICITE 2026
     },
     {
         tarefa: "LAB10",
@@ -99,7 +99,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
-        conteudo: "Testes, simulação e CI/CD do firmware;",
+        conteudo: "SCADA da câmara com FUXA;",
     },
     {
         tarefa: "LAB11",
@@ -107,7 +107,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
-        conteudo: "CI/CD do firmware no runner do LAB IoT;",
+        conteudo: "Testes, simulação e CI/CD do firmware;",
     },
     {
         tarefa: "LAB12",
