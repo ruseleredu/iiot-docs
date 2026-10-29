@@ -2,7 +2,7 @@
 set -e
 
 ORG="ELT73A-S22-2026-2"
-GROUP_LIST="A B C D E F G H I J K L M P N"   # ← not GROUPS
+GROUP_LIST="A B C D E F G H I J K L M X P N"   # ← not GROUPS
 #GROUP_LIST="A B C D E F G H I J P"   # ← Populated GROUPS
 NLAB=5
 LAB=$(printf "lab%02d" "$NLAB")
