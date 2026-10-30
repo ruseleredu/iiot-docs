@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ThemeCodeBlock from '@theme/CodeBlock';
 
 export type ActionType = 'create' | 'read' | 'update' | 'delete' | 'professor' | 'notas' | 'generated';
 
@@ -13,6 +14,12 @@ export interface FileTreeProps {
     details?: boolean;
     /** Se o <details> deve iniciar aberto */
     defaultOpen?: boolean;
+    /**
+     * Mostra, abaixo da árvore, o `git conferir` (alias do Lab 01, 2.2) com os arquivos a criar,
+     * editar ou verificar (ações c, u, r). Default: só nas árvores sem `details`; as de visão
+     * geral ("no fim da aula") listam o projeto inteiro e acusariam FALTA em tudo.
+     */
+    check?: boolean;
 }
 
 interface TreeNode {
@@ -111,6 +118,22 @@ function buildTree(paths: string[]): TreeNode {
     return treeRoot;
 }
 
+// Ações cujos arquivos têm de existir no repositório (vão para o `git conferir`).
+const CONFERIR: ActionType[] = ['create', 'update', 'read'];
+
+function caminhosParaConferir(paths: string[]): string[] {
+    const lista: string[] = [];
+    paths.forEach((rawPath) => {
+        const [pathPart, rawAction] = rawPath.trim().split(/\s+/);
+        const cfg = rawAction ? ACTION_MAP[rawAction.toLowerCase()] : undefined;
+        const caminho = (pathPart ?? '').replace(/\/+$/, '');
+        if (caminho && cfg && CONFERIR.includes(cfg.type) && !lista.includes(caminho)) {
+            lista.push(caminho);
+        }
+    });
+    return lista;
+}
+
 const getIcon = (name: string, isFolder: boolean) => {
     if (isFolder) return '📂';
     if (name.endsWith('.md')) return '📝';
@@ -195,11 +218,13 @@ export default function FileTree({
     root = '',
     files,
     details = false,
-    defaultOpen = true
+    defaultOpen = true,
+    check = !details,
 }: FileTreeProps): React.JSX.Element {
     const [copiedPath, setCopiedPath] = useState<string | null>(null);
     const treeRoot = buildTree(files);
     const displayNodes = Object.values(treeRoot.children);
+    const conferir = check ? caminhosParaConferir(files) : [];
 
     const handleCopy = (path: string) => {
         navigator.clipboard.writeText(path);
@@ -228,6 +253,13 @@ export default function FileTree({
                 </div>
             )}
             <RenderBranch nodes={displayNodes} copiedPath={copiedPath} onCopy={handleCopy} />
+            {conferir.length > 0 && (
+                <div style={{ marginTop: '0.75rem', fontFamily: 'var(--ifm-font-family-base)' }}>
+                    <ThemeCodeBlock language="bash" title="Conferir estes arquivos (de qualquer pasta do repositório)">
+                        {`git conferir ${conferir.join(' ')}`}
+                    </ThemeCodeBlock>
+                </div>
+            )}
         </div>
     );
 
