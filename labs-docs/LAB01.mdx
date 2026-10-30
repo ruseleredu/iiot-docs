@@ -138,7 +138,7 @@ copiado daqui pode falhar ou fazer outra coisa. Por isso, cada repositório tem 
 ```
 
 Crie o arquivo pelo VS Code (**Explorer** → nova pasta `.vscode` → novo arquivo
-`settings.json`) depois de clonar o repositório (2.3), e abra um terminal novo (**Ctrl+Shift+`**).
+`settings.json`) depois de clonar o repositório (2.4), e abra um terminal novo (**Ctrl+Shift+`**).
 O nome do terminal, à direita, tem de ser **cmd**, e o prompt fica assim:
 
 ```text title="Terminal do VS Code"
@@ -178,13 +178,43 @@ O `pull.rebase false` faz o `git pull` juntar por _merge_ (o fluxo desta discipl
 inverso na sua pasta. O comando `git config --list --show-origin` da aba **Git SCM** mostra de
 qual arquivo vem cada configuração.
 
+### 2.2 O comando `git conferir`
+
+Em todas as tarefas da disciplina, antes do commit `Tn:`, o roteiro manda conferir os arquivos
+com `git conferir`. É um **alias** do Git (um comando que você mesmo cria), configurado uma vez:
+
+```shell title="Terminal (cmd)"
+git config --global alias.conferir "!f() { r=$(pwd -W 2>/dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"
+```
+
+Depois, `git conferir` seguido dos arquivos da tarefa, de qualquer pasta do repositório:
+
+```text title="git conferir README.md evidencias/t1-ambiente.txt (exemplo)"
+raiz do repositorio: C:/Users/aluno/lab01-grupo-x
+ok README.md
+FALTA evidencias/t1-ambiente.txt
+== mudancas desde o ultimo commit:
+ M README.md
+```
+
+| Na saída               | Quer dizer                                                                |
+| ---------------------- | ------------------------------------------------------------------------- |
+| `ATENCAO: o terminal…` | o terminal está numa subpasta: rode o `cd /d` indicado antes do `git add` |
+| `FALTA`                | o arquivo não está nesse caminho (pasta errada, nome errado, `.txt.txt`)  |
+| `??` / `M`             | arquivo novo / modificado: entra no commit                                |
+| `!!`                   | bloqueado pelo `.gitignore`: o `git add` vai falhar                       |
+| arquivo não aparece    | já está no Git e não mudou desde o último commit                          |
+
+O Git roda o alias na **raiz** do repositório, mesmo que você esteja em `src\` ou
+`evidencias\`, por isso os caminhos são sempre a partir da raiz e com `/`.
+
 :::tip[Preveja antes de rodar]
 **P1:** e se o `user.email` estiver errado (o e-mail do computador do laboratório, por
 exemplo)? O commit é aceito pelo GitHub? O que aparece no lugar do seu avatar na lista de
 commits, e o que isso significa para a **sua** nota num trabalho em grupo? Confira na T2.
 :::
 
-### 2.2 Autenticar o `gh`
+### 2.3 Autenticar o `gh`
 
 O GitHub não aceita a senha da conta no `git push`. Quem autentica é o **GitHub CLI**: ele
 abre o navegador, você autoriza, e ele passa a atender o Git como _credential helper_.
@@ -212,14 +242,14 @@ No laboratório, o login fica guardado no computador até você sair. Antes de i
 repositórios.
 :::
 
-### 2.3 Clonar o repositório do grupo {/* #clonar */}
+### 2.4 Clonar o repositório do grupo {/* #clonar */}
 
 Escolha o grupo e rode o comando gerado. Ele cria o repositório do grupo a partir do template
 (na primeira vez) e o clona no seu computador:
 
 <LabTeamMembers labName="lab01" />
 
-### 2.4 Enviar o link do repositório no Moodle {/* #moodle-link */}
+### 2.5 Enviar o link do repositório no Moodle {/* #moodle-link */}
 
 <LabSubmit labName="lab01" />
 
@@ -233,7 +263,7 @@ code --profile "ESP32IO" .
 Crie o `.vscode/settings.json` da seção 1.1 e abra um terminal novo (**Ctrl+Shift+`**): ele
 tem de ser o **cmd**. Os comandos desta aula rodam nele, na raiz do repositório.
 
-### 2.5 Registrar o ambiente
+### 2.6 Registrar o ambiente
 
 Gere a evidência com as versões instaladas. O mesmo arquivo ajuda o professor a entender um
 erro de ambiente depois.
@@ -701,6 +731,7 @@ garante para quem lê o README?
 | Para…                                            | Comando                                                                 |
 | ------------------------------------------------ | ----------------------------------------------------------------------- |
 | Ver em que ramo estou e o que mudou              | `git status`                                                            |
+| Conferir os arquivos de uma tarefa               | `git conferir <arquivos>` (2.2)                                         |
 | Trazer o que os outros enviaram                  | `git pull`                                                              |
 | Salvar e enviar                                  | `git add <arquivos>` → `git commit -m "msg"` → `git push`               |
 | Criar um ramo e mudar para ele                   | `git switch -c nome`                                                    |
@@ -725,6 +756,7 @@ garante para quem lê o README?
 | `Repository not found`                    | nome errado ou você ainda não é membro da organização: `gh repo view ELT85B-N21-2026-2/lab01-grupo-x`                                 |
 | `rejected ... (fetch first)` no `push`    | alguém enviou antes: `git pull`, resolva o conflito se houver, e `git push` de novo. **Nunca** `--force`                              |
 | Commit sem o seu avatar no GitHub         | `user.email` diferente do da conta (P1). Corrija o `git config` para os próximos commits                                              |
+| `git: 'conferir' is not a git command`    | falta o alias (ou a configuração global foi apagada): rode de novo o comando da seção 2.2                                             |
 | O terminal abre como **PowerShell**       | falta o `.vscode/settings.json` (1.1), ou a pasta aberta não é a raiz do repositório. Abra um terminal novo depois de criar o arquivo |
 | Comando com `'aspas simples'` falha       | no `cmd`, só as **aspas duplas** agrupam um texto                                                                                     |
 | Diagrama aparece como código no GitHub    | o bloco tem de começar com três crases e `mermaid`, e a sintaxe tem de estar certa: o GitHub mostra o erro no lugar do diagrama       |
