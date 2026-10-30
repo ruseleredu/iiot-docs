@@ -24,27 +24,17 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
                 Confira o ambiente (faça a <b>configuração uma vez por máquina</b>; a
                 verificação, a cada aula):
             </p>
-            <ol>
-                <li>
-                    <Link to={`${intro}#setup`}>Instalar as ferramentas</Link> — git,
-                    GitHub CLI e VS Code
-                </li>
-                <li>
-                    <Link to={`${intro}#git-config`}>Configurar o git</Link> — nome,
-                    e-mail e editor padrão <i>(uma vez)</i>
-                </li>
-                <li>
-                    <Link to={`${intro}#verify`}>Verificar git, gh e VS Code</Link> —
-                    deve mostrar as versões e <code>Logged in to github.com</code>
-                </li>
-            </ol>
-            <p>Verificação rápida de versão instalada:</p>
+            <p>Verificação rápida das versões instaladas:</p>
             <ThemeCodeBlock language="bash">
                 git -v &amp; gh --version &amp; code -v &amp; py --version &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version
             </ThemeCodeBlock>
-            <p>Verificação rápida de autenticação:</p>
+            <p>Verificação rápida de autenticação e alias:</p>
             <ThemeCodeBlock language="bash">
-                git config --get-regexp ^user\. &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
+                git config --get-regexp "^(user|alias)\." &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
+            </ThemeCodeBlock>
+            <p>Adicionar o comando <code>git conferir</code>:</p>
+            <ThemeCodeBlock language="bash">
+                {`git config --global alias.conferir "!f() {r = $(pwd - W 2 > /dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
             </ThemeCodeBlock>
         </Admonition>
     );
@@ -147,6 +137,11 @@ export function GitConfig() {
             <p> Configure o email de usuário para todos os repositórios locais ligados às suas transações de commit:</p>
             <ThemeCodeBlock className="language-bash">
                 git config --global user.email "you@example.com"
+            </ThemeCodeBlock>
+
+            <p>Adicionar o comando <code>git conferir</code>:</p>
+            <ThemeCodeBlock language="bash">
+                {`git config --global alias.conferir "!f() {r = $(pwd - W 2 > /dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
             </ThemeCodeBlock>
 
             <p>É recomendado verificar se a instalação do seu Git não está realizando nenhuma transformação entre LFs e CRLFs.</p>
