@@ -13,7 +13,6 @@ import Link from '@docusaurus/Link';
 <Link to="/docs/vs-code">Visual Studio Code</Link>
 */
 
-
 // ---------------------------------------------------------------------------
 // <LabSetup /> — bloco "Antes de começar" (topo do lab)
 // ---------------------------------------------------------------------------
@@ -34,7 +33,7 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
             </ThemeCodeBlock>
             <p>Adicionar o comando <code>git conferir</code>:</p>
             <ThemeCodeBlock language="bash">
-                {`git config --global alias.conferir "!f() {r = $(pwd - W 2 > /dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
+                {`git config --global alias.conferir "!f() { r=\\$(pwd -W 2>/dev/null || pwd); echo \\"raiz do repositorio: \$r\\"; test -z \"\$GIT_PREFIX\" || echo \"ATENCAO: o terminal esta em \$GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d \$r\\"; test \$# -eq 0 && return; for a in \\\"\$@\\\"; do if [ -e \"\$a\" ]; then echo \"ok \$a\"; else echo \"FALTA \$a\"; fi; done; echo \"== mudancas desde o ultimo commit:\"; git status --short --ignored -- \\\"\$@\\\"; }; f"`}
             </ThemeCodeBlock>
         </Admonition>
     );
@@ -141,7 +140,7 @@ export function GitConfig() {
 
             <p>Adicionar o comando <code>git conferir</code>:</p>
             <ThemeCodeBlock language="bash">
-                {`git config --global alias.conferir "!f() {r = $(pwd - W 2 > /dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
+                {`git config --global alias.conferir "!f() { r=\\$(pwd -W 2>/dev/null || pwd); echo \\"raiz do repositorio: \$r\\"; test -z \"\$GIT_PREFIX\" || echo \"ATENCAO: o terminal esta em \$GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d \$r\\"; test \$# -eq 0 && return; for a in \\\"\$@\\\"; do if [ -e \"\$a\" ]; then echo \"ok \$a\"; else echo \"FALTA \$a\"; fi; done; echo \"== mudancas desde o ultimo commit:\"; git status --short --ignored -- \\\"\$@\\\"; }; f"`}
             </ThemeCodeBlock>
 
             <p>É recomendado verificar se a instalação do seu Git não está realizando nenhuma transformação entre LFs e CRLFs.</p>
