@@ -255,7 +255,7 @@ export default function FileTree({
             <RenderBranch nodes={displayNodes} copiedPath={copiedPath} onCopy={handleCopy} />
             {conferir.length > 0 && (
                 <div style={{ marginTop: '0.75rem', fontFamily: 'var(--ifm-font-family-base)' }}>
-                    <ThemeCodeBlock language="bash" title="Conferir estes arquivos (de qualquer pasta do repositório)">
+                    <ThemeCodeBlock language="bash">
                         {`git conferir ${conferir.join(' ')}`}
                     </ThemeCodeBlock>
                 </div>
