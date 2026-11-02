@@ -189,10 +189,13 @@ Abra o editor do FUXA (`http://localhost/fuxa/lab10-x/editor`) e entre com o usu
 No FUXA, só o MQTT vem instalado: **Modbus e OPC-UA são plugins**, baixados do npm na primeira
 vez. Na engrenagem (**Setup**) ▸ **Plugins**, instale:
 
-| Plugin          | Versão         | Protocolo                             |
-| --------------- | -------------- | ------------------------------------- |
-| `modbus-serial` | a mais recente | Modbus TCP e RTU                      |
-| `node-opcua`    | a mais recente | OPC-UA (o maior: leva cerca de 1 min) |
+| Plugin          | Protocolo                             |
+| --------------- | ------------------------------------- |
+| `modbus-serial` | Modbus TCP e RTU                      |
+| `node-opcua`    | OPC-UA (o maior: leva cerca de 1 min) |
+
+Instale a versão que a tela de plugins mostra: é o próprio FUXA que a define (no FUXA 1.3.5,
+`modbus-serial` 8.0.19 e `node-opcua` 2.149.0).
 
 Os plugins ficam na pasta `fuxa/lab10-x/pkg/` do LAB IoT: sobrevivem a um `docker compose down`.
 
@@ -418,7 +421,9 @@ um **historiador** próprio (o DAQ), que só precisa ser **ligado** em cada tag.
    (laranja) e `aquecedor_pwm` (cinza, no eixo **Y2**, em %).
 3. Crie a tela **Tendencia** com um _Chart_: _Chart to show_ `Camara`, _Show mode_
    **Realtime**, _Max minutes_ **15** e **Load history** ligado. Acrescente-a ao menu
-   (**Setup ▸ Layout**).
+   (**Setup ▸ Layout**). O _Chart_ herda a cor de preenchimento selecionada no editor: se ela
+   estiver preta, o fundo fica preto e os eixos somem. Escolha um preenchimento claro antes de
+   desenhar, ou mude a cor de fundo nas propriedades do gráfico.
 
 Faça um degrau (35 → 40 °C, PI interno) e veja a resposta na tendência.
 
