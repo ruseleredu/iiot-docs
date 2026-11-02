@@ -35,6 +35,8 @@ export const PRESETS_IOT: Record<string, GenIotOpcoes> = {
     lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
     lab08: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
     lab09: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true, captura: true },
+    lab10: { semGitea: true, semMicrobin: true, semNtfy: true, captura: true },
+    lab11: { semGitea: true, semMicrobin: true, semFuxa: true, captura: true },
     projeto: {},
 };
 
