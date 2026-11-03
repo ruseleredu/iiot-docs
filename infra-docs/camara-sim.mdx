@@ -1,6 +1,6 @@
 ---
 title: Câmara climática simulada (camara-sim)
-sidebar_label: camara-sim
+sidebar_label: Câmara climática simulada
 description: Guia do simulador da câmara climática ESP32 usado nos laboratórios — como rodar, conectar Node-RED e FUXA, e o mapa de variáveis em MQTT, Modbus, S7 e OPC-UA.
 ---
 
@@ -42,15 +42,15 @@ O `requirements.txt` do simulador fixa as versões das bibliotecas de propósito
 
 ## Compatibilidade com o LAB IoT {/* #lab-iot */}
 
-| Convenção do LAB IoT (`gen_iot_scada_portal.py`)                        | No simulador                                                                |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Tópicos do grupo `<grupo>/...` (a ponte do kit só repassa `<grupo>/#`)  | `<grupo>/camara/telemetria`, `/cmd`, `/cmd/<campo>`, `/status`, `/oled`      |
-| Serviços na rede `labnet`, nomes `<grupo>-nodered`, `<grupo>-fuxa`      | host **`<grupo>-camara`** (ex.: `lab05-a-camara`)                            |
-| Broker `mosquitto:1883`, anônimo                                        | `MQTT_HOST=mosquitto` ao entrar na rede do lab ou do kit                    |
-| Node-RED em `/<grupo>/` (`httpNodeRoot`)                                | dashboard em `/<grupo>/dashboard/camara`                                    |
-| Volume `/data` do grupo                                                 | SQLite em `/data/camara.sqlite`                                             |
-| ntfy: `NTFY_URL`, `NTFY_TOPIC`, `NTFY_TOKEN` no Node-RED                | os alarmes da câmara viram notificação no celular                           |
-| Nós do Dockerfile do lab (modbus, s7, opcua, sqlite, dashboard 2)       | os fluxos usam só esses (nada de serial nem `ui-led`)                        |
+| Convenção do LAB IoT (`gen_iot_scada_portal.py`)                       | No simulador                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Tópicos do grupo `<grupo>/...` (a ponte do kit só repassa `<grupo>/#`) | `<grupo>/camara/telemetria`, `/cmd`, `/cmd/<campo>`, `/status`, `/oled` |
+| Serviços na rede `labnet`, nomes `<grupo>-nodered`, `<grupo>-fuxa`     | host **`<grupo>-camara`** (ex.: `lab05-a-camara`)                       |
+| Broker `mosquitto:1883`, anônimo                                       | `MQTT_HOST=mosquitto` ao entrar na rede do lab ou do kit                |
+| Node-RED em `/<grupo>/` (`httpNodeRoot`)                               | dashboard em `/<grupo>/dashboard/camara`                                |
+| Volume `/data` do grupo                                                | SQLite em `/data/camara.sqlite`                                         |
+| ntfy: `NTFY_URL`, `NTFY_TOPIC`, `NTFY_TOKEN` no Node-RED               | os alarmes da câmara viram notificação no celular                       |
+| Nós do Dockerfile do lab (modbus, s7, opcua, sqlite, dashboard 2)      | os fluxos usam só esses (nada de serial nem `ui-led`)                   |
 
 O endereço OPC-UA se adapta ao cliente: o servidor devolve o mesmo host que o cliente usou
 (`localhost`, o IP do PC ou `lab05-a-camara`). UaExpert, Node-RED e FUXA conectam sem
@@ -78,12 +78,12 @@ py camara_sim.py --grupo lab05-a
 Sem outras opções, o simulador usa o broker em `localhost:1883` (o kit no próprio PC). Outras
 situações:
 
-| Situação                              | Comando                                                        |
-| ------------------------------------- | -------------------------------------------------------------- |
-| Broker do laboratório                 | `py camara_sim.py --grupo lab05-a --mqtt-host 192.168.0.10`    |
-| Sem MQTT (só Modbus, S7 e OPC-UA)     | `py camara_sim.py --grupo lab05-a --sem-mqtt`                  |
-| Dinâmica 5× mais rápida               | `py camara_sim.py --grupo lab05-a --speed 5`                   |
-| Todas as opções                       | `py camara_sim.py --help`                                      |
+| Situação                          | Comando                                                     |
+| --------------------------------- | ----------------------------------------------------------- |
+| Broker do laboratório             | `py camara_sim.py --grupo lab05-a --mqtt-host 192.168.0.10` |
+| Sem MQTT (só Modbus, S7 e OPC-UA) | `py camara_sim.py --grupo lab05-a --sem-mqtt`               |
+| Dinâmica 5× mais rápida           | `py camara_sim.py --grupo lab05-a --speed 5`                |
+| Todas as opções                   | `py camara_sim.py --help`                                   |
 
 :::info[Linux e macOS]
 As portas 102 e 502 exigem administrador. Use outras, por exemplo
@@ -146,12 +146,12 @@ py gerar_flows.py --grupo lab05-a
 O comando gera `flows/camara-lab05-a.json`. No Node-RED do grupo: **Menu ☰ → Import** →
 selecione o arquivo → **Import** → **Deploy**. O arquivo cria quatro abas:
 
-| Aba                             | O que faz                                                                                          |
-| ------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Câmara - Dashboard              | `/<grupo>/dashboard/camara`: medidores, gráficos, LEDs, réplica do OLED, comandos e simulação       |
-| Câmara - Banco SQLite           | `/data/camara.sqlite`, uma amostra a cada 10 s, consultas prontas e histórico no dashboard           |
-| Câmara - Controle Node-RED      | controlador externo (ON/OFF + ventilador P) e **alarmes → ntfy** do grupo                           |
-| Câmara - Modbus / S7 / OPC-UA   | lê a câmara por cada protocolo e republica em `<grupo>/camara/via/<protocolo>`                      |
+| Aba                           | O que faz                                                                                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| Câmara - Dashboard            | `/<grupo>/dashboard/camara`: medidores, gráficos, LEDs, réplica do OLED, comandos e simulação |
+| Câmara - Banco SQLite         | `/data/camara.sqlite`, uma amostra a cada 10 s, consultas prontas e histórico no dashboard    |
+| Câmara - Controle Node-RED    | controlador externo (ON/OFF + ventilador P) e **alarmes → ntfy** do grupo                     |
+| Câmara - Modbus / S7 / OPC-UA | lê a câmara por cada protocolo e republica em `<grupo>/camara/via/<protocolo>`                |
 
 :::warning[Já existe um Dashboard 2.0 no Node-RED do grupo?]
 O Dashboard 2.0 aceita um só `ui-base`. Ao importar, aponte a página "Câmara Climática" para o
@@ -165,37 +165,37 @@ Configurações > Plugins** (`modbus-serial`, `node-opcua`, `node-snap7`). Eles 
 `server/_pkg`, que precisa de um volume para sobreviver à recriação do contêiner. O guia foi
 testado com o FUXA 1.3.4.
 
-| Conexão no FUXA | Configuração |
-| --------------- | ------------ |
-| MQTT client     | `mqtt://mosquitto:1883`. Tag do tipo **json**: tópico `lab05-a/camara/telemetria`, chave `temp` (ou outra) |
-| Modbus TCP      | endereço `lab05-a-camara:502`, slave 1. Os endereços do FUXA são **base 1**: IR0 = Input Register `1`, HR3 = Holding `4`. Temperatura ×10: `Int16` com divisor 10; em float: `Float32` no endereço `13` |
+| Conexão no FUXA | Configuração                                                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MQTT client     | `mqtt://mosquitto:1883`. Tag do tipo **json**: tópico `lab05-a/camara/telemetria`, chave `temp` (ou outra)                                                                                                       |
+| Modbus TCP      | endereço `lab05-a-camara:502`, slave 1. Os endereços do FUXA são **base 1**: IR0 = Input Register `1`, HR3 = Holding `4`. Temperatura ×10: `Int16` com divisor 10; em float: `Float32` no endereço `13`          |
 | Siemens S7      | **IP** do contêiner (o snap7 não resolve nomes: `docker exec <fuxa> getent hosts lab05-a-camara`), rack 0, slot 1. Sintaxe Step 7: `DB1.DBD20` (REAL), `DB1.DBW2` (INT), `DB1.DBX0.0` (BOOL), `DB1.DBD48` (DINT) |
-| OPC-UA          | `opc.tcp://lab05-a-camara:4840/`, segurança None, anônimo. Endereço da tag = NodeId (`ns=2;s=Camara.temp`), tipo igual ao do nó (`Double`, `Int32`, `Boolean`) |
+| OPC-UA          | `opc.tcp://lab05-a-camara:4840/`, segurança None, anônimo. Endereço da tag = NodeId (`ns=2;s=Camara.temp`), tipo igual ao do nó (`Double`, `Int32`, `Boolean`)                                                   |
 
 ## 4. A câmara {/* #camara */}
 
 ### Objetivos de projeto atendidos
 
-| Objetivo                        | Implementação                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Medir temperatura e umidade     | DHT22: leitura a cada 2 s, ruído de ±0,1 °C e ±0,5 %UR, 1 % de erros de leitura             |
-| Setpoint configurável           | `setpoint` remoto (20–55 °C) ou pelo potenciômetro (`fonte_sp = 1`)                        |
-| Aquecedor e ventilador por PWM  | 0–100 % e duty LEDC de 8 bits (0–255)                                                      |
-| Tela OLED                       | 6 linhas × 21 caracteres (SSD1306 128×64)                                                  |
-| Potenciômetro                   | ADC de 12 bits (0–4095)                                                                    |
-| Estratégia de controle          | MANUAL (controle externo), ON/OFF com histerese e PI com anti-windup                       |
-| Estado da planta                | DESLIGADO, AQUECENDO, RESFRIANDO, ESTÁVEL e ALARME; LEDs verde, amarelo e vermelho          |
+| Objetivo                       | Implementação                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| Medir temperatura e umidade    | DHT22: leitura a cada 2 s, ruído de ±0,1 °C e ±0,5 %UR, 1 % de erros de leitura    |
+| Setpoint configurável          | `setpoint` remoto (20–55 °C) ou pelo potenciômetro (`fonte_sp = 1`)                |
+| Aquecedor e ventilador por PWM | 0–100 % e duty LEDC de 8 bits (0–255)                                              |
+| Tela OLED                      | 6 linhas × 21 caracteres (SSD1306 128×64)                                          |
+| Potenciômetro                  | ADC de 12 bits (0–4095)                                                            |
+| Estratégia de controle         | MANUAL (controle externo), ON/OFF com histerese e PI com anti-windup               |
+| Estado da planta               | DESLIGADO, AQUECENDO, RESFRIANDO, ESTÁVEL e ALARME; LEDs verde, amarelo e vermelho |
 
 ### Pinagem sugerida para a câmara real
 
-| Componente                      | ESP32                                   |
-| ------------------------------- | --------------------------------------- |
-| DHT22                           | GPIO4 (pull-up de 10 kΩ)                |
-| Potenciômetro de 10 kΩ          | GPIO34 (ADC1_CH6)                       |
-| Aquecedor (~25 W)               | GPIO25 → MOSFET, LEDC de 8 bits         |
-| Ventilador de 12 V              | GPIO26 → MOSFET, LEDC de 8 bits, 25 kHz |
-| OLED SSD1306                    | SDA GPIO21 / SCL GPIO22 (0x3C)          |
-| LEDs verde, amarelo e vermelho  | GPIO16, GPIO17 e GPIO5                  |
+| Componente                     | ESP32                                   |
+| ------------------------------ | --------------------------------------- |
+| DHT22                          | GPIO4 (pull-up de 10 kΩ)                |
+| Potenciômetro de 10 kΩ         | GPIO34 (ADC1_CH6)                       |
+| Aquecedor (~25 W)              | GPIO25 → MOSFET, LEDC de 8 bits         |
+| Ventilador de 12 V             | GPIO26 → MOSFET, LEDC de 8 bits, 25 kHz |
+| OLED SSD1306                   | SDA GPIO21 / SCL GPIO22 (0x3C)          |
+| LEDs verde, amarelo e vermelho | GPIO16, GPIO17 e GPIO5                  |
 
 ### Modelo e firmware
 
@@ -246,20 +246,20 @@ saturados.
 
 TCP e RTU sobre TCP: unit 1, endereços **base 0**.
 
-| Tabela          | End.         | Variável                                                       |
-| --------------- | ------------ | -------------------------------------------------------------- |
-| Coil            | 0 / 1        | habilitado / falha_dht                                         |
-| Discrete input  | 0–4          | led_verde, led_amarelo, led_vermelho, dht_ok, alarme ativo     |
-| Holding         | 0 / 1 / 2    | habilitado / modo / fonte_sp                                   |
-| Holding         | 3            | setpoint × 10 (350 = 35,0 °C)                                  |
-| Holding         | 4 / 5        | aquecedor_cmd / ventilador_cmd (%)                             |
-| Holding         | 6 / 7        | pot_raw / falha_dht (simulação)                                |
-| Input           | 0 / 1 / 2    | temp × 10 / umid × 10 / sp_efetivo × 10                        |
-| Input           | 3 / 4 / 5    | aquecedor_pwm / ventilador_pwm / pot_raw                       |
-| Input           | 6 / 7 / 8    | estado / alarme / leds (bit0 verde, bit1 amarelo, bit2 vermelho) |
-| Input           | 9 / 10 / 11  | dht_erros / heartbeat / uptime                                 |
-| Input           | 12–13 / 14–15| temp / umid em float32 ABCD                                    |
-| Input           | 16 / 17      | aquecedor_duty / ventilador_duty (0–255)                       |
+| Tabela         | End.          | Variável                                                         |
+| -------------- | ------------- | ---------------------------------------------------------------- |
+| Coil           | 0 / 1         | habilitado / falha_dht                                           |
+| Discrete input | 0–4           | led_verde, led_amarelo, led_vermelho, dht_ok, alarme ativo       |
+| Holding        | 0 / 1 / 2     | habilitado / modo / fonte_sp                                     |
+| Holding        | 3             | setpoint × 10 (350 = 35,0 °C)                                    |
+| Holding        | 4 / 5         | aquecedor_cmd / ventilador_cmd (%)                               |
+| Holding        | 6 / 7         | pot_raw / falha_dht (simulação)                                  |
+| Input          | 0 / 1 / 2     | temp × 10 / umid × 10 / sp_efetivo × 10                          |
+| Input          | 3 / 4 / 5     | aquecedor_pwm / ventilador_pwm / pot_raw                         |
+| Input          | 6 / 7 / 8     | estado / alarme / leds (bit0 verde, bit1 amarelo, bit2 vermelho) |
+| Input          | 9 / 10 / 11   | dht_erros / heartbeat / uptime                                   |
+| Input          | 12–13 / 14–15 | temp / umid em float32 ABCD                                      |
+| Input          | 16 / 17       | aquecedor_duty / ventilador_duty (0–255)                         |
 
 :::tip[Node-RED]
 No `node-red-contrib-modbus`, o RTU sobre TCP usa o tipo **TELNET**. O tipo "RTU-BUFFERED"
@@ -271,16 +271,16 @@ envia, na verdade, Modbus TCP.
 
 DB1 (sem acesso otimizado), rack 0, slot 1.
 
-| Endereço                     | nodes7                          | Variável                                                    |
-| ---------------------------- | ------------------------------- | ----------------------------------------------------------- |
-| DBX0.0 / 0.1 / 0.2           | `DB1,X0.0` …                    | habilitado / fonte_sp / falha_dht (graváveis)               |
-| DBW2                         | `DB1,INT2`                      | modo (gravável)                                             |
-| DBD4 / 8 / 12                | `DB1,REAL4` …                   | setpoint / aquecedor_cmd / ventilador_cmd (graváveis)       |
-| DBW16                        | `DB1,INT16`                     | pot_raw de simulação (gravável)                             |
-| DBD20 / 24 / 28 / 32 / 36    | `DB1,REAL20` …                  | temp / umid / sp_efetivo / aquecedor_pwm / ventilador_pwm   |
-| DBW40 / 42                   | `DB1,INT40` / `INT42`           | estado / alarme                                             |
-| DBX44.0–44.3                 | `DB1,X44.0` …                   | led_verde, led_amarelo, led_vermelho, dht_ok                |
-| DBW46, DBD48, DBD52          | `DB1,INT46`, `DINT48`, `DINT52` | pot_raw (ADC), heartbeat, uptime                            |
+| Endereço                  | nodes7                          | Variável                                                  |
+| ------------------------- | ------------------------------- | --------------------------------------------------------- |
+| DBX0.0 / 0.1 / 0.2        | `DB1,X0.0` …                    | habilitado / fonte_sp / falha_dht (graváveis)             |
+| DBW2                      | `DB1,INT2`                      | modo (gravável)                                           |
+| DBD4 / 8 / 12             | `DB1,REAL4` …                   | setpoint / aquecedor_cmd / ventilador_cmd (graváveis)     |
+| DBW16                     | `DB1,INT16`                     | pot_raw de simulação (gravável)                           |
+| DBD20 / 24 / 28 / 32 / 36 | `DB1,REAL20` …                  | temp / umid / sp_efetivo / aquecedor_pwm / ventilador_pwm |
+| DBW40 / 42                | `DB1,INT40` / `INT42`           | estado / alarme                                           |
+| DBX44.0–44.3              | `DB1,X44.0` …                   | led_verde, led_amarelo, led_vermelho, dht_ok              |
+| DBW46, DBD48, DBD52       | `DB1,INT46`, `DINT48`, `DINT52` | pot_raw (ADC), heartbeat, uptime                          |
 
 Imagem de processo: `IW0` = potenciômetro; `Q0.0–Q0.2` = LEDs; `QB2`/`QB3` = duty do aquecedor
 e do ventilador.
@@ -341,13 +341,13 @@ As pastas organizam a navegação; o NodeId não leva a pasta: `ns=2;s=Camara.te
   ]}
 />
 
-| Arquivo                                                              | Função                                                                 |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `camara_model.py`                                                    | planta, DHT22, ADC, PWM, controle, estados e OLED                      |
-| `camara_sim.py`                                                      | programa principal (opções por argumento ou variável de ambiente)      |
-| `proto_mqtt.py`, `proto_modbus.py`, `proto_s7.py`, `proto_opcua.py`  | um adaptador por protocolo                                             |
-| `testar_clientes.py`                                                 | teste de ponta a ponta em todos os protocolos                          |
-| `gerar_flows.py`                                                     | fluxos do Node-RED para um grupo                                       |
-| `gerar_compose_lab.py`                                               | uma câmara por grupo no servidor do laboratório                        |
-| `docker-compose.yml`, `docker-compose.lab.yml`, `.env.example`       | Docker sozinho / na rede do lab ou do kit                              |
-| `wokwi/camara_esp32/`                                                | **firmware ESP32 + circuito Wokwi** com o mesmo contrato MQTT e a planta virtual (veja o README da pasta) |
+| Arquivo                                                             | Função                                                                                                    |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `camara_model.py`                                                   | planta, DHT22, ADC, PWM, controle, estados e OLED                                                         |
+| `camara_sim.py`                                                     | programa principal (opções por argumento ou variável de ambiente)                                         |
+| `proto_mqtt.py`, `proto_modbus.py`, `proto_s7.py`, `proto_opcua.py` | um adaptador por protocolo                                                                                |
+| `testar_clientes.py`                                                | teste de ponta a ponta em todos os protocolos                                                             |
+| `gerar_flows.py`                                                    | fluxos do Node-RED para um grupo                                                                          |
+| `gerar_compose_lab.py`                                              | uma câmara por grupo no servidor do laboratório                                                           |
+| `docker-compose.yml`, `docker-compose.lab.yml`, `.env.example`      | Docker sozinho / na rede do lab ou do kit                                                                 |
+| `wokwi/camara_esp32/`                                               | **firmware ESP32 + circuito Wokwi** com o mesmo contrato MQTT e a planta virtual (veja o README da pasta) |
