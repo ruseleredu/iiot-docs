@@ -154,6 +154,10 @@ tarefa.
 
 ## Parte 1 — Câmara, Node-RED e drivers do FUXA {/* #parte-1 */}
 
+:::info[Suba o stack do LAB10!]
+Execute os comandos para subir o [stack do LAB10](/infra/setup/gen_iot_aluno#lab-10)!
+:::
+
 ### 1.1 A câmara e o fluxo do Lab 09
 
 O mesmo do Lab 09 (Parte 1), com os nomes do Lab 10:
@@ -161,6 +165,28 @@ O mesmo do Lab 09 (Parte 1), com os nomes do Lab 10:
 1. **Câmara:** o `.env` da pasta `camara-sim/` com `GRUPO=lab10-x`,
    `MQTT_BASE=elt85b/lab10/grupo-x/camara`, `LAB_REDE=lab10-x_labnet` e `SIM_SPEED=5`, e o
    `docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build`.
+
+<FileTree root="lab10-grupo-x" files={["camara-sim/.env c"]} />
+
+<GroupCommands
+  language="ini"
+  commands={[
+    {
+      title: "Arquivo .env",
+      codeTitle: "camara-sim/.env",
+      command: `GRUPO=lab10-{group}
+MQTT_BASE={course}/lab10/grupo-{group}/camara
+LAB_REDE=lab10-{group}_labnet
+SIM_SPEED=5
+
+PORTA_MODBUS_TCP=1502
+PORTA_MODBUS_RTU=5021
+PORTA_S7=1102
+PORTA_OPCUA=4840`,
+},
+]}
+/>
+
 2. **Endereços:** grave a evidência e confira que a lista tem `lab10-x-camara`,
    `lab10-x-nodered` e **`lab10-x-fuxa`**:
 
