@@ -52,8 +52,24 @@ const navbarItems: NavbarItem[] = [
         position: "left",
         items: [
             {
+                to: "/infra/solicitar-inclusao-em-time", // Link to a page in your infra docs
+                label: "Inclusão em Grupo no GitHub",
+            },
+            {
                 to: "/infra/teams", // Link to a page in your infra docs
                 label: "Grupos/Organizações",
+            },
+            {
+                to: "/infra/repositorio-de-notas", // Link to a page in your infra docs
+                label: "Correção automática",
+            },
+            {
+                to: "/infra/camara-sim", // Link to a page in your infra docs
+                label: "Câmara climática simulada",
+            },
+            {
+                to: "/infra/setup/lab-iot-portal", // Link to a page in your infra docs
+                label: "LAB IoT (portal SCADA)",
             },
         ],
     },
