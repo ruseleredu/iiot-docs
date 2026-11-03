@@ -115,6 +115,14 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
+        conteudo: "IA no desenvolvimento: agentes, MCP e revisão;",
+    },
+    {
+        tarefa: "LAB13",
+        hrefi: "/labs/LAB13",
+        hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
+        start: "29-10-2026",
+        end: "05-11-2026",
         conteudo: "LAB IoT na sua máquina;",
     },
 
