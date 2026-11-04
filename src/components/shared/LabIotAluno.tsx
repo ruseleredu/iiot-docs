@@ -3,6 +3,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
+import Link from "@docusaurus/Link";
 
 import { GROUPS, HOMEFOLDER, PRESETS_IOT, GenIotOpcoes } from "../constants"; // updated import
 
@@ -43,6 +44,14 @@ type LabIotAlunoProps = {
     opcoes?: GenIotOpcoes;
     /** Grupos exibidos (padrão: GROUPS de constants) */
     grupos?: readonly string[];
+    /**
+     * Ponto de retorno à atividade (página do laboratório).
+     * Padrão: `/labs/<LABNAME>#parte-1` (ex.: lab10 → /labs/LAB10#parte-1).
+     * Use `false` para não exibir.
+     */
+    retorno?: string | false;
+    /** Texto antes do link de retorno (padrão: "Retorne à atividade em") */
+    retornoTexto?: string;
 };
 
 const GRUPO_VALIDO = /^[a-z]$/; // o script aceita uma letra a..z, exceto p e n
@@ -55,8 +64,11 @@ export default function LabIotAluno({
     labName = "lab05",
     opcoes,
     grupos = GROUPS,
+    retorno,
+    retornoTexto,
 }: LabIotAlunoProps) {
     const lab = labName.toLowerCase();
+    const urlRetorno = retorno === false ? null : retorno ?? `/labs/${labName.toUpperCase()}#parte-1`;
     const o: GenIotOpcoes = { ...(PRESETS_IOT[lab] ?? {}), ...(opcoes ?? {}) };
     const flags = montarFlags(o);
     const conflito = o.semSenha && (o.protegerHttp || o.mqttSemAnonimo);
@@ -321,6 +333,17 @@ export default function LabIotAluno({
                     );
                 })}
             </Tabs>
+
+            {urlRetorno && (
+                <Admonition type="tip" title="Ambiente pronto?">
+                    <p>
+                        {retornoTexto ?? "Retorne à atividade em"}{" "}
+                        <Link to={urlRetorno}>
+                            <b>{urlRetorno}</b>
+                        </Link>
+                    </p>
+                </Admonition>
+            )}
         </>
     );
 }
