@@ -169,7 +169,7 @@ O mesmo do Lab 09 (Parte 1), com os nomes do Lab 10:
 <FileTree root="lab10-grupo-x" files={["camara-sim/.env c"]} />
 
 <GroupCommands
-  language="ini"
+  language="bash"
   commands={[
     {
       title: "Arquivo .env",
@@ -184,25 +184,25 @@ PORTA_MODBUS_RTU=5021
 PORTA_S7=1102
 PORTA_OPCUA=4840`,
 },
-]}
-/>
-
-2. **Endereços:** grave a evidência e confira que a lista tem `lab10-x-camara`,
-   `lab10-x-nodered` e **`lab10-x-fuxa`**:
-
-<GroupCommands
-  commands={[
+    {
+      title: "Subir",
+      codeTitle: "Terminal (cmd)",
+      command: `cd /d %USERPROFILE%\\ELT85BN21\\lab10-grupo-{group}\\camara-sim
+docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
+docker logs lab10-{group}-camara`,
+},
     {
       title: "Quem está na rede",
       codeTitle: "Terminal (cmd), na raiz do repositório",
-      command: `if not exist evidencias mkdir evidencias
-docker network inspect lab10-{group}_labnet --format "{{range .Containers}}{{.Name}} {{end}}" > evidencias\\t1-enderecos.txt
+      command: `cd /d %USERPROFILE%\\ELT85BN21\\lab10-grupo-{group}
+if not exist evidencias mkdir evidencias
+docker network inspect lab10-{group}\_labnet --format "{{range .Containers}}{{.Name}} {{end}}" > evidencias\\t1-enderecos.txt
 type evidencias\\t1-enderecos.txt`,
-    },
-  ]}
+},
+]}
 />
 
-3. **Node-RED:** importe o `nodered/flows-lab09.json` do repositório do Lab 09, chame a aba de
+2. **Node-RED:** importe o `nodered/flows-lab09.json` do repositório do Lab 09, chame a aba de
    **Lab 10** e troque `lab09` por `lab10` nos quatro nós de configuração (Modbus TCP, Modbus RTU/TCP, S7 e
    OPC-UA),
    nos tópicos MQTT e no caminho do SQLite (`/data/sqlite/lab10.sqlite`). Use **Ctrl+F** para
