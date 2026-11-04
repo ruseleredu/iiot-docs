@@ -188,7 +188,7 @@ export default function LabIotAluno({
                                     <Cmd>{`${entrar} && docker compose up -d --build`}</Cmd>
 
                                     <p><b>4.</b> Confira e veja a senha:</p>
-                                    <Cmd>{`docker compose ps && type credenciais.txt`}</Cmd>
+                                    <Cmd>{`chcp 65001 >nul && docker compose ps && type credenciais.txt`}</Cmd>
 
                                     <p><b>5.</b> Abra o portal:</p>
                                     <Cmd>{`start ${base}/`}</Cmd>
