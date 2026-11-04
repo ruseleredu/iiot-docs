@@ -202,12 +202,12 @@ type evidencias\\t1-enderecos.txt`,
 ]}
 />
 
-2. **Node-RED:** importe o `nodered/flows-lab09.json` do repositório do Lab 09, chame a aba de
+2. **Node-RED:** importe o `nodered/flows-lab10.json` do repositório do Lab 09, chame a aba de
    **Lab 10** e troque `lab09` por `lab10` nos quatro nós de configuração (Modbus TCP, Modbus RTU/TCP, S7 e
    OPC-UA),
    nos tópicos MQTT e no caminho do SQLite (`/data/sqlite/lab10.sqlite`). Use **Ctrl+F** para
    achar o que sobrou. **Deploy** e confira o painel em
-   `http://localhost/lab10-x/dashboard/lab09`.
+   `http://localhost/lab10-x/dashboard/lab10`.
 
 ### 1.2 Drivers do FUXA
 
@@ -665,6 +665,12 @@ Onde cada proteção deve ficar?
 ---
 
 ## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+Ao terminar, pare os containers:
+
+```bash
+for /f "delims=" %i in ('docker compose ls -q') do docker compose -p %i down
+```
 
 <GitLogOut />
 
