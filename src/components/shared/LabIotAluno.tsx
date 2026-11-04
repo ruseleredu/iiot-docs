@@ -192,7 +192,6 @@ export default function LabIotAluno({
                                     </p>
                                     <Cmd>{atalhos}</Cmd>
 
-
                                     <p><b>2.</b> Gere o LAB IoT do grupo em <code>{`docker\\${conta}`}</code>:</p>
                                     <Cmd>{gerar}</Cmd>
 
@@ -207,6 +206,20 @@ export default function LabIotAluno({
 
                                     <p><b>6.</b> Abra o portal:</p>
                                     <Cmd>{`start ${base}/`}</Cmd>
+
+                                    <p>
+                                        <b>7.</b> Ao terminar, pare os containers de <b>todos</b> os projetos Docker
+                                        Compose em execução (funciona em qualquer janela do cmd, sem os atalhos; os
+                                        dados ficam; para voltar, use o passo 3 ou <i>Subir de novo</i>):
+                                    </p>
+                                    <Cmd>{`for /f "delims=" %i in ('docker compose ls -q') do docker compose -p %i down`}</Cmd>
+                                    <p>
+                                        Em um arquivo <code>.cmd</code>/<code>.bat</code>, troque <code>%i</code> por{" "}
+                                        <code>%%i</code>. Para parar só este LAB IoT:
+                                    </p>
+                                    <Cmd>{`${entrar} && docker compose down`}</Cmd>
+                                    <p>Se quiser, feche também o Docker Desktop para liberar a memória:</p>
+                                    <Cmd>{`docker desktop stop`}</Cmd>
 
                                     <details>
                                         <summary><b>Endereços</b></summary>
