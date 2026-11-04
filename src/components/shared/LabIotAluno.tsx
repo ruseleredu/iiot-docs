@@ -199,10 +199,13 @@ export default function LabIotAluno({
                                     <p><b>3.</b> Suba os containers (a primeira vez demora):</p>
                                     <Cmd>{`${entrar} && docker compose up -d --build`}</Cmd>
 
-                                    <p><b>4.</b> Confira e veja a senha:</p>
-                                    <Cmd>{`chcp 65001 >nul && docker compose ps && type credenciais.txt`}</Cmd>
+                                    <p><b>4.</b> Listar e exibir o status dos containers:</p>
+                                    <Cmd>{`docker compose ps`}</Cmd>
 
-                                    <p><b>5.</b> Abra o portal:</p>
+                                    <p><b>5.</b> Veja suas credenciais:</p>
+                                    <Cmd>{`${entrar} && chcp 65001 >nul && type credenciais.txt`}</Cmd>
+
+                                    <p><b>6.</b> Abra o portal:</p>
                                     <Cmd>{`start ${base}/`}</Cmd>
 
                                     <details>
