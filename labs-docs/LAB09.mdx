@@ -176,27 +176,22 @@ PORTA_MODBUS_RTU=5021
 PORTA_S7=1102
 PORTA_OPCUA=4840`,
 },
-]}
-/>
-
-<GroupCommands
-  commands={[
     {
-      title: "1. Subir",
+      title: "Subir",
       codeTitle: "Terminal (cmd)",
       command: `cd /d %USERPROFILE%\\ELT85BN21\\lab09-grupo-{group}\\camara-sim
 docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
 docker logs lab09-{group}-camara`,
     },
     {
-      title: "2. Testar e gravar",
+      title: "Testar e gravar",
       codeTitle: "Terminal (cmd), na raiz do repositório",
       command: `cd /d %USERPROFILE%\\ELT85BN21\\lab09-grupo-{group}
 if not exist evidencias mkdir evidencias
 docker exec lab09-{group}-camara python testar_clientes.py --mqtt-host mosquitto > evidencias\\t1-testar.txt
 type evidencias\\t1-testar.txt`,
-    },
-  ]}
+},
+]}
 />
 
 ### 1.2 Conferir os endereços
