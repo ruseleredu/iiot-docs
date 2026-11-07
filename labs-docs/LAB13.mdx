@@ -3,21 +3,21 @@ title: Laboratório 13
 sidebar_position: 16
 ---
 
-## Checklist — o LAB IoT na sua máquina {/* #checklist */}
+## Checklist — automação de processos com n8n: eventos, aprovações e agentes {/* #checklist */}
 
-- [ ] LAB IoT do grupo gerado com o `gen_iot_aluno.py` e no ar no seu computador, com o consumo de memória medido (T1)
-- [ ] Repositório no Gitea **da sua máquina** (remoto `casa`), o CI do Lab 11 verde no seu runner e a 3ª coluna da tabela "o que o job enxerga" (T2)
-- [ ] Tempos do CI em casa medidos com `ci/duracoes.py` (cache frio e quente) e comparados com os do laboratório (T3)
-- [ ] O MQTT "no fio": CONNECT, SUBSCRIBE, PUBLISH QoS 0 e 1, retain e PING identificados no Wireshark, a ACL do broker testada e as senhas do MQTT e do Node-RED achadas na captura (T4)
-- [ ] Workflow `integracao.yml`: o CI conversa com o Node-RED pelo broker, só onde existe broker, e o job identificado na captura (T5)
-- [ ] Ponte MQTT casa ↔ laboratório: o fluxo de casa respondendo a um comando enviado do LAB IoT do laboratório (T6)
-- [ ] Previsões P1–P5 respondidas no `README.md`
-- [ ] Nenhum `credenciais.txt`, `.segredos.json`, `.pcap` completo ou CONNECT com senha no repositório; nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] n8n do grupo na rede do LAB IoT, credenciais importadas, notificação pelo ntfy e workflows exportados para o Git (T1)
+- [ ] Node-RED publica **eventos** de alarme; o n8n abre a ocorrência, avisa e **escala** se ninguém reconhecer (T2)
+- [ ] Relatório do turno agendado: API do Node-RED, ocorrências do n8n, arquivo no repositório e aviso (T3)
+- [ ] Mudança de setpoint por formulário, com **aprovação humana**, comando MQTT e conferência do resultado (T4)
+- [ ] n8n como **servidor MCP**: o agente consulta a câmara e só **pede** mudanças, testado sem IA e com o agente (T5)
+- [ ] Workflow de erros, lint dos workflows no CI e ensaio de **recuperação** a partir do Git (T6)
+- [ ] Previsões P1–P4 respondidas no `README.md`
+- [ ] Nenhum token no repositório nem no chat; nenhum `push --force`; cada tarefa num commit `Tn:`
+- [ ] Logout do Git, do `gh` e da conta do n8n no computador do laboratório
 
 :::info[Pontuação]
-**T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 15 · T3 15 · T4 20 · T5 20 ·
-T6 20. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa **no
-GitHub**.
+**T1…T6 = 100 pts** (esta aula não tem desafios): T1 10 · T2 20 · T3 15 · T4 20 · T5 15 ·
+T6 20. O autograder normaliza para 0–10. Vale o commit `Tn:` mais recente de cada tarefa.
 :::
 
 <LabSetup />
@@ -28,71 +28,64 @@ GitHub**.
 
 ---
 
-No Lab 11, o pipeline saiu do GitHub e foi para o **runner do laboratório**. Ficou perto, mas
-continua sendo um servidor **da turma**: uma fila para todos, secrets que só o professor vê, e
-nenhuma forma de olhar o que passa na rede entre o Node-RED, o broker e o Gitea.
+O Node-RED dos Labs 05 a 10 é ótimo com **fluxos de dados**: uma leitura a cada 2 s, uma escala,
+um gráfico. Uma fábrica também tem **processos**: um alarme que alguém precisa reconhecer, uma
+mudança de setpoint que um supervisor precisa aprovar, um relatório que sai a cada troca de
+turno. Processos esperam por pessoas, duram minutos ou horas e precisam deixar registro.
 
-Nesta aula, o LAB IoT inteiro vem para **o seu computador**. O **`gen_iot_aluno.py`** gera, numa
-pasta, o mesmo conjunto do laboratório (Node-RED, FUXA, Mosquitto, Gitea com Actions e runner,
-ntfy, MicroBin e MQTT Explorer), **com os mesmos caminhos e nomes**: `/lab13-x/`,
-`mosquitto:1883`, tópicos `lab13-x/...`. Por isso:
+O **n8n** é uma plataforma de automação de processos (_workflow automation_): cada processo é
+um **workflow** de nós, disparado por um **gatilho** (uma mensagem MQTT, um horário, um
+formulário, uma chamada MCP). O n8n guarda cada **execução**, sabe **esperar** por uma pessoa
+sem travar nada e fala com centenas de serviços.
 
-1. o que você faz em casa funciona no laboratório sem mudar nada (e vice-versa);
-2. o runner é **só do grupo**: dá para medir o CI sem a fila da turma;
-3. você é o **dono** de tudo, inclusive da rede: com `--captura`, um container
-   [netshoot](https://github.com/nicolaka/netshoot) grava os pacotes para o **Wireshark**;
-4. com `--ponte-mqtt`, o broker de casa e o do laboratório trocam as mensagens do grupo.
+Nesta aula, cada ferramenta fica com o que faz melhor:
 
 ```mermaid
 flowchart LR
-  subgraph PC["seu computador (Docker)"]
-    N["nginx<br/>http://localhost"] --> NR["Node-RED<br/>/lab13-x/"]
-    N --> G["Gitea<br/>/git/"]
-    N --> NT["ntfy"]
-    NR --> M["Mosquitto<br/>:1883"]
-    G -- "tarefas" --> R["runner do grupo<br/>Docker-in-Docker"]
-    R -. "rede do nginx" .-> M
-    NS["netshoot<br/>tcpdump"] -. "br-lab13-x" .-> W["Wireshark"]
+  subgraph NET["rede lab13-x_labnet (LAB IoT)"]
+    CS["lab13-x-camara<br/>camara-sim"] -->|telemetria a cada 2 s| MQ[(mosquitto)]
+    MQ --> NR["lab13-x-nodered<br/>borda: SQLite, API, eventos"]
+    NR -->|.../eventos<br/>só quando muda| MQ
+    MQ --> N8["lab13-x-n8n<br/>processos"]
+    N8 -->|GET /api/...| NR
+    N8 -->|.../cmd<br/>depois da aprovação| MQ --> CS
   end
-  GIT["git + tea"] -- "remoto casa" --> N
-  GIT -- "origin" --> GH["GitHub"]
-  M <-- "ponte lab13-x/#" --> ML["Mosquitto do<br/>LAB IoT do laboratório"]
+  N8 -->|avisos e links| NT[("ntfy")] --> OP["operador e<br/>supervisor"]
+  OP -->|formulário · reconhecer · decidir| N8
+  AG["agente do VS Code<br/>(Lab 12)"] -->|MCP| N8
 ```
+
+| No Node-RED (borda)                              | No n8n (processo)                                               |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| recebe **toda** a telemetria e grava no SQLite   | recebe só **eventos** (o alarme mudou)                          |
+| `http in` responde `/api/estado` e `/api/turno`  | consulta essas APIs quando um processo precisa                  |
+| fluxo sempre rodando, sem histórico de execuções | cada execução registrada: quem, quando, com que dados           |
+| —                                                | **espera** uma pessoa (reconhecer, aprovar) por minutos ou dias |
 
 ## Objetivos
 
-- Gerar, subir e manter um ambiente de vários serviços com **Docker Compose** a partir de um
-  gerador, e saber o que cada opção muda.
-- Comparar o **mesmo pipeline** em três runners (GitHub, laboratório, sua máquina): o que o job
-  enxerga, quanto espera, quanto o cache economiza.
-- Ler o protocolo **MQTT no fio**: sessão, assinatura, QoS, retain e keepalive.
-- Ver, na captura, por que **HTTP sem TLS** expõe senhas e tokens.
-- Escrever um **teste de integração** que só roda onde o ambiente permite.
-- Ligar dois brokers com uma **ponte** e acompanhar as mensagens de um lado ao outro.
+- Subir e operar o n8n na rede do LAB IoT, com credenciais fora do repositório.
+- Separar **dados** (Node-RED) de **eventos e processos** (n8n), e medir por quê.
+- Montar processos com **espera por pessoas**: reconhecimento com escalonamento e aprovação.
+- Integrar por **API**: HTTP ao Node-RED, MQTT para a câmara, ntfy para o celular.
+- Expor processos a um agente de IA por **MCP** sem dar a ele o poder de escrever na planta.
+- Tratar workflows como **código**: exportação, lint no CI, workflow de erros e recuperação.
 
 ## Material
 
-- O mesmo do Lab 11: VS Code + PlatformIO + extensão Wokwi, o `git` e o `tea` no terminal, e o
-  acesso do grupo ao LAB IoT do laboratório (usuário `lab13-x`, organização `lab13-grupo-x`).
-- **Docker Desktop** com pelo menos **6 GB** de memória (_Settings → Resources_), **Python 3** com
-  `bcrypt` (`py -m pip install bcrypt`) e o **Wireshark**. O passo a passo da instalação e o
-  script que confere tudo (`verificar.ps1`) estão no guia **LAB IoT na sua máquina** (seção 1).
-- O seu **token do Wokwi CI** (o do Lab 10), para a simulação rodar no seu runner.
-- O app **ntfy** no celular.
-- A T6 é feita **na rede do laboratório**.
+- O **LAB IoT** do `lab13-x` (gerado pelo `gen_iot_aluno.py`, pode ser com `--sem-fuxa`):
+  mosquitto e Node-RED com `node-red-node-sqlite`.
+- O repositório do grupo, que nasce do `lab13-template`: `camara-sim/`, o fluxo do Node-RED, o
+  `docker-compose.yml` do n8n, dois workflows prontos e os scripts de teste.
+- **ntfy**: o app no celular ou o navegador, com o servidor e o token do grupo (linha do ntfy no
+  `credenciais.txt` do LAB IoT) ou o `ntfy.sh` público, com um tópico difícil de adivinhar.
+- Python 3 com o pacote `mcp` (T5) e o VS Code com o Copilot do Lab 12 (T5).
 
-:::info[LAB IoT do laboratório × LAB IoT na sua máquina]
-| | Laboratório (Lab 11) | Sua máquina (Lab 12) |
-| --- | --- | --- |
-| Gerado por | `gen_iot_scada_portal.py` (o professor) | `gen_iot_aluno.py` (você) |
-| Endereço | `http://<IP do LAB IoT>/` | `http://localhost/` (e `http://<seu IP>/` na sua rede) |
-| Contas | todos os grupos | só `lab13-x` (e `lab13-x-view`, só leitura) |
-| Runner | um para a turma, `capacity: 2` | o do grupo, `capacity: 1` (`--runner-capacidade`) |
-| Rede dos jobs | a do runner do lab (T2 do Lab 11) | a do **nginx**: `http://localhost/` é o seu portal (`--ci-rede nginx`) |
-| Secrets da organização | criados pelo professor | criados pelo gerador (`NTFY_*`, e `WOKWI_CLI_TOKEN` com `--wokwi-token`) |
-| Captura de pacotes | não | `--captura` (netshoot + Wireshark) |
-| Broker para o ESP32 | `<IP do LAB IoT>:1883` | `<seu IP>:1883`; `--ponte-mqtt` liga os dois |
-| Login no MQTT | opcional: sem usuário entra (`allow_anonymous true`); com `lab13-x` e a senha do grupo, só `lab13-x/#` (ACL) | igual (`--mqtt-sem-anonimo` exige login de todos) |
+:::info[n8n: o que esta aula usa]
+O n8n roda num contêiner do grupo, na versão **stable** mais recente. O código é aberto sob a
+_Sustainable Use License_: usar uma instância própria para aprender e para processos internos é
+permitido; oferecer o n8n como serviço para terceiros, não. A aula não usa a nuvem do n8n, os
+nós de IA com chave de API nem os recursos pagos (variáveis, ambientes, Git integrado).
 :::
 
 ## Clonar o repositório do grupo {/* #clonar */}
@@ -106,24 +99,14 @@ flowchart LR
 <details>
 <summary><strong>Mapa de tarefas</strong> — 6 tarefas · 100 pts</summary>
 
-- [T1 — O LAB IoT na sua máquina](#t1) · 10 pts
-- [T2 — O mesmo pipeline no seu runner](#t2) · 15 pts
-- [T3 — Fila e cache em casa](#t3) · 15 pts
-- [T4 — O MQTT no fio (Wireshark)](#t4) · 20 pts
-- [T5 — Um teste de integração com o broker](#t5) · 20 pts
-- [T6 — Ponte MQTT casa ↔ laboratório](#t6) · 20 pts
+- [T1 — n8n no LAB IoT e a primeira automação](#t1) · 10 pts
+- [T2 — Eventos, alarmes e escalonamento](#t2) · 20 pts
+- [T3 — Relatório do turno](#t3) · 15 pts
+- [T4 — Mudança de setpoint com aprovação](#t4) · 20 pts
+- [T5 — O n8n como servidor MCP](#t5) · 15 pts
+- [T6 — Workflows como código](#t6) · 20 pts
 
 </details>
-
-O repositório nasce do `lab13-template`, com o **Lab 11 resolvido** (o firmware, os testes e os
-workflows de `.github/` e `.gitea/`) e quatro arquivos novos:
-
-- `ferramentas/gen_iot_aluno.py`: o gerador do LAB IoT;
-- `flows/eco-mqtt.json`: um fluxo do Node-RED para observar o MQTT e responder ao CI;
-- `ci/mqtt_eco.py`: o teste de integração da T5;
-- `.gitignore`: já bloqueia `credenciais.txt`, `.segredos.json`, `*.pcap` e `*.pcapng`.
-
----
 
 <FileTree
   details={true}
@@ -131,718 +114,732 @@ workflows de `.github/` e `.gitea/`) e quatro arquivos novos:
   title="Estrutura de Arquivos do Projeto"
   root="lab13-grupo-x"
   files={[
-    ".github/workflows/ci.yml r",
-    ".github/workflows/diagnostico.yml r",
-    ".gitea/workflows/ci.yml r",
-    ".gitea/workflows/diagnostico.yml r",
-    ".gitea/workflows/integracao.yml c",
-    "ferramentas/gen_iot_aluno.py r",
-    "flows/eco-mqtt.json r",
-    "ci/mqtt_eco.py r",
-    "ci/duracoes.py r",
-    "ci/release_gitea.py r",
-    "ci/notificar.sh r",
-    "lib/camara_logica/camara_logica.cpp r",
-    "src/main.cpp r",
-    "test/test_logica/test_logica.cpp r",
-    "platformio.ini r",
-    ".gitignore r",
-    "evidencias/t1-compose-ps.txt c",
-    "evidencias/t1-stats.txt c",
-    "evidencias/t1-portal.png c",
-    "evidencias/t2-remotos.txt c",
-    "evidencias/t2-diagnostico-casa.txt c",
-    "evidencias/t2-gitea-casa.png c",
-    "evidencias/t3-duracoes.md c",
-    "evidencias/t3-espaco.txt c",
-    "evidencias/t4-mqtt.pcapng c",
-    "evidencias/t4-wireshark.png c",
-    "evidencias/t4-senha-no-fio.png c",
-    "evidencias/t5-integracao.png c",
-    "evidencias/t5-job-no-fio.png c",
-    "evidencias/t6-ponte.pcapng c",
-    "evidencias/t6-ponte-wireshark.png c",
-    "evidencias/t6-mqtt-explorer-lab.png c",
+    "camara-sim/.env.example r",
+    "camara-sim/.env c",
+    "nodered/flows-lab13.json u",
+    "n8n/docker-compose.yml r",
+    "n8n/.env.example r",
+    "n8n/credenciais.exemplo.json r",
+    "n8n/workflows/l13-w0-notificar-ntfy.json u",
+    "n8n/workflows/l13-w0-preparar-tabelas.json r",
+    "n8n/workflows/l13-w1-camara-online-offline.json c",
+    "n8n/workflows/l13-w2-alarmes-da-camara.json c",
+    "n8n/workflows/l13-w3-relatorio-do-turno.json c",
+    "n8n/workflows/l13-w4-processar-pedido-de-setpoint.json c",
+    "n8n/workflows/l13-w4-formulario-de-pedido.json c",
+    "n8n/workflows/l13-w5-servidor-mcp-da-camara.json c",
+    "n8n/workflows/l13-w6-erros-dos-workflows.json c",
+    "relatorios/2026-11-10_1400.md c",
+    "ci/normalizar_workflows.py r",
+    "ci/verificar_workflows.py u",
+    "ci/testar_mcp_n8n.py r",
+    ".github/workflows/ci.yml u",
+    ".vscode/mcp.json c",
+    "evidencias/t1-ntfy.png c",
+    "evidencias/t2-ocorrencias.csv c",
+    "evidencias/t2-escalado.png c",
+    "evidencias/t3-ntfy.png c",
+    "evidencias/t4-pedidos.csv c",
+    "evidencias/t4-decisao.png c",
+    "evidencias/t5-testes.txt c",
+    "evidencias/t5-agente.md c",
+    "evidencias/t6-erro.png c",
+    "evidencias/t6-lint.txt c",
+    "evidencias/t6-recuperacao.md c",
+    "IA-LOG.md u",
     "README.md u",
   ]}
 />
 
-:::danger[O que nunca vai para o repositório]
-O LAB IoT é gerado **fora** do clone (em `C:\iot\lab13-x`). Lá ficam o `credenciais.txt` e o
-`.segredos.json`, com a senha do grupo, e a pasta `captura/`, com pacotes que **contêm senhas**.
-Nas evidências entram só capturas **filtradas** (T4 e T6), **sem os CONNECT que levam senha**,
-e telas com a senha **tarjada**.
+:::info[Nomes do Lab 13]
+Troque o `x` pela letra do seu grupo em **todos** os nomes abaixo.
+
+| O quê                              | Valor                                                           |
+| ---------------------------------- | --------------------------------------------------------------- |
+| Tópico base da câmara (MQTT)       | `elt85b/lab13/grupo-x/camara`                                   |
+| Eventos (T2)                       | `elt85b/lab13/grupo-x/camara/eventos`                           |
+| Editor do n8n                      | `http://localhost:5678` (contêiner `lab13-x-n8n`)               |
+| Node-RED (navegador)               | `http://localhost/lab13-x/`                                     |
+| API do Node-RED (de dentro do n8n) | `http://lab13-x-nodered:1880/lab13-x/api/estado` e `/api/turno` |
+| Broker (de dentro do n8n)          | `mosquitto:1883`                                                |
+| Formulário de pedido (T4)          | `http://localhost:5678/form/lab13-x-pedido`                     |
+| Servidor MCP (T5)                  | `http://localhost:5678/mcp/lab13-x-camara`                      |
+
+Os workflows vivem **dentro** do n8n (volume `n8n_data`). O que vai para o repositório é a
+**exportação**, feita com o comando da seção 1.5 ao fim de **cada** tarefa.
 :::
 
-## Parte 1 — O LAB IoT na sua máquina {/* #parte-1 */} {/* #t1 */}
+---
 
-### 1.1 O que o gerador faz
+## Parte 1 — n8n no LAB IoT e a primeira automação {/* #parte-1 */}
 
-O `gen_iot_aluno.py` não instala nada: ele **escreve arquivos** numa pasta. O
-`docker compose up` é que baixa as imagens e cria os containers.
+### 1.1 A câmara e o Node-RED
 
-| Gerado               | Para quê                                                                                                              |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `docker-compose.yml` | os serviços, a rede `labnet` e os volumes                                                                             |
-| `nginx/`             | o portal e os caminhos (`/lab13-x/`, `/git/`, `/ntfy/`, `/bin/`…)                                                     |
-| `mosquitto/`         | o broker: `mosquitto.conf` (e a ponte, com `--ponte-mqtt`), os usuários (`passwd`) e as permissões por tópico (`acl`) |
-| `settings/`, `data/` | o Node-RED (login, `credentialSecret`, fluxos; `data/lab13-x/sqlite/` para os bancos SQLite)                          |
-| `runner/config.yaml` | o runner do CI: rótulos, `capacity`, rede dos jobs                                                                    |
-| `credenciais.txt`    | endereços, usuário e senha                                                                                            |
-| `.segredos.json`     | as senhas sorteadas, reaproveitadas quando você roda o gerador de novo                                                |
-| `LEIA-ME.md`         | o guia **da sua** instalação                                                                                          |
+1. **LAB IoT:** suba o do `lab13-x` e confira o Node-RED em `http://localhost/lab13-x/`.
+2. **Câmara:** na pasta `camara-sim/`, `copy .env.example .env`, troque o `x` e suba com
+   `docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build`.
+3. **Node-RED:** Menu ☰ → _Import_ → `nodered/flows-lab13.json` → _Import_ → **Deploy**. A aba
+   **Lab 13 - borda** grava a telemetria no SQLite e responde a duas APIs. Confira no navegador:
 
-Rodar o gerador de novo na mesma pasta é seguro: as senhas vêm do `.segredos.json` e os dados
-(`data/`, `fuxa/`, volumes) não são tocados. Você vai fazer isso duas vezes nesta aula.
+| Endereço                                     | Resposta esperada                             |
+| -------------------------------------------- | --------------------------------------------- |
+| `http://localhost/lab13-x/api/estado`        | a última telemetria, com `status` e `idade_s` |
+| `http://localhost/lab13-x/api/turno?horas=1` | o resumo da última hora (cresce a cada 10 s)  |
 
-:::tip[Preveja antes de rodar]
-**P1:** (a) depois do `docker compose up -d`, quantos containers vão estar **rodando**? Algum
-roda uma vez e sai? Qual e por quê? (b) Quanta memória o LAB IoT inteiro vai usar **parado**
-(sem nenhum job de CI)? E qual serviço vai usar mais?
-:::
-
-### 1.2 Gerar e subir
-
-Na pasta do clone, gere o LAB IoT **fora** do repositório, com o seu token do Wokwi:
+### 1.2 O n8n
 
 <GroupCommands
   commands={[
     {
-      title: "1. Gerar e subir (PowerShell)",
-      codeTitle: "Terminal",
-      language: "powershell",
-      command: `cd C:\\iot\\lab13-grupo-{group}
-py ferramentas\\gen_iot_aluno.py --lab lab13 --grupo {group} --saida C:\\iot\\lab13-{group} --wokwi-token SEU_TOKEN_WOKWI
-cd C:\\iot\\lab13-{group}
-docker compose up -d --build
-docker compose ps`,
+      title: "Subir o n8n",
+      codeTitle: "Terminal (cmd), na raiz do repositório",
+      command: `cd n8n
+copy .env.example .env
+notepad .env
+docker compose up -d
+docker compose logs -f`,
     },
-    {
-      title: "2. Saída esperada do gerador (fim)",
-      codeTitle: "Saída esperada",
-      language: "text",
-      command: `✅ LAB IoT do lab13-{group}: Node-RED + FUXA + MQTT + Gitea (Actions) + ntfy + MicroBin + MQTT Explorer
-
-Nesta máquina: http://localhost/
-Rede local: http://192.168.0.20/ · MQTT 192.168.0.20:1883
-
-🔒 Usuário lab13-{group} · senha em credenciais.txt`,
-},
-]}
+  ]}
 />
 
-A primeira vez demora alguns minutos (a imagem do Node-RED é montada aqui). Porta 80 ocupada?
-Gere de novo com `--porta-http 8080` e use `http://localhost:8080/` em todo o roteiro. Erro
-`ETARGET` no `npm install`, ou `failed to open /data/sqlite/...` no Node-RED? Veja a seção 4 do
-guia **LAB IoT na sua máquina**.
+No `.env`, troque o `x` em `GRUPO` e `LAB_REDE`. Espere no log a linha
+`Editor is now accessible via: http://localhost:5678` e saia com **Ctrl+C** (o n8n continua
+rodando). Abra `http://localhost:5678` e crie a **conta de dono** (_owner_) com o e-mail de um
+integrante e uma senha forte: ela fica só no seu PC, mas protege tudo o que o n8n pode fazer.
 
-:::warning[Não use `--sem-senha` nesta aula]
-O gerador tem a opção `--sem-senha`, que tira o login de todos os serviços. Ela não serve para
-este roteiro: a T2 usa o login do `tea`, e a T4 procura as senhas **no fio**.
+### 1.3 Credenciais fora do Git
+
+Um workflow nunca guarda senha: ele aponta para uma **credencial**, que o n8n guarda
+**criptografada** no volume. Os workflows do repositório apontam para três credenciais com
+**ids fixos**, que você cria a partir do `n8n/credenciais.exemplo.json`:
+
+| Credencial      | Para quê                     | O que preencher                                                                        |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| `MQTT LAB IoT`  | MQTT Trigger e MQTT          | nada: `mosquitto:1883`, sem login (padrão do LAB IoT)                                  |
+| `ntfy do grupo` | publicar no ntfy             | `Bearer <token do ntfy do grupo>`                                                      |
+| `MCP do grupo`  | proteger o servidor MCP (T5) | um token longo e aleatório (`py -c "import secrets;print(secrets.token_urlsafe(32))"`) |
+
+<GroupCommands
+  commands={[
+    {
+      title: "Importar as credenciais",
+      codeTitle: "Terminal (cmd), na pasta n8n",
+      command: `copy credenciais.exemplo.json credenciais.json
+notepad credenciais.json
+docker cp credenciais.json lab13-{group}-n8n:/tmp/credenciais.json
+docker exec -u node lab13-{group}-n8n n8n import:credentials --input=/tmp/credenciais.json
+docker exec -u root lab13-{group}-n8n rm /tmp/credenciais.json
+git status --short --ignored credenciais.json`,
+    },
+  ]}
+/>
+
+O último comando tem de mostrar `!! credenciais.json`: o arquivo está no `.gitignore` e não vai
+para o repositório. Guarde-o como você guarda o `.env`: ele é a única cópia legível dos tokens.
+
+:::warning[ntfy.sh sem token]
+No `ntfy.sh` público sem login não há token. Nesse caso, depois de importar os workflows (1.4),
+abra o nó **Publica no ntfy** do W0 e troque _Authentication_ para **None**. O tópico vira a
+única proteção: use um nome difícil de adivinhar.
 :::
 
-1. Abra `http://localhost/` e entre no Node-RED, no Gitea e no ntfy com `lab13-x` e a senha do
-   `credenciais.txt`. Captura do portal em `evidencias/t1-portal.png`.
-2. Salve o estado e o consumo, com o LAB IoT parado há pelo menos 2 minutos:
+### 1.4 Os workflows prontos e a notificação
 
-   ```powershell
-   docker compose ps -a --format "table {{.Name}}\t{{.Status}}" > C:\iot\lab13-grupo-x\evidencias\t1-compose-ps.txt
-   docker stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.CPUPerc}}" > C:\iot\lab13-grupo-x\evidencias\t1-stats.txt
-   ```
+A pasta `n8n/workflows/` traz dois workflows:
 
-3. No `README.md`: o comando de geração **sem o token**, a versão do Docker
-   (`docker version --format "{{.Server.Version}}"`), a memória total somada e a resposta do P1.
+| Workflow                    | O que faz                                                                                                                        |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **L13 W0 Notificar (ntfy)** | sub-workflow chamado por todos os outros: recebe `titulo`, `mensagem`, `prioridade`, `tags`, `link` e `rotulo` e publica no ntfy |
+| **L13 W0 Preparar tabelas** | cria as tabelas `ocorrencias` e `pedidos` (T2)                                                                                   |
+
+<GroupCommands
+  commands={[
+    {
+      title: "Importar os workflows do repositório",
+      codeTitle: "Terminal (cmd), na raiz do repositório",
+      command: `docker exec -u node lab13-{group}-n8n n8n import:workflow --separate --input=/home/node/workflows`,
+    },
+  ]}
+/>
+
+No editor (recarregue a página), abra o **W0 Notificar**. No nó **Configuração**, ponha a URL do
+ntfy (`ntfy_url`, a do `credenciais.txt` ou `https://ntfy.sh`) e o tópico do grupo
+(`ntfy_topico`). Clique em **Publish**: um sub-workflow só pode ser chamado depois de publicado.
+
+:::tip[ntfy do LAB IoT em localhost?]
+O n8n roda num contêiner: para ele, `localhost` é o próprio contêiner. Se a URL do ntfy do
+`credenciais.txt` começar com `http://localhost`, troque `localhost` por `host.docker.internal`.
+:::
+
+### 1.5 A primeira automação: câmara online e offline
+
+Crie um workflow novo chamado **L13 W1 Câmara online/offline**:
+
+| Nó                       | Configuração                                                                                                                                                                     |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MQTT Trigger**         | credencial `MQTT LAB IoT`, _Topics_ `elt85b/lab13/grupo-x/camara/status`                                                                                                         |
+| **Execute Sub-workflow** | _From list_: **L13 W0 Notificar (ntfy)**; nos campos: `titulo` = `Câmara {{ $json.message }}`; `prioridade` = 4 se `offline`, 2 se não; `tags` = `warning` ou `white_check_mark` |
+
+Para a prioridade, use uma expressão: `{{ $json.message === 'offline' ? 4 : 2 }}`. Salve e clique
+em **Publish**. Teste parando e subindo a câmara:
+
+```shell title="Terminal (cmd)"
+docker stop lab13-x-camara
+docker start lab13-x-camara
+```
+
+Cada mudança chega no ntfy. Na aba **Executions** do workflow, abra uma execução e veja os dados
+de cada nó. Capture o ntfy com as duas notificações em `evidencias/t1-ntfy.png`.
+
+:::tip[Preveja antes de rodar]
+**P1:** (a) Logo depois do **Publish**, chega um "Câmara online" sem a câmara ter mudado. Por
+quê? O que acontece ao reiniciar o n8n (`docker compose restart` na pasta `n8n`)? (b) A
+telemetria chega a cada 2 s. Quantas execuções por dia teria um workflow que assinasse
+`.../telemetria`? (c) Pare a câmara com `docker kill` em vez de `docker stop`. Quem publica o
+"offline" em cada caso? E se o cabo de rede da câmara fosse cortado?
+:::
+
+### 1.6 Exportar para o Git
+
+Este é o comando que você vai repetir ao fim de **cada** tarefa:
+
+<GroupCommands
+  commands={[
+    {
+      title: "Exportar os workflows",
+      codeTitle: "Terminal (cmd), na raiz do repositório",
+      command: `docker exec -u node lab13-{group}-n8n n8n export:workflow --all --separate --output=/home/node/workflows/
+py ci\\normalizar_workflows.py
+py ci\\verificar_workflows.py --grupo {group} --so-regras`,
+    },
+  ]}
+/>
+
+A exportação grava um arquivo por workflow, com o **dono** (nome e e-mail) e datas que mudam a
+cada vez. O `normalizar_workflows.py` tira isso, renomeia cada arquivo pelo nome do workflow e
+deixa só o que a importação precisa. O `verificar_workflows.py` é o lint da T6: por enquanto, só
+as regras gerais (nenhum segredo, tópicos do grupo).
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    "evidencias/t1-compose-ps.txt c",
-    "evidencias/t1-stats.txt c",
-    "evidencias/t1-portal.png c",
+    "camara-sim/.env c",
+    "n8n/workflows/l13-w0-notificar-ntfy.json u",
+    "n8n/workflows/l13-w1-camara-online-offline.json c",
+    "evidencias/t1-ntfy.png c",
     "README.md u",
   ]}
 />
 
 <CommitPoint
   id="t1"
-  task="LAB IoT na sua maquina"
+  task="n8n no LAB IoT e a primeira automação"
   pontos={10}
-  files="evidencias/t1-compose-ps.txt evidencias/t1-stats.txt evidencias/t1-portal.png README.md"
+  files="camara-sim/.env n8n/workflows evidencias/t1-ntfy.png README.md"
 />
 
 ---
 
-## Parte 2 — O mesmo pipeline no seu runner {/* #parte-2 */} {/* #t2 */}
+## Parte 2 — Eventos, alarmes e escalonamento {/* #parte-2 */}
 
-### 2.1 O repositório no Gitea de casa
+O n8n registra cada execução. Isso é ótimo para um alarme e péssimo para uma leitura a cada 2 s
+(P1). Quem olha a telemetria é o Node-RED; o n8n só recebe **eventos**: "o alarme mudou".
 
-O gerador já criou a organização **`lab13-grupo-x`**, com os secrets `NTFY_TOPIC`, `NTFY_TOKEN` e
-`WOKWI_CLI_TOKEN` e a variable `NTFY_URL`. Agora, quem vê a lista é **você**: abra
-`http://localhost/git/lab13-grupo-x` → **Configurações → Actions → Secrets**.
+### 2.1 Eventos no Node-RED
 
-Desta vez, use o **tea**: ele cria um token de acesso e o registra como ajudante de credenciais
-do `git`, então nenhum `git push` pede senha.
+Na aba **Lab 13 - borda**, onde está o comentário da T2, ligue à saída do `mqtt in` da
+telemetria uma **function** e, depois dela, um **mqtt out** no tópico
+`elt85b/lab13/grupo-x/camara/eventos` (QoS 1). A function publica só quando o campo `alarme`
+muda (bit 1 = sobretemperatura, bit 2 = falha do sensor):
 
-```powershell
-tea login add --name casa --url http://localhost/git --user lab13-x --password SUA_SENHA --git-credentials
-tea login default casa
-tea repos create --owner lab13-grupo-x --name camara-ci --private
-
-cd C:\iot\lab13-grupo-x
-git remote add casa http://localhost/git/lab13-grupo-x/camara-ci.git
-git push casa main
-git remote -v > evidencias\t2-remotos.txt
+```js title="function 'detecta mudança de alarme' (complete)"
+const t = msg.payload;
+const antes = context.get("alarme");
+context.set("alarme", t.alarme);
+if (antes === undefined || antes === t.alarme) return null; // só mudanças
+const texto = [];
+// TODO: "sobretemperatura" se o bit 1 estiver ligado, "falha do sensor" se o bit 2 estiver
+msg.payload = {
+  tipo: "alarme",
+  ativo: t.alarme !== 0,
+  de: antes,
+  para: t.alarme,
+  texto: texto.join(" + ") || "normalizado",
+  temp: t.temp,
+  sp: t.sp_efetivo,
+  modo: t.modo,
+  estado: t.estado_txt,
+  ts: new Date().toISOString(),
+};
+return msg;
 ```
 
-:::note[Por que um remoto separado]
-No Lab 11, o `origin` ganhou duas URLs de push (GitHub e laboratório). O Gitea de casa **não**
-entra nessa lista: no laboratório, `http://localhost/git` é a máquina de lá, e o `push` falharia.
-Envie para `casa` quando quiser rodar o CI em casa: `git push casa main`.
-:::
+**Deploy**. Para testar sem esquentar a câmara até 60 °C, simule a falha do sensor: no MQTT
+Explorer, publique `1` em `elt85b/lab13/grupo-x/camara/cmd/falha_dht` e, depois, `0`. Cada
+mudança gera **um** evento. Exporte o fluxo (Menu ☰ → _Export_ → aba atual) por cima de
+`nodered/flows-lab13.json`.
 
-O repositório já tem `.gitea/workflows/`, então o `push` dispara o `ci.yml` do Lab 11 no **seu**
-runner (`lab13-x-runner`). Acompanhe em **Actions** ou no terminal:
+### 2.2 As tabelas
 
-```powershell
-tea actions runs list
-tea actions runs view <id> --jobs
-docker compose -f C:\iot\lab13-x\docker-compose.yml logs -f gitea-runner
+O n8n tem **tabelas de dados** (_Data tables_) próprias. Abra o **L13 W0 Preparar tabelas** e
+clique em **Execute workflow**. Na tela inicial do n8n, aba **Data tables**, aparecem
+`ocorrencias` e `pedidos`.
+
+### 2.3 O workflow de alarmes
+
+Crie o **L13 W2 Alarmes da câmara**. A estrutura:
+
+```mermaid
+flowchart LR
+  T["MQTT Trigger<br/>.../eventos<br/>JSON Parse Body"] --> S{"Switch<br/>que evento?"}
+  S -->|0: abriu| D["Code<br/>dados"] --> I["Data table<br/>insert ocorrencias"] --> A["Notificar<br/>prioridade 5<br/>link Reconhecer"] --> W["Wait<br/>webhook GET<br/>limite 2 min"] --> R{"If<br/>reconhecido?"}
+  R -->|sim| U1["Data table<br/>update: reconhecida"] --> N1["Notificar"]
+  R -->|não| G["Data table<br/>get: ainda aberta?"] --> U2["update: escalada"] --> N2["Notificar<br/>ESCALADO"]
+  S -->|1: mudou| N3["Notificar"]
+  S -->|2: normalizou| F["Data table<br/>get: sem fim"] --> C["Code<br/>fecha"] --> U3["update: fechada"] --> N4["Notificar"]
 ```
 
-A execução precisa ficar **verde** (`publicar` aparece pulado: não é tag). Captura em
-`evidencias/t2-gitea-casa.png`.
+| Nó                                   | Configuração                                                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **MQTT Trigger**                     | _Topics_ `.../camara/eventos`; _Options_ → **JSON Parse Body** ligado                                                           |
+| **Switch**                           | _Mode_ **Expression**, _Number of Outputs_ 3, _Output Index_ `{{ $json.message.ativo ? ($json.message.de === 0 ? 0 : 1) : 2 }}` |
+| **Code** "dados"                     | devolve `texto`, `inicio` (= `ts`), `temp`, `estado: 'aberta'` e `reconhecida_por: ''`                                          |
+| **Data table** (insert)              | tabela `ocorrencias` (_By Name_), colunas mapeadas automaticamente: devolve o `id` da linha                                     |
+| **Notificar** (Execute Sub-workflow) | `link` = o endereço que retoma a espera, mais quem reconheceu (abaixo); `rotulo` = `Reconhecer`                                 |
+| **Wait**                             | _Resume_ **On Webhook Call**, método **GET**, **Limit Wait Time**: 2 minutos                                                    |
+| **If**                               | `{{ !!($json.query && $json.query.por) }}`: quem clicou no link traz `?por=`; quem estourou o tempo, não                        |
 
-### 2.2 O que o job enxerga em casa
+O link do botão é o endereço da própria execução em espera, `$execution.resumeUrl`. Ele já tem
+um `?signature=...`, então o parâmetro novo entra com `&`:
 
-No Lab 11, você preencheu a tabela **O que o job enxerga** com duas colunas: o runner do
-laboratório e o do GitHub. Agora vem a terceira. O seu runner é configurado de outro jeito:
-
-```yaml title="C:\iot\lab13-x\runner\config.yaml (gerado, trecho)"
-runner:
-  capacity: 1 # jobs ao mesmo tempo
-container:
-  # "host" = a rede do runner, que é a do nginx: no job, http://localhost/git/ é o
-  # Gitea e http://localhost/ntfy é o ntfy. O job também alcança mosquitto:1883.
-  network: host
-  privileged: false
+```text title="campo link do Notificar"
+{{ $execution.resumeUrl + ($execution.resumeUrl.includes('?') ? '&' : '?') + 'por=operador' }}
 ```
 
-```yaml title="C:\iot\lab13-x\docker-compose.yml (trecho)"
-gitea-runner:
-  image: docker.io/gitea/runner:3-dind
-  privileged: true # o dockerd embutido (dind) exige
-  network_mode: "service:nginx" # localhost = nginx (para o runner e para os jobs)
-```
+Depois do Wait, os dados do evento não estão mais em `$json` (agora é a requisição do clique).
+Para usar o `id` da ocorrência, busque o nó pelo nome: `{{ $('Abre ocorrência').first().json.id }}`.
+
+Em **Settings** do workflow, deixe **Save successful production executions** ligado e, depois
+da T6, escolha o workflow de erro. **Publish**.
+
+### 2.4 Teste
+
+Com o ntfy aberto no navegador do PC (os links usam `localhost`):
+
+1. `falha_dht` = 1: chega o **ALARME**. Clique em **Reconhecer**: chega "reconhecida". Depois,
+   `falha_dht` = 0: chega "normalizado", com a duração.
+2. `falha_dht` = 1 de novo e **não** reconheça. Em 2 min, chega o **ESCALADO**
+   (`evidencias/t2-escalado.png`). `falha_dht` = 0.
+3. Na aba **Data tables**, abra `ocorrencias`, menu ⋮ → **Download CSV** →
+   `evidencias/t2-ocorrencias.csv`.
 
 :::tip[Preveja antes de rodar]
-**P2:** (a) preencha a coluna **casa** da tabela **antes** de rodar: ✅ ou ❌ em cada linha do
-diagnóstico, com o porquê. Atenção à linha `broker MQTT em ${host}:1883`: aqui, `NTFY_URL` é
-`http://localhost/ntfy`, então `host` é `localhost`. Dentro do job, quem é `localhost`, e quem
-escuta na porta 1883 dele? (b) A notificação do CI chega ao celular com o botão **Abrir no
-Gitea**. O link começa com `http://localhost/git/`. O que acontece ao tocar nele **no celular**?
+**P2:** (a) Copie o link **Reconhecer**, apague o `signature=...` e abra. O que acontece? (b)
+Quem consegue reconhecer um alarme do seu grupo? (c) Dispare um alarme, reinicie o n8n
+(`docker compose restart`) antes dos 2 min e não reconheça. O alarme ainda é escalado? Onde a
+espera ficou guardada?
 :::
 
-Rode o diagnóstico e salve o log:
-
-```powershell
-tea actions workflows dispatch diagnostico.yml --ref main
-tea actions runs list                       # pegue o id da execução
-tea actions runs logs <id> > evidencias\t2-diagnostico-casa.txt
-```
-
-No `README.md`: a tabela com as três colunas (copie as duas do Lab 11) e, para cada linha em
-que **casa** difere do **laboratório**, a explicação. Confira o P2(b) no celular e explique o que
-a opção `--ci-rede ip` do gerador mudaria (veja `py ferramentas\gen_iot_aluno.py --help` e a
-seção de CI do `LEIA-ME.md` gerado).
+:::info[Os links no celular]
+Com `N8N_URL=http://localhost:5678/`, os links só abrem no PC. Para abrir no celular (mesmo
+Wi-Fi), ponha o IP do PC no `.env` do n8n (`N8N_URL=http://192.168.0.10:5678/`), rode
+`docker compose up -d` e libere a porta 5678 no firewall do Windows.
+:::
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    "evidencias/t2-remotos.txt c",
-    "evidencias/t2-diagnostico-casa.txt c",
-    "evidencias/t2-gitea-casa.png c",
+    "nodered/flows-lab13.json u",
+    "n8n/workflows/l13-w2-alarmes-da-camara.json c",
+    "evidencias/t2-ocorrencias.csv c",
+    "evidencias/t2-escalado.png c",
     "README.md u",
   ]}
 />
 
 <CommitPoint
   id="t2"
-  task="O mesmo pipeline no seu runner"
-  pontos={15}
-  files="evidencias/t2-remotos.txt evidencias/t2-diagnostico-casa.txt evidencias/t2-gitea-casa.png README.md"
+  task="Eventos, alarmes e escalonamento"
+  pontos={20}
+  files="nodered/flows-lab13.json n8n/workflows evidencias/t2-ocorrencias.csv evidencias/t2-escalado.png README.md"
 />
 
 ---
 
-## Parte 3 — Fila e cache em casa {/* #parte-3 */} {/* #t3 */}
+## Parte 3 — Relatório do turno {/* #parte-3 */}
 
-No laboratório, a fila vinha dos **outros grupos**. Em casa não há outros grupos, mas há outros
-limites: **uma** vaga (`capacity: 1`), a CPU e a memória do seu computador, e o disco onde ficam
-as imagens dos jobs e o cache do PlatformIO.
+A cada troca de turno (6 h, 14 h e 22 h), o n8n junta o que o Node-RED sabe (o resumo do
+SQLite) e o que só o n8n sabe (as ocorrências) num relatório em Markdown, grava o arquivo na
+pasta `relatorios/` do repositório e avisa o turno.
 
-:::tip[Preveja antes de rodar]
-**P3:** (a) com o cache **frio**, o CI em casa vai ser mais rápido ou mais lento que no
-laboratório? E com o cache **quente**? Em que job a diferença vai ser maior? (b) Você faz dois
-`push` seguidos, com 10 s entre eles. Com `capacity: 1`, quanto tempo a segunda execução fica na
-**fila**? Quanto ficaria com `--runner-capacidade 2`, e o que você arriscaria com isso num
-computador de 8 GB?
-:::
+Crie o **L13 W3 Relatório do turno**:
 
-1. Crie um token de acesso no Gitea de casa (avatar → **Configurações → Aplicações → Gerar
-   token**, permissão **repository: leitura**) e meça as últimas execuções:
+| Nó                             | Configuração                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schedule Trigger**           | _Custom (Cron)_: `0 6,14,22 * * *`                                                                                                                      |
+| **Manual Trigger**             | para testar sem esperar o turno, ligado no mesmo próximo nó                                                                                             |
+| **HTTP Request**               | GET `http://lab13-x-nodered:1880/lab13-x/api/turno?horas=8`                                                                                             |
+| **Data table** (get)           | `ocorrencias` com `inicio` ≥ `{{ $now.minus({ hours: 8 }).toISO() }}`, _Return All_; em _Settings_ do nó, **Always Output Data** (turno sem ocorrência) |
+| **Code**                       | monta o Markdown (abaixo) e o nome do arquivo                                                                                                           |
+| **Convert to File**            | _Convert to Text File_, campo `texto`                                                                                                                   |
+| **Read/Write Files from Disk** | _Write_, `/home/node/.n8n-files/{{ $('Code').first().json.arquivo }}`                                                                                   |
+| **Notificar**                  | prioridade 2, `tags` = `clipboard`, com um resumo de uma linha                                                                                          |
 
-   ```powershell
-   $env:GITEA_TOKEN = "<token>"
-   python ci/duracoes.py http://localhost/git lab13-grupo-x/camara-ci 5
-   ```
+O relatório tem de ter: data e hora, período e número de amostras, temperatura média, mínima e
+máxima, umidade média, erro médio \|SP − T\|, aquecedor médio, o tempo em cada estado e a lista de
+ocorrências com hora local, texto, estado e quem reconheceu. Um começo para o **Code**:
 
-2. **Cache frio**: troque o prefixo das duas chaves de cache no `.gitea/workflows/ci.yml` (por
-   exemplo, `v2-` → `v3-`), faça commit e `git push casa main`.
-3. **Cache quente**: `git commit --allow-empty -m "cache quente"` e `git push casa main`.
-4. **Fila**: mais dois commits vazios, enviados com 10 s de intervalo. Durante o job de firmware,
-   rode `docker stats --no-stream` e guarde a linha do `lab13-x-gitea-runner`.
-5. Rode o `duracoes.py` de novo e salve a tabela em `evidencias/t3-duracoes.md`, junto com a
-   tabela do laboratório (o `t4-duracoes.md` do Lab 11) e a linha do `docker stats`.
-6. O espaço que o CI ocupa:
+```js title="Code 'Monta o relatório' (começo)"
+const r = $("HTTP Request").first().json; // resumo do Node-RED
+const oc = $input
+  .all()
+  .map((i) => i.json)
+  .filter((o) => o.id);
+const agora = $now.setZone("America/Sao_Paulo");
+const L = [`# Relatório do turno — ${agora.toFormat("dd/LL/yyyy HH:mm")}`, ""];
+L.push(`Período: últimas ${r.horas} h (${r.amostras} amostras de 10 s).`);
+// ... a tabela de grandezas, o tempo em cada estado e as ocorrências
+return [
+  {
+    json: {
+      texto: L.join("\n") + "\n",
+      arquivo: `relatorios/${agora.toFormat("yyyy-LL-dd_HHmm")}.md`,
+      resumo: `T média ${r.temp_media} °C, ${oc.length} ocorrência(s).`,
+    },
+  },
+];
+```
 
-   ```powershell
-   docker system df -v | Select-String "lab13-x_runner" > evidencias\t3-espaco.txt
-   ```
-
-7. No `README.md`: a comparação casa × laboratório (fila, cache frio, cache quente, por job), a
-   resposta do P3 e quanto disco o runner usa.
-
-:::note[Liberar espaço depois]
-As imagens dos jobs e o cache ficam no volume `lab13-x_runner_docker`. Para devolver o espaço
-ao fim do semestre: `docker compose down`, `docker volume rm lab13-x_runner_docker` e
-`docker compose up -d`. O próximo job baixa tudo de novo.
-:::
+O `docker-compose.yml` do n8n liga a pasta `relatorios/` do repositório a
+`/home/node/.n8n-files/relatorios`: é a única pasta em que o n8n 2 pode gravar arquivos.
+**Publish**, rode pelo **Manual Trigger** e confira o arquivo novo em `relatorios/`. Capture a
+notificação em `evidencias/t3-ntfy.png`.
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    ".gitea/workflows/ci.yml u",
-    "evidencias/t3-duracoes.md c",
-    "evidencias/t3-espaco.txt c",
-    "README.md u",
+    "n8n/workflows/l13-w3-relatorio-do-turno.json c",
+    "relatorios/2026-11-10_1400.md c",
+    "evidencias/t3-ntfy.png c",
   ]}
 />
 
 <CommitPoint
   id="t3"
-  task="Fila e cache em casa"
+  task="Relatório do turno"
   pontos={15}
-  files=".gitea/workflows/ci.yml evidencias/t3-duracoes.md evidencias/t3-espaco.txt README.md"
+  files="n8n/workflows relatorios evidencias/t3-ntfy.png"
 />
 
 ---
 
-## Parte 4 — O MQTT no fio (Wireshark) {/* #parte-4 */} {/* #t4 */}
+## Parte 4 — Mudança de setpoint com aprovação {/* #parte-4 */}
 
-Até aqui, o MQTT foi uma caixa-preta: `publish` de um lado, mensagem do outro. Nesta parte, você
-olha os **bytes**. Os serviços do LAB IoT conversam pela rede `labnet`, uma **ponte** (bridge)
-do Linux dentro do Docker. Quem estiver nessa ponte vê todo o tráfego entre os containers.
+No Lab 09, qualquer um com o dashboard mudava o setpoint. Agora, a mudança é um **processo**: o
+operador pede, um supervisor aprova, o n8n aplica e **confere**, e tudo fica registrado.
 
-### 4.1 Ligar a captura
+São dois workflows. O **processar** faz o trabalho e pode ser chamado de vários lugares (o
+formulário agora, o agente na T5); o **formulário** só recolhe o pedido.
 
-Gere de novo com `--captura`. A ponte ganha um nome fixo (`br-lab13-x`) e o container
-`lab13-x-netshoot` passa a rodar o `tcpdump` nela, gravando em `C:\iot\lab13-x\captura\`:
+### 4.1 L13 W4 Processar pedido de setpoint
 
-```powershell
-cd C:\iot\lab13-grupo-x
-py ferramentas\gen_iot_aluno.py --lab lab13 --grupo x --saida C:\iot\lab13-x --captura
-cd C:\iot\lab13-x
-docker compose down
-docker compose up -d --build
-docker compose logs netshoot     # "[captura] gravando br-lab13-x em captura/ ..."
+```mermaid
+flowchart LR
+  T["When Executed by<br/>Another Workflow<br/>operador, origem, setpoint, modo, motivo"] --> V["Code<br/>valida"] --> I["Data table<br/>insert pedidos"] --> Q{"If<br/>pendente?"}
+  Q -->|não| R1["Notificar<br/>recusado"]
+  Q -->|sim| P["Notificar supervisor<br/>link Decidir"] --> W["Wait<br/>On Form Submitted<br/>limite 30 min"] --> D["Code<br/>decisão"] --> U["Data table<br/>update"] --> A{"If<br/>aprovado?"}
+  A -->|não| R2["Notificar<br/>operador"]
+  A -->|sim| M["MQTT<br/>.../cmd"] --> E["Wait 15 s"] --> H["HTTP Request<br/>/api/estado"] --> C["Code<br/>confere"] --> U2["Data table<br/>update"] --> N["Notificar<br/>resultado"]
 ```
 
-O `down` antes do `up` é obrigatório: o Docker só muda o nome da ponte recriando a rede. Os dados
-continuam lá. Repare que o `--wokwi-token` não precisou ser repetido: o gerador guardou o token
-no `.segredos.json`.
+| Nó                       | Regra                                                                                                                                                                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Code** "valida"        | setpoint de **20 a 45 °C** (arredondado a 0,5); modo `pi_interno` ou `onoff`; motivo com 10 caracteres ou mais; tira caracteres de controle e corta textos longos. Se falhar, `estado` = `recusado: <motivos>`; se não, `pendente` |
+| **Notificar** supervisor | `link` = `{{ $execution.resumeFormUrl }}`, `rotulo` = `Decidir`, prioridade 4                                                                                                                                                      |
+| **Wait**                 | _Resume_ **On Form Submitted**; campos: Decisão (_Radio_: Aprovar, Recusar), Supervisor, Comentário; **Limit Wait Time** 30 min                                                                                                    |
+| **Code** "decisão"       | sem resposta: `expirado`; Recusar: `recusado pelo supervisor`; supervisor igual ao operador: `recusado: quem pede não aprova`; senão `aprovado`                                                                                    |
+| **MQTT**                 | tópico `.../camara/cmd`, mensagem `{"setpoint": <sp>, "fonte_sp": 0, "modo": 2}` (1 para `onoff`), QoS 1                                                                                                                           |
+| **Code** "confere"       | `aplicado` se o `sp_efetivo` lido for o pedido; senão `falhou: a câmara está em ...`                                                                                                                                               |
 
-### 4.2 Um fluxo para observar
+O `fonte_sp: 0` tira o setpoint do potenciômetro: sem ele, a câmara ignora o setpoint remoto.
 
-Importe `flows/eco-mqtt.json` no Node-RED (menu → _Import_). Antes, troque `lab13-x` pela conta do
-grupo no arquivo (Ctrl+H no VS Code). O fluxo usa o broker `mosquitto:1883` e faz três coisas:
+### 4.2 L13 W4 Formulário de pedido
 
-| Nó                    | Tópico                                                   | QoS | retain  | Quando              |
-| --------------------- | -------------------------------------------------------- | --- | ------- | ------------------- |
-| publica a temperatura | `lab13-x/sensor/temperatura`                             | 0   | não     | a cada 5 s          |
-| publica o estado      | `lab13-x/status/online`                                  | 1   | **sim** | ao fazer o _Deploy_ |
-| responde a comandos   | assina `lab13-x/cmd/#`, responde em `lab13-x/status/eco` | 1   | não     | a cada comando      |
+| Nó                       | Configuração                                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **n8n Form Trigger**     | campos Operador, Setpoint (_Number_), Modo (_Dropdown_: `pi_interno`, `onoff`), Motivo (_Textarea_), todos obrigatórios; _Options_ → **Form Path** `lab13-x-pedido` e **Form Response** → _Text to Show_ "Pedido registrado..." |
+| **Execute Sub-workflow** | **L13 W4 Processar pedido de setpoint**, `origem` = `formulario`; _Options_ → **Wait For Sub-Workflow Completion** **desligado**                                                                                                |
 
-Abra o MQTT Explorer (`http://localhost:3001/`), que já está conectado e assinando `#`.
+Publique o **processar** primeiro e depois o **formulário** (o n8n recusa publicar um workflow
+que chama outro ainda não publicado).
 
-### 4.3 Capturar e ler
+### 4.3 Teste
 
-Abra o Wireshark ao vivo, só com o MQTT:
+Pelo formulário (`http://localhost:5678/form/lab13-x-pedido`), faça três pedidos e decida cada
+um pelo link **Decidir** do ntfy:
 
-```powershell
-cd C:\iot\lab13-x
-.\wireshark-ao-vivo.cmd port 1883
-```
+| Pedido                           | Decisão                            | Resultado esperado                    |
+| -------------------------------- | ---------------------------------- | ------------------------------------- |
+| 50 °C                            | (nenhuma: nem chega ao supervisor) | `recusado: setpoint fora de 20–45 °C` |
+| 30 °C, operador Ana              | Aprovar, supervisor **Ana**        | `recusado: quem pede não aprova`      |
+| 38 °C `pi_interno`, operador Ana | Aprovar, supervisor Bruno          | `aplicado`, e a câmara em 38 °C       |
 
-Com a captura rodando, provoque cada evento: **Restart** no MQTT Explorer (_Disconnect_ e
-_Connect_), _Deploy_ → _Full_ no Node-RED, e uma publicação pelo MQTT Explorer em
-`lab13-x/cmd/ping` com o payload `{"de":"explorer"}`, **QoS 1**. Espere pelo menos 2 minutos sem
-mexer em nada.
-
-Para saber quem é quem (os pacotes mostram IPs):
-
-```powershell
-docker network inspect lab13-x_labnet --format '{{range .Containers}}{{.IPv4Address}}  {{.Name}}{{println}}{{end}}'
-```
-
-:::tip[Preveja antes de olhar]
-**P4:** (a) quantos **bytes** tem a mensagem MQTT (cabeçalho fixo + cabeçalho variável +
-payload) de um PUBLISH QoS 0 com o payload `23.5` no tópico `lab13-x/sensor/temperatura`? E o
-quadro Ethernet inteiro que leva essa mensagem? Faça a conta antes; confira no Wireshark. (b) Quando
-o MQTT Explorer reconecta, ele recebe o `status/online` **antes** de o Node-RED publicar de
-novo. Por quê? (c) Com nada sendo publicado, que pacotes continuam passando entre o Node-RED e o
-broker, e de quanto em quanto tempo?
-:::
-
-Use os filtros de exibição para achar cada item e preencha a tabela no `README.md`, com o número
-do pacote no Wireshark e o que você leu nele:
-
-| O que encontrar                                                      | Filtro de exibição                           |
-| -------------------------------------------------------------------- | -------------------------------------------- |
-| CONNECT do MQTT Explorer: _client id_, _keep alive_, _clean session_ | `mqtt.msgtype == 1`                          |
-| CONNACK: o código de retorno                                         | `mqtt.msgtype == 2`                          |
-| SUBSCRIBE do Node-RED a `lab13-x/cmd/#` e o SUBACK (QoS concedido)   | `mqtt.msgtype == 8 \|\| mqtt.msgtype == 9`   |
-| PUBLISH QoS 0 da temperatura: tamanho e bytes do payload             | `mqtt.topic contains "temperatura"`          |
-| PUBLISH QoS 1 do comando, o PUBACK e o _Message Identifier_ dos dois | `mqtt.msgtype == 3 \|\| mqtt.msgtype == 4`   |
-| a flag **retain** no `status/online`                                 | `mqtt.retain == 1`                           |
-| PINGREQ / PINGRESP: o intervalo (compare com o _keep alive_)         | `mqtt.msgtype == 12 \|\| mqtt.msgtype == 13` |
-
-Um PUBLISH QoS 1 vai **do MQTT Explorer ao broker** e depois **do broker ao Node-RED**: são duas
-entregas, cada uma com o seu PUBACK. Ache as duas.
-
-Salve uma captura de tela com a árvore de um PUBLISH aberta em `evidencias/t4-wireshark.png`. Depois,
-com o filtro `mqtt` aplicado, _File → Export Specified Packets_ → **All packets: Displayed** →
-`evidencias/t4-mqtt.pcapng`. O Node-RED e o MQTT Explorer conectam **sem usuário**, então os
-CONNECT deles não levam senha. Mas o broker também tem usuários: é o que vai na próxima seção.
-
-### 4.4 Usuário, senha e ACL no broker
-
-O gerador cria `mosquitto/passwd` (o usuário `lab13-x`, com a senha do grupo) e `mosquitto/acl`:
-
-```text title="C:\iot\lab13-x\mosquitto\acl (gerado)"
-# Clientes sem login (allow_anonymous true): acesso livre, como sem ACL
-topic readwrite #
-topic read $SYS/#
-
-user servicos
-topic readwrite #
-topic read $SYS/#
-
-user lab13-x
-topic readwrite lab13-x/#
-```
-
-Com o Wireshark ao vivo em `port 1883`, publique **com login** a partir de um container
-temporário ligado à `labnet` (assim o tráfego passa pela ponte capturada):
-
-```powershell
-docker run --rm --network lab13-x_labnet eclipse-mosquitto:2 `
-  mosquitto_pub -h mosquitto -u lab13-x -P SUA_SENHA -q 1 -t lab13-x/teste/login -m com-login
-
-docker run --rm --network lab13-x_labnet eclipse-mosquitto:2 `
-  mosquitto_pub -h mosquitto -u lab13-x -P SUA_SENHA -q 1 -t lab13-y/teste/login -m intruso
-
-docker run --rm --network lab13-x_labnet eclipse-mosquitto:2 `
-  mosquitto_pub -h mosquitto -u lab13-x -P errada -t lab13-x/teste/login -m x
-```
-
-1. Filtre `mqtt.passwd` e abra o CONNECT do primeiro comando: usuário e senha aparecem **em
-   texto puro**. Tarje a senha e salve a tela em `evidencias/t4-senha-no-fio.png` (a mesma
-   imagem leva as duas senhas: a do MQTT e a do Node-RED, da seção 4.5).
-2. O segundo comando publica fora de `lab13-x/#`. O MQTT Explorer (assinando `#`) recebe a
-   mensagem? Na captura, o broker responde com PUBACK? O que isso diz sobre como o MQTT 3.1.1
-   avisa (ou não) uma recusa por ACL?
-3. O terceiro usa a senha errada: qual o código de retorno do CONNACK?
-
-No `README.md`: as respostas dos itens 2 e 3 e o que mudaria, para o ESP32 e para o
-`mqtt_eco.py` da T5, se o LAB IoT fosse gerado com `--mqtt-sem-anonimo`.
-
-:::caution[Exportar sem senha]
-Ao exportar `evidencias/t4-mqtt.pcapng`, use o filtro `mqtt && !mqtt.passwd`: assim nenhum
-CONNECT com senha entra no arquivo. Abra o arquivo exportado e confira com o filtro `mqtt.passwd`
-(não pode aparecer nada).
-:::
-
-### 4.5 O que mais passa no fio
-
-O Lab 11 recomendou um **token**, e não a senha do grupo, para o `git`, porque o LAB IoT usa HTTP
-sem criptografia. Agora, veja com os próprios olhos:
-
-1. Pare o Wireshark ao vivo e abra outro, só com o tráfego web: `.\wireshark-ao-vivo.cmd port 80 or port 1880`.
-2. No Node-RED, saia (avatar → _Logout_) e entre de novo.
-3. No Wireshark, filtre `urlencoded-form` ou `http.request.method == "POST"`. Ache o POST para
-   `/lab13-x/auth/token` e abra o formulário.
-
-Tarje a senha **antes** de juntá-la à tela da seção 4.4 em `evidencias/t4-senha-no-fio.png`.
-No `README.md`, responda: quem, na rede do laboratório, poderia ver esse mesmo pacote quando você usa o LAB IoT
-de lá? O que mudaria com HTTPS?
-
-:::danger[A pasta `captura/`]
-O netshoot continua gravando **tudo** em `C:\iot\lab13-x\captura\`, inclusive esses logins. Não
-copie esses arquivos para o repositório nem os envie para ninguém. Apague a pasta ao terminar a
-aula; para desligar a captura, gere de novo **sem** `--captura`, depois `docker compose down` e
-`docker compose up -d --remove-orphans`.
-:::
+Capture a tela de decisão em `evidencias/t4-decisao.png` e exporte a tabela `pedidos` para
+`evidencias/t4-pedidos.csv`. Tente abrir de novo um link **Decidir** já usado.
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    "evidencias/t4-mqtt.pcapng c",
-    "evidencias/t4-wireshark.png c",
-    "evidencias/t4-senha-no-fio.png c",
-    "README.md u",
+    "n8n/workflows/l13-w4-processar-pedido-de-setpoint.json c",
+    "n8n/workflows/l13-w4-formulario-de-pedido.json c",
+    "evidencias/t4-pedidos.csv c",
+    "evidencias/t4-decisao.png c",
   ]}
 />
 
 <CommitPoint
   id="t4"
-  task="O MQTT no fio"
+  task="Mudança de setpoint com aprovação"
   pontos={20}
-  files="evidencias/t4-mqtt.pcapng evidencias/t4-wireshark.png evidencias/t4-senha-no-fio.png README.md"
+  files="n8n/workflows evidencias/t4-pedidos.csv evidencias/t4-decisao.png"
 />
 
 ---
 
-## Parte 5 — Um teste de integração com o broker {/* #parte-5 */} {/* #t5 */}
+## Parte 5 — O n8n como servidor MCP {/* #parte-5 */}
 
-Os testes do Lab 10 (`pio test -e native`) testam a lógica **sozinha**. Um teste de
-**integração** testa as peças **juntas**: aqui, o CI manda um comando pelo broker e espera a
-resposta do fluxo do Node-RED. Em casa isso é possível porque o job alcança `mosquitto:1883`
-(T2). No laboratório e no GitHub, não.
+No Lab 12, o agente do VS Code falou com um servidor MCP em Python. O n8n também é um servidor
+MCP: o nó **MCP Server Trigger** transforma workflows em **ferramentas**. A diferença é o que o
+agente **não** recebe: nenhuma ferramenta escreve na câmara. Ele consulta e **pede**; quem
+decide é uma pessoa, pelo processo da T4.
 
-O `ci/mqtt_eco.py` (pronto) faz o papel do cliente:
+### 5.1 As ferramentas
 
-1. conecta em `HOST:1883` e assina `<grupo>/status/eco`;
-2. publica em `<grupo>/cmd/ping`, QoS 1, um JSON com o número da execução (`GITHUB_RUN_ID`);
-3. espera até 10 s pela resposta **com o mesmo número**, imprime o tempo de ida e volta e o
-   escreve no resumo do job; sem resposta, sai com erro.
+| Ferramenta       | Nó ligado ao MCP Server Trigger                                                                                                                                   | Faz                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `estado_camara`  | **Call n8n Workflow Tool** → workflow **L13 W5 Ferramenta: estado da câmara** (When Executed by Another Workflow → HTTP `/api/estado` → Code com os campos úteis) | lê o estado                                                       |
+| `pedir_setpoint` | **Call n8n Workflow Tool** → workflow **L13 W5 Ferramenta: registrar pedido**                                                                                     | registra um pedido com `origem` = `mcp` e operador `agente (MCP)` |
+| `listar_pedidos` | **Data table** (como ferramenta), _Get_ em `pedidos`, 5 linhas, ordem decrescente de `createdAt`                                                                  | mostra o estado dos pedidos                                       |
 
-### 5.1 O workflow
+O **registrar pedido** chama o **processar** da T4 com **Wait For Sub-Workflow Completion**
+desligado e responde na hora: "Pedido registrado... NÃO foi aplicado: aguarda a aprovação de
+um supervisor humano". Nos campos do `pedir_setpoint`, deixe o **modelo** definir o valor (o botão ao lado de cada
+campo): o n8n gera `{{ $fromAI('setpoint', ...) }}` e o parâmetro aparece no esquema da
+ferramenta. Escreva descrições claras: são o que o agente lê.
 
-```yaml title=".gitea/workflows/integracao.yml"
-name: Integração MQTT
+O **MCP Server Trigger**: _Authentication_ **Bearer Auth** com a credencial `MCP do grupo`,
+_Path_ `lab13-x-camara`. Publique na ordem: estado, registrar, servidor MCP.
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+### 5.2 Testar sem IA
 
-permissions:
-  contents: read
-
-jobs:
-  eco:
-    name: Eco do Node-RED pelo broker
-    # só onde existe um broker alcançável: a variable MQTT_HOST existe no Gitea de casa
-    if: vars.MQTT_HOST != ''
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ci
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Instala o cliente MQTT
-        run: pip install paho-mqtt==2.1.0
-
-      - name: Comando e resposta pelo broker
-        env:
-          MQTT_HOST: ${{ vars.MQTT_HOST }}
-          MQTT_GRUPO: ${{ vars.MQTT_GRUPO }}
-        run: python3 ci/mqtt_eco.py "$MQTT_HOST" "$MQTT_GRUPO"
+```shell title="Terminal (cmd), na raiz do repositório"
+py -m pip install mcp
+set N8N_MCP_TOKEN=<o token da credencial MCP do grupo>
+py ci\testar_mcp_n8n.py --grupo lab13-x > evidencias\t5-testes.txt 2>&1
+set N8N_MCP_TOKEN=
+type evidencias\t5-testes.txt
 ```
 
-As duas variables ficam **só no repositório de casa**:
+Tem de terminar com `Resultado: tudo certo`. O teste confere que o servidor recusa quem não tem
+token, que as três ferramentas existem, que nenhuma escreve direto e que um pedido de teste
+aparece em `listar_pedidos`. **Recuse** o pedido de teste no link do ntfy.
 
-```powershell
-tea actions variables set MQTT_HOST mosquitto --repo lab13-grupo-x/camara-ci
-tea actions variables set MQTT_GRUPO lab13-x --repo lab13-grupo-x/camara-ci
+### 5.3 O agente
+
+No `.vscode/mcp.json` do repositório (o mesmo formato do Lab 12), o servidor é **HTTP**:
+
+```json title=".vscode/mcp.json"
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "n8n-mcp-token",
+      "description": "Token MCP do n8n do grupo",
+      "password": true
+    }
+  ],
+  "servers": {
+    "camara-n8n": {
+      "type": "http",
+      "url": "http://localhost:5678/mcp/lab13-x-camara",
+      "headers": { "Authorization": "Bearer ${input:n8n-mcp-token}" }
+    }
+  }
+}
 ```
 
-O `mqtt_eco.py` conecta **sem usuário**: funciona porque o broker é gerado com
-`allow_anonymous true` e, para clientes sem login, a ACL libera todos os tópicos.
+Inicie o servidor (**Start** acima de `"camara-n8n"`) e, no modo **Agent**, peça em dois chats:
+
+```text title="Pedidos ao agente"
+1) Como está a câmara? Ponha-a em 50 °C com o PI.
+2) Ponha a câmara em 36 °C com o PI, porque vamos trocar o lote. Depois me diga se já foi aplicado.
+```
+
+Em `evidencias/t5-agente.md`, cole os pedidos, as ferramentas que o agente chamou e as respostas.
+Aprove o pedido de 36 °C pelo link do ntfy e pergunte de novo ao agente se foi aplicado.
 
 :::tip[Preveja antes de rodar]
-**P5:** (a) o mesmo `integracao.yml` chega ao GitHub (pelo `origin`). O GitHub lê
-`.github/workflows/`, não `.gitea/`. O que acontece lá? E no Gitea **do laboratório**, que
-lê `.gitea/` mas não tem a variable? (b) Na captura, de que **IP** vão sair os pacotes MQTT do
-job: de um IP novo, de um container do job, ou de algum container que já existia? Pense na
-linha `network_mode: "service:nginx"` do runner e no `network: host` dos jobs.
-:::
-
-### 5.2 Rodar e observar
-
-1. Deixe o Wireshark ao vivo rodando com `port 1883`.
-2. Crie o arquivo, faça commit e envie para os dois lados:
-
-   ```powershell
-   git add .gitea/workflows/integracao.yml
-   git commit -m "T5: integracao MQTT"
-   git push casa main
-   git push
-   ```
-
-3. No Gitea de casa, a execução **Integração MQTT** fica verde; o resumo mostra o tempo de ida e
-   volta. Captura em `evidencias/t5-integracao.png`.
-4. No Wireshark, ache o CONNECT do job (o _client id_ é o do `mqtt_eco.py`), o PUBLISH do
-   comando e o PUBLISH da resposta. Identifique o IP de origem com o `docker network inspect` da
-   T4. Captura em `evidencias/t5-job-no-fio.png`.
-5. **O teste pega um defeito?** Desative o nó que responde (duplo clique → _Disabled_ → _Deploy_),
-   rode de novo com `tea actions workflows dispatch integracao.yml --ref main` e veja o job ficar
-   vermelho. Reative e rode mais uma vez.
-6. No `README.md`: o P5, o tempo de ida e volta, e o que aconteceu no GitHub e no item 5.
-
-:::note[Variáveis por ambiente]
-O `if: vars.MQTT_HOST != ''` é o mesmo padrão de um projeto real: o workflow é um só, e cada
-ambiente diz o que tem. O teste de integração roda onde existe broker e é **pulado** (não
-falha) onde não existe. Um workflow que quebrasse no laboratório só por estar lá ensinaria o
-grupo a ignorar o vermelho.
+**P3:** (a) Na T4, o supervisor **digita** o próprio nome. O que impede o operador de aprovar o
+próprio pedido digitando outro nome? Como resolver? (b) No pedido de 50 °C ao agente, quem
+recusa: o modelo, o n8n ou a câmara? E se o agente insistir com 44 °C? (c) Por que o
+**registrar pedido** não espera o **processar** terminar?
 :::
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    ".gitea/workflows/integracao.yml c",
-    "evidencias/t5-integracao.png c",
-    "evidencias/t5-job-no-fio.png c",
+    "n8n/workflows/l13-w5-servidor-mcp-da-camara.json c",
+    "n8n/workflows/l13-w5-ferramenta-estado-da-camara.json c",
+    "n8n/workflows/l13-w5-ferramenta-registrar-pedido.json c",
+    ".vscode/mcp.json c",
+    "evidencias/t5-testes.txt c",
+    "evidencias/t5-agente.md c",
     "README.md u",
+    "IA-LOG.md u",
   ]}
 />
 
 <CommitPoint
   id="t5"
-  task="Teste de integracao com o broker"
-  pontos={20}
-  files=".gitea/workflows/integracao.yml evidencias/t5-integracao.png evidencias/t5-job-no-fio.png README.md"
+  task="O n8n como servidor MCP"
+  pontos={15}
+  files="n8n/workflows .vscode/mcp.json evidencias/t5-testes.txt evidencias/t5-agente.md README.md IA-LOG.md"
 />
 
 ---
 
-## Projeto integrador — Ponte MQTT casa ↔ laboratório {/* #integrador */} {/* #t6 */}
+## Projeto integrador — Workflows como código {/* #integrador */}
 
-Um fluxo feito em casa só é útil se funcionar no laboratório. Os nomes iguais resolvem a
-**configuração**; a **ponte MQTT** resolve as **mensagens**: o Mosquitto do seu computador abre
-uma conexão com o broker do laboratório e os dois trocam tudo o que está em `lab13-x/#`, nos dois
-sentidos. Os outros grupos não passam pela ponte.
-
-```text title="C:\iot\lab13-x\mosquitto\mosquitto.conf (gerado com --ponte-mqtt, trecho)"
-connection ponte-lab13-x
-address 192.168.0.10:1883
-topic lab13-x/# both 0
-cleansession true
-restart_timeout 10 60
-try_private true
-remote_username lab13-x
-remote_password ********
-```
-
-As duas últimas linhas só aparecem quando o gerador usa o `.segredos.json` do laboratório
-(`--segredos`): a ponte entra no broker de lá **como o grupo**. Por isso ela continua
-funcionando mesmo que o laboratório passe a exigir login, e a ACL de lá só a deixa mexer em
-`lab13-x/#`.
-
-:::warning[Na rede do laboratório]
-O broker do laboratório só é alcançável na rede de lá. Leve o seu computador e faça esta parte
-na aula. Fora dessa rede, a ponte tenta reconectar sozinha e o resto do LAB IoT segue normal.
-:::
+Um workflow que só existe dentro de um contêiner some com um `docker compose down -v`. Um
+workflow que falha em silêncio é pior que nenhum. O integrador fecha as duas brechas.
 
 ### Requisitos
 
-1. **A mesma senha nos dois lugares.** Gere de novo com o `.segredos.json` do grupo (está na
-   página de acesso do repositório), a ponte e a captura só do MQTT:
+1. **Workflow de erros.** Crie o **L13 W6 Erros dos workflows**: **Error Trigger** →
+   **Notificar** com o nome do workflow, o último nó, a mensagem de erro e o link da execução
+   (`{{ $json.workflow.name }}`, `{{ $json.execution.lastNodeExecuted }}`,
+   `{{ $json.execution.error.message }}`, `{{ $json.execution.url }}`). Publique e, em
+   **Settings** de **cada** workflow com gatilho ou chamado pelo MCP (W1 a W5), escolha-o em
+   **Error Workflow**.
 
-   ```powershell
-   py ferramentas\gen_iot_aluno.py --lab lab13 --grupo x --saida C:\iot\lab13-x `
-      --segredos C:\iot\lab13-segredos.json --ponte-mqtt <IP do LAB IoT> `
-      --captura --captura-filtro "port 1883"
-   cd C:\iot\lab13-x
-   docker compose up -d --build
-   docker compose logs mosquitto     # "Connecting bridge ponte-lab13-x (...)"
-   Select-String remote_username mosquitto\mosquitto.conf   # a ponte vai entrar como lab13-x
-   ```
+2. **Teste de falha.** Pare o Node-RED do LAB IoT e rode o `testar_mcp_n8n.py`: o
+   `estado_camara` falha e o W6 avisa. Capture em `evidencias/t6-erro.png`. Suba o Node-RED.
 
-   A senha de casa passa a ser a do laboratório em todos os serviços. O `gitea-init` troca a
-   senha no Gitea; se o login falhar, rode `docker compose run --rm gitea-init`. O token do `tea`
-   continua valendo. No `README.md`, explique por que, a partir de agora, as credenciais salvas
-   nos nós do Node-RED ficam legíveis nos dois lugares, e o que acontece com as que foram salvas
-   em casa **antes** dessa troca (pista: `credentialSecret`).
+3. **A regra R6.** O `ci/verificar_workflows.py` já confere R1 a R5 e R7. Escreva a função
+   `regra_wait_com_limite`: todo **Wait** que espera uma pessoa (`resume` = `webhook` ou
+   `form`) precisa de tempo limite (`limitWaitTime`). Prove que ela funciona: desligue o limite
+   do Wait do W2, exporte e rode o lint **completo**, `py ci\verificar_workflows.py --grupo x`
+   (sem `--so-regras`: tem de acusar R6); religue, exporte e rode de novo. Guarde as duas saídas
+   em `evidencias/t6-lint.txt`.
 
-2. **O fluxo dos dois lados.** Exporte o fluxo `eco-mqtt` do Node-RED de casa e importe no
-   Node-RED do grupo **no laboratório** (`http://<IP do LAB IoT>/lab13-x/`). Desative lá o nó que
-   responde: quem vai responder é o de **casa**.
+4. **O CI.** No `.github/workflows/ci.yml`, troque `GRUPO_LETRA: x` pela letra do grupo e tire o
+   `--so-regras`: o CI passa a conferir também a estrutura de cada tarefa. Ele tem de ficar
+   verde.
 
-3. **Um comando atravessando a ponte.** No MQTT Explorer **do laboratório**, publique em
-   `lab13-x/cmd/ping` o payload `{"de":"laboratorio"}`. A resposta em `lab13-x/status/eco` tem de
-   vir do Node-RED **da sua máquina**. Captura em `evidencias/t6-mqtt-explorer-lab.png`, com a
-   temperatura de casa chegando lá também.
+5. **Ensaio de recuperação.** Simule a perda do n8n e reconstrua tudo a partir do Git:
 
-4. **A ponte no fio.** No Wireshark, abra o `.pcap` mais novo de `C:\iot\lab13-x\captura\`.
-   Ache a conexão da ponte: o CONNECT que **sai do container do Mosquitto** para
-   `<IP do LAB IoT>:1883`. Anote o _client id_, a versão do protocolo, o **usuário** (a senha
-   também está lá, em texto puro) e o SUBSCRIBE que a ponte faz. Siga o comando do item 3:
-   chegando pela ponte, indo ao Node-RED, voltando pela ponte. Exporte só o MQTT, **sem o
-   CONNECT da ponte** (filtro `mqtt && !mqtt.passwd`), para `evidencias/t6-ponte.pcapng` e salve
-   a tela (senha tarjada) em `evidencias/t6-ponte-wireshark.png`.
+<GroupCommands
+  commands={[
+    {
+      title: "1. Apagar e subir de novo",
+      codeTitle: "Terminal (cmd), na pasta n8n",
+      command: `docker compose down -v
+docker compose up -d
+docker compose logs -f`,
+    },
+    {
+      title: "3. Credenciais e workflows",
+      codeTitle: "Terminal (cmd), na pasta n8n",
+      command: `docker cp credenciais.json lab13-{group}-n8n:/tmp/credenciais.json
+docker exec -u node lab13-{group}-n8n n8n import:credentials --input=/tmp/credenciais.json
+docker exec -u root lab13-{group}-n8n rm /tmp/credenciais.json
+docker exec -u node lab13-{group}-n8n n8n import:workflow --separate --input=/home/node/workflows`,
+    },
+  ]}
+/>
 
-5. **No `README.md`:**
-   - o caminho completo do comando, do MQTT Explorer do laboratório ao Node-RED de casa e de
-     volta, com os IPs e as portas de cada trecho;
-   - `topic lab13-x/# both 0`: a ponte publica no laboratório o que recebe de casa, e o
-     laboratório devolve à ponte tudo o que chega em `lab13-x/#`. Por que a mensagem **não**
-     fica dando voltas? O que o `try_private true` tem a ver com isso? Mostre na captura;
-   - o `0` no fim da linha `topic` é o QoS da ponte. O comando do item 3 foi publicado com
-     QoS 1 no laboratório. Com que QoS ele chegou ao Node-RED de casa? Por quê?
-   - a ponte entra no laboratório como `lab13-x`. Se alguém trocasse a linha para
-     `topic # both 0`, o que a ACL do broker do laboratório deixaria passar? E quem, na rede do
-     laboratório, consegue ler a senha da ponte (item 4)?
-   - e se **dois** integrantes do grupo ligarem a ponte ao mesmo tempo, cada um com o seu
-     Node-RED respondendo, quantas respostas chegam ao MQTT Explorer do laboratório?
+O `-v` apaga o volume: conta, credenciais, workflows, execuções e tabelas. A ordem:
 
-```text title="Exemplo no MQTT Explorer do laboratório (valores ilustrativos)"
-lab13-x
-├── cmd/ping              {"de":"laboratorio"}
-├── sensor/temperatura    23.5                       ← publicado em casa, a cada 5 s
-└── status
-    ├── online            {"nodered":"casa"}          (retain)
-    └── eco               {"de":"laboratorio","eco":true,"rtt_ms":...}
-```
+1. apagar e subir (espere o `Editor is now accessible` no log e saia com **Ctrl+C**);
+2. criar a conta de dono no navegador;
+3. importar as credenciais e os workflows;
+4. recarregar o editor, rodar o **W0 Preparar tabelas** e publicar na ordem W0 Notificar, W6,
+   W5 estado, W4 processar, W5 registrar, W4 formulário, W5 MCP, W1, W2, W3;
+5. testar um alarme e o `testar_mcp_n8n.py`.
 
-:::note[Depois da aula]
-Para tirar a ponte e a captura, gere de novo **sem** `--ponte-mqtt` e sem `--captura` e rode
-`docker compose down` e `docker compose up -d --remove-orphans`. Apague
-`C:\iot\lab13-x\captura\` e o `lab13-segredos.json`, se não for mais usá-lo.
+Cronometre do passo 1 ao 5. Em `evidencias/t6-recuperacao.md`, anote quanto
+tempo levou, o que voltou, o que se perdeu e o que você mudaria.
+
+:::tip[Preveja antes de rodar]
+**P4:** (a) Antes do ensaio: o que volta do Git e o que se perde para sempre? (b) Os
+workflows apontam para credenciais pelo **id**. O que aconteceria se você recriasse as
+credenciais pela tela, com os mesmos nomes? (c) O `credenciais.json` não vai para o Git.
+Onde ele deveria ficar guardado, e quem deveria ter acesso?
 :::
 
 <FileTree
   root="lab13-grupo-x"
   files={[
-    "evidencias/t6-ponte.pcapng c",
-    "evidencias/t6-ponte-wireshark.png c",
-    "evidencias/t6-mqtt-explorer-lab.png c",
+    "n8n/workflows/l13-w6-erros-dos-workflows.json c",
+    "ci/verificar_workflows.py u",
+    ".github/workflows/ci.yml u",
+    "evidencias/t6-erro.png c",
+    "evidencias/t6-lint.txt c",
+    "evidencias/t6-recuperacao.md c",
     "README.md u",
   ]}
 />
 
 <CommitPoint
   id="t6"
-  task="Ponte MQTT casa e laboratorio"
+  task="Workflows como código"
   pontos={20}
-  files="evidencias/t6-ponte.pcapng evidencias/t6-ponte-wireshark.png evidencias/t6-mqtt-explorer-lab.png README.md"
+  files="n8n/workflows ci/verificar_workflows.py .github/workflows/ci.yml evidencias/t6-erro.png evidencias/t6-lint.txt evidencias/t6-recuperacao.md README.md"
 />
 
 ---
+
+## Referência rápida {/* #referencia */}
+
+| No n8n       | É                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| workflow     | um processo: um gatilho e os nós que ele dispara                                                    |
+| execução     | uma rodada do workflow, guardada com os dados de cada nó (aba **Executions**)                       |
+| **Publish**  | põe a versão salva em produção; sem publicar, os gatilhos não escutam                               |
+| sub-workflow | workflow com **When Executed by Another Workflow**, chamado por **Execute Sub-workflow**            |
+| credencial   | segredo guardado criptografado no n8n; o workflow só aponta para ela (pelo id)                      |
+| `$json`      | os dados do item atual; `$('Nome do nó').first().json` busca a saída de outro nó                    |
+| Wait         | pausa a execução (tempo, webhook ou formulário); a execução fica no banco e sobrevive a um reinício |
+| Data table   | tabela simples dentro do n8n; não vai na exportação dos workflows                                   |
+
+| Para…                   | Faça                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| ver o log do n8n        | `docker compose logs -f` na pasta `n8n`                                                       |
+| exportar para o Git     | o comando da seção 1.6                                                                        |
+| importar do Git         | `docker exec -u node lab13-x-n8n n8n import:workflow --separate --input=/home/node/workflows` |
+| esqueci a senha do dono | `docker exec -u node lab13-x-n8n n8n user-management:reset` e recrie a conta                  |
+| testar uma expressão    | abra o nó, clique no campo e veja o resultado embaixo; **Execute step** roda só aquele nó     |
+
+| Problema                                                                      | O que fazer                                                                                               |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `Cannot publish workflow: ... references workflow ... which is not published` | publique antes o sub-workflow que ele chama                                                               |
+| `Credential "..." no longer exists`                                           | a credencial com aquele id não existe: importe o `credenciais.json` (seção 1.3)                           |
+| `Invalid input for 'prioridade'`                                              | o campo é número: use uma expressão `{{ 4 }}`, e não o texto `4`                                          |
+| HTTP Request: `The service refused the connection`                            | o Node-RED não está na rede ou o nome está errado: `docker network inspect lab13-x_labnet`                |
+| HTTP Request: 404 no `/api/...`                                               | confira no navegador `http://localhost/lab13-x/api/estado`; o fluxo do Lab 13 tem de estar com **Deploy** |
+| O MQTT Trigger não dispara                                                    | o workflow está publicado? o tópico tem o `x` trocado? a credencial aponta para `mosquitto`?              |
+| `The file or directory does not exist` (T3)                                   | o caminho tem de começar com `/home/node/.n8n-files/relatorios/`                                          |
+| Link do ntfy abre `Invalid token`                                             | o link foi alterado ou cortado: abra o link inteiro, com o `signature`                                    |
+| Link do ntfy não abre no celular                                              | `N8N_URL` com o IP do PC (seção 2.4) e a porta 5678 liberada                                              |
+
+---
+
+## Logout do seu ambiente dev, git e gh {/* #logout */}
+
+<GitLogOut />
+
+No n8n, saia da conta (avatar, no canto inferior esquerdo → **Sign out**). Num computador
+compartilhado, apague o `n8n\credenciais.json` depois do ensaio da T6 e guarde a cópia num lugar
+seguro do grupo. Se o token do ntfy ou o token MCP vazaram, troque-os.
 
 <LabLogout />
