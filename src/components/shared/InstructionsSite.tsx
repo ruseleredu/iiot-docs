@@ -41,14 +41,44 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
 
 // ---------------------------------------------------------------------------
 // <LabLogout /> — bloco "Ao terminar" (fim do lab; máquina compartilhada)
+// Comandos para o Prompt de Comando (cmd), digitados ou colados direto.
 // ---------------------------------------------------------------------------
+const LOGOUT_GITHUB = `(echo protocol=https&echo host=github.com) | git credential reject
+gh auth logout --hostname github.com
+git config --global --unset user.name
+git config --global --unset user.email`;
+
+const CHECK_CREDENCIAIS = `cmdkey /list | findstr /i github`;
+
+const PARAR_CONTAINERS = `for /f "delims=" %i in ('docker compose ls -q') do docker compose -p %i down`;
+
 export function LabLogout({ intro = '/labs/intro' } = {}) {
     return (
         <Admonition type="warning" title="Ao terminar — máquina de laboratório">
             <p>
-                Antes de sair, faça <Link to={`${intro}#logout`}>logout</Link> para não
-                deixar sua conta do GitHub ativa na máquina (limpa a credencial salva do
-                git e encerra a sessão do <code>gh</code>).
+                Antes de sair, <Link to={`${intro}#logout`}>faça logout</Link> para não
+                deixar sua conta do GitHub ativa nesta máquina. Rode os comandos abaixo
+                no <strong>Prompt de Comando (cmd)</strong>, não no PowerShell.
+            </p>
+
+            <p>
+                <strong>1.</strong> Apague a credencial do GitHub salva pelo{' '}
+                <Link to="/docs/git">git</Link>, encerre a sessão do <code>gh</code> e
+                remova seu nome e e-mail da configuração global:
+            </p>
+            <ThemeCodeBlock className="language-batch">{LOGOUT_GITHUB}</ThemeCodeBlock>
+
+            <p>Para conferir, este comando não deve mostrar nada:</p>
+            <ThemeCodeBlock className="language-batch">{CHECK_CREDENCIAIS}</ThemeCodeBlock>
+
+            <p>
+                <strong>2.</strong> Pare os containers do lab:
+            </p>
+            <ThemeCodeBlock className="language-batch">{PARAR_CONTAINERS}</ThemeCodeBlock>
+
+            <p>
+                <strong>3.</strong> No navegador, saia da sua conta em{' '}
+                <code>github.com</code> e feche todas as janelas.
             </p>
         </Admonition>
     );
