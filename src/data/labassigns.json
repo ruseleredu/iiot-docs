@@ -13,6 +13,7 @@
     "lab08": { "cmid": 2172254, "title": "Laboratório 08" },
     "lab09": { "cmid": 2172260, "title": "Laboratório 09" },
     "lab10": { "cmid": 2172265, "title": "Laboratório 10" },
+    "lab11": { "cmid": 2203364, "title": "Laboratório 11" },
     "projeto": { "cmid": 2172279, "title": "Projeto Final" }
   },
   "sections": {
@@ -27,6 +28,7 @@
     "lab08": { "cmid": 500620, "title": "Semana 09" },
     "lab09": { "cmid": 500621, "title": "Semana 10" },
     "lab10": { "cmid": 500622, "title": "Semana 11" },
+    "lab11": { "cmid": 507106, "title": "Semana 12" },
     "projeto": { "cmid": 500642, "title": "Projeto Final" }
   }
 }
