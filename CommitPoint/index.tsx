@@ -72,6 +72,12 @@ export interface CommitPointProps {
   allowEmpty?: boolean;
   /** Comando extra mostrado apos o commit (ex.: alias de deploy). */
   run?: string;
+  /**
+   * Mostra, em blocos separados: antes do commit, `git conferir <files>` (alias do Lab 01:
+   * terminal na raiz e cada arquivo no lugar); depois do push, o que o commit levou e se foi
+   * enviado. Default: true; `check={false}` mostra so o commit.
+   */
+  check?: boolean;
 }
 
 export default function CommitPoint({
@@ -87,6 +93,7 @@ export default function CommitPoint({
   id,
   allowEmpty = false,
   run,
+  check = true,
 }: CommitPointProps): ReactNode {
   const auto = useAutoNumber();
   const numero = n != null ? n : auto;
@@ -101,8 +108,19 @@ export default function CommitPoint({
   const commit = allowEmpty
     ? `git commit --allow-empty -m "${mensagem}"`             // deploy/release: sem mudanca de arquivo
     : `git add ${files} && git commit -m "${mensagem}"`;
-  const comando =
-    commit + (push ? ' && git push' : '') + (run ? `\n${run}` : '');
+  const comando = commit + (push ? ' && git push' : '') + (run ? `\n${run}` : '');
+
+  // Conferencia (check):
+  // - antes: "git conferir <arquivos>", alias configurado uma vez no Lab 01 (Parte 2.1). O Git
+  //   roda o alias na raiz do repositorio, de qualquer subpasta: ele mostra a raiz, avisa se o
+  //   terminal esta numa subpasta (o git add do passo 2 tem de rodar na raiz), marca cada
+  //   arquivo como "ok" ou "FALTA" e mostra o "git status --short --ignored" so deles
+  //   (?? novo, M modificado, !! ignorado; quem nao aparece ja esta no Git sem mudanca).
+  // - depois: a 1a linha do "git status -sb" diz se o commit ja foi enviado ([ahead N] = nao),
+  //   e o "git log -1 --stat" lista os arquivos que o commit levou.
+  const lista = files.split(/\s+/).filter((f) => f && !f.startsWith('-') && f !== '.');
+  const antes = ['git conferir', ...lista].join(' ');
+  const depois = 'git status -sb && git log -1 --stat --oneline';
 
   const tituloPadrao: ReactNode = (
     <>
@@ -121,7 +139,35 @@ export default function CommitPoint({
     <div id={anchorId} style={{ scrollMarginTop: 'var(--ifm-navbar-height, 60px)' }}>
       <Admonition type={type} title={title ?? tituloPadrao}>
         <p>{task}</p>
-        <ThemeCodeBlock language="bash">{comando}</ThemeCodeBlock>
+        {check ? (
+          <>
+            <ThemeCodeBlock language="bash" title="1. Conferir os arquivos">
+              {antes}
+            </ThemeCodeBlock>
+            <ThemeCodeBlock language="bash" title={`2. Commit ${token}${push ? ' e push' : ''}`}>
+              {comando}
+            </ThemeCodeBlock>
+            <ThemeCodeBlock language="bash" title="3. Conferir o commit e o envio">
+              {depois}
+            </ThemeCodeBlock>
+            <p style={{ fontSize: '0.85em', marginBottom: 0 }}>
+              Só faça o commit se o passo 1 não mostrar <code>ATENCAO</code> (terminal fora da
+              raiz do repositório){lista.length ? <> nem <code>FALTA</code></> : ''}.
+              {lista.length > 0 && (
+                <>
+                  {' '}Nas mudanças, <code>??</code> é arquivo novo e <code>M</code>, modificado:
+                  os dois entram no commit. <code>!!</code> é arquivo bloqueado pelo{' '}
+                  <code>.gitignore</code>, e o <code>git add</code> vai falhar. Um arquivo que não
+                  aparece ali já está no Git e não mudou desde o último commit.
+                </>
+              )}{' '}
+              No passo 3, a primeira linha não pode ter <code>[ahead</code> (commit ainda não
+              enviado){lista.length ? `, e a lista tem de trazer os arquivos da ${token}` : ''}.
+            </p>
+          </>
+        ) : (
+          <ThemeCodeBlock language="bash">{comando}</ThemeCodeBlock>
+        )}
       </Admonition>
     </div>
   );

@@ -3,12 +3,9 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
+import Link from "@docusaurus/Link";
 
 import { GROUPS, HOMEFOLDER, PRESETS_IOT, GenIotOpcoes } from "../constants"; // updated import
-
-/* ------------------------------------------------------------------ */
-/* Opções do gen_iot_aluno.py                                           */
-/* ------------------------------------------------------------------ */
 
 function montarFlags(o: GenIotOpcoes): string[] {
     const f: string[] = [];
@@ -47,6 +44,14 @@ type LabIotAlunoProps = {
     opcoes?: GenIotOpcoes;
     /** Grupos exibidos (padrão: GROUPS de constants) */
     grupos?: readonly string[];
+    /**
+     * Ponto de retorno à atividade (página do laboratório).
+     * Padrão: `/labs/<LABNAME>#parte-1` (ex.: lab10 → /labs/LAB10#parte-1).
+     * Use `false` para não exibir.
+     */
+    retorno?: string | false;
+    /** Texto antes do link de retorno (padrão: "Retorne à atividade em") */
+    retornoTexto?: string;
 };
 
 const GRUPO_VALIDO = /^[a-z]$/; // o script aceita uma letra a..z, exceto p e n
@@ -59,8 +64,11 @@ export default function LabIotAluno({
     labName = "lab05",
     opcoes,
     grupos = GROUPS,
+    retorno,
+    retornoTexto,
 }: LabIotAlunoProps) {
     const lab = labName.toLowerCase();
+    const urlRetorno = retorno === false ? null : retorno ?? `/labs/${labName.toUpperCase()}#parte-1`;
     const o: GenIotOpcoes = { ...(PRESETS_IOT[lab] ?? {}), ...(opcoes ?? {}) };
     const flags = montarFlags(o);
     const conflito = o.semSenha && (o.protegerHttp || o.mqttSemAnonimo);
@@ -184,18 +192,34 @@ export default function LabIotAluno({
                                     </p>
                                     <Cmd>{atalhos}</Cmd>
 
-
                                     <p><b>2.</b> Gere o LAB IoT do grupo em <code>{`docker\\${conta}`}</code>:</p>
                                     <Cmd>{gerar}</Cmd>
 
                                     <p><b>3.</b> Suba os containers (a primeira vez demora):</p>
                                     <Cmd>{`${entrar} && docker compose up -d --build`}</Cmd>
 
-                                    <p><b>4.</b> Confira e veja a senha:</p>
-                                    <Cmd>{`docker compose ps && type credenciais.txt`}</Cmd>
+                                    <p><b>4.</b> Listar e exibir o status dos containers:</p>
+                                    <Cmd>{`docker compose ps`}</Cmd>
 
-                                    <p><b>5.</b> Abra o portal:</p>
+                                    <p><b>5.</b> Veja suas credenciais:</p>
+                                    <Cmd>{`${entrar} && chcp 65001 >nul && type credenciais.txt`}</Cmd>
+
+                                    <p><b>6.</b> Abra o portal:</p>
                                     <Cmd>{`start ${base}/`}</Cmd>
+
+                                    <p>
+                                        <b>7.</b> Ao terminar, pare os containers de <b>todos</b> os projetos Docker
+                                        Compose em execução (funciona em qualquer janela do cmd, sem os atalhos; os
+                                        dados ficam; para voltar, use o passo 3 ou <i>Subir de novo</i>):
+                                    </p>
+                                    <Cmd>{`for /f "delims=" %i in ('docker compose ls -q') do docker compose -p %i down`}</Cmd>
+                                    <p>
+                                        Em um arquivo <code>.cmd</code>/<code>.bat</code>, troque <code>%i</code> por{" "}
+                                        <code>%%i</code>. Para parar só este LAB IoT:
+                                    </p>
+                                    <Cmd>{`${entrar} && docker compose down`}</Cmd>
+                                    <p>Se quiser, feche também o Docker Desktop para liberar a memória:</p>
+                                    <Cmd>{`docker desktop stop`}</Cmd>
 
                                     <details>
                                         <summary><b>Endereços</b></summary>
@@ -325,6 +349,17 @@ export default function LabIotAluno({
                     );
                 })}
             </Tabs>
+
+            {urlRetorno && (
+                <Admonition type="tip" title="Ambiente pronto?">
+                    <p>
+                        {retornoTexto ?? "Retorne à atividade em"}{" "}
+                        <Link to={urlRetorno}>
+                            <b>{urlRetorno}</b>
+                        </Link>
+                    </p>
+                </Admonition>
+            )}
         </>
     );
 }

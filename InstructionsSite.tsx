@@ -13,7 +13,6 @@ import Link from '@docusaurus/Link';
 <Link to="/docs/vs-code">Visual Studio Code</Link>
 */
 
-
 // ---------------------------------------------------------------------------
 // <LabSetup /> — bloco "Antes de começar" (topo do lab)
 // ---------------------------------------------------------------------------
@@ -24,27 +23,17 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
                 Confira o ambiente (faça a <b>configuração uma vez por máquina</b>; a
                 verificação, a cada aula):
             </p>
-            <ol>
-                <li>
-                    <Link to={`${intro}#setup`}>Instalar as ferramentas</Link> — git,
-                    GitHub CLI e VS Code
-                </li>
-                <li>
-                    <Link to={`${intro}#git-config`}>Configurar o git</Link> — nome,
-                    e-mail e editor padrão <i>(uma vez)</i>
-                </li>
-                <li>
-                    <Link to={`${intro}#verify`}>Verificar git, gh e VS Code</Link> —
-                    deve mostrar as versões e <code>Logged in to github.com</code>
-                </li>
-            </ol>
-            <p>Verificação rápida de versão instalada:</p>
+            <p>Verificação rápida das versões instaladas:</p>
             <ThemeCodeBlock language="bash">
-                git -v &amp; gh --version &amp; code -v &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version
+                git -v &amp; gh --version &amp; code -v &amp; py --version &amp; pio --version &amp; wokwi-cli -V &amp; wsl --version &amp; docker --version
             </ThemeCodeBlock>
-            <p>Verificação rápida de autenticação:</p>
+            <p>Verificação rápida de autenticação e alias:</p>
             <ThemeCodeBlock language="bash">
-                git config --get-regexp ^user\. &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
+                git config --get-regexp "^(user|alias)\." &amp; gh auth status &amp; code --list-extensions --profile "ESP32IO"
+            </ThemeCodeBlock>
+            <p>Adicionar o comando <code>git conferir</code>:</p>
+            <ThemeCodeBlock language="bash">
+                {`git config --global alias.conferir "!f() { r=$(pwd -W 2>/dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
             </ThemeCodeBlock>
         </Admonition>
     );
@@ -52,14 +41,44 @@ export function LabSetup({ intro = '/labs/intro' } = {}) {
 
 // ---------------------------------------------------------------------------
 // <LabLogout /> — bloco "Ao terminar" (fim do lab; máquina compartilhada)
+// Comandos para o Prompt de Comando (cmd), digitados ou colados direto.
 // ---------------------------------------------------------------------------
+const LOGOUT_GITHUB = `(echo protocol=https&echo host=github.com) | git credential reject
+gh auth logout --hostname github.com
+git config --global --unset user.name
+git config --global --unset user.email`;
+
+const CHECK_CREDENCIAIS = `cmdkey /list | findstr /i github`;
+
+const PARAR_CONTAINERS = `for /f "delims=" %i in ('docker compose ls -q') do docker compose -p %i down`;
+
 export function LabLogout({ intro = '/labs/intro' } = {}) {
     return (
         <Admonition type="warning" title="Ao terminar — máquina de laboratório">
             <p>
-                Antes de sair, faça <Link to={`${intro}#logout`}>logout</Link> para não
-                deixar sua conta do GitHub ativa na máquina (limpa a credencial salva do
-                git e encerra a sessão do <code>gh</code>).
+                Antes de sair, <Link to={`${intro}#logout`}>faça logout</Link> para não
+                deixar sua conta do GitHub ativa nesta máquina. Rode os comandos abaixo
+                no <strong>Prompt de Comando (cmd)</strong>, não no PowerShell.
+            </p>
+
+            <p>
+                <strong>1.</strong> Apague a credencial do GitHub salva pelo{' '}
+                <Link to="/docs/git">git</Link>, encerre a sessão do <code>gh</code> e
+                remova seu nome e e-mail da configuração global:
+            </p>
+            <ThemeCodeBlock className="language-batch">{LOGOUT_GITHUB}</ThemeCodeBlock>
+
+            <p>Para conferir, este comando não deve mostrar nada:</p>
+            <ThemeCodeBlock className="language-batch">{CHECK_CREDENCIAIS}</ThemeCodeBlock>
+
+            <p>
+                <strong>2.</strong> Pare os containers do lab:
+            </p>
+            <ThemeCodeBlock className="language-batch">{PARAR_CONTAINERS}</ThemeCodeBlock>
+
+            <p>
+                <strong>3.</strong> No navegador, saia da sua conta em{' '}
+                <code>github.com</code> e feche todas as janelas.
             </p>
         </Admonition>
     );
@@ -149,6 +168,11 @@ export function GitConfig() {
                 git config --global user.email "you@example.com"
             </ThemeCodeBlock>
 
+            <p>Adicionar o comando <code>git conferir</code>:</p>
+            <ThemeCodeBlock language="bash">
+                {`git config --global alias.conferir "!f() { r=$(pwd -W 2>/dev/null || pwd); echo raiz do repositorio: $r; test -z $GIT_PREFIX || echo ATENCAO: o terminal esta em $GIT_PREFIX, fora da raiz. Antes do git add, rode: cd /d $r; test $# -eq 0 && return; for a in $@; do if [ -e $a ]; then echo ok $a; else echo FALTA $a; fi; done; echo == mudancas desde o ultimo commit:; git status --short --ignored -- $@; }; f"`}
+            </ThemeCodeBlock>
+
             <p>É recomendado verificar se a instalação do seu Git não está realizando nenhuma transformação entre LFs e CRLFs.</p>
             <ThemeCodeBlock className="language-bash">
                 git config --global core.autocrlf false
@@ -220,9 +244,19 @@ export function DevTools() {
                 <ThemeCodeBlock className="language-bash">
                     winget install Python.Python.3.14
                 </ThemeCodeBlock>
-                <p>Verifique a versão instalada:</p>
+                <ul>
+                    <li><p>Verifique a versão instalada:</p>
+                    </li>
+                </ul>
                 <ThemeCodeBlock className="language-bash">
                     py --version && python --version && pip --version
+                </ThemeCodeBlock>
+                <ul>
+                    <li><p>Instale as dependências utilizadas no curso:</p>
+                    </li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    py -m pip install bcrypt
                 </ThemeCodeBlock>
             </TabItem>
             <TabItem value="vscode" label="VS Code">
@@ -246,38 +280,7 @@ export function DevTools() {
                 </ThemeCodeBlock>
 
             </TabItem>
-            <TabItem value="esp32-wokwi" label="Wokwi">
-                <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32.</b></p>
-                <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> executa a simulação dentro do VS Code, utilizando os binários compilados pelo PlatformIO.
-                    </li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
-                </ThemeCodeBlock>
-                <ul>
-                    <li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Gerar uma licença pessoal de 30 dias para o Wokwi VS Code.</a></li>
-                </ul>
-                <ul>
-                    <li><a href="https://docs.wokwi.com/wokwi-ci/cli-installation" target="_blank">Wokwi CLI:</a> Instale via PowerShell.</li>
-                </ul>
-                <ThemeCodeBlock className="language-powershell">
-                    iwr https://wokwi.com/ci/install.ps1 -useb | iex
-                </ThemeCodeBlock>
-                <ThemeCodeBlock className="language-bash">
-                    {`wokwi-cli -h`}
-                </ThemeCodeBlock>
-                <ul>
-                    <li>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a></li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                </ThemeCodeBlock>
-                <ul>
-                    <li><a href="https://docs.wokwi.com/wokwi-ci/getting-started" target="_blank">Wokwi para CI e GitHub Actions</a></li>
-                </ul>
 
-            </TabItem>
             <TabItem value="esp32-platformio" label="PlatformIO">
                 <p><b><Link to="/docs/platformio-intro">PlatformIO IDE para VSCode</Link>: Sua porta de entrada para a excelência no desenvolvimento de software embarcado.</b></p>
                 <ul>
@@ -312,6 +315,37 @@ export function DevTools() {
                             {`pio system prune -f`}
                         </ThemeCodeBlock>
                     </li>
+                </ul>
+            </TabItem>
+            <TabItem value="esp32-wokwi" label="Wokwi">
+                <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32.</b></p>
+                <ul>
+                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> executa a simulação dentro do VS Code, utilizando os binários compilados pelo PlatformIO.
+                    </li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
+                </ThemeCodeBlock>
+                <ul>
+                    <li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Gerar uma licença pessoal de 30 dias para o Wokwi VS Code.</a></li>
+                </ul>
+                <ul>
+                    <li><a href="https://github.com/wokwi/wokwi-cli/releases" target="_blank">Wokwi CLI:</a> Baixe via GitHub.</li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    {`curl -L -o "%USERPROFILE%\\.platformio\\penv\\Scripts\\wokwi-cli.exe" "https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-win-x64.exe"`}
+                </ThemeCodeBlock>
+                <ThemeCodeBlock className="language-bash">
+                    {`wokwi-cli -h`}
+                </ThemeCodeBlock>
+                <ul>
+                    <li>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a></li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                </ThemeCodeBlock>
+                <ul>
+                    <li><a href="https://docs.wokwi.com/wokwi-ci/getting-started" target="_blank">Wokwi para CI e GitHub Actions</a></li>
                 </ul>
             </TabItem>
             <TabItem value="esp32-drivers" label="Drivers">
