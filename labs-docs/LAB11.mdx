@@ -815,12 +815,12 @@ chamado de **instável** (_flaky_). Por que ele é pior do que um teste que semp
 
 Em **Settings ▸ Secrets and variables ▸ Actions**:
 
-| Tipo     | Nome              | Valor                                               |
-| -------- | ----------------- | --------------------------------------------------- |
-| Secret   | `WOKWI_CLI_TOKEN` | o token do Wokwi CI                                 |
-| Secret   | `NTFY_TOPIC`      | o tópico do grupo (T6)                              |
-| Secret   | `NTFY_TOKEN`      | o token do ntfy (T6; vazio no `ntfy.sh` sem login)  |
-| Variable | `NTFY_URL`        | o servidor do ntfy (T6; sem ela, `https://ntfy.sh`) |
+| Tipo     | Nome              | Valor                                                  |
+| -------- | ----------------- | ------------------------------------------------------ |
+| Secret   | `WOKWI_CLI_TOKEN` | o token do Wokwi CI                                    |
+| Secret   | `NTFY_TOPIC`      | `lab11-<letra>-ci` (T6)                                |
+| Secret   | `NTFY_TOKEN`      | o token ntfy do grupo (`tk_...`, no `ACESSO-LAB11.md`) |
+| Variable | `NTFY_URL`        | `https://iot.adrianoruseler.com/ntfy` (T6)             |
 
 ### 5.3 O workflow
 
