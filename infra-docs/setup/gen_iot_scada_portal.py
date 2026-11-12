@@ -39,6 +39,7 @@ o kit usa a mesma senha e o mesmo credentialSecret do grupo no laboratório.
 
 Uso:
   py gen_iot_scada_portal.py --lab lab05 --grupos 10 --ip 192.168.0.10
+  py gen_iot_scada_portal.py --lab lab11 --letras a,b,c,d,e,f,g,h,i,j,k,l,m,x --ip 192.168.0.10
   py gen_iot_scada_portal.py --sem-tunel            # só rede local (http://IP/)
   py gen_iot_scada_portal.py --novas-senhas         # sorteia senhas novas para todos
   py gen_iot_scada_portal.py --gitea-db sqlite   # sem PostgreSQL (Gitea em SQLite)
@@ -68,6 +69,8 @@ PUBLICO_URL_PADRAO = "https://iot.adrianoruseler.com"
 ap = argparse.ArgumentParser(description="Gera o LAB IoT (caminhos + túnel SSH para o VPS).")
 ap.add_argument("--lab", default="lab05", help="Nome do lab (ex.: lab05); prefixo de tudo")
 ap.add_argument("--grupos", type=int, default=10, help="Quantidade de grupos de alunos (máx. 24)")
+ap.add_argument("--letras", default=None, metavar="a,b,...",
+                help="Letras exatas dos grupos (ex.: a,b,c,x); substitui --grupos. 'p' e 'n' são reservadas")
 ap.add_argument("--ip", default="127.0.0.1",
                 help="IP do servidor na rede do laboratório (acesso local, MQTT e MQTT Explorer)")
 ap.add_argument("--dominio", default="iot.lab",
@@ -132,6 +135,15 @@ if not re.fullmatch(r"[a-z][a-z0-9]{1,20}", LAB):
     sys.exit("--lab deve começar com letra e ter só letras/dígitos (ex.: lab05), "
              "pois vira caminho da URL, usuário dos serviços e prefixo MQTT.")
 N = args.grupos
+# letras dos grupos de alunos: as N primeiras (sem 'p' e 'n') ou a lista exata de --letras
+LETRAS_ALUNOS = [c for c in string.ascii_lowercase if c not in ("p", "n")]
+if args.letras:
+    _sel = [x for x in re.split(r"[,\s]+", args.letras.lower()) if x]
+    _ruins = [x for x in _sel if not re.fullmatch(r"[a-z]", x) or x in ("p", "n")]
+    if not _sel or _ruins or len(set(_sel)) != len(_sel):
+        sys.exit("--letras: letras a-z separadas por vírgula, sem repetir e sem 'p' (professor) "
+                 f"e 'n' (notas). Problema em: {', '.join(_ruins) or 'repetição/lista vazia'}")
+    LETRAS_ALUNOS, N = _sel, len(_sel)
 IP = args.ip
 DOMINIO = args.dominio
 
@@ -140,7 +152,7 @@ KIT = None
 if args.kit:
     _k = args.kit.lower()
     if _k == "todos":   # um kit por grupo: roda este script de novo para cada letra
-        _letras = [c for c in string.ascii_lowercase if c not in ("p", "n")][:N]
+        _letras = LETRAS_ALUNOS[:N]
         _base = args.saida or f"{LAB}-kits"
         _argv, _pula = [], False
         for _a in sys.argv[1:]:
@@ -268,7 +280,7 @@ MQTTX_SENHA = (args.mqtt_explorer_senha or segredo("mqtt_explorer_senha", lambda
 
 # ---------------- nomes ----------------
 LETRA_PROF, LETRA_NOTAS = "p", "n"
-letras = [c for c in string.ascii_lowercase if c not in (LETRA_PROF, LETRA_NOTAS)]
+letras = LETRAS_ALUNOS
 if not 1 <= N <= len(letras):
     sys.exit(f"--grupos deve ser entre 1 e {len(letras)} (letras a-z sem 'p' e 'n').")
 

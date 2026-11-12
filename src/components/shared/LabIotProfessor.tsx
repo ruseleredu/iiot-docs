@@ -42,10 +42,11 @@ function montarFlags(o: ScadaOpcoes): string[] {
 
 /**
  * Letras dos grupos de alunos: GROUPS sem 'P' (professor) e 'N' (notas).
- * O gerador recebe só a quantidade (--grupos) e distribui a, b, c... pulando p e n,
- * então GROUPS deve seguir essa mesma ordem.
+ * Se forem as primeiras da sequência do gerador (a, b, c... pulando p e n), basta
+ * --grupos N; senão (ex.: a..m, x), o gerador recebe a lista exata com --letras.
  */
-const LETRAS_ALUNOS = GROUPS.map((g) => g.toLowerCase()).filter((c) => c !== "p" && c !== "n");
+const LETRAS_ALUNOS = GROUPS.map((g) => g.trim().toLowerCase()).filter((c) => c !== "p" && c !== "n");
+const SEQUENCIA_GERADOR = "abcdefghijklmoqrstuvwxyz";
 
 /* ------------------------------------------------------------------ */
 /* Componente                                                           */
@@ -77,9 +78,12 @@ export default function LabIotProfessor({
     const flags = montarFlags(o);
     const labValido = /^[a-z][a-z0-9]{1,20}$/.test(lab);
     const nValido = grupos >= 1 && grupos <= 24;
-    // o gerador usa a, b, c... (sem p e n): GROUPS precisa coincidir, senão as contas não batem
-    const esperado = "abcdefghijklmoqrstuvwxyz".slice(0, grupos);
-    const ordemValida = letras.join("") === esperado;
+    // cada grupo: uma letra a-z, sem repetir (p e n já foram retiradas)
+    const letrasRuins = letras.filter((c, i) => !/^[a-z]$/.test(c) || letras.indexOf(c) !== i);
+    const letrasValidas = letrasRuins.length === 0;
+    // a, b, c... na ordem do gerador: --grupos N; qualquer outra escolha: --letras a,b,...,x
+    const sequencial = letras.join("") === SEQUENCIA_GERADOR.slice(0, grupos);
+    const argGrupos = sequencial ? `--grupos ${grupos}` : `--letras ${letras.join(",")}`;
 
     const tunel = !o.semTunel;
     const gitea = !o.semGitea;
@@ -99,7 +103,7 @@ export default function LabIotProfessor({
         `set "IOT_IP=${ipLocal}"`,
     ].join("\n");
     const entrar = `cd /d "%IOT_DIR%"`;
-    const gerarArgs = [`--lab ${lab}`, `--grupos ${grupos}`, `--ip %IOT_IP%`, `--github-org ${githubOrg}`, ...flags];
+    const gerarArgs = [`--lab ${lab}`, argGrupos, `--ip %IOT_IP%`, `--github-org ${githubOrg}`, ...flags];
     // --saida: gera sempre na mesma pasta, de qualquer diretório
     const gerar = [`py "%IOT_GEN%"`, ...gerarArgs, `--saida "%IOT_DIR%"`].join(" ");
     const gitBash = `"%ProgramFiles%\\Git\\bin\\bash.exe"`;
@@ -123,8 +127,15 @@ export default function LabIotProfessor({
         <>
             <Admonition type="info" title="Servidor do laboratório (uso do professor)">
                 <p>
-                    Um único ambiente para a turma: {grupos} grupos (<code>{`${lab}-${letras[0]}`}</code> a{" "}
-                    <code>{`${lab}-${letras[letras.length - 1]}`}</code>), professor (<code>{prof}</code>) e
+                    Um único ambiente para a turma: {grupos} grupos (
+                    {sequencial ? (
+                        <>
+                            <code>{`${lab}-${letras[0]}`}</code> a <code>{`${lab}-${letras[letras.length - 1]}`}</code>
+                        </>
+                    ) : (
+                        <code>{letras.join(", ")}</code>
+                    )}
+                    ), professor (<code>{prof}</code>) e
                     painel de notas (<code>{notas}</code>). Comandos para o <b>Prompt de Comando</b> (cmd),
                     aberto na pasta onde está o <code>{SCRIPT}</code>.
                 </p>
@@ -143,13 +154,14 @@ export default function LabIotProfessor({
             )}
             {!nValido && (
                 <Admonition type="danger" title="Quantidade de grupos inválida">
-                    <code>--grupos {grupos}</code>: GROUPS precisa ter de 1 a 24 grupos de alunos, além de P e N.
+                    {grupos} grupos: GROUPS precisa ter de 1 a 24 grupos de alunos, além de P e N.
                 </Admonition>
             )}
-            {nValido && !ordemValida && (
-                <Admonition type="danger" title="GROUPS fora da ordem do gerador">
-                    O gerador cria as contas <code>{esperado.split("").join(", ")}</code>, mas GROUPS (sem P e N) tem{" "}
-                    <code>{letras.join(", ")}</code>. Ajuste GROUPS em <code>constants</code>.
+            {!letrasValidas && (
+                <Admonition type="danger" title="Letras inválidas em GROUPS">
+                    Cada grupo deve ser uma letra de A a Z, sem repetir (P e N são do professor e das notas).
+                    Problema em: <code>{[...new Set(letrasRuins)].join(", ")}</code>. Ajuste GROUPS em{" "}
+                    <code>constants</code>.
                 </Admonition>
             )}
 

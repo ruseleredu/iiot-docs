@@ -69,5 +69,8 @@ export const PRESETS_SCADA: Record<string, ScadaOpcoes> = {
     lab06: { semGitea: true, semMicrobin: true },
     lab07: { semGitea: true, semMicrobin: true, semFuxa: true, semNtfy: true },
     lab08: {},
+    lab09: {},
+    lab10: {},
+    lab11: { semGitea: true, semFuxa: true }, // LAB IoT completo
     projeto: {},
 };
