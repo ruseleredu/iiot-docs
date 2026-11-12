@@ -260,7 +260,7 @@ void setup() {
 
 E o `platformio.ini` ganha três ambientes:
 
-<FileTree root="lab11-grupo-x" files={["platformio.ini u"]} />
+<FileTree root="lab11-grupo-x" files={["platformio.ini r"]} />
 
 ```ini title="platformio.ini"
 [platformio]
@@ -322,9 +322,9 @@ rápido. Compare o `RAM:`/`Flash:` dos dois no log.
 <FileTree
   root="lab11-grupo-x"
   files={[
-    "lib/camara_logica/camara_logica.cpp c",
-    "src/main.cpp u",
-    "platformio.ini u",
+    "lib/camara_logica/camara_logica.cpp r",
+    "src/main.cpp r",
+    "platformio.ini r",
     "evidencias/t1-build.txt c",
   ]}
 />
@@ -360,7 +360,7 @@ seu PC.
 
 ### 2.2 Os testes
 
-<FileTree root="lab11-grupo-x" files={["test/test_logica/test_logica.cpp c"]} />
+<FileTree root="lab11-grupo-x" files={["test/test_logica/test_logica.cpp r"]} />
 
 ```cpp title="test/test_logica/test_logica.cpp (estrutura e alguns testes)"
 #include <math.h>
@@ -483,7 +483,7 @@ quantos dos 4096 valores do ADC o resultado muda?) e escreva um teste que **pegu
 
 <FileTree
   root="lab11-grupo-x"
-  files={["test/test_logica/test_logica.cpp c", "evidencias/t2-pio-test.txt c"]}
+  files={["test/test_logica/test_logica.cpp r", "evidencias/t2-pio-test.txt c"]}
 />
 
 <CommitPoint
@@ -497,17 +497,22 @@ quantos dos 4096 valores do ADC o resultado muda?) e escreva um teste que **pegu
 
 ## Parte 3 — `wokwi-cli`: lint e testes no ESP32 simulado {/* #parte-3 */}
 
-### 3.1 Instalar e configurar o token
+### 3.1 Configurar o token
+
+- Verifique a versão instalada:
 
 ```shell title="Terminal do VS Code (cmd), na raiz do repositório"
-curl -L -o wokwi-cli.exe https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-win-x64.exe
-wokwi-cli.exe --version
-set WOKWI_CLI_TOKEN=cole-aqui-o-token
+wokwi-cli --version
+```
+
+- Obtenha seu token em https://wokwi.com/dashboard/ci
+
+```shell title="Terminal do VS Code (cmd), na raiz do repositório"
+setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 O `set` vale só nesta janela do terminal; escreva sem aspas e sem espaços em volta do `=`.
-Para atualizar o `wokwi-cli`, baixe de novo com o mesmo `curl`. No Linux e no macOS, baixe `wokwi-cli-linuxstatic-x64` ou `wokwi-cli-macos-arm64` e use
-`export WOKWI_CLI_TOKEN=...`. O `.gitignore` já ignora o executável.
+Para atualizar o `wokwi-cli`, baixe de novo com o mesmo `curl`. O `.gitignore` já ignora o executável.
 
 :::warning[O token é uma senha]
 Nunca coloque o token num arquivo do repositório, nem no `ci.yml`. No GitHub, ele vai num
@@ -538,7 +543,7 @@ potenciômetro para `0`: o teste de integração (T4) precisa começar de um est
 O mesmo `test_logica.cpp` também roda **no ESP32**, onde mudam o compilador (Xtensa), o
 tamanho de `long` e a FPU. E uma segunda pasta testa o que só existe lá, o LEDC e o ADC:
 
-<FileTree root="lab11-grupo-x" files={["test/test_alvo/test_alvo.cpp c"]} />
+<FileTree root="lab11-grupo-x" files={["test/test_alvo/test_alvo.cpp r"]} />
 
 ```cpp title="test/test_alvo/test_alvo.cpp (trecho)"
 void test_ledc_aquecedor_5hz() {
@@ -571,10 +576,18 @@ O `pio test` **compila** o teste para o ESP32 e para (não há placa para gravar
 
 ```shell title="Terminal do VS Code (cmd)"
 pio test -e esp32dev -f test_logica --without-uploading --without-testing
-wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_logica.txt .
+```
 
+```shell title="Terminal do VS Code (cmd)"
+wokwi-cli --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_logica.txt .
+```
+
+```shell title="Terminal do VS Code (cmd)"
 pio test -e esp32dev -f test_alvo --without-uploading --without-testing
-wokwi-cli.exe --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_alvo.txt .
+```
+
+```shell title="Terminal do VS Code (cmd)"
+wokwi-cli --elf .pio/build/esp32dev/firmware.elf --timeout 30000 --expect-text "Tests 0 Failures" --fail-text ":FAIL" --serial-log-file evidencias/t3-alvo-test_alvo.txt .
 ```
 
 ```text title="Saída esperada (test_alvo)"
@@ -609,8 +622,8 @@ um? O que poderia dar errado se o cast não existisse, e por que um teste que pa
 <FileTree
   root="lab11-grupo-x"
   files={[
-    "test/test_alvo/test_alvo.cpp c",
-    "diagram.json u",
+    "test/test_alvo/test_alvo.cpp r",
+    "diagram.json r",
     "evidencias/t3-lint.txt c",
     "evidencias/t3-alvo-test_logica.txt c",
     "evidencias/t3-alvo-test_alvo.txt c",
@@ -643,7 +656,7 @@ os `Ticker`, a banda morta do ADC, o DHT22, a serial e o LEDC funcionando juntos
 Cada passo tem **um** comando (e um `name` opcional). O potenciômetro aceita `position` de
 0,0 a 1,0; o DHT22, `temperature` (°C).
 
-<FileTree root="lab11-grupo-x" files={["ci/cenario_integracao.yaml c"]} />
+<FileTree root="lab11-grupo-x" files={["ci/cenario_integracao.yaml r"]} />
 
 ```yaml title="ci/cenario_integracao.yaml"
 name: Camara - modos pot e auto
@@ -722,11 +735,20 @@ Com `--vcd-file`, o `wokwi-cli` grava o **analisador lógico** (D0 = GPIO25, D1 
 arquivo VCD, o mesmo formato que o PulseView abre. O `ci/verificar_pwm.py` (pronto, só
 biblioteca padrão) procura em cada canal um trecho com a frequência e o duty esperados:
 
-```shell title="Terminal do VS Code (cmd)"
+```shell title="Compilar cenário CI (cmd)"
 pio run -e ci
-wokwi-cli.exe --elf .pio/build/ci/firmware.elf --scenario ci/cenario_integracao.yaml --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt . > evidencias\t4-cenario.txt 2>&1
-type evidencias\t4-cenario.txt
+```
+
+```shell title="Rodar a simulação (cmd)"
+wokwi-cli --elf .pio/build/ci/firmware.elf --scenario ci/cenario_integracao.yaml --timeout 90000 --vcd-file pwm.vcd --serial-log-file serial-cenario.txt . > evidencias\t4-cenario.txt 2>&1
+```
+
+```shell title="Verificar PWM (cmd)"
 py ci\verificar_pwm.py pwm.vcd --listar > evidencias\t4-pwm.txt 2>&1
+```
+
+```shell title="Evidências (cmd)"
+type evidencias\t4-cenario.txt
 type evidencias\t4-pwm.txt
 ```
 
@@ -758,7 +780,7 @@ chamado de **instável** (_flaky_). Por que ele é pior do que um teste que semp
 <FileTree
   root="lab11-grupo-x"
   files={[
-    "ci/cenario_integracao.yaml c",
+    "ci/cenario_integracao.yaml r",
     "evidencias/t4-cenario.txt c",
     "evidencias/t4-pwm.txt c",
   ]}
