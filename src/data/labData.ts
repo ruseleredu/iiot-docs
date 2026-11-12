@@ -123,7 +123,7 @@ export const labData: LabRow[] = [
         hrefe: "https://moodle.utfpr.edu.br/course/section.php?id=387994", // external
         start: "29-10-2026",
         end: "05-11-2026",
-        conteudo: "LAB IoT na sua máquina;",
+        conteudo: "Automação de processos com n8n: eventos, aprovações e agentes;",
     },
 
 ];
