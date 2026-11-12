@@ -417,6 +417,34 @@ export function DevTools() {
                     </li>
                 </ul>
             </TabItem>
+            <TabItem value="mingw-w64" label="GCC">
+                <p><b><a href="https://winlibs.com" target="_blank">WinLibs (GCC + MinGW-w64)</a>: Compilador C/C++ nativo para Windows, usado pelo PlatformIO no ambiente <code>native</code>.</b></p>
+                <ul>
+                    <li>O <code>pio test -e native</code> compila os testes com o <code>gcc</code>/<code>g++</code> do computador, e o PlatformIO não instala esse compilador. Sem ele, aparece o erro <code>'gcc' não é reconhecido como um comando interno</code>.</li>
+                    <li><a href="https://github.com/brechtsanders/winlibs_mingw/releases" target="_blank">WinLibs:</a> baixe a versão mais recente (x86_64, POSIX, UCRT) via GitHub. É portátil e não precisa de administrador.</li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    {`powershell -NoProfile -Command "$a = (Invoke-RestMethod https://api.github.com/repos/brechtsanders/winlibs_mingw/releases/latest).assets | Where-Object { $_.name -like 'winlibs-x86_64-posix-seh-gcc-*-mingw-w64ucrt-*.zip' -and $_.name -notlike '*llvm*' } | Select-Object -First 1; curl.exe -L -o (Join-Path $env:TEMP 'winlibs.zip') $a.browser_download_url"`}
+                </ThemeCodeBlock>
+                <ul>
+                    <li>Descompacte em <code>%USERPROFILE%\mingw64</code> e apague o <code>.zip</code>:</li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    {`tar -xf "%TEMP%\\winlibs.zip" -C "%USERPROFILE%" && del "%TEMP%\\winlibs.zip"`}
+                </ThemeCodeBlock>
+                <ul>
+                    <li>Acrescente <code>%USERPROFILE%\mingw64\bin</code> ao PATH do usuário (rode uma vez só):</li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    {`powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:USERPROFILE + '\\mingw64\\bin', 'User')"`}
+                </ThemeCodeBlock>
+                <ul>
+                    <li>Feche e abra o VS Code de novo para ele ler o novo PATH. Depois confira:</li>
+                </ul>
+                <ThemeCodeBlock className="language-bash">
+                    {`gcc --version`}
+                </ThemeCodeBlock>
+            </TabItem>
         </Tabs>
     );
 }
