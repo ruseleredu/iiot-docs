@@ -1022,9 +1022,16 @@ Faça o `push`, abra a aba **Actions** e acompanhe. Clique na execução para ve
 testes**, os **artefatos** (firmware, VCD) e o tamanho do firmware. Ponha o **badge** no topo
 do `README.md`:
 
-```md title="README.md (topo)"
-![CI](https://github.com/<organizacao>/<repositorio>/actions/workflows/ci.yml/badge.svg)
-```
+<GroupCommands
+  language="md"
+  commands={[
+    {
+      title: "README.md (topo)",
+      codeTitle: "README.md",
+      command: `![CI](https://github.com/ELT85B-N21-2026-2/lab11-grupo-{group}/actions/workflows/ci.yml/badge.svg)`,
+    },
+  ]}
+/>
 
 **Evidências:** `evidencias/t5-actions.png` (a execução com os jobs verdes, o resumo dos
 testes e os artefatos) e o link da execução no `README.md`.
