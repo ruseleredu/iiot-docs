@@ -451,9 +451,21 @@ int main() { return rodarTestes(); }
 | `interpretarPercentual` | válidos, `"12.5\r\n"`, fora da faixa, lixo, `"50abc"`, vazio                       |
 | `formatarPwm`           | JSON exato, `t` = NAN vira `null`, buffer pequeno não estoura                      |
 
+O comando `pio test -e native --junit-output-path relatorio-native.xml` executa os testes automatizados do seu projeto PlatformIO diretamente no seu computador (sem precisar de uma placa física) e salva o resultado em um arquivo XML compatível com ferramentas de integração contínua (CI/CD).
+
 ```shell title="Terminal do VS Code (cmd)"
 pio test -e native --junit-output-path relatorio-native.xml
+```
+
+Executa os testes do PlatformIO no ambiente native e salve toda a saída (sucessos e erros) em um arquivo de texto para servir como evidência ou log.
+
+```shell title="Terminal do VS Code (cmd)"
 pio test -e native > evidencias\t2-pio-test.txt 2>&1
+```
+
+Exiba o conteúdo do arquivo de texto `t2-pio-test.txt` (localizado dentro da pasta evidencias) diretamente na tela do terminal do Windows (Prompt de Comando/CMD).
+
+```shell title="Terminal do VS Code (cmd)"
 type evidencias\t2-pio-test.txt
 ```
 
@@ -521,8 +533,13 @@ Nunca coloque o token num arquivo do repositório, nem no `ci.yml`. No GitHub, e
 
 ### 3.2 Lint do diagrama (sem token)
 
+Execute a ferramenta de análise estática (linter) do Wokwi CLI no diretório atual para validar a configuração do seu projeto de simulação (como conexões de pinos e o arquivo diagram.json), tratando qualquer aviso (warning) como um erro crítico, e salva o resultado completo em um arquivo de texto.
+
 ```shell title="Terminal do VS Code (cmd)"
-wokwi-cli.exe lint --warnings-as-errors . > evidencias\t3-lint.txt 2>&1
+wokwi-cli lint --warnings-as-errors . > evidencias\t3-lint.txt 2>&1
+```
+
+```shell title="Terminal do VS Code (cmd)"
 type evidencias\t3-lint.txt
 ```
 
