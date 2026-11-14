@@ -290,11 +290,9 @@ export function DevTools() {
                             code --install-extension platformio.platformio-ide --profile "ESP32IO"
                         </ThemeCodeBlock>
                     </li>
-                    <li>
-                        <p>Torne o comando <code>pio</code> disponível no sistema:</p>
-                        <p>Você precisa editar a variável de ambiente do sistema chamada <b>Path</b> e adicionar o caminho <b>%USERPROFILE%\.platformio\penv\Scripts\</b> no início da lista.</p>
+                    <li>Acrescente <code>%USERPROFILE%\.platformio\penv\Scripts</code> ao PATH do usuário (rode uma vez só):
                         <ThemeCodeBlock className="language-bash">
-                            {`%USERPROFILE%\\.platformio\\penv\\Scripts\\`}
+                            {`powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:USERPROFILE + '\\.platformio\\penv\\Scripts', 'User')"`}
                         </ThemeCodeBlock>
                     </li>
                     <li>
