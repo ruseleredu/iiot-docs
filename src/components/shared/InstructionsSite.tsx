@@ -407,12 +407,9 @@ export function DevTools() {
                         </ThemeCodeBlock>
                     </li>
                     <li>
-                        <p>Teste de MQTT com mosquitto:</p>
+                        <p>Teste o Docker:</p>
                         <ThemeCodeBlock className="language-bash">
-                            {`docker run --rm eclipse-mosquitto:2 mosquitto_sub -h test.mosquitto.org -t "esp32iot/labtest"`}
-                        </ThemeCodeBlock>
-                        <ThemeCodeBlock className="language-bash">
-                            {`docker run --rm eclipse-mosquitto:2 mosquitto_pub -h test.mosquitto.org -t "esp32iot/labtest" -m "Hello from Docker!"`}
+                            {`docker run hello-world`}
                         </ThemeCodeBlock>
                     </li>
                 </ul>
