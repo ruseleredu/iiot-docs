@@ -16,8 +16,8 @@ set -euo pipefail
 shopt -s nullglob
 
 ORG="ELT73A-S22-2026-2"
-GROUP_LIST="${GROUP_LIST:-A B C D E F G H I J K L M P N}"
-NLAB=5
+GROUP_LIST="${GROUP_LIST:-A B C D E F G H I J K L M X P N}"
+NLAB=7
 LAB=$(printf "lab%02d" "$NLAB")
 TEMPLATE="$ORG/${LAB}-template"
 

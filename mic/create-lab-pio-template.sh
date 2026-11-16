@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ORG="ELT73A-S22-2026-2"
-NLAB=6
+NLAB=7
 LAB=$(printf "%02d" "$NLAB")
 REPO="lab${LAB}-template"
 
