@@ -26,6 +26,13 @@ export type GenIotOpcoes = {
     ponteMqtt?: string;
     captura?: boolean;
     capturaFiltro?: string;
+    /** --docs: material da disciplina (Docusaurus) no portal; a disciplina vem de COURSE */
+    docs?: boolean;
+    docsModo?: "pages" | "build";
+    docsMinutos?: number;
+    docsRepo?: string;
+    docsRamo?: string;
+    docsCaminho?: string;
     extras?: string[];
 };
 

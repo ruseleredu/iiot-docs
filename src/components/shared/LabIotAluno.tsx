@@ -5,9 +5,34 @@ import ThemeCodeBlock from "@theme/CodeBlock";
 import Admonition from "@theme/Admonition";
 import Link from "@docusaurus/Link";
 
-import { GROUPS, HOMEFOLDER, PRESETS_IOT, GenIotOpcoes } from "../constants"; // updated import
+import { COURSE, GROUPS, HOMEFOLDER, PRESETS_IOT, GenIotOpcoes } from "../constants"; // updated import
 
-function montarFlags(o: GenIotOpcoes): string[] {
+/* ------------------------------------------------------------------ */
+/* Disciplina (--disciplina): vem de COURSE, em constants               */
+/* ------------------------------------------------------------------ */
+
+// as mesmas do gen_iot_aluno.py (DISCIPLINAS): código -> nome e site do material
+const DISCIPLINAS: Record<string, { nome: string; caminho: string; online: string }> = {
+    elt85b: { nome: "IoT Industrial", caminho: "iiot-docs", online: "https://ruseleredu.github.io/iiot-docs/" },
+    elt73a: { nome: "Sistemas Microcontrolados", caminho: "mic-docs", online: "https://ruseleredu.github.io/mic-docs/" },
+};
+
+// opções do material no portal (--docs...). Declaradas também aqui para o componente
+// compilar mesmo com um constants.ts que ainda não as tenha em GenIotOpcoes.
+type Opcoes = GenIotOpcoes & {
+    /** --docs: material da disciplina (Docusaurus) no portal, em /iiot-docs/ ou /mic-docs/ */
+    docs?: boolean;
+    /** --docs-modo: "pages" (padrão, site pronto) ou "build" (npm run build na máquina) */
+    docsModo?: "pages" | "build";
+    /** --docs-minutos: procura atualização a cada N minutos (padrão 60; 0 = só ao subir) */
+    docsMinutos?: number;
+    /** --docs-repo / --docs-ramo / --docs-caminho: outro repositório (ex.: um fork) */
+    docsRepo?: string;
+    docsRamo?: string;
+    docsCaminho?: string;
+};
+
+function montarFlags(o: Opcoes): string[] {
     const f: string[] = [];
     if (o.semGitea) {
         f.push("--sem-gitea");
@@ -29,6 +54,14 @@ function montarFlags(o: GenIotOpcoes): string[] {
         f.push("--captura");
         if (o.capturaFiltro) f.push(`--captura-filtro "${o.capturaFiltro}"`);
     }
+    if (o.docs) {
+        f.push("--docs");
+        if (o.docsModo && o.docsModo !== "pages") f.push(`--docs-modo ${o.docsModo}`);
+        if (o.docsMinutos !== undefined && o.docsMinutos !== 60) f.push(`--docs-minutos ${o.docsMinutos}`);
+        if (o.docsRepo) f.push(`--docs-repo ${o.docsRepo}`);
+        if (o.docsRamo) f.push(`--docs-ramo ${o.docsRamo}`);
+        if (o.docsCaminho) f.push(`--docs-caminho ${o.docsCaminho}`);
+    }
     if (o.extras) f.push(...o.extras);
     return f;
 }
@@ -41,7 +74,7 @@ type LabIotAlunoProps = {
     /** Nome do laboratório, ex: "lab05", "lab07" (minúsculas, começa com letra) */
     labName?: string;
     /** Sobrescreve/complementa o preset do laboratório */
-    opcoes?: GenIotOpcoes;
+    opcoes?: Opcoes;
     /** Grupos exibidos (padrão: GROUPS de constants) */
     grupos?: readonly string[];
     /**
@@ -69,8 +102,15 @@ export default function LabIotAluno({
 }: LabIotAlunoProps) {
     const lab = labName.toLowerCase();
     const urlRetorno = retorno === false ? null : retorno ?? `/labs/${labName.toUpperCase()}#parte-1`;
-    const o: GenIotOpcoes = { ...(PRESETS_IOT[lab] ?? {}), ...(opcoes ?? {}) };
+    const o: Opcoes = { ...(PRESETS_IOT[lab] ?? {}), ...(opcoes ?? {}) };
     const flags = montarFlags(o);
+    // disciplina: o código do curso (COURSE = "ELT85B") vira --disciplina elt85b
+    const disciplina = COURSE.toLowerCase();
+    const disc = DISCIPLINAS[disciplina];
+    // o material no portal (--docs pode vir em "docs" ou em "extras")
+    const docs = !!o.docs || !!o.extras?.includes("--docs");
+    const docsBuild = docs && (o.docsModo === "build" || flags.join(" ").includes("--docs-modo build"));
+    const docsCaminho = o.docsCaminho ?? (o.docsRepo ? o.docsRepo.replace(/\/+$/, "").replace(/\.git$/, "").split("/").pop() : disc?.caminho);
     const conflito = o.semSenha && (o.protegerHttp || o.mqttSemAnonimo);
     const labValido = /^[a-z][a-z0-9]{1,20}$/.test(lab);
 
@@ -86,16 +126,28 @@ export default function LabIotAluno({
             <Admonition type="info" title="Antes de começar">
                 <p>
                     Precisa do <b>Docker Desktop</b> aberto (com pelo menos 4 GB de memória
-                    {gitea && !o.semRunner ? "; 6 GB com o CI" : ""}) e do <b>Python 3</b>.
+                    {gitea && !o.semRunner ? "; 6 GB com o CI" : ""}
+                    {docsBuild ? "; mais 4 GB para montar o material" : ""}) e do <b>Python 3</b>.
                     Os comandos são para o <b>Prompt de Comando</b> (cmd) do Windows.
                 </p>
                 <Cmd>{`docker desktop start`}</Cmd>
+                <p>
+                    Disciplina: <b>{COURSE}{disc ? ` - ${disc.nome}` : ""}</b> (<code>--disciplina {disciplina}</code>).
+                </p>
                 <p>
                     Configuração do <code>{lab}</code>:{" "}
                     {flags.length ? flags.map((f) => <code key={f} style={{ marginRight: 4 }}>{f}</code>) : "LAB IoT completo (sem opções)"}
                 </p>
             </Admonition>
 
+            {!disc && (
+                <Admonition type="danger" title="Disciplina desconhecida">
+                    <code>COURSE = "{COURSE}"</code> (em <code>constants.ts</code>): o <code>--disciplina</code> do{" "}
+                    <code>gen_iot_aluno.py</code> aceita só{" "}
+                    {Object.keys(DISCIPLINAS).map((d) => <code key={d} style={{ marginRight: 4 }}>{d}</code>)}
+                    e o script vai recusar.
+                </Admonition>
+            )}
             {!labValido && (
                 <Admonition type="danger" title="Nome de laboratório inválido">
                     <code>{labName}</code>: o <code>--lab</code> deve começar com letra e ter só letras/dígitos (ex.: lab05).
@@ -123,7 +175,7 @@ export default function LabIotAluno({
                         `set "IOT_DIR=%IOT_REPO%\\docker\\${conta}"`,
                     ].join("\n");
                     const entrar = `cd /d "%IOT_DIR%"`;
-                    const gerar = [`py "%IOT_GEN%"`, `--lab ${lab}`, `--grupo ${letra}`, ...flags, `--saida "%IOT_DIR%"`].join(" ");
+                    const gerar = [`py "%IOT_GEN%"`, `--disciplina ${disciplina}`, `--lab ${lab}`, `--grupo ${letra}`, ...flags, `--saida "%IOT_DIR%"`].join(" ");
                     const commit = `${entrar} && git add . && git commit -m "T0: Hello Docker!" && git push`;
                     const valido = GRUPO_VALIDO.test(letra) && letra !== "p" && letra !== "n";
 
@@ -163,6 +215,9 @@ export default function LabIotAluno({
                     if (!o.semNtfy) servicos.push(["Avisos (ntfy)", `${base}/avisos/`]);
                     if (!o.semMicrobin) servicos.push(["MicroBin", `${base}/bin/`]);
                     if (!o.semMqttExplorer) servicos.push(["MQTT Explorer", "http://localhost:3001/"]);
+                    // material da disciplina: no portal (--docs) ou o site na internet
+                    if (docs && docsCaminho) servicos.push([`Material de ${COURSE}`, `${base}/${docsCaminho}/`]);
+                    else if (disc) servicos.push([`Material de ${COURSE} (na internet)`, disc.online]);
 
                     return (
                         <TabItem key={group} value={letra} label={group}>
@@ -267,6 +322,18 @@ export default function LabIotAluno({
                                             </>
                                         )}
 
+                                        {docs && (
+                                            <>
+                                                <p>
+                                                    Atualizar agora o material de {COURSE} no portal
+                                                    {docsBuild ? " (baixa o código-fonte e monta o site de novo, se mudou)" : ""}:
+                                                </p>
+                                                <Cmd>{`${entrar} && docker compose restart docs`}</Cmd>
+                                                <p>Acompanhar o download{docsBuild ? " e o build" : ""} do material (Ctrl+C para sair):</p>
+                                                <Cmd>{`${entrar} && docker compose logs -f docs`}</Cmd>
+                                            </>
+                                        )}
+
                                         {o.captura && (
                                             <>
                                                 <p>Wireshark ao vivo (só MQTT):</p>
@@ -276,7 +343,8 @@ export default function LabIotAluno({
 
                                         <Admonition type="warning" title="Apagar tudo">
                                             <p>
-                                                Remove containers <b>e volumes</b> (Gitea, ntfy, MicroBin, MQTT). Os fluxos em{" "}
+                                                Remove containers <b>e volumes</b> (Gitea, ntfy, MicroBin, MQTT
+                                                {docs ? "; o material da disciplina é baixado de novo" : ""}). Os fluxos em{" "}
                                                 <code>data/</code> e as telas em <code>fuxa/</code> ficam na pasta.
                                             </p>
                                             <Cmd>{`${entrar} && docker compose down -v`}</Cmd>
