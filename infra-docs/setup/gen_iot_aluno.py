@@ -11,6 +11,8 @@ para UMA conta (o aluno ou o grupo). Fica só nesta máquina e na rede local (se
     <base>/ntfy/           ntfy (notificações push; app no celular)
     <base>/avisos/         página web do ntfy (ler e publicar)
     <base>/bin/            MicroBin (colar código e enviar arquivos)
+    <base>/iiot-docs/      (com --docs) material da disciplina (Docusaurus), também sem internet
+                           (ELT73A: <base>/mic-docs/)
     http://localhost:3001  MQTT Explorer (só nesta máquina / rede local)
     <IP-da-máquina>:1883   broker MQTT (Mosquitto) para o ESP32 na mesma rede
     captura/*.pcap         (com --captura) tráfego da rede do lab, para abrir no Wireshark
@@ -22,14 +24,22 @@ onde <base> é:
 Mesmos caminhos e nomes do laboratório: um fluxo do Node-RED ou uma tela do FUXA feitos aqui
 funcionam no LAB IoT sem mudar nada (e vice-versa).
 
+O código da disciplina é obrigatório (--disciplina): aparece no portal e escolhe o material.
+    elt85b   ELT85B - IoT Industrial             https://github.com/ruseleredu/iiot-docs
+    elt73a   ELT73A - Sistemas Microcontrolados  https://github.com/ruseleredu/mic-docs
+
 Uso (Windows: "py"; Linux/macOS: "python3"):
-  py gen_iot_aluno.py --lab lab05 --grupo a
-  py gen_iot_aluno.py --lab lab05 --grupo a --porta-http 8080   # se a porta 80 estiver ocupada
-  py gen_iot_aluno.py --segredos ..\\lab05\\.segredos.json       # mesma senha do grupo no laboratório
-  py gen_iot_aluno.py --ponte-mqtt 192.168.0.10                  # liga o MQTT ao broker do laboratório
-  py gen_iot_aluno.py --captura                                  # grava os pacotes (netshoot) para o Wireshark
-  py gen_iot_aluno.py --captura --captura-filtro "port 1883"     # só o MQTT
-  py gen_iot_aluno.py --sem-senha                                # tudo aberto, sem login (ver aviso)
+  py gen_iot_aluno.py --disciplina elt85b --lab lab05 --grupo a
+  py gen_iot_aluno.py --disciplina elt73a --lab lab05 --grupo a
+Acrescente ao comando acima, se precisar:
+  --porta-http 8080                        # se a porta 80 estiver ocupada
+  --segredos ..\\lab05\\.segredos.json       # mesma senha do grupo no laboratório
+  --ponte-mqtt 192.168.0.10                # liga o MQTT ao broker do laboratório
+  --captura                                # grava os pacotes (netshoot) para o Wireshark
+  --captura --captura-filtro "port 1883"   # só o MQTT
+  --sem-senha                              # tudo aberto, sem login (ver aviso)
+  --docs                                   # material da disciplina no portal (/iiot-docs/ ou /mic-docs/)
+  --docs --docs-modo build                 # monta o site aqui (npm run build)
   cd lab05-a  e  docker compose up -d --build
 
 Requisitos: Docker Desktop (Windows/macOS) ou Docker Engine (Linux); Python 3 com "pip install bcrypt".
@@ -48,7 +58,22 @@ for _st in (sys.stdout, sys.stderr):
     except (AttributeError, ValueError):
         pass
 
+# Disciplinas atendidas: código -> nome e repositório do material (site Docusaurus).
+# "caminho" é o baseUrl do docusaurus.config.ts do repositório; "online" é o site no GitHub Pages.
+DISCIPLINAS = {
+    "elt85b": {"nome": "IoT Industrial",
+               "repo": "https://github.com/ruseleredu/iiot-docs.git", "caminho": "iiot-docs",
+               "online": "https://ruseleredu.github.io/iiot-docs/"},
+    "elt73a": {"nome": "Sistemas Microcontrolados",
+               "repo": "https://github.com/ruseleredu/mic-docs.git", "caminho": "mic-docs",
+               "online": "https://ruseleredu.github.io/mic-docs/"},
+}
+
 ap = argparse.ArgumentParser(description="Gera o LAB IoT completo na máquina do aluno (sem servidor e sem VPS).")
+ap.add_argument("--disciplina", required=True, type=str.lower, choices=sorted(DISCIPLINAS),
+                help="Código da disciplina: " + "; ".join(
+                    f"{k} = {k.upper()} - {v['nome']}" for k, v in sorted(DISCIPLINAS.items()))
+                     + ". Aparece no portal e escolhe o material (--docs)")
 ap.add_argument("--lab", default="lab05", help="Nome do lab (ex.: lab05); prefixo de tudo, como no laboratório")
 ap.add_argument("--grupo", default="a", help="Letra do grupo (ex.: a ou lab05-a): a conta vira <lab>-<letra>")
 ap.add_argument("--ip", default="auto",
@@ -103,6 +128,25 @@ ap.add_argument("--captura-minutos", type=int, default=10,
 ap.add_argument("--captura-arquivos", type=int, default=36,
                 help="Quantos .pcap manter; os mais antigos são apagados (padrão 36 = 6 h com 10 min)")
 ap.add_argument("--netshoot-imagem", default="nicolaka/netshoot:latest", help="Imagem do netshoot")
+# material da disciplina (site Docusaurus) servido pelo portal
+ap.add_argument("--docs", action="store_true",
+                help="Inclui o material da disciplina (site Docusaurus) no portal, em /<caminho>/; "
+                     "depois de baixado, abre sem internet")
+ap.add_argument("--docs-modo", choices=["pages", "build"], default="pages",
+                help="'pages' (padrão): baixa o site já montado (ramo gh-pages; leve e rápido). "
+                     "'build': baixa o código-fonte e monta aqui com npm ci + npm run build "
+                     "(Node.js num container; demora e pede ~4 GB de memória)")
+ap.add_argument("--docs-repo", default=None, metavar="URL",
+                help="Repositório git do site (padrão: o da disciplina, ver --disciplina)")
+ap.add_argument("--docs-ramo", default=None, metavar="RAMO",
+                help="Ramo (branch) do repositório (padrão: gh-pages no modo pages, main no modo build)")
+ap.add_argument("--docs-caminho", default=None, metavar="NOME",
+                help="Caminho do site no portal; tem de ser o baseUrl do docusaurus.config.ts "
+                     "(padrão: o da disciplina; com --docs-repo, o nome do repositório)")
+ap.add_argument("--docs-minutos", type=int, default=60,
+                help="Procura atualização do material a cada N minutos (padrão 60; 0 = só ao subir)")
+ap.add_argument("--docs-node", default="24", metavar="VERSAO",
+                help="Versão do Node.js no modo build (imagem node:<versão>-bookworm-slim; padrão 24)")
 args = ap.parse_args()
 
 LAB = args.lab.lower()
@@ -115,6 +159,11 @@ if not re.fullmatch(r"[a-z]", _k) or _k in ("p", "n"):
 G = f"{LAB}-{_k}"                    # a conta: usuário, caminho, tópicos, containers
 KIT = G                              # (nome usado nos trechos herdados do gerador do laboratório)
 DOMINIO = args.dominio
+DISC = args.disciplina                       # elt85b | elt73a
+DISC_COD = DISC.upper()                      # ELT85B
+DISC_NOME = DISCIPLINAS[DISC]["nome"]        # IoT Industrial
+DISC_TITULO = f"{DISC_COD} - {DISC_NOME}"    # como no site da disciplina
+DISC_ONLINE = DISCIPLINAS[DISC]["online"]
 
 
 def ip_local():
@@ -171,6 +220,13 @@ def gerar_senha(tamanho=8):
     return ''.join(secrets.choice(caracteres) for _ in range(tamanho))
 
 
+# a disciplina fica registrada: gerar de novo na mesma pasta com outra disciplina é quase sempre engano
+_disc_antes = SEGREDOS.get("disciplina")
+if _disc_antes and _disc_antes != DISC:
+    print(f"⚠️  Esta pasta foi gerada para {_disc_antes.upper()} e agora passa a ser de {DISC_COD}. "
+          "Os fluxos, telas e repositórios que já existem aqui continuam os mesmos.")
+SEGREDOS["disciplina"] = DISC
+
 # versões antigas deste gerador tinham ngrok: some com o token e a configuração antigos
 for _k in ("ngrok_authtoken", "ngrok_dominio"):
     SEGREDOS.pop(_k, None)
@@ -216,6 +272,30 @@ CAPTURA_IF = f"br-{G}"[:15]          # nome de interface no Linux: no máximo 15
 if CAPTURA and (args.captura_minutos < 1 or args.captura_arquivos < 1):
     sys.exit("--captura-minutos e --captura-arquivos devem ser >= 1.")
 NETSHOOT_IMAGEM = args.netshoot_imagem
+
+# material da disciplina: um container (docs) mantém o site Docusaurus num volume e o nginx o
+# serve em /<caminho>/. O caminho precisa ser o baseUrl com que o site foi montado: os links e
+# os arquivos do Docusaurus são absolutos (/iiot-docs/assets/...).
+DOCS = args.docs
+DOCS_MODO = args.docs_modo
+DOCS_REPO = (args.docs_repo or DISCIPLINAS[DISC]["repo"]).strip()
+DOCS_RAMO = (args.docs_ramo or ("gh-pages" if DOCS_MODO == "pages" else "main")).strip()
+DOCS_CAMINHO = (args.docs_caminho or (DISCIPLINAS[DISC]["caminho"] if not args.docs_repo else None) or re.sub(r"\.git$", "", DOCS_REPO.rstrip("/").rsplit("/", 1)[-1])).strip("/")
+DOCS_MINUTOS = args.docs_minutos
+if DOCS:
+    if not re.fullmatch(r"[A-Za-z0-9+.-]+://[^\s'\"$`\\]+", DOCS_REPO):
+        sys.exit("--docs-repo deve ser a URL de um repositório git (ex.: https://github.com/usuario/repo.git).")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,60}", DOCS_CAMINHO):
+        sys.exit("--docs-caminho deve ser um nome simples (letras, dígitos, '.', '_' e '-'), ex.: iiot-docs.")
+    if DOCS_CAMINHO.lower() in (G, "git", "bin", "ntfy", "avisos", "fuxa", "mqtt", "katex"):
+        sys.exit(f"--docs-caminho {DOCS_CAMINHO}: esse caminho já é usado por outro serviço do portal.")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", DOCS_RAMO):
+        sys.exit("--docs-ramo: nome de ramo inválido.")
+    if DOCS_MINUTOS < 0:
+        sys.exit("--docs-minutos deve ser >= 0.")
+    if not re.fullmatch(r"[0-9]+(\.[0-9]+)*", args.docs_node):
+        sys.exit("--docs-node deve ser a versão do Node.js (ex.: 24).")
+DOCS_URL_CAMINHO = f"/{DOCS_CAMINHO}/"
 
 GITEA = not args.sem_gitea
 GITEA_REPO = args.gitea_repo.strip()
@@ -460,6 +540,7 @@ print("📦 Dockerfile")
 # =====================================================================
 c = [
     f"# LAB IoT do {G} — gerado por gen_iot_aluno.py (na máquina do aluno)\n",
+    f"# Disciplina: {DISC_TITULO}\n",
     f"# Nesta máquina: {LOCAL_URL}/\n",
     (f"# Rede local:    {LAN_URL}/\n" if LAN_URL else ""),
     "# Subir:   docker compose up -d --build\n",
@@ -475,6 +556,8 @@ c = [
     "      - ./nginx/html:/usr/share/nginx/html:ro\n",
     "      - ./nginx/htpasswd:/etc/nginx/htpasswd:ro\n",
     ("      - ./nginx/htpasswd.d:/etc/nginx/htpasswd.d:ro\n" if FUXA and PROTEGER else ""),
+    ("      - docs_data:/usr/share/nginx/docs:ro   # material da disciplina (mantido pelo serviço docs)\n"
+     if DOCS else ""),
     "    networks:\n",
     "      - labnet\n",
 ]
@@ -792,6 +875,33 @@ for g in fuxa_grupos:
         "      - labnet\n",
     ]
 
+# docs: mantém o site Docusaurus da disciplina no volume docs_data (/dados/site/<caminho>),
+# que o nginx monta só para leitura. Modo pages: git (ramo gh-pages, site já montado).
+# Modo build: Node.js + git (código-fonte -> npm ci -> npm run build).
+if DOCS:
+    c += ["\n  docs:\n"]
+    if DOCS_MODO == "build":
+        c += ["    build: ./docs\n", "    image: lab-docs:latest\n"]
+    else:
+        c += ["    image: alpine/git:latest\n"]
+    c += [
+        f"    container_name: {C}-docs\n",
+        "    restart: unless-stopped\n",
+        '    entrypoint: ["/bin/sh", "/docs/atualizar.sh"]\n',
+        "    environment:\n",
+        "      - TZ=America/Sao_Paulo\n",
+        f"      - DOCS_MODO={DOCS_MODO}\n",
+        f"      - DOCS_REPO={DOCS_REPO}\n",
+        f"      - DOCS_RAMO={DOCS_RAMO}\n",
+        f"      - DOCS_CAMINHO={DOCS_CAMINHO}\n",
+        f"      - DOCS_MINUTOS={DOCS_MINUTOS}\n",
+        "    volumes:\n",
+        "      - ./docs:/docs:ro\n",
+        "      - docs_data:/dados\n",
+        "    networks:\n",
+        "      - labnet\n",
+    ]
+
 # netshoot: tcpdump na ponte da labnet, gravando em ./captura (abrir no Wireshark).
 # network_mode: host = rede do host do Docker, onde a ponte br-<grupo> existe.
 if CAPTURA:
@@ -829,6 +939,8 @@ if NTFY:
     c += ["  ntfy_data:\n"]
 if WB:
     c += ["  microbin_data:\n"]
+if DOCS:
+    c += ["  docs_data:\n"]
 c += ["\nnetworks:\n", "  labnet:\n", "    driver: bridge\n"]
 if CAPTURA:   # nome fixo da ponte: o tcpdump do netshoot captura nela
     c += ["    driver_opts:\n", f"      com.docker.network.bridge.name: {CAPTURA_IF}\n"]
@@ -902,6 +1014,150 @@ if CAPTURA:
     print("🦈 netshoot/captura.sh + wireshark-ao-vivo.cmd/.sh")
 else:   # captura desligada: some com os scripts (os .pcap já gravados ficam)
     for _arq in ("netshoot/captura.sh", "wireshark-ao-vivo.cmd", "wireshark-ao-vivo.sh"):
+        if os.path.exists(_arq):
+            os.remove(_arq)
+
+# =====================================================================
+# docs/atualizar.sh (+ docs/Dockerfile no modo build) — material da disciplina (Docusaurus)
+# =====================================================================
+DOCS_SH = r"""#!/bin/sh
+# atualizar.sh — gerado por gen_iot_aluno.py (__G__)
+# Mantém o site Docusaurus da disciplina em /dados/site/$DOCS_CAMINHO (volume docs_data),
+# de onde o nginx do portal o serve em /$DOCS_CAMINHO/.
+#   DOCS_MODO=pages: baixa o site já montado (ramo $DOCS_RAMO, o do GitHub Pages)
+#   DOCS_MODO=build: baixa o código-fonte e monta aqui (npm ci + npm run build)
+# Procura atualização a cada $DOCS_MINUTOS min (0 = só ao subir). Sem internet, o site que
+# já foi baixado continua no ar.   Atualizar agora:  docker compose restart docs
+set -u
+DADOS=/dados
+SITE="$DADOS/site/$DOCS_CAMINHO"
+MARCA="$SITE/.preparando"
+
+export GIT_TERMINAL_PROMPT=0   # sem terminal: o git nunca fica esperando usuário/senha
+
+log() { echo "[docs] $(date '+%d/%m %H:%M:%S') $*"; }
+
+aguarde() {  # página provisória enquanto o site ainda não chegou (recarrega sozinha)
+  [ -e "$SITE/index.html" ] && return 0
+  mkdir -p "$SITE"
+  : > "$MARCA"
+  cat > "$SITE/index.html" <<EOF
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta http-equiv="refresh" content="15">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Material da disciplina</title>
+<style>body{background:#071311;color:#dcf5ec;font-family:system-ui,sans-serif;padding:12vh 6vw;line-height:1.6}
+code{background:#0d201c;padding:2px 6px;border-radius:4px}a{color:#35e0b0}</style></head><body>
+<h1>Preparando o material da disciplina…</h1>
+<p>$1</p>
+<p>Esta página recarrega sozinha. Para acompanhar: <code>docker compose logs -f docs</code>.</p>
+<p><a href="/">&larr; portal</a></p>
+</body></html>
+EOF
+}
+
+conferir() {  # o site só funciona no caminho (baseUrl) com que foi montado
+  if ! grep -q "/$DOCS_CAMINHO/" "$SITE/index.html" 2>/dev/null; then
+    log "AVISO: o site não parece ter sido montado com baseUrl '/$DOCS_CAMINHO/'."
+    log "       Gere de novo com --docs-caminho <baseUrl do docusaurus.config.ts>."
+  fi
+}
+
+pages() {
+  aguarde "Baixando o site (ramo $DOCS_RAMO). Na primeira vez leva cerca de um minuto."
+  # repositório fora da pasta servida: o nginx não expõe o .git
+  export GIT_DIR="$DADOS/pages.git" GIT_WORK_TREE="$SITE"
+  [ -d "$GIT_DIR" ] || git init -q || return 1
+  if ! git fetch -q --depth 1 "$DOCS_REPO" "$DOCS_RAMO"; then
+    log "não consegui baixar $DOCS_REPO ($DOCS_RAMO): sem internet? Sigo com o que já tenho."
+    return 1
+  fi
+  novo=$(git rev-parse FETCH_HEAD)
+  atual=$(git rev-parse -q --verify HEAD 2>/dev/null || true)
+  if [ "$novo" = "$atual" ] && [ ! -e "$MARCA" ]; then
+    log "site em dia ($(echo "$novo" | cut -c1-8))"
+    return 0
+  fi
+  rm -f "$MARCA" "$SITE/index.html"
+  git reset -q --hard FETCH_HEAD && git clean -qfd || return 1
+  log "site atualizado: $(echo "$novo" | cut -c1-8) -> /$DOCS_CAMINHO/"
+  conferir
+}
+
+build() {
+  SRC="$DADOS/src"
+  FEITO="$DADOS/build.feito"
+  aguarde "Baixando o código-fonte e montando o site (npm run build). Na primeira vez leva vários minutos."
+  git config --global --add safe.directory '*' 2>/dev/null
+  if [ ! -d "$SRC/.git" ]; then
+    log "clonando $DOCS_REPO..."
+    rm -rf "$SRC"
+    # histórico completo: o Docusaurus usa as datas dos commits ("última atualização")
+    git clone -q --no-checkout "$DOCS_REPO" "$SRC" || { log "não consegui clonar: sem internet?"; return 1; }
+  fi
+  git -C "$SRC" remote set-url origin "$DOCS_REPO"
+  if ! git -C "$SRC" fetch -q origin "$DOCS_RAMO"; then
+    log "não consegui baixar $DOCS_REPO ($DOCS_RAMO): sem internet? Sigo com o que já tenho."
+    return 1
+  fi
+  novo=$(git -C "$SRC" rev-parse FETCH_HEAD)
+  if [ "$novo" = "$(cat "$FEITO" 2>/dev/null)" ] && [ ! -e "$MARCA" ] && [ -e "$SITE/index.html" ]; then
+    log "site em dia ($(echo "$novo" | cut -c1-8))"
+    return 0
+  fi
+  git -C "$SRC" reset -q --hard "$novo" || return 1
+  cd "$SRC" || return 1
+  # dependências: só reinstala quando o package-lock.json muda (node_modules fica no volume)
+  trava=$(cat package-lock.json package.json 2>/dev/null | sha1sum | cut -d' ' -f1)
+  if [ ! -d node_modules ] || [ "$trava" != "$(cat node_modules/.trava-lab 2>/dev/null)" ]; then
+    log "instalando as dependências (npm)..."
+    if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi \
+      || { log "ERRO no npm (veja acima)"; return 1; }
+    echo "$trava" > node_modules/.trava-lab
+  fi
+  log "montando o site ($(echo "$novo" | cut -c1-8)): npm run build..."
+  rm -rf build
+  npm run build || { log "ERRO no build (veja acima); o site anterior continua no ar"; return 1; }
+  [ -e build/index.html ] || { log "ERRO: o build não gerou build/index.html"; return 1; }
+  # troca rápida: o site antigo fica no ar até o novo estar pronto
+  rm -rf "$SITE.novo" "$SITE.velho"
+  cp -a build "$SITE.novo" || return 1
+  [ -e "$SITE" ] && mv "$SITE" "$SITE.velho"
+  mv "$SITE.novo" "$SITE" && rm -rf "$SITE.velho"
+  echo "$novo" > "$FEITO"
+  log "site montado: $(echo "$novo" | cut -c1-8) -> /$DOCS_CAMINHO/"
+  conferir
+}
+
+mkdir -p "$DADOS/site"
+log "modo $DOCS_MODO · $DOCS_REPO ($DOCS_RAMO) -> /$DOCS_CAMINHO/"
+while true; do
+  ( "$DOCS_MODO" )
+  if [ "$DOCS_MINUTOS" -gt 0 ]; then
+    sleep "$((DOCS_MINUTOS * 60))"
+  else
+    log "atualização automática desligada; para atualizar: docker compose restart docs"
+    while true; do sleep 86400; done
+  fi
+done
+"""
+
+if DOCS:
+    gravar("docs/atualizar.sh", DOCS_SH.replace("__G__", G), executavel=True)
+    if DOCS_MODO == "build":
+        gravar("docs/Dockerfile", f"""# Dockerfile do serviço docs — gerado por gen_iot_aluno.py ({G})
+# Node.js + git para montar o site Docusaurus (npm ci + npm run build)
+FROM node:{args.docs_node}-bookworm-slim
+RUN apt-get update \\
+    && apt-get install -y --no-install-recommends git ca-certificates \\
+    && rm -rf /var/lib/apt/lists/*
+ENV CI=true
+""")
+    elif os.path.exists("docs/Dockerfile"):
+        os.remove("docs/Dockerfile")
+    print(f"📚 docs/atualizar.sh ({DOCS_MODO}: {DOCS_REPO} -> {DOCS_URL_CAMINHO})")
+elif os.path.exists("docs/atualizar.sh"):   # docs desligado: some com os scripts (o volume fica)
+    for _arq in ("docs/atualizar.sh", "docs/Dockerfile"):
         if os.path.exists(_arq):
             os.remove(_arq)
 
@@ -1010,6 +1266,19 @@ for g in fuxa_grupos:
 if fuxa_grupos:
     n += ["        location = /fuxa { return 302 /#fuxa; }\n",
           "        location = /fuxa/ { return 302 /#fuxa; }\n"]
+if DOCS:
+    # Docusaurus (site estático) no volume docs_data. trailingSlash: false -> a página
+    # /iiot-docs/docs/intro é o arquivo docs/intro.html ($uri.html).
+    _raiz = "/usr/share/nginx/docs/site"
+    n += [f"\n        # Material da disciplina (Docusaurus) -> {DOCS_URL_CAMINHO}\n",
+          f"        location = /{DOCS_CAMINHO} {{ return 301 {DOCS_URL_CAMINHO}; }}\n",
+          f"        location ^~ {DOCS_URL_CAMINHO} {{\n",
+          f"            root {_raiz};\n",
+          "            try_files $uri $uri.html $uri/index.html =404;\n",
+          f"            error_page 404 {DOCS_URL_CAMINHO}404.html;\n",
+          "        }\n",
+          "        # o site pede o CSS das fórmulas (KaTeX) na raiz, fora do baseUrl: /katex/katex.min.css\n",
+          f"        location ^~ /katex/ {{ alias {_raiz}/{DOCS_CAMINHO}/katex/; }}\n"]
 if MQTTX:
     n += ["\n        # MQTT Explorer não suporta subcaminho: só na rede local, porta direta\n",
           f"        location /mqtt {{ return 302 http://$host:{MQTTX_PORTA}/; }}\n"]
@@ -1056,7 +1325,7 @@ for g, s_admin in credenciais_geradas:
     elif is_prof(g):
         titulo = f"{LAB.upper()} - PROFESSOR"
     else:
-        titulo = g.upper()
+        titulo = f"{DISC_COD} · {g.upper()}"
     hash_admin = bcrypt.hashpw(s_admin.encode(), bcrypt.gensalt(8)).decode()
     http_auth = ""
     if PROTEGER:
@@ -1139,7 +1408,7 @@ PORTAL_HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAB IoT · {{LAB}}</title>
+<title>{{DISC_COD}} · LAB IoT · {{LAB}}</title>
 <style>
   :root {
     --bg:      #071311;
@@ -1191,6 +1460,13 @@ PORTAL_HTML = r"""<!DOCTYPE html>
   h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 650; letter-spacing: -0.02em; margin-top: 14px; }
   .sub { color: var(--muted); margin-top: 10px; font-size: 15px; max-width: 60ch; line-height: 1.5; }
   .sub code { font-family: var(--mono); color: var(--ink); background: var(--panel); padding: 1px 6px; border-radius: 4px; }
+  /* disciplina: código em destaque + nome */
+  .disc { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-top: 16px; }
+  .disc__cod {
+    font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--bg); background: var(--gold); border-radius: 6px; padding: 5px 12px;
+  }
+  .disc__nome { font-size: clamp(17px, 2.6vw, 22px); font-weight: 600; color: var(--ink); }
 
   .grid {
     display: grid;
@@ -1285,6 +1561,12 @@ PORTAL_HTML = r"""<!DOCTYPE html>
   .mailbox--fuxa h2 { color: #22d3ee; }
   .mailbox--fuxa .chip:hover, .mailbox--fuxa .chip:focus-visible { border-color: #22d3ee; }
 
+  /* Material da disciplina (Docusaurus): destaque dourado */
+  .node--docs::before { background: var(--gold-dim); }
+  .node--docs:hover, .node--docs:focus-visible { border-color: var(--gold); }
+  .node--docs:hover::before, .node--docs:focus-visible::before { background: var(--gold); }
+  .node--docs .node__topic { color: var(--gold); }
+
   .foot {
     margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line);
     font-family: var(--mono); font-size: 12px; color: var(--muted);
@@ -1300,6 +1582,7 @@ PORTAL_HTML = r"""<!DOCTYPE html>
   <div class="wrap">
     <header class="head">
       <div class="eyebrow">broker online &middot; {{LAB}}</div>
+      <div class="disc"><span class="disc__cod">{{DISC_COD}}</span><span class="disc__nome">{{DISC_NOME}}</span></div>
       <h1>Painel do {{LAB}}</h1>
       <p class="sub">Selecione seu grupo para abrir o editor Node-RED. Cada grupo
       publica no broker MQTT sob seu próprio tópico, no formato
@@ -1374,8 +1657,25 @@ if MQTTX:
         '        <span class="node__topic">#  ·  broker local</span>\n'
         f'        <span class="node__go">abrir explorer{"" if SEM_SENHA else " (login)"} &rarr;</span>\n'
         '      </a>\n')
+# material da disciplina: primeiro cartão. Com --docs, o site servido aqui; sem, o site na internet
+if DOCS:
+    cards.insert(0,
+        f'      <a class="node node--docs" href="{DOCS_URL_CAMINHO}">\n'
+        f'        <span class="node__idx">{DISC_COD} · material</span>\n'
+        f'        <span class="node__name">{DISC_NOME}</span>\n'
+        f'        <span class="node__topic">{DOCS_URL_CAMINHO}  ·  abre sem internet</span>\n'
+        '        <span class="node__go">abrir material &rarr;</span>\n'
+        '      </a>\n')
+else:
+    cards.insert(0,
+        f'      <a class="node node--docs" href="{DISC_ONLINE}" target="_blank" rel="noopener">\n'
+        f'        <span class="node__idx">{DISC_COD} · material</span>\n'
+        f'        <span class="node__name">{DISC_NOME}</span>\n'
+        f'        <span class="node__topic">{DISC_ONLINE.split("//", 1)[1].rstrip("/")}</span>\n'
+        '        <span class="node__go">abrir na internet &nearr;</span>\n'
+        '      </a>\n')
 
-rodape = [f"<span>nesta máquina: {LOCAL_URL}/</span>"]
+rodape = [f"<span>disciplina: {DISC_TITULO}</span>", f"<span>nesta máquina: {LOCAL_URL}/</span>"]
 if LAN_URL:
     rodape.append(f"<span>rede local: {LAN_URL}/</span>")
 rodape += [f"<span>MQTT: {IP}:1883</span>", f"<span>tópicos: {G}/</span>"]
@@ -1385,6 +1685,8 @@ html = (PORTAL_HTML
         .replace("{{CARDS}}", "".join(cards))
         .replace("{{MAILBOX}}", "")
         .replace("{{RODAPE}}", "\n      ".join(rodape))
+        .replace("{{DISC_COD}}", DISC_COD)
+        .replace("{{DISC_NOME}}", DISC_NOME)
         .replace("{{LAB}}", G))
 html = (html.replace(f"Painel do {G}", f"LAB IoT do {G}")
         .replace(f"broker online &middot; {G}", f"na sua máquina &middot; {G}")
@@ -2077,7 +2379,7 @@ except OSError:
 U = LOCAL_URL
 # Node-RED Projects clona por dentro da rede do Docker; sem senha, passa pelo nginx (login automático)
 GITEA_NR_URL = f"http://nginx{_porta}/git/" if SEM_SENHA else "http://gitea:3000/"
-cred = [f"=== LAB IoT do {G} (na sua máquina) ===", ""]
+cred = [f"=== {DISC_TITULO} · LAB IoT do {G} (na sua máquina) ===", ""]
 if SEM_SENHA:
     cred += ["SEM SENHA (--sem-senha): nenhum serviço pede login.",
              "Qualquer pessoa na mesma rede pode ver e editar tudo.",
@@ -2107,6 +2409,10 @@ if NTFY:
     cred.append(f"  token do Node-RED: {NTFY_TOKEN[G]}" + (f"   ·   token do CI: {NTFY_TOKEN_CI[G]}" if RUNNER else ""))
 if WB:
     cred.append(f"MicroBin:   <base>/bin/   (administração: <base>/bin/admin)")
+if DOCS:
+    cred.append(f"Material:   <base>{DOCS_URL_CAMINHO}   ({DISC_COD}; Docusaurus, modo {DOCS_MODO}: {DOCS_REPO}, ramo {DOCS_RAMO})")
+else:
+    cred.append(f"Material:   {DISC_ONLINE}   ({DISC_COD}, na internet; com --docs fica no portal)")
 if MQTTX:
     cred.append(f"MQTT Explorer: {MQTTX_URL}")
 cred.append(f"MQTT:       mosquitto:1883 (Node-RED/FUXA)  ·  {IP}:1883 (ESP32 na mesma rede)")
@@ -2126,7 +2432,7 @@ def tab(cab, linhas):
     return [f"| {cab[0]} | {cab[1]} |", "|---|---|"] + [f"| {a} | {b} |" for a, b in linhas]
 
 
-leia = [f"# LAB IoT do {G} — na sua máquina", "",
+leia = [f"# {DISC_TITULO} · LAB IoT do {G} — na sua máquina", "",
         "O mesmo LAB IoT do laboratório, completo, rodando **no seu computador**: Node-RED"
         + (", FUXA (SCADA/HMI)" if FUXA else "") + ", broker MQTT"
         + (", Gitea com CI (Gitea Actions)" if GITEA else "")
@@ -2163,6 +2469,10 @@ if NTFY:
     leia.append(f"| Avisos (ntfy): ler e publicar | {U}/avisos/ |")
 if WB:
     leia.append(f"| MicroBin | {U}/bin/ |")
+if DOCS:
+    leia.append(f"| Material de {DISC_COD} | {U}{DOCS_URL_CAMINHO} |")
+else:
+    leia.append(f"| Material de {DISC_COD} (na internet) | {DISC_ONLINE} |")
 if MQTTX:
     leia.append(f"| MQTT Explorer | {MQTTX_URL} |")
 if LAN_URL:
@@ -2257,6 +2567,31 @@ if GITEA:
                  "tea actions runs logs <id>",
                  "tea actions workflows dispatch diagnostico.yml --ref main   # workflow com workflow_dispatch",
                  "```"])
+if DOCS:
+    leia += ["", f"## Material da disciplina {DISC_COD} (Docusaurus)", "",
+             f"O site de **{DISC_TITULO}** fica em **{U}{DOCS_URL_CAMINHO}** (primeiro cartão do portal),",
+             "sem login. Depois de baixado, abre **sem internet** e também no celular, pela rede local.", ""]
+    if DOCS_MODO == "pages":
+        leia += [f"O container `{C}-docs` baixa o site **já montado** (ramo `{DOCS_RAMO}` de {DOCS_REPO},",
+                 "o mesmo publicado no GitHub Pages). A primeira vez leva cerca de um minuto."]
+    else:
+        leia += [f"O container `{C}-docs` baixa o **código-fonte** (ramo `{DOCS_RAMO}` de {DOCS_REPO}) e monta o",
+                 "site aqui: `npm ci` e `npm run build`. A primeira vez leva vários minutos e pede uns 4 GB de",
+                 "memória livre no Docker; as seguintes só refazem o site quando o repositório muda.",
+                 "Se o build falhar, o site anterior continua no ar."]
+    leia += [("Ele procura atualização a cada " + (f"{DOCS_MINUTOS} minutos" if DOCS_MINUTOS != 1 else "minuto") + "."
+              if DOCS_MINUTOS else "A atualização automática está desligada (`--docs-minutos 0`)."),
+             "Enquanto o site não chega, o endereço mostra uma página de espera.", ""]
+    leia += tab(("Para", "Comando"), [
+        ("Atualizar agora", "`docker compose restart docs`"),
+        ("Acompanhar (download" + (", npm, build" if DOCS_MODO == "build" else "") + ")", "`docker compose logs -f docs`"),
+        ("Baixar tudo de novo", "`docker compose down`, `docker volume rm " +
+         re.sub(r"[^a-z0-9_-]", "", os.path.basename(SAIDA_ABS).lower()) + "_docs_data` "
+         "e `docker compose up -d`")])
+    leia += ["",
+             f"> O site só funciona no caminho com que foi montado (o `baseUrl` do `docusaurus.config.ts`): aqui, `{DOCS_URL_CAMINHO}`.",
+             "> Para outro repositório (um fork, por exemplo), gere de novo com `--docs-repo <URL>` e, se o",
+             "> `baseUrl` for outro, `--docs-caminho <nome>`."]
 if PONTE:
     leia += ["", "## Ponte MQTT com o laboratório", "",
              f"O broker daqui está ligado ao do laboratório (`{PONTE}`) **só nos tópicos `{G}/#`**, nos",
@@ -2318,13 +2653,16 @@ if RUNNER:
     leia.append("| Ver o runner do CI | `docker compose logs -f gitea-runner` |")
 if GITEA:
     leia.append("| Refazer usuário/organização/secrets do Gitea | `docker compose run --rm gitea-init` |")
+if DOCS:
+    leia.append("| Atualizar o material da disciplina | `docker compose restart docs` |")
 if CAPTURA:
     leia.append("| Ver a captura (netshoot) | `docker compose logs -f netshoot` |")
 leia += ["| Parar (os dados ficam) | `docker compose down` |",
          "| Atualizar imagens | `docker compose pull`, `docker compose build --pull` e `docker compose up -d` |",
          "| Mudou alguma opção | rode o gerador de novo (mesma pasta) e `docker compose up -d --build` |", "",
          "Os dados ficam em `data/` (Node-RED)" + (", `fuxa/` (FUXA)" if FUXA else "")
-         + " e nos volumes do Docker" + (" (Gitea, ntfy, MicroBin)" if GITEA else "") + ".",
+         + " e nos volumes do Docker" + (" (Gitea, ntfy, MicroBin)" if GITEA else "") + "."
+         + (" O material da disciplina (volume `docs_data`) pode ser baixado de novo." if DOCS else ""),
          ("Guarde também o `.segredos.json` (tokens e chaves internas)." if SEM_SENHA else
           "Guarde também o `.segredos.json`: sem ele, uma nova geração sorteia senhas novas."), ""]
 gravar("LEIA-ME.md", "\n".join(leia))
@@ -2332,11 +2670,16 @@ gravar("LEIA-ME.md", "\n".join(leia))
 # =====================================================================
 # relatório
 # =====================================================================
-print(f"\n✅ LAB IoT do {G}: Node-RED" + (" + FUXA" if FUXA else "") + " + MQTT"
+print(f"\n✅ {DISC_TITULO} · LAB IoT do {G}: Node-RED" + (" + FUXA" if FUXA else "") + " + MQTT"
       + (" + Gitea" if GITEA else "") + (" (Actions)" if RUNNER else "")
       + (" + ntfy" if NTFY else "") + (" + MicroBin" if WB else "")
-      + (" + MQTT Explorer" if MQTTX else "") + (" + captura (netshoot)" if CAPTURA else ""))
+      + (" + MQTT Explorer" if MQTTX else "") + (" + captura (netshoot)" if CAPTURA else "")
+      + (" + material (Docusaurus)" if DOCS else ""))
 print(f"\n  Nesta máquina: {LOCAL_URL}/")
+if not DOCS:
+    print(f"  Material:      {DISC_ONLINE}  (na internet; use --docs para tê-lo no portal)")
+if DOCS:
+    print(f"  Material:      {LOCAL_URL}{DOCS_URL_CAMINHO}  ({DOCS_MODO}: {DOCS_REPO}, ramo {DOCS_RAMO})")
 if CAPTURA:
     print(f"  Captura:       captura/*.pcap  ·  ao vivo: wireshark-ao-vivo.cmd  (interface {CAPTURA_IF})")
 if LAN_URL:
