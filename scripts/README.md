@@ -77,6 +77,18 @@ node scripts/download-katex.js
 ```
 
 
+- Inicializa template do projeto
+  
+```bash
+./scripts/iiot/create-pjt-pio-template.sh
+```
+
+- Inicializa template do projeto
+  
+```bash
+./scripts/iiot/create-pjt-from-template.sh
+```
+
 # Template LABs (MIC)
 
 - Empty
