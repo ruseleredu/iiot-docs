@@ -19,6 +19,7 @@ import {
     DevTools,
     GitLogOut,
 } from "@site/src/components/shared/InstructionsSite";
+import LabIotAlunoSimples from "@site/src/components/shared/LabIotAlunoSimples";
 
 export default {
     // Mantém os componentes padrão do MDX
@@ -39,4 +40,5 @@ export default {
     DevTools,
     GitLogOut,
     GroupCommands,
+    LabIotAlunoSimples,
 };
