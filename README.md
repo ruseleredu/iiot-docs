@@ -77,6 +77,18 @@ node scripts/download-katex.js
 ```
 
 
+- Inicializa template do projeto
+  
+```bash
+./scripts/iiot/create-pjt-pio-template.sh
+```
+
+- Inicializa template do projeto
+  
+```bash
+./scripts/iiot/create-pjt-from-template.sh
+```
+
 # Template LABs (MIC)
 
 - Empty
@@ -97,6 +109,13 @@ node scripts/download-katex.js
 ./scripts/mic/create-lab-from-template.sh
 ```
 
+```bash
+./scripts/mic/create-pjt-pio-template.sh
+```
+
+```bash
+./scripts/mic/create-pjt-from-template.sh
+```
 
 Um repositório criado a partir de um template recebe uma cópia dos arquivos com um histórico novo, sem ligação com o template. Por isso não dá para fazer `git pull` do template. O script `sync-lab-from-template.sh` resolve isso assim:
 
@@ -135,3 +154,17 @@ Depois rode o script com esse commit:
 - Não rode o script de novo nos grupos que já foram atualizados. O `git am` recusa patches que já foram aplicados.
 
 Se nenhum grupo mexeu nos repositórios ainda, a opção mais simples é apagar os repositórios dos grupos (`gh repo delete`) e rodar de novo o `create-lab-from-template.sh`.
+
+## Componentes utilizados
+O que ele mostra:
+
+- Usados nas páginas: quantas páginas usam cada componente, com a marca [global] nos que vêm do MDXComponents.
+- Usados só por código: os que só outros componentes ou páginas .tsx usam.
+- Sem uso: os candidatos a remover. Também marca os que estão registrados como globais mas que nenhuma página usa, e esses você pode tirar do MDXComponents.tsx.
+- Tags sem import nem registro global: tags que vão quebrar a página, por exemplo um componente que você esqueceu de registrar.
+
+```bash
+node scripts\mic\componentes-usados.mjs
+node scripts\mic\componentes-usados.mjs --detalhe
+node scripts\mic\componentes-usados.mjs LabIotAlunoSimples
+```
