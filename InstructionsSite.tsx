@@ -210,87 +210,96 @@ export function DevTools() {
             <TabItem value="git-scm" label="Git SCM" default>
                 <p><b>O <Link to="/docs/git">Git</Link> é a ferramenta de gerenciamento de código-fonte mais utilizada por desenvolvedores profissionais.</b></p>
                 <ul>
-                    <li>O <a href="https://git-scm.com/downloads/win" target="_blank">Git</a> é um sistema de controle de versão distribuído gratuito e de código aberto, projetado para lidar com tudo, desde projetos pequenos até muito grandes, com rapidez e eficiência.
+                    <li>
+                        <p>O <a href="https://git-scm.com/downloads/win" target="_blank">Git</a> é um sistema de controle de versão distribuído gratuito e de código aberto, projetado para lidar com tudo, desde projetos pequenos até muito grandes, com rapidez e eficiência.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`winget install --id Git.Git -e --source winget`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Configurações do <Link to="/docs/git">git</Link>:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`git config --list --show-origin`}
+                        </ThemeCodeBlock>
                     </li>
                 </ul>
-                <ThemeCodeBlock className="language-bash">
-                    winget install --id Git.Git -e --source winget
-                </ThemeCodeBlock>
-                <p>Configurações do <Link to="/docs/git">git</Link>:</p>
-                <ThemeCodeBlock className="language-bash">
-                    git config --list --show-origin
-                </ThemeCodeBlock>
             </TabItem>
             <TabItem value="gh" label="GitHub CLI">
                 <p><b>O <Link to="/docs/github-cli">GitHub CLI</Link> traz o GitHub para o seu terminal.</b></p>
                 <ul>
-                    <li>O <a href="https://cli.github.com/" target="_blank">GitHub CLI</a> é uma ferramenta de linha de comando que permite interagir com o GitHub diretamente pelo terminal. Está disponível para Windows, macOS e Linux.
+                    <li>
+                        <p>O <a href="https://cli.github.com/" target="_blank">GitHub CLI</a> é uma ferramenta de linha de comando que permite interagir com o GitHub diretamente pelo terminal. Está disponível para Windows, macOS e Linux.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`winget install --id GitHub.cli -e --source winget`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Status de login do <Link to="/docs/github-cli">GitHub CLI</Link>:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`gh auth status`}
+                        </ThemeCodeBlock>
                     </li>
                 </ul>
-                <ThemeCodeBlock className="language-bash">
-                    winget install --id GitHub.cli -e --source winget
-                </ThemeCodeBlock>
-                <p>Status de login do <Link to="/docs/github-cli">GitHub CLI</Link>:</p>
-                <ThemeCodeBlock className="language-bash">
-                    gh auth status
-                </ThemeCodeBlock>
             </TabItem>
             <TabItem value="py" label="Python">
                 <p><b>O <a href="https://www.python.org/" target="_blank">Python</a> é uma linguagem de programação que permite trabalhar com rapidez e integrar sistemas de forma mais eficaz.</b></p>
                 <ul>
-                    <li>O <a href="https://www.python.org/" target="_blank">Python</a> pode ser instalado via winget:
+                    <li>
+                        <p>O <a href="https://www.python.org/" target="_blank">Python</a> pode ser instalado via winget:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`winget install Python.Python.3.14`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Verifique a versão instalada:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`py --version && python --version && pip --version`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Instale as dependências utilizadas no curso:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`py -m pip install bcrypt`}
+                        </ThemeCodeBlock>
                     </li>
                 </ul>
-                <ThemeCodeBlock className="language-bash">
-                    winget install Python.Python.3.14
-                </ThemeCodeBlock>
-                <ul>
-                    <li><p>Verifique a versão instalada:</p>
-                    </li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    py --version && python --version && pip --version
-                </ThemeCodeBlock>
-                <ul>
-                    <li><p>Instale as dependências utilizadas no curso:</p>
-                    </li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    py -m pip install bcrypt
-                </ThemeCodeBlock>
             </TabItem>
             <TabItem value="vscode" label="VS Code">
                 <p><b><Link to="/docs/vs-code-intro">Visual Studio Code</Link>: IDE e Editor de Código para Desenvolvimento de Software.</b></p>
                 <ul>
-                    <li>O <a href="https://code.visualstudio.com/download" target="_blank">VS Code</a> é um editor de código-fonte gratuito criado pela Microsoft para Windows, Linux e macOS. Inclui suporte para depuração, controle Git integrado, realce de sintaxe, conclusão inteligente de código, snippets e refatoração de código.
+                    <li>
+                        <p>O <a href="https://code.visualstudio.com/download" target="_blank">VS Code</a> é um editor de código-fonte gratuito criado pela Microsoft para Windows, Linux e macOS. Inclui suporte para depuração, controle Git integrado, realce de sintaxe, conclusão inteligente de código, snippets e refatoração de código.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`winget install --id Microsoft.VisualStudioCode -e --source winget`}
+                        </ThemeCodeBlock>
                     </li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    winget install --id Microsoft.VisualStudioCode -e --source winget
-                </ThemeCodeBlock>
-                <p>Extensões instaladas do <Link to="/docs/vs-code-intro">Visual Studio Code</Link> para o perfil ESP32IO:</p>
-                <ThemeCodeBlock className="language-bash">
-                    code --list-extensions --profile "ESP32IO"
-                </ThemeCodeBlock>
-                <p>Configurar o terminal do VS Code. No arquivo <code>.vscode/settings.json</code></p>
-                <ThemeCodeBlock className="language-json">
-                    {`{
+                    <li>
+                        <p>Extensões instaladas do <Link to="/docs/vs-code-intro">Visual Studio Code</Link> para o perfil ESP32IO:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`code --list-extensions --profile "ESP32IO"`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Configurar o terminal do VS Code. No arquivo <code>.vscode/settings.json</code>:</p>
+                        <ThemeCodeBlock className="language-json">
+                            {`{
     "terminal.integrated.defaultProfile.windows": "Command Prompt"
 }`}
-                </ThemeCodeBlock>
-
+                        </ThemeCodeBlock>
+                    </li>
+                </ul>
             </TabItem>
-
             <TabItem value="esp32-platformio" label="PlatformIO">
                 <p><b><Link to="/docs/platformio-intro">PlatformIO IDE para VSCode</Link>: Sua porta de entrada para a excelência no desenvolvimento de software embarcado.</b></p>
                 <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide" target="_blank">PlatformIO IDE para VSCode</a> Desbloqueie o verdadeiro potencial do desenvolvimento de software embarcado com o ecossistema colaborativo do PlatformIO, adotando princípios declarativos, metodologias orientadas a testes e toolchains modernas para um sucesso incomparável.
-
+                    <li>
+                        <p><a href="https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide" target="_blank">PlatformIO IDE para VSCode</a> Desbloqueie o verdadeiro potencial do desenvolvimento de software embarcado com o ecossistema colaborativo do PlatformIO, adotando princípios declarativos, metodologias orientadas a testes e toolchains modernas para um sucesso incomparável.</p>
                         <ThemeCodeBlock className="language-bash">
-                            code --install-extension platformio.platformio-ide --profile "ESP32IO"
+                            {`code --install-extension platformio.platformio-ide --profile "ESP32IO"`}
                         </ThemeCodeBlock>
                     </li>
-                    <li>Acrescente <code>%USERPROFILE%\.platformio\penv\Scripts</code> ao PATH do usuário (rode uma vez só):
+                    <li>
+                        <p>Acrescente <code>%USERPROFILE%\.platformio\penv\Scripts</code> ao PATH do usuário (rode uma vez só):</p>
                         <ThemeCodeBlock className="language-bash">
                             {`powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:USERPROFILE + '\\.platformio\\penv\\Scripts', 'User')"`}
                         </ThemeCodeBlock>
@@ -318,32 +327,33 @@ export function DevTools() {
             <TabItem value="esp32-wokwi" label="Wokwi">
                 <p><b><Link to="/docs/category/wokwi">Wokwi para VSCode</Link>: Simulador de sistemas embarcados e IoT com suporte para ESP32.</b></p>
                 <ul>
-                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> executa a simulação dentro do VS Code, utilizando os binários compilados pelo PlatformIO.
+                    <li>
+                        <p><a href="https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode" target="_blank">Wokwi para VSCode</a> executa a simulação dentro do VS Code, utilizando os binários compilados pelo PlatformIO.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"`}
+                        </ThemeCodeBlock>
                     </li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    code --install-extension wokwi.wokwi-vscode --profile "ESP32IO"
-                </ThemeCodeBlock>
-                <ul>
-                    <li><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Gerar uma licença pessoal de 30 dias para o Wokwi VS Code.</a></li>
-                </ul>
-                <ul>
-                    <li><a href="https://github.com/wokwi/wokwi-cli/releases" target="_blank">Wokwi CLI:</a> Baixe via GitHub.</li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    {`curl -L -o "%USERPROFILE%\\.platformio\\penv\\Scripts\\wokwi-cli.exe" "https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-win-x64.exe"`}
-                </ThemeCodeBlock>
-                <ThemeCodeBlock className="language-bash">
-                    {`wokwi-cli -h`}
-                </ThemeCodeBlock>
-                <ul>
-                    <li>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a></li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                </ThemeCodeBlock>
-                <ul>
-                    <li><a href="https://docs.wokwi.com/wokwi-ci/getting-started" target="_blank">Wokwi para CI e GitHub Actions</a></li>
+                    <li>
+                        <p><a href="https://wokwi.com/license?v=3.6.1&r=UserRequest&s=v" target="_blank">Gerar uma licença pessoal de 30 dias para o Wokwi VS Code.</a></p>
+                    </li>
+                    <li>
+                        <p><a href="https://github.com/wokwi/wokwi-cli/releases" target="_blank">Wokwi CLI:</a> Baixe via GitHub.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`curl -L -o "%USERPROFILE%\\.platformio\\penv\\Scripts\\wokwi-cli.exe" "https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-win-x64.exe"`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`wokwi-cli -h`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Obtenha seu token em <a href="https://wokwi.com/dashboard/ci" target="_blank">https://wokwi.com/dashboard/ci</a>:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`setx WOKWI_CLI_TOKEN "wok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p><a href="https://docs.wokwi.com/wokwi-ci/getting-started" target="_blank">Wokwi para CI e GitHub Actions</a></p>
+                    </li>
                 </ul>
             </TabItem>
             <TabItem value="esp32-drivers" label="Drivers">
@@ -373,12 +383,17 @@ export function DevTools() {
                 <p>
                     Anote o número da porta (ex: <b>COM4</b>, <b>COM6</b>, <b>COM12</b>). Se não aparecer nenhuma porta nova, o driver não está instalado. Baixe o driver correspondente (CP210x ou CH340) no site do fabricante da placa.
                 </p>
-                <ThemeCodeBlock className="language-bash">
-                    pip install esptool
-                </ThemeCodeBlock>
-                <ThemeCodeBlock className="language-bash">
-                    esptool chip-id
-                </ThemeCodeBlock>
+                <ul>
+                    <li>
+                        <p>Instale o esptool e identifique o chip:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`pip install esptool`}
+                        </ThemeCodeBlock>
+                        <ThemeCodeBlock className="language-bash">
+                            {`esptool chip-id`}
+                        </ThemeCodeBlock>
+                    </li>
+                </ul>
             </TabItem>
             <TabItem value="esp32-docker" label="Docker">
                 <p><b><Link to="/labs/guides/instalacao-docker-wsl2">Docker Desktop & WSL 2</Link>: O Docker Desktop no Windows 11 utiliza a arquitetura do WSL 2 para executar containers Linux nativamente com alta performance.</b></p>
@@ -415,34 +430,39 @@ export function DevTools() {
             <TabItem value="mingw-w64" label="GCC">
                 <p><b><a href="https://winlibs.com" target="_blank">WinLibs (GCC + MinGW-w64)</a>: Compilador C/C++ nativo para Windows, usado pelo PlatformIO no ambiente <code>native</code>.</b></p>
                 <ul>
-                    <li>O <code>pio test -e native</code> compila os testes com o <code>gcc</code>/<code>g++</code> do computador, e o PlatformIO não instala esse compilador. Sem ele, aparece o erro <code>'gcc' não é reconhecido como um comando interno</code>.</li>
-                    <li><a href="https://github.com/brechtsanders/winlibs_mingw/releases" target="_blank">WinLibs:</a> baixe a versão mais recente (x86_64, POSIX, UCRT) via GitHub. É portátil e não precisa de administrador.</li>
+                    <li>
+                        <p>O <code>pio test -e native</code> compila os testes com o <code>gcc</code>/<code>g++</code> do computador, e o PlatformIO não instala esse compilador. Sem ele, aparece o erro <code>'gcc' não é reconhecido como um comando interno</code>.</p>
+                    </li>
+                    <li>
+                        <p><a href="https://github.com/brechtsanders/winlibs_mingw/releases" target="_blank">WinLibs:</a> baixe a versão mais recente (x86_64, POSIX, UCRT) via GitHub. É portátil e não precisa de administrador.</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`powershell -NoProfile -Command "$a = (Invoke-RestMethod https://api.github.com/repos/brechtsanders/winlibs_mingw/releases/latest).assets | Where-Object { $_.name -like 'winlibs-x86_64-posix-seh-gcc-*-mingw-w64ucrt-*.zip' -and $_.name -notlike '*llvm*' } | Select-Object -First 1; curl.exe -L -o (Join-Path $env:TEMP 'winlibs.zip') $a.browser_download_url"`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Descompacte em <code>%USERPROFILE%\mingw64</code> e apague o <code>.zip</code>:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`tar -xf "%TEMP%\\winlibs.zip" -C "%USERPROFILE%" && del "%TEMP%\\winlibs.zip"`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Acrescente <code>%USERPROFILE%\mingw64\bin</code> ao PATH do usuário (rode uma vez só):</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:USERPROFILE + '\\mingw64\\bin', 'User')"`}
+                        </ThemeCodeBlock>
+                    </li>
+                    <li>
+                        <p>Feche e abra o VS Code de novo para ele ler o novo PATH. Depois confira:</p>
+                        <ThemeCodeBlock className="language-bash">
+                            {`gcc --version`}
+                        </ThemeCodeBlock>
+                    </li>
                 </ul>
-                <ThemeCodeBlock className="language-bash">
-                    {`powershell -NoProfile -Command "$a = (Invoke-RestMethod https://api.github.com/repos/brechtsanders/winlibs_mingw/releases/latest).assets | Where-Object { $_.name -like 'winlibs-x86_64-posix-seh-gcc-*-mingw-w64ucrt-*.zip' -and $_.name -notlike '*llvm*' } | Select-Object -First 1; curl.exe -L -o (Join-Path $env:TEMP 'winlibs.zip') $a.browser_download_url"`}
-                </ThemeCodeBlock>
-                <ul>
-                    <li>Descompacte em <code>%USERPROFILE%\mingw64</code> e apague o <code>.zip</code>:</li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    {`tar -xf "%TEMP%\\winlibs.zip" -C "%USERPROFILE%" && del "%TEMP%\\winlibs.zip"`}
-                </ThemeCodeBlock>
-                <ul>
-                    <li>Acrescente <code>%USERPROFILE%\mingw64\bin</code> ao PATH do usuário (rode uma vez só):</li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    {`powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:USERPROFILE + '\\mingw64\\bin', 'User')"`}
-                </ThemeCodeBlock>
-                <ul>
-                    <li>Feche e abra o VS Code de novo para ele ler o novo PATH. Depois confira:</li>
-                </ul>
-                <ThemeCodeBlock className="language-bash">
-                    {`gcc --version`}
-                </ThemeCodeBlock>
             </TabItem>
         </Tabs>
     );
 }
+
 
 
 // import {DevTools} from '@site/src/components/InstructionsSite';
