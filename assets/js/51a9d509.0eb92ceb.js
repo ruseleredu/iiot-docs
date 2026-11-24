@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkiiot_docs=self.webpackChunkiiot_docs||[]).push([["6004"],{40442(a){a.exports=JSON.parse('{"tags":[{"label":"autograder","permalink":"/iiot-docs/infra/tags/autograder","count":1},{"label":"ferramentas","permalink":"/iiot-docs/infra/tags/ferramentas","count":1},{"label":"ci","permalink":"/iiot-docs/infra/tags/ci","count":1}]}')}}]);
