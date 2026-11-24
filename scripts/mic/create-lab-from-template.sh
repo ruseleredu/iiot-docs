@@ -3,8 +3,8 @@ set -e
 
 ORG="ELT73A-S22-2026-2"
 GROUP_LIST="A B C D E F G H I J K L M X P N"   # ← not GROUPS
-#GROUP_LIST="A B C D E F G H I J P"   # ← Populated GROUPS
-NLAB=7
+#GROUP_LIST="X"   # ← Populated GROUPS
+NLAB=8
 LAB=$(printf "lab%02d" "$NLAB")
 TEMPLATE="$ORG/${LAB}-template"
 
