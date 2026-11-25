@@ -189,16 +189,12 @@ const footer: ThemeConfig["footer"] = {
                     href: "https://ruseleredu.github.io/sd-docs/",
                 },
                 {
-                    label: "Analógica",
+                    label: "Eletrônica Digital",
+                    href: "https://ruseleredu.github.io/ed-docs/",
+                },
+                {
+                    label: "Eletrônica Analógica",
                     href: "https://ruseleredu.github.io/ea-docs/",
-                },
-                {
-                    label: "Moodle Docs",
-                    href: "https://ruseleredu.github.io/moodle-docs/",
-                },
-                {
-                    label: "Kroki Docs",
-                    href: "https://ruseleredu.github.io/kroki-docs/",
                 },
             ],
         },
@@ -212,6 +208,10 @@ const footer: ThemeConfig["footer"] = {
                 {
                     label: "Analógica",
                     href: "https://moodle.utfpr.edu.br/course/view.php?id=4785",
+                },
+                {
+                    label: "Digital",
+                    href: "https://moodle.utfpr.edu.br/course/view.php?id=36663",
                 },
                 {
                     label: "Microcontrolados",
