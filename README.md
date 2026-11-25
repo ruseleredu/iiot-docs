@@ -11,7 +11,7 @@ git remote add shared-scripts https://github.com/ruseleredu/docusaurus-shared-sc
 ## Add Subtrees
 
 ```bash
-git subtree add --prefix=scripts shared-scripts main --squash
+git subtree add --prefix=scripts/shared shared-scripts main --squash
 ```
 
 ## List existing remotes
@@ -23,13 +23,13 @@ git remote -v
 ## Pull Updates
 
 ```bash
-git subtree pull --prefix=scripts shared-scripts main --squash
+git subtree pull --prefix=scripts/shared shared-scripts main --squash
 ```
 
 ## Push Changes
 
 ```bash
-git subtree push --prefix=scripts shared-scripts main
+git subtree push --prefix=scripts/shared shared-scripts main
 ```
 
 ## List existing remotes
@@ -49,11 +49,11 @@ git remote add shared-components https://github.com/ruseleredu/docusaurus-shared
 # Scripts
 
 ```bash
-node scripts/generate-emojis.js
+node scripts/shared/generate-emojis.js
 ```
 
 ```bash
-node scripts/download-katex.js
+node scripts/shared/download-katex.js
 ```
 
 # Template LABs (IIOT)
@@ -61,32 +61,32 @@ node scripts/download-katex.js
 - Empty
 
 ```bash
-./scripts/iiot/create-lab-template.sh
+./scripts/shared/iiot/create-lab-template.sh
 ```
 
 - PIO init
   
 ```bash
-./scripts/iiot/create-lab-pio-template.sh
+./scripts/shared/iiot/create-lab-pio-template.sh
 ```
 
 - Inicializa repo pro grupo
   
 ```bash
-./scripts/iiot/create-lab-from-template.sh
+./scripts/shared/iiot/create-lab-from-template.sh
 ```
 
 
 - Inicializa template do projeto
   
 ```bash
-./scripts/iiot/create-pjt-pio-template.sh
+./scripts/shared/iiot/create-pjt-pio-template.sh
 ```
 
 - Inicializa template do projeto
   
 ```bash
-./scripts/iiot/create-pjt-from-template.sh
+./scripts/shared/iiot/create-pjt-from-template.sh
 ```
 
 # Template LABs (MIC)
@@ -94,27 +94,27 @@ node scripts/download-katex.js
 - Empty
 
 ```bash
-./scripts/mic/create-lab-template.sh
+./scripts/shared/mic/create-lab-template.sh
 ```
 
 - PIO init
   
 ```bash
-./scripts/mic/create-lab-pio-template.sh
+./scripts/shared/mic/create-lab-pio-template.sh
 ```
 
 - Inicializa repo pro grupo
   
 ```bash
-./scripts/mic/create-lab-from-template.sh
+./scripts/shared/mic/create-lab-from-template.sh
 ```
 
 ```bash
-./scripts/mic/create-pjt-pio-template.sh
+./scripts/shared/mic/create-pjt-pio-template.sh
 ```
 
 ```bash
-./scripts/mic/create-pjt-from-template.sh
+./scripts/shared/mic/create-pjt-from-template.sh
 ```
 
 Um repositório criado a partir de um template recebe uma cópia dos arquivos com um histórico novo, sem ligação com o template. Por isso não dá para fazer `git pull` do template. O script `sync-lab-from-template.sh` resolve isso assim:
@@ -144,7 +144,7 @@ gh api repos/ELT73A-S22-2026-2/lab07-template/commits --jq '.[] | "\(.sha[0:7]) 
 Depois rode o script com esse commit:
 
 ```bash
-./scripts/mic/sync-lab-from-template.sh <commit-base>
+./scripts/shared/mic/sync-lab-from-template.sh <commit-base>
 ```
 
 **Opções:**
@@ -164,7 +164,7 @@ O que ele mostra:
 - Tags sem import nem registro global: tags que vão quebrar a página, por exemplo um componente que você esqueceu de registrar.
 
 ```bash
-node scripts\mic\componentes-usados.mjs
-node scripts\mic\componentes-usados.mjs --detalhe
-node scripts\mic\componentes-usados.mjs LabIotAlunoSimples
+node scripts\shared\mic\componentes-usados.mjs
+node scripts\shared\mic\componentes-usados.mjs --detalhe
+node scripts\shared\mic\componentes-usados.mjs LabIotAlunoSimples
 ```
